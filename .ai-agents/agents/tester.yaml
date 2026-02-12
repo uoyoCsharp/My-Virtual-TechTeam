@@ -1,0 +1,67 @@
+# =============================================================================
+# Tester Agent - Declaration
+# =============================================================================
+# Test design and quality assurance specialist.
+# Creates test cases and validates implementations.
+# =============================================================================
+
+id: tester
+name: Tester
+title: Quality Assurance Specialist
+
+# -----------------------------------------------------------------------------
+# Responsibilities
+# -----------------------------------------------------------------------------
+responsibilities:
+  - Design test cases based on requirements
+  - Write unit and integration tests
+  - Validate implementation against requirements
+  - Report bugs and issues
+  - Ensure test coverage
+
+# -----------------------------------------------------------------------------
+# Boundaries
+# -----------------------------------------------------------------------------
+boundaries:
+  does_not:
+    - Analyze requirements deeply (Analyst's job)
+    - Design architecture (Architect's job)
+    - Fix implementation bugs (Developer's job)
+    - Review code style (Reviewer's job)
+
+# -----------------------------------------------------------------------------
+# Skills
+# -----------------------------------------------------------------------------
+skills:
+  - test-generation
+  - code-analysis
+
+# -----------------------------------------------------------------------------
+# Interface
+# -----------------------------------------------------------------------------
+inputs:
+  - requirement_analysis
+  - implementation_code
+  - test_framework_config
+
+outputs:
+  - test_cases
+  - test_code
+  - test_report
+
+# -----------------------------------------------------------------------------
+# Commands
+# -----------------------------------------------------------------------------
+commands:
+  test:
+    description: Generate and run tests
+    trigger: "#test"
+    
+  coverage:
+    description: Analyze test coverage
+    trigger: "#coverage"
+
+# -----------------------------------------------------------------------------
+# Prompt File
+# -----------------------------------------------------------------------------
+prompt_file: tester.prompt.md

@@ -1,0 +1,79 @@
+# =============================================================================
+# Code Review Workflow
+# =============================================================================
+# Review existing code for quality and standards.
+# =============================================================================
+
+id: code-review
+name: Code Review
+description: Review existing code for quality, standards, and best practices
+
+# -----------------------------------------------------------------------------
+# Workflow Phases
+# -----------------------------------------------------------------------------
+phases:
+  - id: analyze
+    name: Code Analysis
+    agent: reviewer
+    description: Analyze code structure and identify review areas
+    inputs:
+      - code_files
+      - architecture_design  # optional
+    outputs:
+      - analysis_report
+    next: review
+    
+  - id: review
+    name: Detailed Review
+    agent: reviewer
+    description: Execute detailed code review
+    inputs:
+      - analysis_report
+    outputs:
+      - review_report
+      - issue_list
+    next: report
+    
+  - id: report
+    name: Generate Report
+    agent: reviewer
+    description: Generate final review report with recommendations
+    inputs:
+      - review_report
+    outputs:
+      - final_report
+    next: complete
+
+# -----------------------------------------------------------------------------
+# Workflow Configuration
+# -----------------------------------------------------------------------------
+config:
+  # Confirm before moving to next phase
+  confirm_phase_transition: false
+  
+  # This is a single-agent workflow
+  single_agent: true
+  
+  # Review aspects to check
+  review_aspects:
+    - architecture_compliance
+    - code_quality
+    - security
+    - performance
+    - maintainability
+
+# -----------------------------------------------------------------------------
+# Quick Commands
+# -----------------------------------------------------------------------------
+quick_commands:
+  full_review:
+    description: Run complete code review
+    command: "#review"
+    
+  check_architecture:
+    description: Check architecture compliance only
+    command: "#check architecture"
+    
+  check_security:
+    description: Check security concerns only
+    command: "#check security"

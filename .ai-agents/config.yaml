@@ -1,0 +1,143 @@
+# =============================================================================
+# AI Agent Framework - Unified Configuration
+# =============================================================================
+# Single entry point for all framework configuration.
+# Consolidates manifest, system config, and preferences.
+# =============================================================================
+
+version: "1.0"
+name: "AI Agent Workflow Framework"
+description: "Multi-agent collaboration framework for software development"
+
+# -----------------------------------------------------------------------------
+# System Behavior
+# -----------------------------------------------------------------------------
+system:
+  # Default agent to activate
+  default_agent: conductor
+  
+  # Language for agent responses
+  language: en-US
+  
+  # Interaction mode: auto | semi-auto | manual
+  # - auto: Workflow progresses automatically, confirm only at key points
+  # - semi-auto: Suggest next step, user confirms to proceed
+  # - manual: User explicitly triggers each agent switch
+  interaction_mode: semi-auto
+  
+  # Confirm with user before generating code
+  confirm_before_generate: true
+  
+  # Confirm with user before saving to memory
+  confirm_before_save: true
+
+# -----------------------------------------------------------------------------
+# Output Rules
+# -----------------------------------------------------------------------------
+output:
+  # No emojis in output
+  no_emojis: true
+
+  flow_charts:
+    # Use mermaid syntax for flow charts
+    use_mermaid: true
+  
+  # Structured data format: yaml | json
+  data_format: yaml
+  
+  # Use XML tags for context separation
+  # <thought> for reasoning, <output> for final result
+  use_xml_tags: true
+  
+  # Maximum description length
+  max_description: 500
+
+# -----------------------------------------------------------------------------
+# Architecture Pattern
+# -----------------------------------------------------------------------------
+pattern:
+  # Currently active pattern
+  active: ddd
+  
+  # Available patterns (knowledge loaded from knowledge/patterns/{id}/)
+  available:
+    - id: ddd
+      name: Domain-Driven Design
+    - id: clean-architecture
+      name: Clean Architecture
+
+# -----------------------------------------------------------------------------
+# Agent Registry
+# -----------------------------------------------------------------------------
+agents:
+  conductor:
+    name: Conductor
+    description: Task coordinator and workflow dispatcher
+    required: true
+    
+  analyst:
+    name: Analyst
+    description: Requirements analysis and concept extraction
+    required: true
+    
+  architect:
+    name: Architect
+    description: System architecture and technical design
+    required: true
+    
+  developer:
+    name: Developer
+    description: Code implementation specialist
+    required: true
+    
+  reviewer:
+    name: Reviewer
+    description: Code quality and standards reviewer
+    required: true
+    
+  tester:
+    name: Tester
+    description: Test design and quality assurance
+    required: true
+
+# -----------------------------------------------------------------------------
+# Skill Registry
+# -----------------------------------------------------------------------------
+skills:
+  core:
+    - id: code-analysis
+      description: Analyze code structure and dependencies
+    - id: requirement-parsing
+      description: Parse and structure requirements
+    - id: template-generation
+      description: Generate code from templates
+    - id: review-execution
+      description: Execute code review checklist
+    - id: test-generation
+      description: Generate test cases
+    - id: project-detection
+      description: Detect project structure and tech stack
+
+# -----------------------------------------------------------------------------
+# Workflow Registry
+# -----------------------------------------------------------------------------
+workflows:
+  requirement-to-code:
+    name: Requirements to Code
+    description: Full development cycle from PRD to implementation
+    phases: [analyze, design, implement, review, test]
+    
+  code-review:
+    name: Code Review
+    description: Review existing code for quality and standards
+    phases: [analyze, review, report]
+
+# -----------------------------------------------------------------------------
+# Directory Structure
+# -----------------------------------------------------------------------------
+directories:
+  agents: agents/
+  skills: skills/
+  workflows: workflows/
+  knowledge: knowledge/
+  workspace: workspace/

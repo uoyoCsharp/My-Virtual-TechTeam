@@ -1,0 +1,108 @@
+# =============================================================================
+# Project Context - Dynamic Memory
+# =============================================================================
+# This file stores project-specific context that persists across sessions.
+# Updated by agents during the development workflow.
+# 
+# IMPORTANT: Agents should confirm with user before modifying this file.
+# =============================================================================
+
+# -----------------------------------------------------------------------------
+# Project Information
+# -----------------------------------------------------------------------------
+project:
+  name: ""
+  description: ""
+  language: ""
+  framework: ""
+  architecture_pattern: ""
+
+# -----------------------------------------------------------------------------
+# Workflow State
+# -----------------------------------------------------------------------------
+workflow:
+  current_phase: ""
+  last_agent: ""
+  last_updated: ""
+  
+  # Phase completion status
+  phases:
+    analyze: false
+    design: false
+    implement: false
+    review: false
+    test: false
+
+# -----------------------------------------------------------------------------
+# Requirements Summary
+# -----------------------------------------------------------------------------
+# Populated by Analyst after requirements analysis
+requirements:
+  summary: ""
+  features: []
+  # Example:
+  # features:
+  #   - id: F1
+  #     name: Feature Name
+  #     description: Feature description
+  #     priority: high
+
+# -----------------------------------------------------------------------------
+# Architecture Decisions
+# -----------------------------------------------------------------------------
+# Populated by Architect after design phase
+architecture:
+  pattern: ""
+  modules: []
+  # Example:
+  # modules:
+  #   - name: Module Name
+  #     purpose: Module purpose
+  #     dependencies: []
+  
+  decisions: []
+  # Example:
+  # decisions:
+  #   - topic: Database Choice
+  #     choice: PostgreSQL
+  #     reason: ACID compliance needed
+
+# -----------------------------------------------------------------------------
+# Implementation Progress
+# -----------------------------------------------------------------------------
+# Populated by Developer during implementation
+implementation:
+  completed: []
+  # Example:
+  # completed:
+  #   - feature: F1
+  #     files: [path/to/file1.ts, path/to/file2.ts]
+  
+  pending: []
+
+# -----------------------------------------------------------------------------
+# Review Notes
+# -----------------------------------------------------------------------------
+# Populated by Reviewer after code review
+review:
+  last_review_date: ""
+  status: ""  # passed | needs_work | blocked
+  issues: []
+  # Example:
+  # issues:
+  #   - severity: warning
+  #     location: path/to/file.ts
+  #     description: Issue description
+  #     resolved: false
+
+# -----------------------------------------------------------------------------
+# Key Decisions Log
+# -----------------------------------------------------------------------------
+# Important decisions made during the project
+decisions:
+  []
+  # Example:
+  # - date: 2026-02-12
+  #   topic: Authentication Strategy
+  #   decision: Use JWT with refresh tokens
+  #   rationale: Stateless authentication for API

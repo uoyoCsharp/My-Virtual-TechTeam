@@ -1,0 +1,104 @@
+# =============================================================================
+# Requirement to Code Workflow
+# =============================================================================
+# Full development cycle from requirements to implementation.
+# =============================================================================
+
+id: requirement-to-code
+name: Requirements to Code
+description: Complete development workflow from PRD to tested implementation
+
+# -----------------------------------------------------------------------------
+# Workflow Phases
+# -----------------------------------------------------------------------------
+phases:
+  - id: analyze
+    name: Requirements Analysis
+    agent: analyst
+    description: Analyze requirements and extract concepts
+    inputs:
+      - requirements_document
+    outputs:
+      - requirement_analysis
+      - concept_map
+    next: design
+    
+  - id: design
+    name: Architecture Design
+    agent: architect
+    description: Create system architecture based on requirements
+    inputs:
+      - requirement_analysis
+    outputs:
+      - architecture_design
+      - implementation_plan
+    next: implement
+    
+  - id: implement
+    name: Code Implementation
+    agent: developer
+    description: Implement code based on architecture design
+    inputs:
+      - architecture_design
+      - implementation_plan
+    outputs:
+      - implementation_code
+    next: review
+    
+  - id: review
+    name: Code Review
+    agent: reviewer
+    description: Review code for quality and standards
+    inputs:
+      - implementation_code
+      - architecture_design
+    outputs:
+      - review_report
+    next: test
+    on_issues: implement  # Go back to implement if issues found
+    
+  - id: test
+    name: Testing
+    agent: tester
+    description: Generate and run tests
+    inputs:
+      - implementation_code
+      - requirement_analysis
+    outputs:
+      - test_cases
+      - test_report
+    next: complete
+    on_failure: implement  # Go back to implement if tests fail
+
+# -----------------------------------------------------------------------------
+# Workflow Configuration
+# -----------------------------------------------------------------------------
+config:
+  # Confirm before moving to next phase
+  confirm_phase_transition: true
+  
+  # Save context after each phase
+  auto_save_context: true
+  
+  # Allow skipping phases (for experienced users)
+  allow_skip: false
+
+# -----------------------------------------------------------------------------
+# Phase Transitions
+# -----------------------------------------------------------------------------
+transitions:
+  analyze_to_design:
+    trigger: "#design"
+    prerequisite: "requirements analysis completed"
+    
+  design_to_implement:
+    trigger: "#implement"
+    prerequisite: "architecture design completed"
+    
+  implement_to_review:
+    trigger: "#review"
+    prerequisite: "implementation code exists"
+    
+  review_to_test:
+    trigger: "#test"
+    prerequisite: "code review passed or issues resolved"

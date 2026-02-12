@@ -1,0 +1,47 @@
+# DDD Pattern Pack
+
+pattern:
+  id: "ddd"
+  name: "Domain-Driven Design"
+  version: "1.0"
+  description: "Tactical and strategic patterns for complex domain modeling"
+
+# Terminology used in this pattern
+terminology:
+  # Core building blocks
+  aggregate: "Aggregate"
+  aggregate_root: "Aggregate Root"
+  entity: "Entity"
+  value_object: "Value Object"
+  domain_event: "Domain Event"
+  domain_service: "Domain Service"
+  repository: "Repository"
+  factory: "Factory"
+  
+  # Strategic patterns
+  bounded_context: "Bounded Context"
+  ubiquitous_language: "Ubiquitous Language"
+  context_map: "Context Map"
+  
+  # Relationships
+  anti_corruption_layer: "Anti-Corruption Layer"
+  shared_kernel: "Shared Kernel"
+  customer_supplier: "Customer-Supplier"
+
+# Files in this pattern pack
+files:
+  - overview.md
+  - tactical-patterns.md
+  - strategic-patterns.md
+  - review-checklist.md
+
+# Design checklist specific to DDD
+review_checklist:
+  - "Aggregate boundaries protect invariants"
+  - "Entities have identity and lifecycle"
+  - "Value objects are immutable"
+  - "Domain events capture state changes"
+  - "Repositories only for aggregates"
+  - "No anemic domain models"
+  - "Business logic in domain layer"
+  - "Ubiquitous language used consistently"

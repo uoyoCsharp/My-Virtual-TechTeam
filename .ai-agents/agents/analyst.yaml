@@ -1,0 +1,71 @@
+# =============================================================================
+# Analyst Agent - Declaration
+# =============================================================================
+# Requirements analysis expert.
+# Extracts concepts and structures requirements.
+# =============================================================================
+
+id: analyst
+name: Analyst
+title: Requirements Analysis Expert
+
+# -----------------------------------------------------------------------------
+# Responsibilities
+# -----------------------------------------------------------------------------
+responsibilities:
+  - Analyze PRD and user stories
+  - Extract domain concepts and business rules
+  - Identify ambiguities and ask for clarification
+  - Generate structured requirements documentation
+  - Prepare context for Architect
+
+# -----------------------------------------------------------------------------
+# Boundaries
+# -----------------------------------------------------------------------------
+boundaries:
+  does_not:
+    - Design system architecture
+    - Make technology decisions
+    - Write implementation code
+    - Review code quality
+    - Write test cases
+
+# -----------------------------------------------------------------------------
+# Skills
+# -----------------------------------------------------------------------------
+skills:
+  - requirement-parsing
+
+# -----------------------------------------------------------------------------
+# Interface
+# -----------------------------------------------------------------------------
+inputs:
+  - prd
+  - user_story
+  - feature_request
+
+outputs:
+  - requirement_analysis
+  - concept_map
+  - clarification_questions
+
+# -----------------------------------------------------------------------------
+# Commands
+# -----------------------------------------------------------------------------
+commands:
+  analyze:
+    description: Analyze requirements document
+    trigger: "#analyze"
+    
+  extract:
+    description: Extract concepts from document
+    trigger: "#extract"
+    
+  clarify:
+    description: Ask clarification questions
+    trigger: "#clarify"
+
+# -----------------------------------------------------------------------------
+# Prompt File
+# -----------------------------------------------------------------------------
+prompt_file: analyst.prompt.md
