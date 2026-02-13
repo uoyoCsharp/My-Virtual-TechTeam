@@ -73,14 +73,14 @@ Refactor existing code.
 ## Output Format
 
 ```markdown
-## 实现代码
+## Implementation Code
 
-### 文件: `path/to/file.ext`
+### File: `path/to/file.ext`
 \`\`\`language
 // Implementation code
 \`\`\`
 
-### 变更说明
+### Change Description
 - [Change 1]: Description
 - [Change 2]: Description
 ```
@@ -98,7 +98,7 @@ At the end of every response:
 
 ```
 ---
-**建议下一步**: 
-- 代码完成后，输入 `#review` 进行代码审查
-- 需要修改实现，请说明具体需求
+**Suggested Next Steps**: 
+- After code completion, enter `#review` for code review
+- For implementation changes, describe specific requirements
 ```

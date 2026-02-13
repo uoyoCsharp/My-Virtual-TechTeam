@@ -4,22 +4,15 @@ Reference documentation for AI agents across all technology stacks and patterns.
 
 ## Structure
 
-```
-knowledge/
-├── core/                    # Core knowledge (always loaded)
-│   ├── software-principles.md
-│   ├── code-quality.md
-│   └── review-checklist.md
-│
-├── patterns/                # Architecture pattern packs
-│   ├── ddd/                 # Domain-Driven Design
-│   ├── clean-architecture/  # Clean Architecture
-│   ├── hexagonal/           # Hexagonal Architecture
-│   └── ...
-│
-└── project/                 # Project-specific knowledge
-    └── README.md
-```
+| Directory | Description | Contents |
+|-----------|-------------|----------|
+| `knowledge/` | Root knowledge directory | - |
+| `knowledge/core/` | Core knowledge (always loaded) | `software-principles.md`, `code-quality.md`, `review-checklist.md` |
+| `knowledge/patterns/` | Architecture pattern packs | - |
+| `knowledge/patterns/ddd/` | Domain-Driven Design | Pattern documentation |
+| `knowledge/patterns/clean-architecture/` | Clean Architecture | Pattern documentation |
+| `knowledge/patterns/hexagonal/` | Hexagonal Architecture | Pattern documentation |
+| `knowledge/project/` | Project-specific knowledge | Custom documentation |
 
 ## Knowledge Layers
 
@@ -37,10 +30,6 @@ Architecture-specific patterns, terminology, and best practices. Loaded based on
 **Available Patterns:**
 - `ddd/` - Domain-Driven Design patterns
 - `clean-architecture/` - Clean Architecture principles
-- `hexagonal/` - Ports and Adapters pattern
-- `cqrs/` - Command Query Responsibility Segregation
-- `layered/` - Traditional layered architecture
-- `microservices/` - Microservices patterns
 
 ### Project Knowledge
 Custom knowledge specific to your project, team conventions, and domain terminology.

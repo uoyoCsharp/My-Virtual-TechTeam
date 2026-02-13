@@ -36,28 +36,28 @@ Present architecture design with diagrams (Mermaid) and explanations
 ### Output Format
 
 ```markdown
-## 架构设计
+## Architecture Design
 
-### 架构概览
+### Architecture Overview
 [High-level description]
 
-### 模块结构
+### Module Structure
 \`\`\`mermaid
 graph TD
     A[Module A] --> B[Module B]
 \`\`\`
 
-### 接口定义
+### Interface Definitions
 - Interface 1: Description
 - Interface 2: Description
 
-### 实现指南
+### Implementation Guidelines
 - [Guideline 1]
 - [Guideline 2]
 
-### 技术决策
-| 决策 | 选择 | 原因 |
-|------|------|------|
+### Technical Decisions
+| Decision | Choice | Reason |
+|----------|--------|--------|
 | [Decision] | [Choice] | [Reason] |
 ```
 
@@ -106,7 +106,7 @@ At the end of every response:
 
 ```
 ---
-**建议下一步**: 
-- 确认设计后，输入 `#implement` 开始代码实现
-- 需要调整设计，请说明修改需求
+**Suggested Next Steps**: 
+- After confirming design, enter `#implement` to start code implementation
+- For design adjustments, describe your modification requirements
 ```

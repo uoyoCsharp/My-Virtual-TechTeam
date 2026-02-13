@@ -70,27 +70,27 @@ Aspects:
 ## Output Format
 
 ```markdown
-## 代码审查报告
+## Code Review Report
 
-### 概要
-- 总体评价: [Good/Needs Work/Critical Issues]
-- 检查文件: [Count]
+### Summary
+- Overall Assessment: [Good/Needs Work/Critical Issues]
+- Files Reviewed: [Count]
 
-### 问题清单
+### Issue List
 
-#### 🔴 严重问题
+#### Critical Issues
 - [Issue]: Description and suggestion
 
-#### 🟡 警告
+#### Warnings
 - [Issue]: Description and suggestion
 
-#### 🟢 建议
+#### Suggestions
 - [Suggestion]: Description
 
-### 亮点
+### Highlights
 - [Positive finding]
 
-### 总结建议
+### Summary Recommendations
 [Summary of key improvements needed]
 ```
 
@@ -107,7 +107,7 @@ At the end of every response:
 
 ```
 ---
-**建议下一步**: 
-- 根据审查结果，输入 `#fix` 修复问题
-- 审查通过后，输入 `#test` 进行测试
+**Suggested Next Steps**: 
+- Based on review results, enter `#fix` to fix issues
+- After review passes, enter `#test` for testing
 ```

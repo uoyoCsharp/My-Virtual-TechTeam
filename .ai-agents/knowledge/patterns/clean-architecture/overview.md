@@ -12,23 +12,24 @@ Nothing in an inner circle can know anything about something in an outer circle.
 
 ## The Layers
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                    Frameworks & Drivers                      │
-│                  (Web, UI, DB, Devices)                      │
-│    ┌─────────────────────────────────────────────────────┐  │
-│    │                Interface Adapters                    │  │
-│    │          (Controllers, Gateways, Presenters)        │  │
-│    │    ┌─────────────────────────────────────────────┐  │  │
-│    │    │            Application Business              │  │  │
-│    │    │               (Use Cases)                    │  │  │
-│    │    │    ┌─────────────────────────────────────┐  │  │  │
-│    │    │    │       Enterprise Business            │  │  │  │
-│    │    │    │          (Entities)                  │  │  │  │
-│    │    │    └─────────────────────────────────────┘  │  │  │
-│    │    └─────────────────────────────────────────────┘  │  │
-│    └─────────────────────────────────────────────────────┘  │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TB
+    subgraph L4["Frameworks & Drivers"]
+        direction TB
+        FD["Web, UI, DB, Devices"]
+        subgraph L3["Interface Adapters"]
+            direction TB
+            IA["Controllers, Gateways, Presenters"]
+            subgraph L2["Application Business"]
+                direction TB
+                UC["Use Cases"]
+                subgraph L1["Enterprise Business"]
+                    direction TB
+                    E["Entities"]
+                end
+            end
+        end
+    end
 ```
 
 ### 1. Entities (Enterprise Business Rules)
@@ -106,17 +107,10 @@ Clear separation points between layers.
 
 Inner layers define abstractions; outer layers implement them.
 
-```
-┌─────────────┐      ┌─────────────┐
-│  Use Case   │ ──── │  Interface  │
-│             │      │  (abstract) │
-└─────────────┘      └─────────────┘
-                           ▲
-                           │ implements
-                     ┌─────────────┐
-                     │   Gateway   │
-                     │(outer layer)│
-                     └─────────────┘
+```mermaid
+flowchart LR
+    UC[Use Case] --> IF[Interface abstract]
+    GW[Gateway outer layer] -.->|implements| IF
 ```
 
 ### Input/Output Data

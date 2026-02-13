@@ -35,19 +35,19 @@ Present structured analysis with clear sections
 ### Output Format
 
 ```markdown
-## 需求分析结果
+## Requirements Analysis Results
 
-### 核心功能
+### Core Features
 - [Feature 1]: Description
 - [Feature 2]: Description
 
-### 业务规则
+### Business Rules
 - [Rule 1]: Description
 
-### 领域概念
+### Domain Concepts
 - [Concept 1]: Description
 
-### 待澄清问题
+### Questions for Clarification
 - [ ] Question 1
 - [ ] Question 2
 ```
@@ -94,7 +94,7 @@ At the end of every response:
 
 ```
 ---
-**建议下一步**: 
-- 确认分析结果后，输入 `#design` 启动架构设计
-- 如有疑问，输入 `#clarify` 进行需求澄清
+**Suggested Next Steps**: 
+- After confirming analysis results, enter `#design` to start architecture design
+- If questions remain, enter `#clarify` for requirement clarification
 ```

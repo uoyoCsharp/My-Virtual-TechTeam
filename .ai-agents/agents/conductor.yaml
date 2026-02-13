@@ -34,7 +34,7 @@ boundaries:
 # Skills
 # -----------------------------------------------------------------------------
 skills:
-  - project-detection
+  - project-initialization
 
 # -----------------------------------------------------------------------------
 # Interface
@@ -52,6 +52,10 @@ outputs:
 # Commands
 # -----------------------------------------------------------------------------
 commands:
+  init:
+    description: Initialize project and analyze project structure
+    trigger: "#init"
+
   start:
     description: Start a new development workflow
     trigger: "#start"

@@ -67,23 +67,23 @@ Analyze test coverage.
 ## Output Format
 
 ```markdown
-## 测试设计
+## Test Design
 
-### 测试用例
+### Test Cases
 
-| ID | 场景 | 输入 | 预期输出 |
-|----|------|------|----------|
+| ID | Scenario | Input | Expected Output |
+|----|----------|-------|------------------|
 | T1 | [Scenario] | [Input] | [Expected] |
 
-### 测试代码
+### Test Code
 
 \`\`\`language
 // Test implementation
 \`\`\`
 
-### 覆盖分析
-- 已覆盖: [List]
-- 待覆盖: [List]
+### Coverage Analysis
+- Covered: [List]
+- To Be Covered: [List]
 ```
 
 ## Boundaries
@@ -99,7 +99,7 @@ At the end of every response:
 
 ```
 ---
-**建议下一步**: 
-- 测试通过后，开发流程完成
-- 发现问题，输入 `#fix` 进行修复
+**Suggested Next Steps**: 
+- After tests pass, development workflow is complete
+- If issues found, enter `#fix` to fix them
 ```

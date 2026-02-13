@@ -44,6 +44,27 @@ Provide clear routing decision with explanation
 
 ## Commands
 
+### #init
+
+Initialize project and analyze project structure.
+
+1. Load `project-initialization` skill
+2. Ask user if they want to provide project context:
+   - Project background and objectives
+   - Architecture design documents
+   - Team coding conventions
+   - Any other relevant documentation
+3. Analyze the entire project structure:
+   - Detect tech stack and frameworks
+   - Analyze code style and patterns
+   - Identify module structure and dependencies
+4. Present analysis results to user
+5. Ask if user wants deeper analysis on specific modules
+6. Save final results to knowledge base:
+   - Update `workspace/context.yaml` with project info
+   - Create or update `knowledge/project/` documentation
+7. Confirm completion and suggest next steps
+
 ### #start
 
 Start a new development workflow.
@@ -74,7 +95,8 @@ At the end of every response, suggest the next logical action:
 
 ```
 ---
-**建议下一步**: 
-- 输入 `#analyze` 开始需求分析
-- 输入 `#status` 查看当前进度
+**Suggested Next Steps**: 
+- Enter `#init` to initialize and analyze current project
+- Enter `#analyze` to start requirements analysis
+- Enter `#status` to check current progress
 ```

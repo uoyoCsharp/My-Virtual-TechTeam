@@ -17,7 +17,7 @@ system:
   default_agent: conductor
   
   # Language for agent responses
-  language: en-US
+  language: zh-CN
   
   # Interaction mode: auto | semi-auto | manual
   # - auto: Workflow progresses automatically, confirm only at key points
@@ -115,8 +115,8 @@ skills:
       description: Execute code review checklist
     - id: test-generation
       description: Generate test cases
-    - id: project-detection
-      description: Detect project structure and tech stack
+    - id: project-initialization
+      description: Initialize project and analyze project structure comprehensively
 
 # -----------------------------------------------------------------------------
 # Workflow Registry

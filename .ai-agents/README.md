@@ -59,7 +59,7 @@ Skills are modular capabilities loaded on-demand:
 - `template-generation.md` - Generate code from templates
 - `review-execution.md` - Execute review checklists
 - `test-generation.md` - Generate test cases
-- `project-detection.md` - Detect project structure
+- `project-initialization.md` - Initialize project and analyze structure
 
 ## Workflows
 
