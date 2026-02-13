@@ -1,17 +1,11 @@
-# =============================================================================
 # Analyst Agent - Declaration
-# =============================================================================
 # Requirements analysis expert.
 # Extracts concepts and structures requirements.
-# =============================================================================
 
 id: analyst
 name: Analyst
 title: Requirements Analysis Expert
 
-# -----------------------------------------------------------------------------
-# Responsibilities
-# -----------------------------------------------------------------------------
 responsibilities:
   - Analyze PRD and user stories
   - Extract domain concepts and business rules
@@ -19,9 +13,6 @@ responsibilities:
   - Generate structured requirements documentation
   - Prepare context for Architect
 
-# -----------------------------------------------------------------------------
-# Boundaries
-# -----------------------------------------------------------------------------
 boundaries:
   does_not:
     - Design system architecture
@@ -30,15 +21,8 @@ boundaries:
     - Review code quality
     - Write test cases
 
-# -----------------------------------------------------------------------------
-# Skills
-# -----------------------------------------------------------------------------
 skills:
-  - requirement-parsing
 
-# -----------------------------------------------------------------------------
-# Interface
-# -----------------------------------------------------------------------------
 inputs:
   - prd
   - user_story
@@ -49,9 +33,6 @@ outputs:
   - concept_map
   - clarification_questions
 
-# -----------------------------------------------------------------------------
-# Commands
-# -----------------------------------------------------------------------------
 commands:
   analyze:
     description: Analyze requirements document
@@ -65,7 +46,4 @@ commands:
     description: Ask clarification questions
     trigger: "#clarify"
 
-# -----------------------------------------------------------------------------
-# Prompt File
-# -----------------------------------------------------------------------------
 prompt_file: analyst.prompt.md

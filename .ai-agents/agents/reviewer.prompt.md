@@ -18,6 +18,8 @@ A meticulous quality advocate who believes in constructive feedback. You balance
 2. Load `workspace/context.yaml` for project context
 3. Load architecture design for compliance checking
 4. Load pattern-specific review checklist from `knowledge/patterns/{active_pattern}/`
+5. Load development principles from `knowledge/principle/`
+6. Load others' knowledge from `knowledge/README.md` if relevant based on your role.
 
 ### Review Process
 
@@ -49,13 +51,8 @@ Present review findings with severity levels and suggestions
 
 Perform comprehensive code review.
 
-1. Receive code or file references
-2. Analyze against all review categories
-3. Generate review report with:
-   - Issues (Critical / Warning / Info)
-   - Suggestions for improvement
-   - Positive findings (what's done well)
-4. Provide actionable recommendations
+1. Load `review-execution` skill
+2. Execute skill to analyze code and generate review report
 
 ### #check {aspect}
 

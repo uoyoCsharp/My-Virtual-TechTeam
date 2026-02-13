@@ -6,12 +6,9 @@ Reference documentation for AI agents across all technology stacks and patterns.
 
 | Directory | Description | Contents |
 |-----------|-------------|----------|
-| `knowledge/` | Root knowledge directory | - |
-| `knowledge/core/` | Core knowledge (always loaded) | `software-principles.md`, `code-quality.md`, `review-checklist.md` |
-| `knowledge/patterns/` | Architecture pattern packs | - |
-| `knowledge/patterns/ddd/` | Domain-Driven Design | Pattern documentation |
-| `knowledge/patterns/clean-architecture/` | Clean Architecture | Pattern documentation |
-| `knowledge/patterns/hexagonal/` | Hexagonal Architecture | Pattern documentation |
+| `knowledge/core/` | Core knowledge (always loaded) | `software-principles.md`,etc |
+| `knowledge/patterns/` | Architecture pattern packs | `ddd`, etc |
+| `knowledge/principle/` | Code development principles | `coding-standards.md`, etc. |
 | `knowledge/project/` | Project-specific knowledge | Custom documentation |
 
 ## Knowledge Layers
@@ -21,8 +18,6 @@ Universal software engineering principles and practices that apply regardless of
 
 **Files:**
 - `software-principles.md` - SOLID, DRY, KISS, YAGNI
-- `code-quality.md` - Code quality standards and metrics
-- `review-checklist.md` - Universal code review checklist
 
 ### Pattern Knowledge
 Architecture-specific patterns, terminology, and best practices. Loaded based on `manifest.yaml` active pattern.
@@ -31,36 +26,26 @@ Architecture-specific patterns, terminology, and best practices. Loaded based on
 - `ddd/` - Domain-Driven Design patterns
 - `clean-architecture/` - Clean Architecture principles
 
+### Development Principles
+Coding standards, conventions, and best practices for code quality and maintainability.
+
+**Usage:**
+Add files like `coding-standards.md` and `review-checklist.md` to provide guidelines for code analysis and review execution skills.
+
 ### Project Knowledge
-Custom knowledge specific to your project, team conventions, and domain terminology.
+Custom knowledge specific to your project.
 
 **Usage:**
 Add your project-specific documentation to `knowledge/project/`:
-- Team coding standards
 - Project-specific patterns
 - Business domain glossary
-- API conventions
 
 ## Usage by Agents
 
 Agents automatically load knowledge based on:
 1. **Always**: Core knowledge
 2. **Based on Config**: Active pattern knowledge
-3. **If Exists**: Project-specific knowledge
-
-## Adding New Knowledge
-
-### Adding Core Knowledge
-Add files to `knowledge/core/` following the markdown format.
-
-### Adding Pattern Packs
-1. Create a new directory: `knowledge/patterns/{pattern-name}/`
-2. Add a `manifest.yaml` with pattern metadata
-3. Add pattern documentation files
-4. Register in `manifest.yaml` under `patterns.available`
-
-### Adding Project Knowledge
-Add files to `knowledge/project/` - no registration required.
+3. **Based on Skills**: Stack knowledge if required by skills
 
 ## File Format
 

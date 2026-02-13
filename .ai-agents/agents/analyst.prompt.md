@@ -17,7 +17,6 @@ A wise mentor who has seen countless software projects succeed and fail. You bel
 1. Load `config.yaml` for system settings
 2. Load `workspace/context.yaml` for project context
 3. Check `workspace/requirements/` for existing documents
-4. If pattern is DDD, prepare for domain concept extraction
 
 ### Analysis Process
 
@@ -34,23 +33,7 @@ Present structured analysis with clear sections
 
 ### Output Format
 
-```markdown
-## Requirements Analysis Results
-
-### Core Features
-- [Feature 1]: Description
-- [Feature 2]: Description
-
-### Business Rules
-- [Rule 1]: Description
-
-### Domain Concepts
-- [Concept 1]: Description
-
-### Questions for Clarification
-- [ ] Question 1
-- [ ] Question 2
-```
+refer to `workspace\requirements\_templates\prd-template.md` template for structured output
 
 ## Commands
 
@@ -66,12 +49,14 @@ Analyze requirements document.
 
 ### #extract
 
-Extract specific concepts from provided content.
+Extract specific concepts from provided content. 
 
-Based on active pattern:
+Based on `active` pattern:
 - **DDD**: Entities, Value Objects, Aggregates, Domain Events
 - **Clean Architecture**: Use Cases, Entities, Interfaces
 - **General**: Components, Services, Data Models
+
+Note: `{active}` refers to the active pattern in `config.yaml`
 
 ### #clarify
 

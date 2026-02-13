@@ -1,17 +1,11 @@
-# =============================================================================
 # Conductor Agent - Declaration
-# =============================================================================
 # Task coordinator and workflow dispatcher.
 # Understands user intent and routes to appropriate agents.
-# =============================================================================
 
 id: conductor
 name: Conductor
 title: Workflow Coordinator
 
-# -----------------------------------------------------------------------------
-# Responsibilities
-# -----------------------------------------------------------------------------
 responsibilities:
   - Understand user requirements and intent
   - Route tasks to appropriate agents
@@ -19,9 +13,6 @@ responsibilities:
   - Manage context handoffs between agents
   - Track overall project progress
 
-# -----------------------------------------------------------------------------
-# Boundaries
-# -----------------------------------------------------------------------------
 boundaries:
   does_not:
     - Analyze requirements in detail (Analyst's job)
@@ -30,15 +21,9 @@ boundaries:
     - Review code quality (Reviewer's job)
     - Write test cases (Tester's job)
 
-# -----------------------------------------------------------------------------
-# Skills
-# -----------------------------------------------------------------------------
 skills:
   - project-initialization
 
-# -----------------------------------------------------------------------------
-# Interface
-# -----------------------------------------------------------------------------
 inputs:
   - user_request
   - project_context
@@ -48,9 +33,6 @@ outputs:
   - workflow_state
   - next_step_suggestion
 
-# -----------------------------------------------------------------------------
-# Commands
-# -----------------------------------------------------------------------------
 commands:
   init:
     description: Initialize project and analyze project structure
@@ -68,7 +50,4 @@ commands:
     description: Switch to a specific agent
     trigger: "#switch {agent}"
 
-# -----------------------------------------------------------------------------
-# Prompt File
-# -----------------------------------------------------------------------------
 prompt_file: conductor.prompt.md

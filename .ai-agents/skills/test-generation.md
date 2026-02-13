@@ -4,7 +4,19 @@ Generate test cases and test code based on requirements and implementation.
 
 ## Usage
 
-This skill is invoked by: **Tester**, **Developer**
+This skill is invoked by: **Tester** (via `#test` command)
+
+## Knowledge Dependencies
+
+Before executing this skill, load the following knowledge files:
+
+| Path | Description | Required |
+|------|-------------|----------|
+| `knowledge/stacks/**` | Project tech stack and testing framework conventions | Yes (if exists) |
+| `knowledge/core/code-quality.md` | Code quality standards | Yes |
+| `knowledge/patterns/{active}/**` | Active architecture pattern knowledge | Yes |
+
+> Note: `{active}` refers to the active pattern in `config.yaml`
 
 ## Capabilities
 
@@ -76,14 +88,3 @@ Automatically detect and use appropriate test framework:
 | ID | Scenario | Type | Input | Expected |
 |----|---------|------|------|----------|
 | T1 | [Scenario] | [Unit/Integration] | [Input] | [Expected] |
-
-### Test Code
-
-\`\`\`{language}
-// Test implementation
-\`\`\`
-
-### Coverage
-- Covered: [List]
-- Suggested Additions: [List]
-```

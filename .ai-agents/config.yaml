@@ -105,12 +105,6 @@ agents:
 # -----------------------------------------------------------------------------
 skills:
   core:
-    - id: code-analysis
-      description: Analyze code structure and dependencies
-    - id: requirement-parsing
-      description: Parse and structure requirements
-    - id: template-generation
-      description: Generate code from templates
     - id: review-execution
       description: Execute code review checklist
     - id: test-generation

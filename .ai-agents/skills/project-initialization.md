@@ -95,11 +95,14 @@ Save analysis results to AI framework knowledge base:
 **Files to Create/Update:**
 
 ```
+knowledge/principle/
+├── coding-standards.md   # Auto-generated: Coding standards for detected stack
+├── framework-conventions.md  # Auto-generated: Framework best practices (optional)
+└── review-checklist.md  # Auto-generated: Review checklist for detected stack (optional)
+
 knowledge/project/
-├── overview.md           # Project overview and objectives
 ├── tech-stack.md         # Technology stack details
 ├── architecture.md       # Architecture patterns and structure
-├── conventions.md        # Coding conventions and standards
 └── glossary.md           # Domain-specific terminology
 
 workspace/
@@ -117,15 +120,9 @@ project:
 tech_stack:
   language: [Primary language(s)]
   framework: [Framework(s)]
-  build_tool: [Build tool(s)]
   
 architecture:
   pattern: [Detected pattern]
-  modules: [Module list]
-  
-conventions:
-  naming: [Naming convention]
-  style: [Code style]
 ```
 
 ## Execution Flow
@@ -197,11 +194,6 @@ project/
 - Enter `#start` to begin a development workflow
 - Enter `#status` to check project status
 ```
-
-## Integration with Other Skills
-
-This skill can invoke:
-- `code-analysis` - For code structure analysis
 
 ## Notes
 

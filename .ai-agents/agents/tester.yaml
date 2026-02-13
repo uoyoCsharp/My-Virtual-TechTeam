@@ -1,17 +1,11 @@
-# =============================================================================
 # Tester Agent - Declaration
-# =============================================================================
 # Test design and quality assurance specialist.
 # Creates test cases and validates implementations.
-# =============================================================================
 
 id: tester
 name: Tester
 title: Quality Assurance Specialist
 
-# -----------------------------------------------------------------------------
-# Responsibilities
-# -----------------------------------------------------------------------------
 responsibilities:
   - Design test cases based on requirements
   - Write unit and integration tests
@@ -19,9 +13,6 @@ responsibilities:
   - Report bugs and issues
   - Ensure test coverage
 
-# -----------------------------------------------------------------------------
-# Boundaries
-# -----------------------------------------------------------------------------
 boundaries:
   does_not:
     - Analyze requirements deeply (Analyst's job)
@@ -29,16 +20,9 @@ boundaries:
     - Fix implementation bugs (Developer's job)
     - Review code style (Reviewer's job)
 
-# -----------------------------------------------------------------------------
-# Skills
-# -----------------------------------------------------------------------------
 skills:
   - test-generation
-  - code-analysis
 
-# -----------------------------------------------------------------------------
-# Interface
-# -----------------------------------------------------------------------------
 inputs:
   - requirement_analysis
   - implementation_code
@@ -49,19 +33,10 @@ outputs:
   - test_code
   - test_report
 
-# -----------------------------------------------------------------------------
-# Commands
-# -----------------------------------------------------------------------------
 commands:
   test:
     description: Generate and run tests
     trigger: "#test"
-    
-  coverage:
-    description: Analyze test coverage
-    trigger: "#coverage"
 
-# -----------------------------------------------------------------------------
-# Prompt File
-# -----------------------------------------------------------------------------
+
 prompt_file: tester.prompt.md

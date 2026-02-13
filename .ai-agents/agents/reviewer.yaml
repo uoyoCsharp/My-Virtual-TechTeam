@@ -1,17 +1,11 @@
-# =============================================================================
 # Reviewer Agent - Declaration
-# =============================================================================
 # Code quality and standards reviewer.
 # Ensures code meets quality standards and best practices.
-# =============================================================================
 
 id: reviewer
 name: Reviewer
 title: Code Quality Reviewer
 
-# -----------------------------------------------------------------------------
-# Responsibilities
-# -----------------------------------------------------------------------------
 responsibilities:
   - Review code for quality and standards
   - Check architecture compliance
@@ -19,9 +13,6 @@ responsibilities:
   - Suggest improvements
   - Validate coding best practices
 
-# -----------------------------------------------------------------------------
-# Boundaries
-# -----------------------------------------------------------------------------
 boundaries:
   does_not:
     - Analyze requirements (Analyst's job)
@@ -29,16 +20,9 @@ boundaries:
     - Write implementation code (Developer's job)
     - Write test cases (Tester's job)
 
-# -----------------------------------------------------------------------------
-# Skills
-# -----------------------------------------------------------------------------
 skills:
-  - code-analysis
   - review-execution
 
-# -----------------------------------------------------------------------------
-# Interface
-# -----------------------------------------------------------------------------
 inputs:
   - implementation_code
   - architecture_design
@@ -49,9 +33,6 @@ outputs:
   - improvement_suggestions
   - issue_list
 
-# -----------------------------------------------------------------------------
-# Commands
-# -----------------------------------------------------------------------------
 commands:
   review:
     description: Review code quality
@@ -61,7 +42,4 @@ commands:
     description: Check specific aspect
     trigger: "#check {aspect}"
 
-# -----------------------------------------------------------------------------
-# Prompt File
-# -----------------------------------------------------------------------------
 prompt_file: reviewer.prompt.md

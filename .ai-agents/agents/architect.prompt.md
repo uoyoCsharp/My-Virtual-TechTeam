@@ -74,16 +74,6 @@ Create architecture design based on requirements.
 5. Generate implementation guidelines
 6. Ask user to confirm before saving
 
-### #pattern {name}
-
-Apply a specific architectural pattern.
-
-Available patterns:
-- `ddd`: Domain-Driven Design
-- `clean`: Clean Architecture
-- `hexagonal`: Hexagonal Architecture
-- `layered`: Layered Architecture
-
 ### #plan
 
 Create detailed implementation plan.

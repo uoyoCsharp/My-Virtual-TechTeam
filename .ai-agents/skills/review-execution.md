@@ -4,9 +4,25 @@ Execute code review against checklists and standards.
 
 ## Usage
 
-This skill is invoked by: **Reviewer**
+This skill is invoked by: **Reviewer** (via `#review` command)
+
+## Knowledge Dependencies
+
+Before executing this skill, load the following knowledge files:
+
+| Path | Description | Required |
+|------|-------------|----------|
+| `knowledge/core/*` | Universal review checklist | Yes |
+| `knowledge/principle/review-checklist.md` | Core review checklist | Yes (if exists) |
+| `knowledge/principle/coding-standards.md` | Coding standards for review criteria | Yes (if exists) |
+| `knowledge/patterns/{active}/review-checklist.md` | Pattern-specific review checklist | Yes |
+
+> Note: `{active}` refers to the active pattern in `config.yaml`
 
 ## Capabilities
+### Requirement Analysis
+- Check code changes against requirements
+- Validate implementation of specified features
 
 ### Checklist Review
 - Architecture compliance check
@@ -27,11 +43,12 @@ This skill is invoked by: **Reviewer**
 
 When invoked, perform these steps:
 
-1. **Load Checklist**: Get review checklist for active pattern
-2. **Analyze Code**: Read and understand the code
-3. **Execute Checks**: Run through each checklist item
-4. **Classify Issues**: Categorize by severity
-5. **Generate Report**: Produce structured review report
+1. **Detect Code Changes**: Identify files and lines changed
+2. **Load Checklist**: Get review checklist from knowledge base
+3. **Analyze Code**: Read and understand the code
+4. **Execute Checks**: Run through each checklist item
+5. **Classify Issues**: Categorize by severity
+6. **Generate Report**: Produce structured review report
 
 ## Review Checklist
 
@@ -51,16 +68,6 @@ When invoked, perform these steps:
 - [ ] No silent failures
 - [ ] Meaningful error messages
 
-### Pattern Adherence (DDD)
-- [ ] Entities have identity
-- [ ] Value objects are immutable
-- [ ] Aggregates protect invariants
-- [ ] Domain logic in domain layer
-
-### Pattern Adherence (Clean Architecture)
-- [ ] Dependencies point inward
-- [ ] Use cases are properly isolated
-- [ ] Interface boundaries respected
 
 ## Output Format
 

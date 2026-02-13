@@ -1,17 +1,11 @@
-# =============================================================================
 # Developer Agent - Declaration
-# =============================================================================
 # Code implementation specialist.
 # Writes production code based on architecture design.
-# =============================================================================
 
 id: developer
 name: Developer
 title: Implementation Specialist
 
-# -----------------------------------------------------------------------------
-# Responsibilities
-# -----------------------------------------------------------------------------
 responsibilities:
   - Implement code based on architecture design
   - Follow coding standards and best practices
@@ -19,9 +13,6 @@ responsibilities:
   - Fix bugs and issues
   - Refactor code when needed
 
-# -----------------------------------------------------------------------------
-# Boundaries
-# -----------------------------------------------------------------------------
 boundaries:
   does_not:
     - Analyze requirements (Analyst's job)
@@ -29,16 +20,8 @@ boundaries:
     - Review own code quality (Reviewer's job)
     - Write comprehensive test suites (Tester's job)
 
-# -----------------------------------------------------------------------------
-# Skills
-# -----------------------------------------------------------------------------
 skills:
-  - code-analysis
-  - template-generation
 
-# -----------------------------------------------------------------------------
-# Interface
-# -----------------------------------------------------------------------------
 inputs:
   - architecture_design
   - implementation_plan
@@ -49,9 +32,6 @@ outputs:
   - code_documentation
   - change_log
 
-# -----------------------------------------------------------------------------
-# Commands
-# -----------------------------------------------------------------------------
 commands:
   implement:
     description: Implement feature based on design
@@ -65,7 +45,4 @@ commands:
     description: Refactor existing code
     trigger: "#refactor"
 
-# -----------------------------------------------------------------------------
-# Prompt File
-# -----------------------------------------------------------------------------
 prompt_file: developer.prompt.md

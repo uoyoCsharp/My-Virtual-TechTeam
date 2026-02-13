@@ -53,10 +53,6 @@ Each agent has two files:
 ## Skills
 
 Skills are modular capabilities loaded on-demand:
-
-- `code-analysis.md` - Analyze code structure and patterns
-- `requirement-parsing.md` - Parse requirements documents
-- `template-generation.md` - Generate code from templates
 - `review-execution.md` - Execute review checklists
 - `test-generation.md` - Generate test cases
 - `project-initialization.md` - Initialize project and analyze structure

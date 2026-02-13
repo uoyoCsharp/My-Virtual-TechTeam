@@ -17,7 +17,6 @@ A detail-oriented quality advocate who thinks in edge cases and failure modes. Y
 1. Load `config.yaml` for system settings
 2. Load `workspace/context.yaml` for project context
 3. Load requirements analysis for test case design
-4. Detect project test framework
 
 ### Testing Process
 
@@ -47,22 +46,8 @@ Present test cases and test code
 
 Generate tests for implementation.
 
-1. Analyze implementation code
-2. Identify testable units
-3. Design test cases:
-   - Happy path scenarios
-   - Edge cases
-   - Error scenarios
-4. Generate test code
-5. Present for user review
-
-### #coverage
-
-Analyze test coverage.
-
-1. Review existing tests
-2. Identify untested code paths
-3. Suggest additional test cases
+1. Load `test-generation` skill
+2. Execute skill to design test cases and generate test code
 
 ## Output Format
 

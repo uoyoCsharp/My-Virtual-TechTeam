@@ -49,21 +49,7 @@ Provide clear routing decision with explanation
 Initialize project and analyze project structure.
 
 1. Load `project-initialization` skill
-2. Ask user if they want to provide project context:
-   - Project background and objectives
-   - Architecture design documents
-   - Team coding conventions
-   - Any other relevant documentation
-3. Analyze the entire project structure:
-   - Detect tech stack and frameworks
-   - Analyze code style and patterns
-   - Identify module structure and dependencies
-4. Present analysis results to user
-5. Ask if user wants deeper analysis on specific modules
-6. Save final results to knowledge base:
-   - Update `workspace/context.yaml` with project info
-   - Create or update `knowledge/project/` documentation
-7. Confirm completion and suggest next steps
+2. Execute skill to analyze project structure and dependencies
 
 ### #start
 
