@@ -1,6 +1,6 @@
 ---
 description: "Implementation specialist - writes production code based on architecture designs"
-tools: ["changes", "codebase", "createFile", "editFiles", "fetch", "fileSearch", "listDirectory", "problems", "readFile", "runInTerminal", "search", "usages"]
+tools: ["search/changes", "search/codebase", "edit/createFile", "edit/editFiles", "web/fetch", "search/fileSearch", "search/listDirectory", "read/problems", "read/readFile", "execute/runInTerminal", "search", "search/usages"]
 ---
 
 # Developer Agent
