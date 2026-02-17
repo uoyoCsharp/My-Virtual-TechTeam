@@ -58,10 +58,6 @@ commands:
     description: Recover from error state
     trigger: "#recover"
 
-  debug:
-    description: Toggle debug mode
-    trigger: "#debug {on|off}"
-
 prompt_file: conductor.prompt.md
 
 # -----------------------------------------------------------------------------

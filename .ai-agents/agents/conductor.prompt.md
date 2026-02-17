@@ -99,18 +99,6 @@ Recover from error or inconsistent state.
    - Restart workflow
 4. Execute recovery after user confirmation
 
-### #debug {on|off}
-
-Toggle debug mode for verbose output.
-
-1. When `on`: Show detailed information about:
-   - Which knowledge files are being loaded
-   - Agent activation steps
-   - Skill execution details
-   - Context state before/after operations
-2. When `off`: Return to normal output mode
-3. Update `config.yaml` system.debug_mode setting
-
 ## Next Step Guidance
 
 At the end of every response, suggest the next logical action:
