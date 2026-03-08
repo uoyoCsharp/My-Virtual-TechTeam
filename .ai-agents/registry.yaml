@@ -1,236 +1,175 @@
-# =============================================================================
-# AI Agent Framework - Unified Resource Registry
-# =============================================================================
-# Single entry point for all resources. LLM should read this file first for
-# resource discovery.
-# =============================================================================
+# AI Agent Framework Registry
+# Single source of truth for framework configuration
 
-version: "2.0"
-last_updated: "2026-02-16T00:00:00Z"
+version: "5.0"
+last_updated: "2026-03-08"
 
-# -----------------------------------------------------------------------------
-# Resource Type Definitions
-# -----------------------------------------------------------------------------
-resource_types:
-  agent:
-    location: agents/
-    pattern: "*.yaml"
-    companion: "*.prompt.md"
-    base_file: "_base.md"
-    discoverable: true
-    
-  skill:
-    location: skills/
-    pattern: "*.md"
-    has_frontmatter: true
-    system_skills: "_system/"
-    discoverable: true
-    
-  workflow:
-    location: workflows/
-    pattern: "*.yaml"
-    discoverable: true
-    
-  knowledge:
-    location: knowledge/
-    index_file: manifest.yaml
-    discoverable: true
-    
-  workspace:
-    location: workspace/
-    state_dir: state/
-    context_dir: context/
-    history_dir: history/
-    discoverable: true
+# ============================================================
+# Agent Registry
+# ============================================================
+agents:
+  - id: conductor
+    name: Conductor
+    file: agents/conductor.md
+    commands: [init, status, config, sync-context, update-framework]
 
-# -----------------------------------------------------------------------------
-# Quick Index (LLM preferred reading)
-# -----------------------------------------------------------------------------
-quick_index:
-  # Agent Index
-  agents:
-    - id: conductor
-      file: agents/conductor.yaml
-      prompt: agents/conductor.prompt.md
-      description: Workflow coordinator and task dispatcher
-      entry_commands: ["#start", "#init", "#status", "#pattern", "#recover"]
-      
-    - id: analyst
-      file: agents/analyst.yaml
-      prompt: agents/analyst.prompt.md
-      description: Requirements analysis and concept extraction
-      entry_commands: ["#analyze", "#extract", "#clarify"]
-      
-    - id: architect
-      file: agents/architect.yaml
-      prompt: agents/architect.prompt.md
-      description: System architecture and technical design
-      entry_commands: ["#design", "#plan"]
-      
-    - id: developer
-      file: agents/developer.yaml
-      prompt: agents/developer.prompt.md
-      description: Code implementation specialist
-      entry_commands: ["#implement", "#fix", "#refactor"]
-      
-    - id: reviewer
-      file: agents/reviewer.yaml
-      prompt: agents/reviewer.prompt.md
-      description: Review code quality and standards compliance
-      entry_commands: ["#review", "#check"]
-      
-    - id: tester
-      file: agents/tester.yaml
-      prompt: agents/tester.prompt.md
-      description: Test design and quality assurance
-      entry_commands: ["#test"]
+  - id: analyst
+    name: Analyst
+    file: agents/analyst.md
+    commands: [analyze, analyze-code]
 
-  # Skill Index
-  skills:
-    core:
-      - id: project-initialization
-        file: skills/project-initialization.md
-        agents: [conductor]
-        trigger: "#init"
-        
-      - id: review-execution
-        file: skills/review-execution.md
-        agents: [reviewer]
-        trigger: "#review"
-        
-      - id: test-generation
-        file: skills/test-generation.md
-        agents: [tester]
-        trigger: "#test"
-        
-    system:
-      - id: context-loader
-        file: skills/_system/context-loader.md
-        auto_invoke: on_activation
-        
-      - id: archive-manager
-        file: skills/_system/archive-manager.md
-        triggers: [on_session_end, on_change_complete]
+  - id: architect
+    name: Architect
+    file: agents/architect.md
+    commands: [design]
 
-  # Workflow Index
-  workflows:
-    - id: requirement-to-code
-      file: workflows/requirement-to-code.yaml
-      phases: [analyze, design, implement, review, test]
-      description: Complete development cycle from requirements to code
-      
-    - id: code-review
-      file: workflows/code-review.yaml
-      phases: [analyze, review, report]
-      description: Code quality review workflow
+  - id: developer
+    name: Developer
+    file: agents/developer.md
+    commands: [implement, fix, refactor]
 
-  # Knowledge Pack Index
-  knowledge_packs:
-    - id: core
-      path: knowledge/core/
-      always_load: true
-      priority: 1
-      files: [software-principles.md]
-      summary: Universal software engineering principles
-      
-    - id: ddd
-      path: knowledge/patterns/ddd/
-      conditional: "pattern.active == 'ddd'"
-      priority: 2
-      files: [overview.md, tactical-patterns.md, review-checklist.md]
-      summary: Domain-Driven Design tactical and strategic patterns
-      
-    - id: clean-architecture
-      path: knowledge/patterns/clean-architecture/
-      conditional: "pattern.active == 'clean-architecture'"
-      priority: 2
-      files: [overview.md, review-checklist.md]
-      summary: Clean Architecture dependency inversion and layer separation
-      
-    - id: principle
-      path: knowledge/principle/
-      always_load: false
-      priority: 3
-      generated: true
-      summary: Project-specific coding standards and conventions
-      
-    - id: project
-      path: knowledge/project/
-      always_load: false
-      priority: 4
-      summary: Custom project knowledge
+  - id: reviewer
+    name: Reviewer
+    file: agents/reviewer.md
+    commands: [review]
 
-# -----------------------------------------------------------------------------
-# Context Dependency Graph
-# -----------------------------------------------------------------------------
-context_graph:
-  conductor:
-    requires:
-      - knowledge/core/
+  - id: tester
+    name: Tester
+    file: agents/tester.md
+    commands: [test]
+
+# ============================================================
+# Command-to-File Mapping
+# Each command maps to its specific file for efficient loading
+# ============================================================
+commands:
+  # Conductor commands
+  init:
+    agent: conductor
+    file: agents/_commands/init.md
+  status:
+    agent: conductor
+    file: agents/_commands/status.md
+  config:
+    agent: conductor
+    file: agents/_commands/config.md
+  sync-context:
+    agent: conductor
+    file: agents/_commands/sync-context.md
+  update-framework:
+    agent: conductor
+    file: agents/_commands/update-framework.md
+
+  # Analyst commands
+  analyze:
+    agent: analyst
+    file: agents/_commands/analyze.md
+  analyze-code:
+    agent: analyst
+    file: agents/_commands/analyze-code.md
+
+  # Architect commands
+  design:
+    agent: architect
+    file: agents/_commands/design.md
+
+  # Developer commands
+  implement:
+    agent: developer
+    file: agents/_commands/implement.md
+  fix:
+    agent: developer
+    file: agents/_commands/fix.md
+  refactor:
+    agent: developer
+    file: agents/_commands/refactor.md
+
+  # Reviewer commands
+  review:
+    agent: reviewer
+    file: agents/_commands/review.md
+
+  # Tester commands
+  test:
+    agent: tester
+    file: agents/_commands/test.md
+
+# ============================================================
+# Context Level Definitions
+# ============================================================
+context_levels:
+  minimal:
+    description: "Essential context only"
+    sources:
       - workspace/state/session.yaml
       - workspace/context/project.yaml
-    outputs:
-      - workspace/state/session.yaml
-      
-  analyst:
-    requires:
-      - knowledge/core/
-      - workspace/requirements/
-    outputs:
-      - workspace/context/requirements.yaml
-      - workspace/artifacts/{change-id}/analysis.md
-      
-  architect:
-    requires:
-      - knowledge/core/
-      - knowledge/patterns/{active}/
-      - workspace/context/requirements.yaml
-    outputs:
-      - workspace/context/architecture.yaml
-      - workspace/artifacts/{change-id}/design.md
-      
-  developer:
-    requires:
-      - knowledge/core/
-      - knowledge/patterns/{active}/
-      - knowledge/principle/
-      - workspace/context/architecture.yaml
-    outputs:
-      - workspace/artifacts/{change-id}/implementation/
-      
-  reviewer:
-    requires:
-      - knowledge/core/
-      - knowledge/patterns/{active}/
-      - knowledge/principle/
-      - workspace/context/architecture.yaml
-    outputs:
-      - workspace/artifacts/{change-id}/review.md
-      
-  tester:
-    requires:
-      - knowledge/core/
-      - workspace/context/requirements.yaml
-    outputs:
-      - workspace/artifacts/{change-id}/tests/
+      - workspace/state/code-mapping.yaml
 
-# -----------------------------------------------------------------------------
-# Resource Discovery Protocol
-# -----------------------------------------------------------------------------
-discovery_protocol:
-  steps:
-    - step: 1
-      name: "Check quick index"
-      action: "Read registry.yaml → quick_index"
-      
-    - step: 2
-      name: "Check resource type definitions"
-      action: "Read registry.yaml → resource_types[{type}]"
-      
-    - step: 3
-      name: "Check directory manifest"
-      action: "Read manifest.yaml or _index.yaml in target directory"
-      
-    - step: 4
-      name: "Fallback discovery"
-      action: "List directory contents, infer structure from naming conventions"
+  moderate:
+    description: "Standard context for most tasks"
+    sources:
+      - workspace/state/session.yaml
+      - workspace/context/project.yaml
+      - workspace/context/architecture.yaml
+      - workspace/context/requirements.yaml
+
+  full:
+    description: "Complete context for complex tasks"
+    sources:
+      - knowledge/core/
+      - knowledge/patterns/{active}/
+
+# ============================================================
+# Workflows
+# ============================================================
+workflows:
+  - id: requirement-to-code
+    file: workflows/requirement-to-code.yaml
+    description: "Complete development workflow from PRD to tested implementation"
+
+  - id: code-review
+    file: workflows/code-review.yaml
+    description: "Standalone code review workflow"
+
+# ============================================================
+# Knowledge Packs
+# ============================================================
+knowledge:
+  core:
+    path: knowledge/core/
+    always_load: true
+    summary: Universal software engineering principles
+
+  patterns:
+    path: knowledge/patterns/
+    load: "based on config pattern.active"
+    summary: Architecture pattern knowledge packs
+
+  principle:
+    path: knowledge/principle/
+    load: "on implementation tasks"
+    summary: Project-specific coding standards
+
+  project:
+    path: knowledge/project/
+    load: "on demand"
+    summary: Custom project knowledge
+
+# ============================================================
+# Platform Adapters
+# ============================================================
+platforms:
+  claude_code:
+    command_prefix: "#"
+    entry_file: "CLAUDE.md"
+    features:
+      - persistent_memory
+      - direct_file_access
+      - slash_commands
+
+  github_copilot:
+    command_prefix: "#"
+    entry_file: ".github/agents/"
+    features:
+      - chat_interface
+      - file_references

@@ -1,30 +1,50 @@
-# Unified Manifest
-# Development Principles Knowledge Manifest
-
-# --- Identity ---
 id: "principle"
 type: "principle"
 name: "Development Principles"
 version: "1.0"
 description: "Project-specific coding standards and conventions"
 
-# --- Loading Behavior ---
+token_estimate:
+  total: variable
+  estimated_range: "500-3000"
+  breakdown:
+    - file: coding-standards.md
+      tokens: 1000-2000
+      load_priority: 1
+      summary: "Project coding standards (auto-generated based on tech stack)"
+    - file: review-checklist.md
+      tokens: 500-1000
+      load_priority: 2
+      summary: "Project review checklist (auto-generated)"
+
+loading_strategy:
+  level_1_manifest_only:
+    tokens: 100
+    use_case: "Check available project standards"
+
+  level_2_targeted:
+    tokens: 500-1500
+    use_case: "Specific coding standard reference"
+
+  level_3_full:
+    tokens: 500-3000
+    use_case: "Complete standards reference for review"
+
 loading:
   priority: 3
-  # Load after core, before project-specific
   auto_load: true
 
-# --- Files Configuration ---
 files:
   - path: "coding-standards.md"
     description: "Coding standards and conventions for the detected tech stack"
     required: false
+    tokens: variable
 
   - path: "review-checklist.md"
     description: "Code review checklist tailored to project standards"
     required: false
+    tokens: variable
 
-# --- Attributes ---
 attributes:
   generators:
     - skill: "project-initialization"
@@ -36,7 +56,6 @@ attributes:
     - skill: "test-generation"
       uses: ["coding-standards.md"]
 
-# --- Scenarios ---
 scenarios:
   - name: "Review code against standards"
     files: ["coding-standards.md", "review-checklist.md"]

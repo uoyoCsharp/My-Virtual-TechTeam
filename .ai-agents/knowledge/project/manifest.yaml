@@ -1,32 +1,33 @@
-# Unified Manifest v2.0
-# Project Knowledge Manifest
-
-# --- Identity ---
 id: "project"
 type: "project"
 name: "Project Knowledge"
 version: "1.0"
 description: "Custom knowledge specific to this project"
 
-# --- Loading Behavior ---
+token_estimate:
+  total: variable
+  estimated_range: "0-5000"
+  note: "Add token estimates when adding project files"
+
+loading_strategy:
+  level_1_manifest_only:
+    tokens: 100
+    use_case: "Check available project knowledge"
+
+  level_2_targeted:
+    tokens: variable
+    use_case: "Specific project knowledge"
+
+  level_3_full:
+    tokens: variable
+    use_case: "Complete project context"
+
 loading:
   priority: 4
-  # Load last (lowest priority, most specific)
   auto_load: true
 
-# --- Files Configuration ---
-# Add your project-specific knowledge files here
 files: []
-  # Example:
-  # - path: "glossary.md"
-  #   description: "Business domain terminology"
-  #   required: false
-  #
-  # - path: "architecture-decisions.md"
-  #   description: "Project ADRs (Architecture Decision Records)"
-  #   required: false
 
-# --- Attributes ---
 attributes:
   usage_guide: |
     Add project-specific knowledge files to this directory.
@@ -36,5 +37,4 @@ attributes:
     - conventions.md - Project-specific conventions
     - integrations.md - External system integration notes
 
-# --- Scenarios ---
 scenarios: []

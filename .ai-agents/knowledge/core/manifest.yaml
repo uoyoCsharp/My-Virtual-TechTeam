@@ -1,35 +1,56 @@
-# Unified Manifest v2.0
-# Core Knowledge Manifest
-
-# --- Identity ---
 id: "core"
 type: "core"
 name: "Core Knowledge"
 version: "1.0"
 description: "Universal software engineering principles that apply to all projects"
 
-# --- Loading Behavior ---
+token_estimate:
+  total: 2200
+  breakdown:
+    - file: software-principles.md
+      tokens: 2200
+      load_priority: 1
+      summary: "SOLID, DRY, KISS, YAGNI, composition over inheritance, separation of concerns"
+
+loading_strategy:
+  level_1_manifest_only:
+    tokens: 100
+    use_case: "Check available knowledge"
+
+  level_2_targeted:
+    tokens: 500-1000
+    use_case: "Specific principle reference"
+    semantic_index:
+      - keywords: ["SOLID", "single responsibility", "open closed"]
+        load: ["software-principles.md#solid"]
+      - keywords: ["DRY", "duplication", "reuse"]
+        load: ["software-principles.md#dry"]
+      - keywords: ["cohesion", "coupling"]
+        load: ["software-principles.md#code-organization"]
+
+  level_3_full:
+    tokens: 2200
+    use_case: "Complete principles reference"
+
 loading:
   priority: 1
   auto_load: true
 
-# --- Files Configuration ---
 files:
   - path: "software-principles.md"
     description: "SOLID, DRY, KISS, YAGNI and other fundamental principles"
     required: true
+    tokens: 2200
 
-# --- Attributes ---
 attributes:
-  checklist: [] 
+  checklist: []
 
-# --- Scenarios ---
 scenarios:
   - name: "Code review"
     files: ["software-principles.md"]
-    
+
   - name: "Refactoring guidance"
     files: ["software-principles.md"]
-    
+
   - name: "Architecture design"
     files: ["software-principles.md"]

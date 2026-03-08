@@ -1,6 +1,4 @@
-# =============================================================================
 # Phases History - Index
-# =============================================================================
 directory:
   name: phases
   purpose: Phase execution history, archived by date

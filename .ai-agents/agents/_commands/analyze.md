@@ -1,0 +1,171 @@
+# #analyze Command
+
+> Load this file when `#analyze` command is invoked.
+
+---
+
+## Purpose
+
+Analyze requirements documents and extract domain concepts.
+
+### Usage
+- `#analyze` - Analyze requirements provided in the message
+- `#analyze [file]` - Analyze requirements from specified file
+
+---
+
+## Execution Flow
+
+**Step 1: Load Requirements**
+- IF file provided: READ the file
+- ELSE: Use requirements text from user message
+
+**Step 2: Extract Information**
+- Identify features and functionality
+- Identify actors and stakeholders
+- Extract business rules
+- Note constraints and assumptions
+
+**Step 3: Detect Ambiguities**
+- Check for unclear requirements
+- Check for missing information
+- Check for conflicting requirements
+
+**Step 4: Generate Clarification Questions** (if needed)
+- List each ambiguity with specific question
+- Prioritize questions by impact
+
+**Step 5: Update Workspace**
+- WRITE `workspace/context/requirements.yaml`
+- WRITE `workspace/artifacts/{change-id}/analysis.md`
+- UPDATE `session.yaml` history
+
+---
+
+## Output Structure
+
+```markdown
+## Requirements Analysis
+
+### Features Identified
+| ID | Feature | Description | Priority |
+|----|---------|-------------|----------|
+| F1 | {name} | {description} | High/Medium/Low |
+
+### Actors
+| Actor | Description | Actions |
+|-------|-------------|---------|
+| User | {description} | {actions} |
+
+### Business Rules
+| ID | Rule | Source |
+|----|------|--------|
+| BR1 | {rule} | {source} |
+
+### Constraints
+- {constraint}
+
+### Clarification Needed
+| ID | Ambiguity | Question | Impact |
+|----|-----------|----------|--------|
+| C1 | {ambiguity} | {question} | High/Medium/Low |
+
+### Assumptions Made
+| ID | Assumption | Reason |
+|----|------------|--------|
+| A1 | {assumption} | {reason} |
+
+---
+**Suggested Next Steps**:
+- Answer clarification questions
+- `#design` for architecture design
+```
+
+---
+
+## Example 1: Analyzing Inline Requirements
+
+```
+User: #analyze
+User needs a login feature:
+1. Support email/password login
+2. Lock account after 5 failed attempts
+3. Support "Remember Me" functionality
+
+[Analyst Mode]
+
+## Requirements Analysis
+
+### Features Identified
+| ID | Feature | Description | Priority |
+|----|---------|-------------|----------|
+| F1 | Email/Password Login | User authentication via email and password | High |
+| F2 | Account Lockout | Lock account after 5 failed login attempts | High |
+| F3 | Remember Me | Extend session duration | Medium |
+
+### Actors
+- **User**: Regular user requiring authentication
+
+### Business Rules
+| ID | Rule | Source |
+|----|------|--------|
+| BR1 | Lock account after 5 consecutive failures | Requirement |
+| BR2 | Unlock mechanism required after lockout | Inferred |
+
+### Clarification Needed
+| ID | Question | Impact |
+|----|----------|--------|
+| C1 | How should locked accounts be unlocked? (auto-unlock/admin-unlock) | High |
+| C2 | What is the duration for "Remember Me"? | Medium |
+| C3 | Is login activity logging required? | Low |
+
+### Assumptions Made
+- JWT will be used for authentication
+- Lockout duration is 30 minutes
+
+---
+**Suggested Next Steps**:
+- Answer C1-C3 to clarify requirements
+- After clarification, use `#design` for architecture
+```
+
+---
+
+## Example 2: Analyzing a File
+
+```
+User: #analyze docs/prd.md
+
+[Analyst Mode]
+
+Reading docs/prd.md...
+
+## Requirements Analysis
+
+### Features Identified
+| ID | Feature | Description | Priority |
+|----|---------|-------------|----------|
+| F1 | User Registration | Register new user accounts | High |
+| F2 | Email Verification | Verify user email addresses | High |
+| F3 | Profile Management | Manage user profile information | Medium |
+
+### Actors
+- **User**: Users registering and using the system
+- **Admin**: System administrators
+
+### Business Rules
+| ID | Rule | Source |
+|----|------|--------|
+| BR1 | Email must be unique | PRD Section 2.1 |
+| BR2 | Password must be at least 8 characters with letters and numbers | PRD Section 2.2 |
+
+### Clarification Needed
+| ID | Question | Impact |
+|----|----------|--------|
+| C1 | Is third-party login supported (Google/GitHub)? | High |
+
+---
+**Suggested Next Steps**:
+- Answer C1
+- `#design` for architecture design
+```

@@ -1,37 +1,80 @@
-# Unified Manifest v2.0
-# DDD Pattern Pack
-
-# --- Identity ---
 id: "ddd"
 type: "pattern"
 name: "Domain-Driven Design"
 version: "1.0"
 description: "Tactical and strategic patterns for complex domain modeling"
 
-# --- Loading Behavior ---
+token_estimate:
+  total: 5000
+  breakdown:
+    - file: overview.md
+      tokens: 1200
+      load_priority: 1
+      summary: "Core DDD concepts: Ubiquitous Language, Bounded Context, Domain Model"
+    - file: tactical-patterns.md
+      tokens: 2200
+      load_priority: 2
+      summary: "Entity, Value Object, Aggregate, Repository, Domain Event, Factory"
+    - file: strategic-patterns.md
+      tokens: 1000
+      load_priority: 3
+      summary: "Context Map, Anti-Corruption Layer, Shared Kernel"
+    - file: review-checklist.md
+      tokens: 600
+      load_priority: 4
+      summary: "DDD compliance checklist"
+
+loading_strategy:
+  level_1_manifest_only:
+    tokens: 150
+    use_case: "Check available DDD patterns"
+
+  level_2_targeted:
+    tokens: 1200-2200
+    use_case: "Specific pattern implementation"
+    semantic_index:
+      - keywords: ["entity", "identity", "lifecycle"]
+        load: ["tactical-patterns.md#entity"]
+      - keywords: ["value object", "immutable", "equality"]
+        load: ["tactical-patterns.md#value-object"]
+      - keywords: ["aggregate", "consistency", "boundary"]
+        load: ["tactical-patterns.md#aggregate"]
+      - keywords: ["bounded context", "context map"]
+        load: ["overview.md#bounded-context", "strategic-patterns.md"]
+      - keywords: ["repository", "persistence"]
+        load: ["tactical-patterns.md#repository"]
+      - keywords: ["domain event", "event"]
+        load: ["tactical-patterns.md#domain-event"]
+
+  level_3_full:
+    tokens: 5000
+    use_case: "Complete DDD implementation guidance"
+
 loading:
   priority: 10
   auto_load: false
 
-# --- Files Configuration ---
 files:
   - path: "overview.md"
     description: "Overview of DDD concepts"
     required: true
+    tokens: 1200
 
   - path: "tactical-patterns.md"
     description: "Tactical patterns like Entities, Value Objects, Aggregates"
     required: true
+    tokens: 2200
 
   - path: "strategic-patterns.md"
     description: "Strategic patterns like Bounded Contexts"
     required: true
+    tokens: 1000
 
   - path: "review-checklist.md"
     description: "Checklist for reviewing DDD code"
     required: false
+    tokens: 600
 
-# --- Attributes ---
 attributes:
   terminology:
     aggregate: "Aggregate"
@@ -59,16 +102,15 @@ attributes:
     - "Business logic in domain layer"
     - "Ubiquitous language used consistently"
 
-# --- Scenarios ---
 scenarios:
   - name: "Design domain model"
     files: ["overview.md", "tactical-patterns.md"]
-    
+
   - name: "Code review"
     files: ["review-checklist.md"]
-    
+
   - name: "Understand DDD concepts"
     files: ["overview.md"]
-    
+
   - name: "Event-driven design"
     files: ["tactical-patterns.md"]

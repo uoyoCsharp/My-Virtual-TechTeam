@@ -1,6 +1,4 @@
-# =============================================================================
 # Artifacts - Directory Index
-# =============================================================================
 directory:
   name: artifacts
   purpose: Work products, grouped by change ID

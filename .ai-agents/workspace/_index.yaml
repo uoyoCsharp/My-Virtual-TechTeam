@@ -1,13 +1,7 @@
-# =============================================================================
-# Workspace Directory Index
-# =============================================================================
 directory:
   name: workspace
   purpose: Project workspace, stores state, context, and history
 
-# -----------------------------------------------------------------------------
-# Data Tiering Strategy
-# -----------------------------------------------------------------------------
 storage_tiers:
   hot:
     location: state/
@@ -39,9 +33,6 @@ storage_tiers:
       - phases/           # Phase history
       - changes/          # Change history
 
-# -----------------------------------------------------------------------------
-# Directory Structure
-# -----------------------------------------------------------------------------
 structure:
   state/:
     purpose: "Hot data - current state"
@@ -62,9 +53,6 @@ structure:
     purpose: "Work products, grouped by change"
     pattern: "{change-id}/"
 
-# -----------------------------------------------------------------------------
-# Archive Configuration
-# -----------------------------------------------------------------------------
 archive:
   strategy: summary-on-archive
   threshold: 30 days

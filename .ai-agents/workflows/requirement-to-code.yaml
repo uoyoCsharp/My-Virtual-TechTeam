@@ -1,16 +1,172 @@
-# =============================================================================
-# Requirement to Code Workflow
-# =============================================================================
-# Full development cycle from requirements to implementation.
-# =============================================================================
-
 id: requirement-to-code
 name: Requirements to Code
 description: Complete development workflow from PRD to tested implementation
 
-# -----------------------------------------------------------------------------
-# Workflow Phases
-# -----------------------------------------------------------------------------
+states:
+  analyze:
+    display_name: "Requirements Analysis"
+    agent: analyst
+    description: Analyze requirements and extract concepts
+
+    entry_conditions:
+      - type: resource_available
+        source: workspace/requirements/
+        description: "Requirements documents available"
+
+    entry_actions:
+      - action: "Load requirements from workspace/requirements/"
+      - action: "Update session.yaml with current phase"
+      - action: "Clear previous analysis cache if needed"
+
+    execution:
+      commands: ["#analyze", "#extract", "#clarify"]
+      expected_outputs:
+        - workspace/context/requirements.yaml
+        - workspace/artifacts/{change-id}/analysis.md
+
+    exit_criteria:
+      - type: file_exists
+        target: workspace/context/requirements.yaml
+        description: "Analysis output exists"
+      - type: user_confirmation
+        description: "User confirms analysis results"
+
+    outputs:
+      - target: workspace/context/requirements.yaml
+        format: yaml
+        description: "Structured requirements analysis"
+      - target: workspace/artifacts/{change-id}/analysis.md
+        format: markdown
+        description: "Detailed analysis document"
+
+    rollback:
+      allowed: true
+      to_state: null
+      preserve_outputs: false
+
+  design:
+    display_name: "Architecture Design"
+    agent: architect
+    description: Create system architecture based on requirements
+
+    entry_conditions:
+      - type: state_completed
+        state: analyze
+        description: "Requirements analysis completed"
+      - type: file_exists
+        source: workspace/context/requirements.yaml
+
+    entry_actions:
+      - action: "Load requirements.yaml"
+      - action: "Load active pattern knowledge"
+
+    execution:
+      commands: ["#design", "#plan"]
+      expected_outputs:
+        - workspace/context/architecture.yaml
+        - workspace/artifacts/{change-id}/design.md
+
+    exit_criteria:
+      - type: file_exists
+        target: workspace/context/architecture.yaml
+      - type: user_confirmation
+
+    outputs:
+      - target: workspace/context/architecture.yaml
+        format: yaml
+      - target: workspace/artifacts/{change-id}/design.md
+        format: markdown
+
+    rollback:
+      allowed: true
+      to_state: analyze
+      preserve_outputs: false
+
+  implement:
+    display_name: "Code Implementation"
+    agent: developer
+    description: Implement code based on architecture design
+
+    entry_conditions:
+      - type: state_completed
+        state: design
+
+    entry_actions:
+      - action: "Load architecture.yaml"
+      - action: "Load coding standards"
+
+    execution:
+      commands: ["#implement", "#fix", "#refactor"]
+      expected_outputs:
+        - workspace/artifacts/{change-id}/implementation/
+
+    exit_criteria:
+      - type: file_exists
+        target: workspace/artifacts/{change-id}/implementation/
+      - type: user_confirmation
+
+    rollback:
+      allowed: true
+      to_state: design
+      preserve_outputs: true
+
+  review:
+    display_name: "Code Review"
+    agent: reviewer
+    description: Review code for quality and standards
+
+    entry_conditions:
+      - type: state_completed
+        state: implement
+
+    entry_actions:
+      - action: "Load implementation code"
+      - action: "Load architecture for compliance check"
+
+    execution:
+      commands: ["#review", "#check"]
+      expected_outputs:
+        - workspace/artifacts/{change-id}/review.md
+
+    exit_criteria:
+      - type: file_exists
+        target: workspace/artifacts/{change-id}/review.md
+      - type: review_passed
+        description: "No critical issues found"
+
+    on_issues: implement
+
+    rollback:
+      allowed: false
+
+  test:
+    display_name: "Testing"
+    agent: tester
+    description: Generate and run tests
+
+    entry_conditions:
+      - type: state_completed
+        state: review
+      - type: review_passed
+
+    entry_actions:
+      - action: "Load implementation code"
+      - action: "Load requirements for test validation"
+
+    execution:
+      commands: ["#test"]
+      expected_outputs:
+        - workspace/artifacts/{change-id}/tests/
+
+    exit_criteria:
+      - type: tests_passed
+        description: "All tests pass"
+
+    on_failure: implement
+
+    rollback:
+      allowed: false
+
 phases:
   - id: analyze
     name: Requirements Analysis
@@ -22,7 +178,7 @@ phases:
       - requirement_analysis
       - concept_map
     next: design
-    
+
   - id: design
     name: Architecture Design
     agent: architect
@@ -33,7 +189,7 @@ phases:
       - architecture_design
       - implementation_plan
     next: implement
-    
+
   - id: implement
     name: Code Implementation
     agent: developer
@@ -44,7 +200,7 @@ phases:
     outputs:
       - implementation_code
     next: review
-    
+
   - id: review
     name: Code Review
     agent: reviewer
@@ -55,8 +211,8 @@ phases:
     outputs:
       - review_report
     next: test
-    on_issues: implement  # Go back to implement if issues found
-    
+    on_issues: implement
+
   - id: test
     name: Testing
     agent: tester
@@ -68,37 +224,63 @@ phases:
       - test_cases
       - test_report
     next: complete
-    on_failure: implement  # Go back to implement if tests fail
+    on_failure: implement
 
-# -----------------------------------------------------------------------------
-# Workflow Configuration
-# -----------------------------------------------------------------------------
 config:
-  # Confirm before moving to next phase
   confirm_phase_transition: true
-  
-  # Save context after each phase
   auto_save_context: true
-  
-  # Allow skipping phases (for experienced users)
   allow_skip: false
+  max_retries: 3
+  error_handling: "pause_and_report"
 
-# -----------------------------------------------------------------------------
-# Phase Transitions
-# -----------------------------------------------------------------------------
 transitions:
-  analyze_to_design:
+  - from: analyze
+    to: design
     trigger: "#design"
-    prerequisite: "requirements analysis completed"
-    
-  design_to_implement:
+    guard: "requirements.yaml exists && user_confirmed"
+    on_success:
+      - action: "Archive analysis artifacts"
+      - action: "Update workflow status"
+
+  - from: design
+    to: implement
     trigger: "#implement"
-    prerequisite: "architecture design completed"
-    
-  implement_to_review:
+    guard: "architecture.yaml exists && user_confirmed"
+
+  - from: implement
+    to: review
     trigger: "#review"
-    prerequisite: "implementation code exists"
-    
-  review_to_test:
+    guard: "implementation exists"
+
+  - from: review
+    to: test
     trigger: "#test"
-    prerequisite: "code review passed or issues resolved"
+    guard: "review_passed || user_confirmed_with_issues"
+
+  - from: review
+    to: implement
+    trigger: "#fix"
+    condition: "issues_found"
+    description: "Return to implement when issues need fixing"
+
+  - from: test
+    to: implement
+    trigger: "#fix"
+    condition: "tests_failed"
+    description: "Return to implement when tests fail"
+
+error_recovery:
+  on_missing_prerequisite:
+    action: "Suggest running prerequisite phase"
+    auto_route: true
+
+  on_phase_failure:
+    action: "Pause and report error"
+    options:
+      - "Retry current phase"
+      - "Rollback to previous phase"
+      - "Skip and continue (if allowed)"
+
+  on_invalid_state:
+    action: "Use #recover command"
+    suggestion: "Run #recover to diagnose and fix state issues"

@@ -1,27 +1,97 @@
-# =============================================================================
-# Knowledge Cache
-# =============================================================================
-# Session-level cache of loaded knowledge to avoid redundant reads
-# =============================================================================
+# Dynamic Discovery Cache
+# Stores discovered resources and loaded knowledge to avoid redundant scans
 
+version: "3.0"
+
+# ============================================================
+# Cache Metadata
+# ============================================================
 cache:
   session_id: ""
   created_at: ""
-  
-loaded:
-  # Example:
-  # - pack: core
-  #   level: 3  # full
-  #   files_loaded: [software-principles.md]
-  #
-  # - pack: patterns/ddd
-  #   level: 2  # targeted
-  #   fragments_loaded:
-  #     - file: tactical-patterns.md
-  #       sections: [entity, aggregate]
+  last_updated: ""
+  ttl: session
+  status: stale  # fresh | stale | empty
 
-pending_load:
-  # Knowledge that may be needed next
-  # - pack: patterns/ddd
-  #   sections: [value_objects]
-  #   reason: "May be needed next"
+# ============================================================
+# Discovered Resources Index
+# Populated by dynamic discovery, cached for performance
+# ============================================================
+discovered:
+
+  # Agents discovered from agents/*.yaml
+  agents: []
+    # Example:
+    # - id: conductor
+    #   name: Conductor
+    #   file: agents/conductor.yaml
+    #   prompt: agents/conductor.prompt.md
+    #   commands: [init, status, config]
+    #   discovered_at: "2026-03-08T12:00:00Z"
+
+  # Skills discovered from skills/*.md (frontmatter)
+  skills:
+    core: []
+    system: []
+      # Example:
+      # - id: context-loader
+      #   file: skills/_system/context-loader.md
+      #   auto_invoke: on_activation
+    custom: []
+
+  # Workflows discovered from workflows/*.yaml
+  workflows: []
+    # Example:
+    # - id: requirement-to-code
+    #   file: workflows/requirement-to-code.yaml
+    #   phases: [analyze, design, implement, review, test]
+
+  # Patterns discovered from knowledge/patterns/manifest.yaml
+  patterns:
+    available: []
+    custom: []
+
+# ============================================================
+# Loaded Knowledge Cache
+# Tracks what knowledge has been loaded this session
+# ============================================================
+loaded:
+  # Knowledge packs loaded
+  packs: []
+    # Example:
+    # - id: core
+    #   loaded_at: "2026-03-08T12:00:00Z"
+    #   level: full
+    #   tokens: 1200
+
+  # Context files loaded
+  context: []
+    # Example:
+    # - file: workspace/context/project.yaml
+    #   loaded_at: "2026-03-08T12:00:00Z"
+    #   tokens: 150
+
+  # Total tokens used
+  tokens_used: 0
+  tokens_budget: 5000
+
+# ============================================================
+# Discovery Statistics
+# ============================================================
+stats:
+  discovery_runs: 0
+  cache_hits: 0
+  cache_misses: 0
+  last_discovery: null
+  discovery_time_ms: 0
+
+# ============================================================
+# Invalidation Log
+# ============================================================
+invalidation:
+  triggered_by: []
+  last_invalidated: null
+    # Example:
+    # - trigger: file_change
+    #   file: agents/conductor.yaml
+    #   at: "2026-03-08T12:00:00Z"

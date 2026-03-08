@@ -1,194 +1,162 @@
-# =============================================================================
-# AI Agent Framework - Unified Configuration (v2.0)
-# =============================================================================
-# Single entry point for all framework configuration.
-# For resource discovery, prefer registry.yaml for quick access.
-# =============================================================================
+# AI Agent Framework - User Configuration
+# This file contains user-configurable settings only.
+# Resources (agents, skills, patterns) are discovered dynamically from their directories.
 
 name: "AI Agent Workflow Framework"
-description: "Multi-agent collaboration framework for software development"
-version: "2.0"
+version: "3.0"
 
-# -----------------------------------------------------------------------------
-# System Behavior
-# -----------------------------------------------------------------------------
+# ============================================================
+# System Settings
+# ============================================================
 system:
-  # Default agent to activate
   default_agent: conductor
-
-  # Language for agent responses
-  language: zh-CN
-
-  # Interaction mode: auto | semi-auto | manual
-  # - auto: Workflow progresses automatically, confirm only at key points
-  # - semi-auto: Suggest next step, user confirms to proceed
-  # - manual: User explicitly triggers each agent switch
+  language: en-US
   interaction_mode: semi-auto
-
-  # Confirm with user before generating code
   confirm_before_generate: true
-
-  # Confirm with user before saving to memory
   confirm_before_save: true
 
-# -----------------------------------------------------------------------------
-# Output Rules
-# -----------------------------------------------------------------------------
+# ============================================================
+# Output Settings
+# ============================================================
 output:
-  # No emojis in output
   no_emojis: true
-
   flow_charts:
-    # Use mermaid syntax for flow charts
     use_mermaid: true
-
-  # Structured data format: yaml | json
   data_format: yaml
-
-  # Use XML tags for context separation
-  # <thought> for reasoning, <output> for final result
-  use_xml_tags: true
-
-  # Maximum description length
   max_description: 500
 
-# -----------------------------------------------------------------------------
-# Architecture Pattern
-# -----------------------------------------------------------------------------
+# ============================================================
+# Pattern Settings
+# ============================================================
 pattern:
-  # Currently active pattern
+  # Active architecture pattern
+  # Options: ddd, clean-architecture, frontend-react, generic
+  # Use "#init" to auto-detect or "#config" to change
   active: ddd
 
-  # Available patterns (knowledge loaded from knowledge/patterns/{id}/)
-  available:
-    - id: ddd
-      name: Domain-Driven Design
-    - id: clean-architecture
-      name: Clean Architecture
+  selection:
+    auto_detect: true
+    confirm_with_user: true
+    fallback: generic
 
-# -----------------------------------------------------------------------------
-# Agent Registry
-# -----------------------------------------------------------------------------
-agents:
-  conductor:
-    name: Conductor
-    description: Task coordinator and workflow dispatcher
-    required: true
-    skills:
-      - project-initialization
+# ============================================================
+# Workspace Settings
+# ============================================================
+workspace:
+  retention:
+    artifacts_max_changes: 5
+    auto_summarize: true
+    summary_style: "decisions_only"
+    ttl:
+      detailed: "7 days"
+      summary: "30 days"
+      decisions: "forever"
 
-  analyst:
-    name: Analyst
-    description: Requirements analysis and concept extraction
-    required: true
-    skills: []
+  smart_loading:
+    enabled: true
+    default_level: minimal
 
-  architect:
-    name: Architect
-    description: System architecture and technical design
-    required: true
-    skills: []
+  code_mapping:
+    enabled: true
+    auto_sync: true
 
-  developer:
-    name: Developer
-    description: Code implementation specialist
-    required: true
-    skills: []
+  semantic_index:
+    enabled: true
+    update_on:
+      - file_change
+      - phase_complete
 
-  reviewer:
-    name: Reviewer
-    description: Code quality and standards reviewer
-    required: true
-    skills:
-      - review-execution
-
-  tester:
-    name: Tester
-    description: Test design and quality assurance
-    required: true
-    skills:
-      - test-generation
-
-# -----------------------------------------------------------------------------
-# Skill Registry
-# -----------------------------------------------------------------------------
-skills:
-  core:
-    - id: project-initialization
-      description: Initialize project and analyze project structure comprehensively
-      agents: [conductor]
-    - id: review-execution
-      description: Execute code review checklist
-      agents: [reviewer]
-    - id: test-generation
-      description: Generate test cases
-      agents: [tester]
-  system:
-    - id: context-loader
-      description: Smart context loader for agent activation
-      auto_invoke: on_activation
-      file: skills/_system/context-loader.md
-    - id: archive-manager
-      description: Manage history archiving and compression
-      triggers: [on_session_end, on_change_complete, daily]
-      file: skills/_system/archive-manager.md
-  custom: []
-
-# -----------------------------------------------------------------------------
-# Workflow Registry
-# -----------------------------------------------------------------------------
-workflows:
-  requirement-to-code:
-    name: Requirements to Code
-    description: Full development cycle from PRD to implementation
-    phases: [analyze, design, implement, review, test]
-
-  code-review:
-    name: Code Review
-    description: Review existing code for quality and standards
-    phases: [analyze, review, report]
-
-# -----------------------------------------------------------------------------
-# Knowledge Loading
-# -----------------------------------------------------------------------------
+# ============================================================
+# Knowledge Settings
+# ============================================================
 knowledge:
-  # Order to load knowledge (first = highest priority)
   loading_order:
     - core/*
-    - patterns/{active}/*
+    - "patterns/{active}/*"
     - principle/*
     - project/*
-  # Knowledge paths to load on-demand only
-  lazy_load:
-    - patterns/{inactive}/*
 
-# -----------------------------------------------------------------------------
-# Directory Structure
-# -----------------------------------------------------------------------------
+  lazy_load:
+    - "patterns/{inactive}/*"
+
+# ============================================================
+# Discovery Settings
+# ============================================================
+discovery:
+  # Discovery mode: dynamic (scan on demand) | cached (use cache)
+  mode: dynamic
+
+  # Cache configuration
+  cache:
+    enabled: true
+    # Cache TTL: session (until session ends) | always (always use cache)
+    ttl: session
+    # When to invalidate cache
+    invalidate_on:
+      - file_change
+      - config_change
+
+  # Discovery timeout (ms)
+  timeout: 30000
+
+# ============================================================
+# Quick Path Presets
+# ============================================================
+quick_paths:
+  minimal:
+    load:
+      - workspace/state/session.yaml
+      - workspace/context/project.yaml
+    analyze:
+      - changed_files_only
+    skip:
+      - full_requirements
+      - full_architecture
+    max_tokens: 2000
+
+  incremental:
+    load:
+      - workspace/state/session.yaml
+      - workspace/context/project.yaml
+      - workspace/context/architecture.yaml
+    analyze:
+      - related_modules
+    skip:
+      - full_requirements_analysis
+    max_tokens: 5000
+
+# ============================================================
+# Smart Context Rules
+# ============================================================
+smart_context:
+  rules:
+    - trigger: "fix.*bug|modify.*feature"
+      action: load_related_code
+      context_level: minimal
+
+    - trigger: "add.*feature|implement"
+      action: load_architecture
+      context_level: moderate
+
+    - trigger: "refactor"
+      action: load_full_context
+      context_level: full
+
+    - trigger: "architecture|design"
+      action: load_design_context
+      context_level: full
+
+# ============================================================
+# Directory Structure (Advanced)
+# ============================================================
 directories:
-  # Core framework directories
   agents: agents/
   skills: skills/
   workflows: workflows/
   knowledge: knowledge/
-
-  # Workspace structure
   workspace: workspace/
-  workspace_state: workspace/state/ # Hot data - current session
-  workspace_context: workspace/context/ # Warm data - project context
-  workspace_history: workspace/history/ # Cold data - archived
-  workspace_artifacts: workspace/artifacts/ # Work products per change
-  workspace_requirements: workspace/requirements/ # Requirement documents
-
-# -----------------------------------------------------------------------------
-# Resource Discovery
-# -----------------------------------------------------------------------------
-discovery:
-  # Primary resource index
-  registry: registry.yaml
-
-  # Directory index pattern
-  index_file: _index.yaml
-
-  # Knowledge pack index
-  manifest_file: manifest.yaml
+  workspace_state: workspace/state/
+  workspace_context: workspace/context/
+  workspace_history: workspace/history/
+  workspace_artifacts: workspace/artifacts/
+  workspace_requirements: workspace/requirements/

@@ -12,13 +12,12 @@ Store and organize:
 
 ## Structure
 
-```
-requirements/
-├── README.md             # This file
-├── _templates/           # PRD templates
-│   └── prd-template.md
-└── {feature-name}.md     # Individual requirements
-```
+| File/Directory | Purpose |
+|----------------|---------|
+| `README.md` | This file |
+| `_templates/` | PRD templates |
+| `_templates/prd-template.md` | Standard PRD template |
+| `{feature-name}.md` | Individual requirements |
 
 ## Naming Convention
 

@@ -8,115 +8,322 @@ auto_invoke: on_activation
 
 # Context Loader
 
-Smart context loader that auto-executes on agent activation, loading required context based on the agent's context_contract.
+Smart context loader with dynamic discovery and tiered loading for optimal token usage.
 
-## Loading Strategy
+## Configuration
 
-### Priority Loading
+Read from `config.yaml`:
 
-1. Read `registry.yaml` for global index
-2. Read `workspace/state/session.yaml` for current state
-3. Load required resources based on agent's `context_contract.required`
+```yaml
+workspace:
+  smart_loading:
+    enabled: true
+    default_level: minimal
 
-### Lazy Loading
-
-1. Parse `context_contract.conditional` conditions
-2. Load on-demand when actually needed
-3. Cache loaded resources to avoid redundant reads
-
-### Context Summary
-
-Generate summaries for resources exceeding threshold:
-- Threshold: 2000 tokens
-- Strategy: Preserve structure + key information + examples
-
-## Loading Order
-
-```mermaid
-flowchart LR
-    A[Registry] --> B[Session State]
-    B --> C[Required Context]
-    C --> D[Conditional Context]
-    D --> E[Agent Ready]
+discovery:
+  mode: dynamic
+  cache:
+    enabled: true
+    ttl: session
 ```
 
-## Knowledge Loading Levels
+## Dynamic Discovery Protocol
 
-### Level 1: Manifest Only
-- Load only `manifest.yaml`
-- Get structure and summary information
-- Token cost: ~200
+### Overview
 
-### Level 2: Targeted Loading
-- Select relevant parts from `semantic_index` based on current task
-- Load only matching file fragments
-- Token cost: ~500-1500
+Resources (agents, skills, patterns) are discovered dynamically from their directories instead of relying on a static index.
 
-### Level 3: Full Loading
-- Load complete knowledge pack
-- Use only when explicitly needed
-- Token cost: ~3000-5000
-
-## Loading Decision Tree
+### Discovery Flow
 
 ```mermaid
 flowchart TD
-    A[Need knowledge] --> B{Task type clear?}
-    B -->|Yes| C[Query semantic_index]
-    B -->|No| D[Load manifest for overview]
-    C --> E{Match found?}
-    E -->|Yes| F[Level 2: Load relevant fragments]
-    E -->|No| G[Level 3: Full load]
-    D --> H[User selection or inference]
-    H --> C
+    A[Agent Activation] --> B{Check Cache}
+    B -->|Cache HIT| C[Use cached index]
+    B -->|Cache MISS| D[Run discovery]
+    D --> E[Scan agents/*.md]
+    D --> F[Scan skills/*.md]
+    D --> G[Scan workflows/*.yaml]
+    D --> H[Read patterns/manifest.yaml]
+    E & F & G & H --> I[Update cache]
+    C --> J[Load Required Context]
+    I --> J
+    J --> K[Report Status]
 ```
 
-## Cache Management
+### Discovery Functions
 
-Loaded knowledge is cached to `workspace/state/knowledge-cache.yaml`:
+#### Discover Agents
+
+```
+FUNCTION discover_agents():
+  1. LIST files in agents/ matching *.yaml
+  2. FOR each file:
+     - READ file
+     - EXTRACT: id, name, commands, skills
+  3. RETURN agent index
+```
+
+#### Discover Skills
+
+```
+FUNCTION discover_skills():
+  1. LIST files in skills/ matching *.md
+  2. FOR each file:
+     - READ frontmatter
+     - EXTRACT: id, name, triggers, invoked_by
+  3. CATEGORIZE: core, system, custom
+  4. RETURN skill index
+```
+
+#### Discover Patterns
+
+```
+FUNCTION discover_patterns():
+  1. READ knowledge/patterns/manifest.yaml
+  2. EXTRACT: available patterns, custom patterns
+  3. RETURN pattern index
+```
+
+### Cache Management
 
 ```yaml
+# workspace/state/knowledge-cache.yaml
 cache:
-  session_id: "{session-uuid}"
-  created_at: "2026-02-16T10:00:00Z"
-  
-loaded:
-  - pack: core
-    level: 3
-    files_loaded: [software-principles.md]
-    
-  - pack: patterns/ddd
-    level: 2
-    fragments_loaded:
-      - file: tactical-patterns.md
-        sections: [entity, aggregate]
+  status: fresh | stale | empty
+  last_updated: "2026-03-08T12:00:00Z"
+
+discovered:
+  agents: [...]
+  skills: [...]
+  workflows: [...]
+  patterns: [...]
+
+stats:
+  cache_hits: 5
+  cache_misses: 1
 ```
+
+**Cache Invalidation**:
+- File change in agents/, skills/, workflows/
+- Config change (pattern.active)
+- Session end (if ttl: session)
+
+---
+
+## Tiered Loading Strategy
+
+### Level Overview
+
+| Level | Token Budget | When to Use | Sources |
+|-------|--------------|-------------|---------|
+| 1 - Minimal | ~500 | Quick operations | session, project, code-mapping |
+| 2 - Moderate | ~2000 | Standard tasks | + architecture, requirements |
+| 3 - Full | ~5000+ | Complex tasks | + knowledge packs |
+| 4 - Complete | varies | Rare cases | + all artifacts |
+
+### Level 1: Minimal
+
+**Load**:
+- `workspace/state/session.yaml`
+- `workspace/context/project.yaml`
+- `workspace/state/code-mapping.yaml`
+
+**Use When**:
+- Bug fixes
+- Quick operations
+- Status checks
+
+### Level 2: Moderate
+
+**Load** (includes Level 1):
+- `workspace/context/architecture.yaml`
+- `workspace/context/requirements.yaml`
+- `workspace/state/semantic-index.yaml`
+
+**Use When**:
+- Feature implementation
+- Code review
+- Design discussions
+
+### Level 3: Full
+
+**Load** (includes Level 2):
+- `knowledge/core/` (based on knowledge_packs config)
+- `knowledge/patterns/{active}/`
+- `knowledge/principle/`
+
+**Use When**:
+- New feature design
+- Complex refactoring
+- Architecture decisions
+
+### Level 4: Complete
+
+**Load**:
+- All Level 3 content
+- `workspace/artifacts/{active}/`
+- `workspace/history/summaries/`
+
+**Use When**:
+- Resuming interrupted work
+- Complex multi-phase changes
+
+---
+
+## Smart Context Inference
+
+### Keyword Detection
+
+| Keywords Detected | Inferred Level | Additional Loading |
+|-------------------|----------------|-------------------|
+| fix, bug, error | Minimal | Related code files |
+| feature, add, implement | Moderate | + Architecture |
+| refactor | Full | + Pattern knowledge |
+| architecture, design | Full | + All patterns |
+
+### Context Decision Flow
+
+```mermaid
+flowchart TD
+    A[Agent Activation] --> B{Check command type}
+    B -->|quick-fix| C[Level 1]
+    B -->|standard command| D[Level 2]
+    B -->|design/implement| E[Level 3]
+    C --> F{Check user request keywords}
+    D --> F
+    E --> F
+    F --> G[Adjust level if needed]
+    G --> H[Load appropriate context]
+```
+
+---
 
 ## Execution Steps
 
-When agent activates:
+### Step 1: Initialize
 
-1. **Check cache**: Read `knowledge-cache.yaml`
-2. **Identify requirements**: Parse agent's `context_contract`
-3. **Calculate diff**: Determine resources that need loading
-4. **Execute loading**: Load resources by priority
-5. **Update cache**: Record loaded content
-6. **Report status**: Notify LLM of loaded context
+```
+1. READ config.yaml
+2. Check workspace.smart_loading.default_level
+3. Check discovery.mode and discovery.cache
+```
 
-## Output
+### Step 2: Run Discovery (if needed)
 
-After loading completes, report to LLM:
+```
+1. READ knowledge-cache.yaml
+2. IF cache.status == "fresh":
+     USE cached discovered index
+   ELSE:
+     RUN discovery functions
+     UPDATE cache
+```
+
+### Step 3: Load Context by Level
+
+```
+1. Determine required sources by level
+2. Check what's already in cache
+3. Load missing sources
+4. Update loaded context in cache
+```
+
+### Step 4: Update Cache
+
+```
+1. RECORD loaded sources with timestamps
+2. UPDATE tokens_used count
+3. MARK pending sources
+```
+
+### Step 5: Report Status
 
 ```markdown
-## Context Loaded
+## Context Loaded (Level 2 - Moderate)
 
-### Required
-- [x] knowledge/core/ (Level 3)
-- [x] workspace/state/session.yaml
+### Discovered
+- Agents: 6
+- Skills: 8 (4 core, 3 system, 1 custom)
+- Patterns: 4 available
 
-### Conditional (loaded)
-- [x] knowledge/patterns/ddd/ (Level 2: entity, aggregate)
+### Loaded This Session
+- [x] session.yaml (50 tokens)
+- [x] project.yaml (100 tokens)
+- [x] architecture.yaml (450 tokens)
 
-### Conditional (pending)
-- [ ] knowledge/principle/coding-standards.md (Load condition: project initialized)
+### Cached
+- [x] code-mapping.yaml (150 tokens)
+
+### Skipped (not needed)
+- [ ] requirements.yaml
+- [ ] pattern knowledge
+
+**Token Usage**: 750 / 2000
 ```
+
+---
+
+## On-Demand Loading
+
+Users can request additional context:
+
+```
+#load-context minimal   → Reset to Level 1
+#load-context moderate  → Upgrade to Level 2
+#load-context full      → Upgrade to Level 3
+```
+
+---
+
+## Code Mapping Integration
+
+Use code-mapping.yaml for efficient file location:
+
+```yaml
+# workspace/state/code-mapping.yaml
+entities:
+  "User":
+    files: [src/domain/User.ts]
+    type: aggregate_root
+```
+
+**Process**:
+1. User mentions "User"
+2. Check code-mapping
+3. Load only related files
+4. Skip unrelated modules
+
+---
+
+## Semantic Index Integration
+
+Use semantic-index for topic-based loading:
+
+```yaml
+# workspace/state/semantic-index.yaml
+by_topic:
+  "authentication":
+    - file: workspace/context/architecture.yaml
+      path: decisions.auth
+```
+
+**Process**:
+1. Extract keywords from request
+2. Match against semantic index
+3. Load only matched sections
+
+---
+
+## Integration Points
+
+### With Archive Manager
+- Load summaries instead of full artifacts
+- Access history when needed
+
+### With Dynamic Discovery
+- Cache stores discovered index
+- Invalidate on file changes
+
+### With Config Manager
+- Respect discovery.cache settings
+- Invalidate on config changes

@@ -27,14 +27,14 @@ This is an AI Agent Framework built on prompt engineering principles. It defines
 | `#review` | Review code |
 | `#test` | Generate tests |
 
-## Architecture (v2.0)
+## Architecture 
 
 ```
 .ai-agents/           # Core framework (platform-agnostic)
 ├── registry.yaml     # Unified resource index (LLM preferred entry)
 ├── config.yaml       # System configuration
 ├── agents/           # Agent definitions (.yaml + .prompt.md)
-│   └── _base.md      # Shared activation steps (v2.0)
+│   └── _base.md      # Shared activation steps 
 ├── skills/           # Modular skills
 │   └── _system/      # System skills (auto-invoked)
 ├── workflows/        # Workflow definitions

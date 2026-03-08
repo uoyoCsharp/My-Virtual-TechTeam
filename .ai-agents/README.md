@@ -1,4 +1,4 @@
-# AI Agent Framework (v2.0)
+# AI Agent Framework 
 
 Multi-agent collaboration framework for software development.
 
@@ -10,51 +10,29 @@ Multi-agent collaboration framework for software development.
 
 ## Directory Structure
 
-```
-.ai-agents/
-├── registry.yaml         # Unified resource index (preferred entry point)
-├── config.yaml           # System configuration
-├── agents/               # Agent definitions
-│   ├── _index.yaml       # Directory index
-│   ├── _base.md          # Shared behavior rules
-│   ├── {agent}.yaml      # Declaration (role, skills, context_contract)
-│   └── {agent}.prompt.md # Behavior prompt
-├── skills/               # Modular capabilities
-│   ├── _index.yaml       # Directory index
-│   ├── _system/          # System skills (auto-invoked)
-│   │   ├── context-loader.md    # Smart context loading
-│   │   └── archive-manager.md   # Archive management
-│   └── {skill}.md        # Skill definition
-├── workflows/            # Workflow definitions
-│   ├── _index.yaml       # Directory index
-│   └── {workflow}.yaml   # Workflow state machine
-├── knowledge/            # Domain knowledge
-│   ├── _index.yaml       # Directory index
-│   ├── core/             # Core principles (always loaded)
-│   ├── patterns/         # Architecture patterns (on-demand)
-│   │   ├── ddd/          # Domain-Driven Design
-│   │   └── clean-architecture/  # Clean Architecture
-│   ├── principle/        # Project coding standards (generated)
-│   └── project/          # Project-specific knowledge
-└── workspace/            # Project workspace
-    ├── _index.yaml       # Directory index
-    ├── state/            # Hot data: current session
-    │   ├── session.yaml       # Session state
-    │   ├── active-change.yaml # Current change
-    │   └── knowledge-cache.yaml # Knowledge cache
-    ├── context/          # Warm data: project context
-    │   ├── project.yaml       # Project info
-    │   ├── architecture.yaml  # Architecture decisions
-    │   ├── requirements.yaml  # Requirements summary
-    │   └── decisions.yaml     # Key decisions
-    ├── history/          # Cold data: historical archive
-    │   ├── phases/       # Phase history
-    │   └── changes/      # Change history
-    ├── requirements/     # Requirements documents
-    └── artifacts/        # Work artifacts (grouped by change)
-```
+| Directory | Purpose |
+|-----------|---------|
+| `registry.yaml` | Unified resource index (preferred entry point) |
+| `config.yaml` | System configuration |
+| `agents/` | Agent definitions |
+| `agents/_shared.md` | Shared behavior rules |
+| `agents/{agent}.md` | Agent core file |
+| `skills/` | Modular capabilities |
+| `skills/_system/` | System skills (auto-invoked) |
+| `workflows/` | Workflow definitions |
+| `knowledge/` | Domain knowledge |
+| `knowledge/core/` | Core principles (always loaded) |
+| `knowledge/patterns/` | Architecture patterns (on-demand) |
+| `knowledge/principle/` | Project coding standards (generated) |
+| `knowledge/project/` | Project-specific knowledge |
+| `workspace/` | Project workspace |
+| `workspace/state/` | Hot data: current session |
+| `workspace/context/` | Warm data: project context |
+| `workspace/history/` | Cold data: historical archive |
+| `workspace/requirements/` | Requirements documents |
+| `workspace/artifacts/` | Work artifacts (grouped by change) |
 
-## Key Concepts (v2.0)
+## Key Concepts 
 
 ### Unified Resource Registry
 
@@ -68,9 +46,9 @@ Multi-agent collaboration framework for software development.
 Each Agent defines its context contract in its yaml file:
 ```yaml
 context_contract:
-  required:      # 必须加载
-  conditional:   # 条件加载
-  outputs:       # 输出目标
+  required:      # Must load
+  conditional:   # Conditional load
+  outputs:       # Output targets
 ```
 
 ### Data Tiering
@@ -92,7 +70,7 @@ Workspace uses tiered storage strategy:
 
 Each agent has two files plus a common base:
 
-1. **`_base.md`**: Common activation steps (v2.0) and behavior rules
+1. **`_base.md`**: Common activation steps  and behavior rules
 2. **`{agent}.yaml`**: Declarative definition
    - ID, name, responsibilities
    - Boundaries (what the agent does NOT do)
@@ -131,7 +109,7 @@ Workflows define phase transitions:
 - **code-review**: Code quality review
   - analyze → review → report
 
-## Dynamic Memory (v2.0)
+## Dynamic Memory 
 
 Memory is now split across multiple files in `workspace/`:
 
@@ -163,7 +141,7 @@ Memory is now split across multiple files in `workspace/`:
 3. Follow prompts and confirm transitions
 4. Use specific commands (`#analyze`, `#design`, etc.) to invoke agents
 5. Check `#status` to see current progress
-6. Use `#pattern {name}` to switch architecture patterns
+6. Edit `config.yaml` to change architecture pattern
 7. Use `#recover` if workflow enters error state
 8. Use `#debug on` for verbose troubleshooting
 

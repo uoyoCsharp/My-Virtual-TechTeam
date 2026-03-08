@@ -1,33 +1,67 @@
-# Unified Manifest v2.0
-# Clean Architecture Pattern Pack
-
-# --- Identity ---
 id: "clean-architecture"
 type: "pattern"
 name: "Clean Architecture"
 version: "1.0"
 description: "Robert C. Martin's Clean Architecture for testable, maintainable systems"
 
-# --- Loading Behavior ---
+token_estimate:
+  total: 3500
+  breakdown:
+    - file: overview.md
+      tokens: 1500
+      load_priority: 1
+      summary: "Clean Architecture layers, dependency inversion rule, boundaries"
+    - file: layer-rules.md
+      tokens: 1200
+      load_priority: 2
+      summary: "Entity, Use Case, Interface Adapter, Framework layer rules"
+    - file: review-checklist.md
+      tokens: 800
+      load_priority: 3
+      summary: "Clean Architecture compliance checklist"
+
+loading_strategy:
+  level_1_manifest_only:
+    tokens: 150
+    use_case: "Check available Clean Architecture patterns"
+
+  level_2_targeted:
+    tokens: 1000-2000
+    use_case: "Specific layer implementation"
+    semantic_index:
+      - keywords: ["entity", "enterprise", "business"]
+        load: ["overview.md#entities", "layer-rules.md#entity-layer"]
+      - keywords: ["use case", "interactor", "application"]
+        load: ["overview.md#use-cases", "layer-rules.md#use-case-layer"]
+      - keywords: ["interface adapter", "controller", "presenter", "gateway"]
+        load: ["layer-rules.md#interface-adapter-layer"]
+      - keywords: ["dependency", "inversion", "boundary"]
+        load: ["overview.md#dependency-rule"]
+
+  level_3_full:
+    tokens: 3500
+    use_case: "Complete Clean Architecture implementation guidance"
+
 loading:
   priority: 10
   auto_load: false
 
-# --- Files Configuration ---
 files:
   - path: "overview.md"
     description: "Overview of Clean Architecture layers and dependency rules"
     required: true
+    tokens: 1500
 
   - path: "layer-rules.md"
     description: "Detailed rules for each layer"
     required: true
+    tokens: 1200
 
   - path: "review-checklist.md"
     description: "Checklist for reviewing code against Clean Architecture"
     required: false
+    tokens: 800
 
-# --- Attributes ---
 attributes:
   terminology:
     entity: "Entity"
@@ -52,13 +86,12 @@ attributes:
     - "UI is a detail"
     - "Testable without external dependencies"
 
-# --- Scenarios ---
 scenarios:
   - name: "Design application architecture"
     files: ["overview.md"]
-    
+
   - name: "Code review"
     files: ["review-checklist.md"]
-    
+
   - name: "Understand layer separation"
     files: ["overview.md"]
