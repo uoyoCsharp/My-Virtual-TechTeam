@@ -1,7 +1,7 @@
 # AI Agent Framework Registry
 # Single source of truth for framework configuration
 
-version: "5.0"
+version: "1.0"
 last_updated: "2026-03-08"
 
 # ============================================================
@@ -11,7 +11,7 @@ agents:
   - id: conductor
     name: Conductor
     file: agents/conductor.md
-    commands: [init, status, config, sync-context, update-framework]
+    commands: [init, status, config, sync-context, update-framework, cleanup]
 
   - id: analyst
     name: Analyst
@@ -59,6 +59,9 @@ commands:
   update-framework:
     agent: conductor
     file: agents/_commands/update-framework.md
+  cleanup:
+    agent: conductor
+    file: agents/_commands/cleanup.md
 
   # Analyst commands
   analyze:
@@ -96,28 +99,8 @@ commands:
 
 # ============================================================
 # Context Level Definitions
+# Authority: skills/_system/context-loader.md
 # ============================================================
-context_levels:
-  minimal:
-    description: "Essential context only"
-    sources:
-      - workspace/state/session.yaml
-      - workspace/context/project.yaml
-      - workspace/state/code-mapping.yaml
-
-  moderate:
-    description: "Standard context for most tasks"
-    sources:
-      - workspace/state/session.yaml
-      - workspace/context/project.yaml
-      - workspace/context/architecture.yaml
-      - workspace/context/requirements.yaml
-
-  full:
-    description: "Complete context for complex tasks"
-    sources:
-      - knowledge/core/
-      - knowledge/patterns/{active}/
 
 # ============================================================
 # Workflows

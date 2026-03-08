@@ -24,11 +24,11 @@ Interactive configuration management for framework settings.
 
 | Key | Type | Values | Description |
 |-----|------|--------|-------------|
-| `system.language` | enum | zh-CN, en-US | Response language |
+| `system.language` | enum | en-US, zh-CN | Response language |
 | `system.interaction_mode` | enum | auto, semi-auto, manual | Automation level |
 | `system.confirm_before_generate` | bool | true, false | Ask before generating code |
 | `system.confirm_before_save` | bool | true, false | Ask before saving files |
-| `pattern.active` | enum | ddd, clean-architecture, frontend-react, generic | Architecture pattern |
+| `pattern.active` | enum | ddd, clean-architecture, frontend-react | Architecture pattern |
 | `workspace.smart_loading.default_level` | enum | minimal, moderate, full | Context loading level |
 
 ---
@@ -42,7 +42,7 @@ When user runs `#config` without arguments:
 
 | # | Category | Current Settings |
 |---|----------|------------------|
-| 1 | System | Language: zh-CN, Mode: semi-auto |
+| 1 | System | Language: en-US, Mode: semi-auto |
 | 2 | Output | Format: yaml, Emojis: off |
 | 3 | Pattern | Active: ddd |
 | 4 | Workspace | Context Level: minimal |

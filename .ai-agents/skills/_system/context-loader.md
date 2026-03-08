@@ -118,8 +118,7 @@ stats:
 |-------|--------------|-------------|---------|
 | 1 - Minimal | ~500 | Quick operations | session, project, code-mapping |
 | 2 - Moderate | ~2000 | Standard tasks | + architecture, requirements |
-| 3 - Full | ~5000+ | Complex tasks | + knowledge packs |
-| 4 - Complete | varies | Rare cases | + all artifacts |
+| 3 - Full | ~5000+ | Complex tasks | + knowledge packs + artifacts |
 
 ### Level 1: Minimal
 
@@ -151,22 +150,14 @@ stats:
 - `knowledge/core/` (based on knowledge_packs config)
 - `knowledge/patterns/{active}/`
 - `knowledge/principle/`
+- `workspace/artifacts/{active}/`
+- `workspace/history/summaries/`
 
 **Use When**:
 - New feature design
 - Complex refactoring
 - Architecture decisions
-
-### Level 4: Complete
-
-**Load**:
-- All Level 3 content
-- `workspace/artifacts/{active}/`
-- `workspace/history/summaries/`
-
-**Use When**:
 - Resuming interrupted work
-- Complex multi-phase changes
 
 ---
 
@@ -195,6 +186,28 @@ flowchart TD
     F --> G[Adjust level if needed]
     G --> H[Load appropriate context]
 ```
+
+---
+
+## Empty Content Detection
+
+When loading required context files, check for empty/default content:
+
+### Detection Rules
+
+| File | Empty Indicator | Action |
+|------|----------------|--------|
+| `workspace/state/session.yaml` | `session.id: ""` | Warn: "Session not initialized. Run `#init` first." |
+| `workspace/context/project.yaml` | `project.name: ""` | Warn: "Project not initialized. Run `#init` first." |
+| `workspace/context/requirements.yaml` | No features listed | Warn: "No requirements found. Run `#analyze` first." |
+| `workspace/context/architecture.yaml` | No modules listed | Warn: "No architecture defined. Run `#design` first." |
+
+### Behavior
+
+When empty content is detected on a `required` context file:
+1. Output warning message to user
+2. Suggest the appropriate initialization command
+3. Do NOT proceed with the current command until prerequisites are met
 
 ---
 

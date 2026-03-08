@@ -10,13 +10,17 @@ Fix bugs and issues with smart context loading.
 
 ---
 
-## Smart Context Loading
+## Prerequisites Check
 
-| Keywords Detected | Level | Files Loaded |
-|-------------------|-------|--------------|
-| fix, bug, error, typo | Minimal | session, project, code-mapping |
-| feature, add, implement | Moderate | + architecture, requirements |
-| refactor, architecture | Full | + patterns, principles |
+| Check | Condition | On Failure |
+|-------|-----------|------------|
+| Issue described | User provided a problem description | "Please describe the issue to fix." |
+
+---
+
+## Context Loading
+
+Uses smart context loading. See `skills/_system/context-loader.md` for rules.
 
 ---
 

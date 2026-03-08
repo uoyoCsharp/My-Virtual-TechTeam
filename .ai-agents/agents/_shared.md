@@ -17,27 +17,17 @@ When user input starts with `#{command}`:
 
 ## Command-to-Agent Mapping
 
-| Commands | Agent |
-|----------|-------|
-| `init`, `status`, `config`, `sync-context`, `update-framework` | Conductor |
-| `analyze`, `analyze-code` | Analyst |
-| `design` | Architect |
-| `implement`, `fix`, `refactor` | Developer |
-| `review` | Reviewer |
-| `test` | Tester |
+> Authority: `registry.yaml` > `commands` section
 
 ---
 
 ## Context Loading
 
-### Required (Always Load)
-- `workspace/state/session.yaml` - Session state
-- `workspace/context/project.yaml` - Project info
+> Full rules: `skills/_system/context-loader.md`
 
-### Optional (Load When Relevant)
-- `workspace/context/requirements.yaml` - For design/testing
-- `workspace/context/architecture.yaml` - For implementation/review
-- `workspace/state/code-mapping.yaml` - For code-related tasks
+Always load before any operation:
+- `workspace/state/session.yaml`
+- `workspace/context/project.yaml`
 
 ---
 
@@ -57,6 +47,31 @@ workflow.phases.{phase}.started_at: "{timestamp}"
 session.current.agent: {agent_id}
 ```
 
+## Change ID Convention
+
+When creating a new change (triggered by `#analyze`):
+
+### Format
+```
+{YYYYMMDD}-{NNN}-{slug}
+```
+
+| Part | Description | Example |
+|------|-------------|---------|
+| `YYYYMMDD` | Date of creation | `20260308` |
+| `NNN` | Sequential number within the day | `001` |
+| `slug` | Kebab-case short description (max 30 chars) | `user-authentication` |
+
+### Example
+```
+20260308-001-user-authentication
+```
+
+### Workflow
+1. `#analyze` creates the change-id and writes to `workspace/state/active-change.yaml`
+2. All subsequent phases use the same change-id
+3. On completion, archive-manager moves artifacts to history
+
 ---
 
 ## Output Format
@@ -69,6 +84,15 @@ Every response MUST end with:
 - `#command` - [description]
 - [additional suggestions if needed]
 ```
+
+---
+
+## Post-Task Maintenance
+
+After completing any major phase (analyze, design, implement, review, test):
+1. Update `workspace/state/session.yaml` with phase status
+2. Update `workspace/state/semantic-index.yaml` if new concepts were introduced
+3. If `workspace/artifacts/changes/` contains more than 5 items, suggest `#cleanup`
 
 ---
 

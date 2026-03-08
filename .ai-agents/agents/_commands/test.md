@@ -15,6 +15,14 @@ Generate and run tests to validate implementations.
 
 ---
 
+## Prerequisites Check
+
+| Check | Condition | On Failure |
+|-------|-----------|------------|
+| Implementation exists | Implementation files exist to test | "No implementation found. Run `#implement` first." |
+
+---
+
 ## Execution Flow
 
 **Step 1: Load Context**

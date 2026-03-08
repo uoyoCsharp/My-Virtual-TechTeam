@@ -37,7 +37,7 @@ The `#config` command provides an interactive way to view and modify framework c
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
 | `system.default_agent` | string | `conductor` | Default agent on startup |
-| `system.language` | string | `zh-CN` | Output language preference |
+| `system.language` | string | `en-US` | Output language preference |
 | `system.interaction_mode` | string | `semi-auto` | Interaction mode (auto/semi-auto/manual) |
 | `system.confirm_before_generate` | bool | `true` | Ask before generating code |
 | `system.confirm_before_save` | bool | `true` | Ask before saving files |
@@ -380,7 +380,7 @@ Default configuration:
 ```yaml
 system:
   default_agent: conductor
-  language: zh-CN
+  language: en-US
   interaction_mode: semi-auto
   confirm_before_generate: true
   confirm_before_save: true

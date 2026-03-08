@@ -93,12 +93,12 @@ When invoked, perform these steps:
 ### Review Checklist
 | Item | Status | Note |
 |------|------|------|
-| [Item] | ✅/❌ | [Note] |
+| [Item] | Pass/Fail | [Note] |
 
 ### Issue List
 | Severity | Location | Issue | Suggestion |
 |--------|------|------|------|
-| 🔴/🟡/🟢 | [Location] | [Issue] | [Suggestion] |
+| Critical/Warning/Info | [Location] | [Issue] | [Suggestion] |
 
 ### Summary
 [Overall assessment and key recommendations]

@@ -14,6 +14,14 @@ Analyze requirements documents and extract domain concepts.
 
 ---
 
+## Prerequisites Check
+
+| Check | Condition | On Failure |
+|-------|-----------|------------|
+| Requirements provided | User provided requirements text or specified a file | "No requirements provided. Please include requirements text or specify a file: `#analyze path/to/prd.md`" |
+
+---
+
 ## Execution Flow
 
 **Step 1: Load Requirements**
@@ -36,9 +44,15 @@ Analyze requirements documents and extract domain concepts.
 - Prioritize questions by impact
 
 **Step 5: Update Workspace**
+- GENERATE change-id per `_shared.md` Change ID Convention
+- CREATE `workspace/state/active-change.yaml` with new change-id
 - WRITE `workspace/context/requirements.yaml`
 - WRITE `workspace/artifacts/{change-id}/analysis.md`
 - UPDATE `session.yaml` history
+
+**Step 6: Index Update**
+- UPDATE `workspace/state/semantic-index.yaml` with extracted topics, entities, keywords
+  (See `skills/_system/semantic-indexer.md` for extraction rules)
 
 ---
 

@@ -104,3 +104,13 @@ flowchart LR
 - Continue design with `#design`
 - After design, use `#implement` to start coding
 ```
+
+---
+
+## Workspace Health Check
+
+After displaying workflow status, also check:
+- Count artifact files in `workspace/artifacts/changes/`
+- If count > 5, append to output:
+
+> **Workspace Notice**: {count} change artifacts found. Consider running `#cleanup` to reduce context size.

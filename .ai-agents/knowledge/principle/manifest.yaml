@@ -18,15 +18,13 @@ token_estimate:
       summary: "Project review checklist (auto-generated)"
 
 loading_strategy:
-  level_1_manifest_only:
+  level_1_overview:
+    description: "Read manifest only for summary"
     tokens: 100
     use_case: "Check available project standards"
 
-  level_2_targeted:
-    tokens: 500-1500
-    use_case: "Specific coding standard reference"
-
-  level_3_full:
+  level_2_full:
+    description: "Load complete knowledge files"
     tokens: 500-3000
     use_case: "Complete standards reference for review"
 

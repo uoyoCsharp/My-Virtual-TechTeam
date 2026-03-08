@@ -19,7 +19,7 @@ states:
       - action: "Clear previous analysis cache if needed"
 
     execution:
-      commands: ["#analyze", "#extract", "#clarify"]
+      commands: ["#analyze"]
       expected_outputs:
         - workspace/context/requirements.yaml
         - workspace/artifacts/{change-id}/analysis.md
@@ -61,7 +61,7 @@ states:
       - action: "Load active pattern knowledge"
 
     execution:
-      commands: ["#design", "#plan"]
+      commands: ["#design", "#design --plan"]
       expected_outputs:
         - workspace/context/architecture.yaml
         - workspace/artifacts/{change-id}/design.md
@@ -124,7 +124,7 @@ states:
       - action: "Load architecture for compliance check"
 
     execution:
-      commands: ["#review", "#check"]
+      commands: ["#review"]
       expected_outputs:
         - workspace/artifacts/{change-id}/review.md
 

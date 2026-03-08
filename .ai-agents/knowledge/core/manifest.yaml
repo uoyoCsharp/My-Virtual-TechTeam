@@ -13,22 +13,13 @@ token_estimate:
       summary: "SOLID, DRY, KISS, YAGNI, composition over inheritance, separation of concerns"
 
 loading_strategy:
-  level_1_manifest_only:
+  level_1_overview:
+    description: "Read manifest only for summary"
     tokens: 100
     use_case: "Check available knowledge"
 
-  level_2_targeted:
-    tokens: 500-1000
-    use_case: "Specific principle reference"
-    semantic_index:
-      - keywords: ["SOLID", "single responsibility", "open closed"]
-        load: ["software-principles.md#solid"]
-      - keywords: ["DRY", "duplication", "reuse"]
-        load: ["software-principles.md#dry"]
-      - keywords: ["cohesion", "coupling"]
-        load: ["software-principles.md#code-organization"]
-
-  level_3_full:
+  level_2_full:
+    description: "Load complete knowledge files"
     tokens: 2200
     use_case: "Complete principles reference"
 

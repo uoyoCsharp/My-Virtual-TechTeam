@@ -10,15 +10,13 @@ token_estimate:
   note: "Add token estimates when adding project files"
 
 loading_strategy:
-  level_1_manifest_only:
+  level_1_overview:
+    description: "Read manifest only for summary"
     tokens: 100
     use_case: "Check available project knowledge"
 
-  level_2_targeted:
-    tokens: variable
-    use_case: "Specific project knowledge"
-
-  level_3_full:
+  level_2_full:
+    description: "Load complete knowledge files"
     tokens: variable
     use_case: "Complete project context"
 

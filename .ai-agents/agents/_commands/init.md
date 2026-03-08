@@ -39,7 +39,6 @@ Present detected pattern with options:
 | `yes` | Accept recommended pattern |
 | `{pattern_id}` | Select specific pattern (ddd, clean-architecture, etc.) |
 | `analyze` | Trigger custom pattern analysis |
-| `generic` | Use generic pattern |
 | `none` | No pattern, proceed without architecture guidance |
 
 **Phase 4: Workspace Population**

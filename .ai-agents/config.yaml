@@ -3,7 +3,7 @@
 # Resources (agents, skills, patterns) are discovered dynamically from their directories.
 
 name: "AI Agent Workflow Framework"
-version: "3.0"
+version: "1.0"
 
 # ============================================================
 # System Settings
@@ -30,28 +30,18 @@ output:
 # ============================================================
 pattern:
   # Active architecture pattern
-  # Options: ddd, clean-architecture, frontend-react, generic
+  # Options: ddd, clean-architecture, frontend-react
   # Use "#init" to auto-detect or "#config" to change
   active: ddd
 
   selection:
     auto_detect: true
     confirm_with_user: true
-    fallback: generic
 
 # ============================================================
 # Workspace Settings
 # ============================================================
 workspace:
-  retention:
-    artifacts_max_changes: 5
-    auto_summarize: true
-    summary_style: "decisions_only"
-    ttl:
-      detailed: "7 days"
-      summary: "30 days"
-      decisions: "forever"
-
   smart_loading:
     enabled: true
     default_level: minimal
@@ -59,12 +49,6 @@ workspace:
   code_mapping:
     enabled: true
     auto_sync: true
-
-  semantic_index:
-    enabled: true
-    update_on:
-      - file_change
-      - phase_complete
 
 # ============================================================
 # Knowledge Settings
@@ -85,19 +69,6 @@ knowledge:
 discovery:
   # Discovery mode: dynamic (scan on demand) | cached (use cache)
   mode: dynamic
-
-  # Cache configuration
-  cache:
-    enabled: true
-    # Cache TTL: session (until session ends) | always (always use cache)
-    ttl: session
-    # When to invalidate cache
-    invalidate_on:
-      - file_change
-      - config_change
-
-  # Discovery timeout (ms)
-  timeout: 30000
 
 # ============================================================
 # Quick Path Presets

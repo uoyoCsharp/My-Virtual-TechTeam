@@ -14,4 +14,4 @@ contents:
   - id: code-review
     file: code-review.yaml
     phases: [analyze, review, report]
-    summary: Review existing code for quality and standards compliance
+    summary: Internal execution flow of the #review command (not user-invocable)

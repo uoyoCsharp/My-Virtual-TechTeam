@@ -1,7 +1,7 @@
 patterns:
   id: patterns
   name: Architecture Patterns
-  version: "2.0"
+  version: "1.0"
   description: Collection of architecture patterns for software design
 
 loading:
@@ -22,7 +22,6 @@ available:
     files:
       - overview.md
       - tactical-patterns.md
-      - strategic-patterns.md
       - review-checklist.md
 
   - id: clean-architecture

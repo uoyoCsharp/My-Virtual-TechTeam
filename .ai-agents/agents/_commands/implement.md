@@ -9,8 +9,14 @@
 Implement features based on architecture design.
 
 ### Prerequisites
-- Architecture design exists (`workspace/context/architecture.yaml`)
+- Architecture design exists (`workspace/context/architecture.yaml` is non-empty)
 - Requirements analysis completed
+
+## Prerequisites Check
+
+| Check | Condition | On Failure |
+|-------|-----------|------------|
+| Architecture exists | `workspace/context/architecture.yaml` is non-empty | "No architecture design found. Run `#design` first." |
 
 ---
 
@@ -34,6 +40,10 @@ Implement features based on architecture design.
 **Step 4: Update Workspace**
 - UPDATE `workspace/state/code-mapping.yaml`
 - UPDATE `session.yaml` history
+
+**Step 5: Archive Check**
+- CHECK artifact count in `workspace/artifacts/`
+- IF exceeds 5 items, suggest `#cleanup` to the user
 
 ---
 

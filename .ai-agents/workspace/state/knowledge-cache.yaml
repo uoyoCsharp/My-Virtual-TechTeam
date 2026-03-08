@@ -1,7 +1,7 @@
 # Dynamic Discovery Cache
 # Stores discovered resources and loaded knowledge to avoid redundant scans
 
-version: "3.0"
+version: "1.0"
 
 # ============================================================
 # Cache Metadata
@@ -19,13 +19,12 @@ cache:
 # ============================================================
 discovered:
 
-  # Agents discovered from agents/*.yaml
+  # Agents discovered from agents/*.md
   agents: []
     # Example:
     # - id: conductor
     #   name: Conductor
-    #   file: agents/conductor.yaml
-    #   prompt: agents/conductor.prompt.md
+    #   file: agents/conductor.md
     #   commands: [init, status, config]
     #   discovered_at: "2026-03-08T12:00:00Z"
 
@@ -93,5 +92,5 @@ invalidation:
   last_invalidated: null
     # Example:
     # - trigger: file_change
-    #   file: agents/conductor.yaml
+    #   file: agents/conductor.md
     #   at: "2026-03-08T12:00:00Z"

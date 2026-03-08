@@ -12,6 +12,12 @@ Refactor existing code while preserving behavior.
 - Code exists to refactor
 - Understanding of current behavior
 
+## Prerequisites Check
+
+| Check | Condition | On Failure |
+|-------|-----------|------------|
+| Refactor target specified | User specified what to refactor | "Please specify what to refactor: `#refactor {target}`" |
+
 ---
 
 ## Execution Flow

@@ -15,6 +15,14 @@ Synchronize context with code changes after manual modifications.
 
 ---
 
+## Prerequisites Check
+
+| Check | Condition | On Failure |
+|-------|-----------|------------|
+| Project initialized | `workspace/context/project.yaml` is non-empty | "Project not initialized. Run `#init` first." |
+
+---
+
 ## Execution Flow
 
 1. **Detect Changes**

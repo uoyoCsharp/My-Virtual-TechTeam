@@ -23,6 +23,14 @@ Perform code review for quality, standards compliance, and best practices.
 
 ---
 
+## Prerequisites Check
+
+| Check | Condition | On Failure |
+|-------|-----------|------------|
+| Code to review | Recent implementation files exist or user specified files | "No code to review. Run `#implement` first or specify files." |
+
+---
+
 ## Execution Flow
 
 **Step 1: Identify Review Target**

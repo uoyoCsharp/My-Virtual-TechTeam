@@ -15,6 +15,14 @@ Reverse-analyze existing code to generate context and infer requirements.
 
 ---
 
+## Prerequisites Check
+
+| Check | Condition | On Failure |
+|-------|-----------|------------|
+| Source code exists | Project has source files to analyze | "No source code found. Please ensure the project has source files." |
+
+---
+
 ## Execution Flow
 
 **Step 1: Scan Codebase**

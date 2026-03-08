@@ -23,14 +23,9 @@ Examples:
 
 ### Command-to-Agent Mapping
 
-| Commands | Agent | File |
-|----------|-------|------|
-| `init`, `status`, `config`, `sync-context`, `update-framework` | Conductor | `agents/conductor.md` |
-| `analyze`, `analyze-code` | Analyst | `agents/analyst.md` |
-| `design` | Architect | `agents/architect.md` |
-| `implement`, `fix`, `refactor` | Developer | `agents/developer.md` |
-| `review` | Reviewer | `agents/reviewer.md` |
-| `test` | Tester | `agents/tester.md` |
+> Authority: `registry.yaml` > `commands` section
+
+When a `#command` is detected, look up the agent and command file in `registry.yaml`.
 
 ### Mode Switching Protocol
 
@@ -38,7 +33,7 @@ When a `#command` is detected:
 
 1. **Announce**: Output `[{Agent} Mode]`
 2. **Load Core**: READ `agents/{agent}.md`
-3. **Load Command**: READ `agents/{agent}/{command}.md` (specific command file)
+3. **Load Command**: READ `agents/_commands/{command}.md`
 4. **Execute**: Follow the agent's behavior rules
 5. **Stay**: Maintain role until another `#command`
 6. **Next Steps**: End with suggested commands
@@ -87,30 +82,15 @@ When a `#command` is detected:
 
 ## Context Loading
 
-### Required (Always Load)
-- `workspace/state/session.yaml` - Session state
-- `workspace/context/project.yaml` - Project info
+> Authority: `skills/_system/context-loader.md`
 
-### Optional (Load When Relevant)
-- `workspace/context/requirements.yaml` - For design/testing
-- `workspace/context/architecture.yaml` - For implementation/review
+Context loading rules are defined in the context-loader system skill.
+Required for every activation: `session.yaml` + `project.yaml`.
 
 ### Command Files
 Each command has its own file in `agents/_commands/`:
 - Auto-loaded when command is invoked
 - Contains execution flow, output format, and examples
-- For manual preview, READ the specific command file
-
-| Command | File |
-|---------|------|
-| `#init` | `agents/_commands/init.md` |
-| `#status` | `agents/_commands/status.md` |
-| `#analyze` | `agents/_commands/analyze.md` |
-| `#design` | `agents/_commands/design.md` |
-| `#implement` | `agents/_commands/implement.md` |
-| `#fix` | `agents/_commands/fix.md` |
-| `#review` | `agents/_commands/review.md` |
-| `#test` | `agents/_commands/test.md` |
 
 ---
 
