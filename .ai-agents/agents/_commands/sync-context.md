@@ -26,7 +26,11 @@ Synchronize context with code changes after manual modifications.
 ## Execution Flow
 
 1. **Detect Changes**
-   - IF git available: RUN `git diff --name-only HEAD~1`
+   - IF git available:
+     - RUN `git diff --name-only` (unstaged changes)
+     - RUN `git diff --name-only --cached` (staged changes)
+     - RUN `git diff --name-only HEAD~1` (last commit changes)
+     - MERGE results and deduplicate
    - ELSE: Scan for recently modified files
 
 2. **Analyze Changed Files**

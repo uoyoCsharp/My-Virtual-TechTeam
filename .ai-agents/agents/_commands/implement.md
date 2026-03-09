@@ -8,6 +8,11 @@
 
 Implement features based on architecture design.
 
+### Constraints
+- Do NOT modify architecture design — follow the existing design from `#design`
+- Do NOT re-analyze requirements — use what `#analyze` produced
+- Do NOT review your own code — code review is Reviewer's domain (`#review`)
+
 ### Prerequisites
 - Architecture design exists (`workspace/project-context.yaml` architecture section is non-empty)
 - Requirements analysis completed
@@ -17,6 +22,20 @@ Implement features based on architecture design.
 | Check | Condition | On Failure |
 |-------|-----------|------------|
 | Architecture exists | `workspace/project-context.yaml` architecture section is non-empty | "No architecture design found. Run `#design` first." |
+
+---
+
+## Knowledge Dependencies
+
+Before implementing, load the following (if they exist):
+
+| Path | Description |
+|------|-------------|
+| `knowledge/patterns/{active}/` | Active architecture pattern knowledge |
+| `knowledge/principle/coding-standards.md` | Project coding standards |
+| `workspace/artifacts/{active-change}/` | Current change artifacts (analysis, design) |
+
+> `{active}` refers to `pattern.active` in `config.yaml`
 
 ---
 
@@ -47,7 +66,7 @@ Implement features based on architecture design.
 
 ## Output Structure
 
-```markdown
+````markdown
 ## Implementation: {Feature Name}
 
 ### Files to Create/Modify
@@ -73,7 +92,7 @@ Implement features based on architecture design.
 **Suggested Next Steps**:
 - `#review` for code review
 - `#test` to generate tests
-```
+````
 
 ---
 
@@ -91,28 +110,16 @@ User: #implement User Login Feature
 |------|--------|-------------|
 | src/domain/User.ts | Modify | Add login method |
 | src/application/AuthService.ts | Create | Authentication service |
-| src/application/commands/LoginCommand.ts | Create | Login command |
 
 ### Implementation
 
 #### src/domain/User.ts
 ```typescript
 export class User {
-  // ... existing code ...
-
   async login(password: string, hasher: IPasswordHasher): Promise<boolean> {
-    if (this.isLocked) {
-      throw new AccountLockedError(this.id);
-    }
-
+    if (this.isLocked) throw new AccountLockedError(this.id);
     const isValid = await hasher.verify(password, this.passwordHash);
-    if (!isValid) {
-      await this.recordFailedAttempt();
-      return false;
-    }
-
-    this.resetFailedAttempts();
-    return true;
+    // ... record failed attempt or reset attempts
   }
 }
 ```
@@ -120,25 +127,10 @@ export class User {
 #### src/application/AuthService.ts
 ```typescript
 export class AuthService {
-  constructor(
-    private userRepo: IUserRepository,
-    private hasher: IPasswordHasher,
-    private tokenService: ITokenService
-  ) {}
-
   async login(email: string, password: string): Promise<LoginResult> {
     const user = await this.userRepo.findByEmail(email);
-    if (!user) {
-      throw new UserNotFoundError(email);
-    }
-
-    const success = await user.login(password, this.hasher);
-    if (!success) {
-      throw new InvalidCredentialsError();
-    }
-
-    const token = this.tokenService.generate(user.id);
-    return new LoginResult(user, token);
+    if (!user) throw new UserNotFoundError(email);
+    // ... verify password, generate token
   }
 }
 ```
@@ -146,7 +138,6 @@ export class AuthService {
 ### Change Summary
 - Added login method to User aggregate
 - Created AuthService for authentication orchestration
-- Implemented login command
 
 ---
 **Suggested Next Steps**:

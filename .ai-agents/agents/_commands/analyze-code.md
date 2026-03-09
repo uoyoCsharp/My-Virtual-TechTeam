@@ -42,7 +42,9 @@ Reverse-analyze existing code to generate context and infer requirements.
 
 **Step 4: Generate Context**
 - UPDATE `workspace/project-context.yaml` (architecture section)
-- WRITE `workspace/artifacts/{change-id}/code-analysis.md`
+- WRITE `workspace/artifacts/code-analysis/{timestamp}-analysis.md`
+
+> Note: `#analyze-code` is an independent operation — it does not create a change-id. Artifacts are stored under `workspace/artifacts/code-analysis/` instead of a change-id directory.
 
 **Step 5: Infer Requirements**
 - GENERATE feature list from code
@@ -53,7 +55,7 @@ Reverse-analyze existing code to generate context and infer requirements.
 
 ## Output Format
 
-```markdown
+````markdown
 ## Code Analysis Report
 
 ### Detected Architecture
@@ -93,7 +95,7 @@ Reverse-analyze existing code to generate context and infer requirements.
 - Review inferred requirements
 - `#design` to formalize architecture
 - `#init --deep` for complete analysis
-```
+````
 
 ---
 

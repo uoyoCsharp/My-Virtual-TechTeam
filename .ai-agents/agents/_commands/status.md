@@ -10,7 +10,15 @@ Display current project and workflow status.
 
 ---
 
-## Execution
+## Prerequisites Check
+
+| Check | Condition | On Failure |
+|-------|-----------|------------|
+| Project initialized | `workspace/session.yaml` exists and is non-empty | "Project not initialized. Run `#init` first." |
+
+---
+
+## Execution Flow
 
 1. READ `workspace/session.yaml`
 2. READ `workspace/project-context.yaml`
@@ -20,7 +28,7 @@ Display current project and workflow status.
 
 ## Output Format
 
-```markdown
+````markdown
 ## Project Status
 
 ### Current: {phase} Phase ({agent})
@@ -58,57 +66,14 @@ flowchart LR
 ---
 **Suggested Next Steps**:
 - {relevant_next_step}
-```
-
----
-
-## Example
-
-```
-User: #status
-
-[Conductor Mode]
-
-## Project Status
-
-### Current: Design Phase (Architect)
-
-```mermaid
-flowchart LR
-    A[analyze] ===> B[design] ---> C[implement] ---> D[review] ---> E[test]
-    style A fill:#90EE90
-    style B fill:#FFD700
-    style C fill:#E0E0E0
-    style D fill:#E0E0E0
-    style E fill:#E0E0E0
-```
-
-### Project: my-api
-- **Type**: api
-- **Pattern**: ddd
-- **Tech Stack**: TypeScript / Express
-
-### Session Progress
-| Phase | Status | Time |
-|-------|--------|------|
-| Analyze | [x] Complete | 10:15 |
-| Design | [~] In Progress | - |
-| Implement | [ ] Pending | - |
-| Review | [ ] Pending | - |
-| Test | [ ] Pending | - |
-
----
-**Suggested Next Steps**:
-- Continue design with `#design`
-- After design, use `#implement` to start coding
-```
+````
 
 ---
 
 ## Workspace Health Check
 
 After displaying workflow status, also check:
-- Count artifact files in `workspace/artifacts/changes/`
+- Count artifact directories in `workspace/artifacts/` (each `{change-id}/` subdirectory)
 - If count > 5, append to output:
 
 > **Workspace Notice**: {count} change artifacts found. Consider running `#cleanup` to reduce context size.

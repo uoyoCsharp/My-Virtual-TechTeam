@@ -93,7 +93,7 @@ Analyze requirements documents and extract domain concepts.
 
 ---
 
-## Example 1: Analyzing Inline Requirements
+## Example
 
 ```
 User: #analyze
@@ -125,57 +125,14 @@ User needs a login feature:
 ### Clarification Needed
 | ID | Question | Impact |
 |----|----------|--------|
-| C1 | How should locked accounts be unlocked? (auto-unlock/admin-unlock) | High |
+| C1 | How should locked accounts be unlocked? | High |
 | C2 | What is the duration for "Remember Me"? | Medium |
-| C3 | Is login activity logging required? | Low |
 
 ### Assumptions Made
-- Token-based authentication mechanism will be used
-- Lockout duration is 30 minutes
+- Token-based authentication, 30-minute lockout duration
 
 ---
 **Suggested Next Steps**:
-- Answer C1-C3 to clarify requirements
-- After clarification, use `#design` for architecture
-```
-
----
-
-## Example 2: Analyzing a File
-
-```
-User: #analyze docs/prd.md
-
-[Analyst Mode]
-
-Reading docs/prd.md...
-
-## Requirements Analysis
-
-### Features Identified
-| ID | Feature | Description | Priority |
-|----|---------|-------------|----------|
-| F1 | User Registration | Register new user accounts | High |
-| F2 | Email Verification | Verify user email addresses | High |
-| F3 | Profile Management | Manage user profile information | Medium |
-
-### Actors
-- **User**: Users registering and using the system
-- **Admin**: System administrators
-
-### Business Rules
-| ID | Rule | Source |
-|----|------|--------|
-| BR1 | Email must be unique | PRD Section 2.1 |
-| BR2 | Password must be at least 8 characters with letters and numbers | PRD Section 2.2 |
-
-### Clarification Needed
-| ID | Question | Impact |
-|----|----------|--------|
-| C1 | Is third-party login supported (Google/GitHub)? | High |
-
----
-**Suggested Next Steps**:
-- Answer C1
-- `#design` for architecture design
+- Answer C1-C2 to clarify requirements
+- `#design` for architecture
 ```

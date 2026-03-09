@@ -1,5 +1,9 @@
 # #cleanup Command
 
+> Load this file when `#cleanup` command is invoked.
+
+---
+
 ## Purpose
 Clean up workspace artifacts, summarize old changes, and maintain workspace health.
 
@@ -16,7 +20,7 @@ Clean up workspace artifacts, summarize old changes, and maintain workspace heal
 ## Execution Flow
 
 ### Step 1: Scan Workspace State
-- READ all files under `workspace/artifacts/changes/`
+- READ all files under `workspace/artifacts/{change-id}/` (scan all change-id directories)
 - READ `workspace/session.yaml`
 - COUNT total artifact files and estimate token footprint
 
@@ -47,3 +51,36 @@ If `--dry-run` flag is set, stop here. Do not proceed to Step 4.
 
 ## Output Format
 Cleanup summary with before/after token estimates.
+
+---
+
+## Example
+
+```
+User: #cleanup
+
+[Conductor Mode]
+
+## Workspace Cleanup
+
+### Cleanup Candidates
+| Item | Current Size | Action | Result |
+|------|-------------|--------|--------|
+| 20260301-user-auth (completed) | ~2500 tokens | Summarize | ~400 tokens |
+| 20260305-order-module (completed) | ~1800 tokens | Summarize | ~300 tokens |
+| Orphaned: draft-notes.md | ~600 tokens | Remove | 0 tokens |
+| **Total** | **~4900 tokens** | | **~700 tokens (4200 saved)** |
+
+Proceed with cleanup? [Y/n]
+
+User: Y
+
+Cleanup complete:
+- 2 changes summarized and archived
+- 1 orphaned artifact removed
+- Token footprint reduced by ~4200 tokens
+
+---
+**Suggested Next Steps**:
+- `#status` to verify workspace state
+```

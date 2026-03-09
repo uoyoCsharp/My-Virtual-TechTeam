@@ -82,3 +82,44 @@ Proceed with update? [Y/n]
 3. Apply updates, preserving protected directories
 4. Update platform-specific adapter files if needed
 5. Verify file integrity and report success/failure
+
+---
+
+## Example
+
+```
+User: #update-framework
+
+[Conductor Mode]
+
+## Framework Update Available
+
+### Version Information
+- **Current Version**: 0.3.0
+- **Available Version**: 0.4.0
+
+### Files to Update
+| Category | Files |
+|----------|-------|
+| Core Framework | .ai-agents/agents/*, .ai-agents/skills/* |
+| Platform Adapter | .github/agents/ (GitHub Copilot detected) |
+
+### What Will Be Preserved
+- workspace/ (your working state)
+- knowledge/principle/ (project-specific standards)
+- knowledge/project/ (custom project knowledge)
+
+Proceed with update? [Y/n]
+
+User: Y
+
+Update applied successfully.
+- Backup created: .ai-agents/.backup/20260309-143022/
+- 12 files updated
+- All protected files preserved
+
+---
+**Suggested Next Steps**:
+- `#status` to verify project state
+- `#update-framework check` next time for preview only
+```

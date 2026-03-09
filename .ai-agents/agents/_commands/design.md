@@ -8,6 +8,11 @@
 
 Create system architecture design based on requirements analysis.
 
+### Constraints
+- Do NOT write implementation code — code is Developer's domain (`#implement`)
+- Do NOT re-analyze or modify requirements — use what `#analyze` produced
+- Do NOT make assumptions about missing requirements — ask for clarification
+
 ### Usage
 - `#design` - Create architecture design
 - `#design --plan` - Create design with implementation timeline
@@ -61,7 +66,7 @@ Create system architecture design based on requirements analysis.
 
 ## Output Structure
 
-```markdown
+````markdown
 ## Architecture Design: {Feature/Module Name}
 
 ### Architecture Overview
@@ -110,7 +115,7 @@ interface I{InterfaceName} {
 **Suggested Next Steps**:
 - Review and confirm design
 - `#implement` to start implementation
-```
+````
 
 ---
 
@@ -140,7 +145,7 @@ Proposed | Accepted | Deprecated | Superseded
 
 ---
 
-## Example 1: Designing a User Module
+## Example
 
 ```
 User: #design User Module
@@ -150,7 +155,7 @@ User: #design User Module
 ## Architecture Design: User Module
 
 ### Architecture Overview
-Design the user module using DDD tactical patterns. User serves as an aggregate root, containing two subdomains: authentication and profile.
+User module using DDD tactical patterns. User serves as aggregate root with authentication and profile subdomains.
 
 ### Architecture Diagram
 ```mermaid
@@ -158,137 +163,46 @@ graph TD
     UI[User Interface] --> APP[Application Layer]
     APP --> DOMAIN[Domain Layer]
     DOMAIN --> INFRA[Infrastructure Layer]
-
-    subgraph Domain Layer
-        USER[User Aggregate]
-        REPO[IUserRepository]
-    end
-
-    subgraph Application Layer
-        SERVICE[UserService]
-        CMD[Commands]
-    end
 ```
 
 ### Module Structure
 | Module | Purpose | Dependencies |
 |--------|---------|--------------|
 | domain/user | User aggregate and business rules | - |
-| application/user | Use cases and application services | domain/user |
+| application/user | Use cases and services | domain/user |
 | infrastructure/persistence | Repository implementations | domain/user |
 
 ### Key Components
 | Component | Responsibility | Layer |
 |-----------|---------------|-------|
 | User | Aggregate root, identity management | Domain |
-| UserService | Application service, orchestration | Application |
+| UserService | Orchestration | Application |
 | IUserRepository | Persistence interface | Domain |
-| UserRepositoryImpl | Database operations | Infrastructure |
 
 ### Technical Decisions (ADR)
 | # | Decision | Choice | Rationale |
 |---|----------|--------|-----------|
 | 1 | Authentication | JWT | Stateless, scalable |
 | 2 | Password hashing | bcrypt | Industry standard |
-| 3 | Validation | Domain validation in entity | DDD best practice |
 
 ### Interface Definitions
 ```typescript
-// domain/user/IUserRepository.ts
 interface IUserRepository {
   findById(id: UserId): Promise<User | null>;
   findByEmail(email: Email): Promise<User | null>;
   save(user: User): Promise<void>;
-  delete(id: UserId): Promise<void>;
 }
 ```
 
-### Implementation Guidelines
-- All business logic must be in the Domain layer
-- Application layer only handles orchestration, no business rules
-- Use Domain Events for inter-module communication
+### Implementation Plan (with --plan)
+| Phase | Task | Dependencies | Complexity |
+|-------|------|--------------|------------|
+| 1 | Create domain entities | - | Medium |
+| 2 | Implement repository interfaces | Phase 1 | Low |
+| 3 | Create application services | Phase 1 | Medium |
 
 ---
 **Suggested Next Steps**:
 - Confirm design decisions
 - `#implement` to start coding
-```
-
----
-
-## Example 2: Design with Implementation Plan
-
-```
-User: #design --plan Order Module
-
-[Architect Mode]
-
-## Architecture Design: Order Module
-
-### Architecture Overview
-{... architecture details ...}
-
-### Implementation Plan
-| Phase | Task | Dependencies | Complexity | Est. Time |
-|-------|------|--------------|------------|-----------|
-| 1 | Create domain entities | - | Medium | 2h |
-| 2 | Implement repository interfaces | Phase 1 | Low | 1h |
-| 3 | Create application services | Phase 1 | Medium | 3h |
-| 4 | Implement infrastructure | Phase 2-3 | Medium | 2h |
-| 5 | Add API endpoints | Phase 3-4 | Low | 2h |
-
-**Total Estimated: 10 hours**
-
-### Risk Areas
-- Order status state machine complexity
-- Concurrent order processing
-- Payment integration
-
----
-**Suggested Next Steps**:
-- Confirm plan
-- `#implement` to start with Phase 1
-```
-
----
-
-## Example 3: Trade-off Documentation
-
-```
-User: #design Payment Module
-Note: Need to support multiple payment methods
-
-[Architect Mode]
-
-## Architecture Design: Payment Module
-
-### Trade-off Analysis
-
-**Decision: Payment Gateway Abstraction**
-
-| Option | Pros | Cons |
-|--------|------|------|
-| A: Direct Integration | Simple, fast | Vendor lock-in |
-| B: Gateway Abstraction | Flexible, extensible | More complex |
-
-**Recommendation**: Option B - Gateway Abstraction
-
-**Rationale**:
-- Business requirement to support multiple payment methods
-- Future expansion to international markets
-- Compliance requirements vary by region
-
-### Gateway Interface Design
-```typescript
-interface IPaymentGateway {
-  processPayment(order: Order, method: PaymentMethod): Promise<PaymentResult>;
-  refund(transactionId: string): Promise<RefundResult>;
-  getTransactionStatus(transactionId: string): Promise<TransactionStatus>;
-}
-```
-
----
-**Suggested Next Steps**:
-- Confirm architecture
-- `#implement` to start implementation
 ```
