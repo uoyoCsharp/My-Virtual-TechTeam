@@ -44,7 +44,7 @@ Multi-agent collaboration framework for software development.
 | `agents/{agent}.md` | Agent core file (role + behavioral rules) |
 | `agents/_commands/{command}.md` | Command-specific execution file |
 | `skills/` | Modular capabilities (on-demand) |
-| `skills/_system/` | System skills (context-loader, archive-manager) |
+| `skills/_system/` | System skills (context-loader, semantic-indexer) |
 | `workflows/` | Workflow state machine definitions |
 | `knowledge/` | Domain knowledge |
 | `knowledge/core/` | Core principles (always loaded) |

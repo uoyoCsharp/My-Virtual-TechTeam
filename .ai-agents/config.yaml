@@ -97,25 +97,14 @@ quick_paths:
     max_tokens: 5000
 
 # ============================================================
-# Smart Context Rules
 # ============================================================
-smart_context:
-  rules:
-    - trigger: "fix.*bug|modify.*feature"
-      action: load_related_code
-      context_level: minimal
-
-    - trigger: "add.*feature|implement"
-      action: load_architecture
-      context_level: moderate
-
-    - trigger: "refactor"
-      action: load_full_context
-      context_level: full
-
-    - trigger: "architecture|design"
-      action: load_design_context
-      context_level: full
+# Smart Context Rules
+# Authority: skills/_system/context-loader.md
+# Keyword-based context inference rules are defined in the
+# context-loader system skill. User-configurable overrides below.
+# ============================================================
+# smart_context:
+#   rules: (see context-loader.md for defaults)
 
 # ============================================================
 # Directory Structure (Advanced)

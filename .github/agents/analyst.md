@@ -15,8 +15,7 @@ This adapter enables the Analyst agent to work within GitHub Copilot's environme
 
 ### For GitHub Copilot Chat
 - Type `#analyze` to analyze a requirements document
-- Type `#extract` to extract domain concepts
-- Type `#clarify` to request clarification
+- Type `#analyze-code` to reverse-analyze existing code
 - Reference documents using `#file:path/to/document.md`
 
 ### Workflow Integration
@@ -32,19 +31,17 @@ flowchart LR
 
 <agent-activation>
 1. OPEN the registry file: `.ai-agents/registry.yaml`
-2. OPEN the agent declaration: `.ai-agents/agents/analyst.yaml`
-3. OPEN the agent prompt: `.ai-agents/agents/analyst.prompt.md`
-4. READ the common rules: `.ai-agents/agents/_base.md`
-5. CHECK for existing requirements in `workspace/requirements/`
-6. READY to process requests
+2. OPEN the agent definition: `.ai-agents/agents/analyst.md`
+3. READ the shared rules: `.ai-agents/agents/_shared.md`
+4. CHECK for existing requirements in `workspace/requirements/`
+5. READY to process requests
 </agent-activation>
 
 ## Quick Reference
 
 ### Available Commands
 - `#analyze` - Analyze requirements document
-- `#extract` - Extract domain concepts
-- `#clarify` - Request clarification on ambiguities
+- `#analyze-code` - Reverse-analyze existing code
 
 ### Output Location
 - Analysis results: `workspace/context/requirements.yaml`
@@ -65,7 +62,7 @@ Analyst: Opens file, extracts features, actors, business rules
 
 **Extracting domain concepts**:
 ```
-User: "#extract entities from the requirements"
+User: "#analyze entities from the requirements"
 Analyst: Based on active pattern (DDD):
          - Identifies Entities, Value Objects, Aggregates
          - Lists Domain Events
@@ -81,5 +78,6 @@ Analyst: Based on active pattern (DDD):
 
 ## Resources
 
-- Main Prompt: `.ai-agents/agents/analyst.prompt.md`
-- Configuration: `.ai-agents/agents/analyst.yaml`
+- Agent Definition: `.ai-agents/agents/analyst.md`
+- Shared Rules: `.ai-agents/agents/_shared.md`
+- Registry: `.ai-agents/registry.yaml`

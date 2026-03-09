@@ -1,5 +1,5 @@
 # Enables quick lookup of related content by topic, entity, or keyword
-# Auto-updated by archive-manager on phase completion
+# Updated by semantic-indexer on phase completion
 
 version: "1.0"
 last_updated: null

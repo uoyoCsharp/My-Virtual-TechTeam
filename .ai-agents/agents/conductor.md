@@ -16,6 +16,9 @@ commands:
     purpose: Synchronize context with code changes
   - trigger: "#update-framework"
     purpose: Update framework from GitHub
+  - trigger: "#cleanup"
+    purpose: Clean up workspace artifacts
+    options: ["--dry-run"]
 
 skills:
   - project-initialization
@@ -64,6 +67,7 @@ Orchestrate the software development workflow by:
 | `#config` | Manage configuration | `#config show` / `#config wizard` |
 | `#sync-context` | Sync with code | `#sync-context` |
 | `#update-framework` | Update framework | `#update-framework` |
+| `#cleanup` | Clean workspace | `#cleanup` / `#cleanup --dry-run` |
 
 > Command details auto-load when invoked. For manual preview, see `_commands/{command}.md`.
 

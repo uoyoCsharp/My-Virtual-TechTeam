@@ -56,9 +56,9 @@ flowchart TD
 
 ```
 FUNCTION discover_agents():
-  1. LIST files in agents/ matching *.yaml
+  1. LIST files in agents/ matching *.md (excluding _shared.md and _commands/)
   2. FOR each file:
-     - READ file
+     - READ YAML frontmatter
      - EXTRACT: id, name, commands, skills
   3. RETURN agent index
 ```

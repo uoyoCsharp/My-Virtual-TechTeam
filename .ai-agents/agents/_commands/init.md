@@ -8,6 +8,8 @@
 
 Build complete project context for AI-assisted development.
 
+> **Detailed Methodology**: See `skills/project-initialization.md` for deep project analysis phases, detection patterns, and knowledge generation rules.
+
 ### Variants
 
 | Variant | Behavior | Use Case |

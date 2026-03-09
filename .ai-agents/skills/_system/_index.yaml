@@ -7,8 +7,8 @@ skills:
     file: context-loader.md
     auto_invoke: on_activation
     summary: Smart context loader
-    
-  - id: archive-manager
-    file: archive-manager.md
-    triggers: [on_session_end, on_change_complete, daily]
-    summary: Archive manager
+
+  - id: semantic-indexer
+    file: semantic-indexer.md
+    triggers: [on_phase_complete, on_code_change]
+    summary: Semantic indexer

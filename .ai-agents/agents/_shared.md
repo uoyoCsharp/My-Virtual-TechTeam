@@ -1,3 +1,9 @@
+---
+id: shared-rules
+type: shared
+applies_to: all_agents
+---
+
 # Shared Agent Rules
 
 All agents MUST follow these rules.
@@ -23,7 +29,8 @@ When user input starts with `#{command}`:
 
 ## Context Loading
 
-> Full rules: `skills/_system/context-loader.md`
+> Authority: `skills/_system/context-loader.md`
+> Context loading strategy, tiered levels, and keyword inference rules are defined in the context-loader system skill.
 
 Always load before any operation:
 - `workspace/state/session.yaml`
@@ -70,7 +77,7 @@ When creating a new change (triggered by `#analyze`):
 ### Workflow
 1. `#analyze` creates the change-id and writes to `workspace/state/active-change.yaml`
 2. All subsequent phases use the same change-id
-3. On completion, archive-manager moves artifacts to history
+3. On completion, use `#cleanup` to summarize and archive old artifacts
 
 ---
 

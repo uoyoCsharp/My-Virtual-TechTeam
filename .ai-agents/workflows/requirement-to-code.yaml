@@ -7,6 +7,8 @@ states:
     display_name: "Requirements Analysis"
     agent: analyst
     description: Analyze requirements and extract concepts
+    next: design
+    inputs: [requirements_document]
 
     entry_conditions:
       - type: resource_available
@@ -48,6 +50,8 @@ states:
     display_name: "Architecture Design"
     agent: architect
     description: Create system architecture based on requirements
+    next: implement
+    inputs: [requirement_analysis]
 
     entry_conditions:
       - type: state_completed
@@ -86,6 +90,8 @@ states:
     display_name: "Code Implementation"
     agent: developer
     description: Implement code based on architecture design
+    next: review
+    inputs: [architecture_design, implementation_plan]
 
     entry_conditions:
       - type: state_completed
@@ -114,6 +120,8 @@ states:
     display_name: "Code Review"
     agent: reviewer
     description: Review code for quality and standards
+    next: test
+    inputs: [implementation_code, architecture_design]
 
     entry_conditions:
       - type: state_completed
@@ -143,6 +151,8 @@ states:
     display_name: "Testing"
     agent: tester
     description: Generate and run tests
+    next: complete
+    inputs: [implementation_code, requirement_analysis]
 
     entry_conditions:
       - type: state_completed
@@ -167,69 +177,10 @@ states:
     rollback:
       allowed: false
 
-phases:
-  - id: analyze
-    name: Requirements Analysis
-    agent: analyst
-    description: Analyze requirements and extract concepts
-    inputs:
-      - requirements_document
-    outputs:
-      - requirement_analysis
-      - concept_map
-    next: design
-
-  - id: design
-    name: Architecture Design
-    agent: architect
-    description: Create system architecture based on requirements
-    inputs:
-      - requirement_analysis
-    outputs:
-      - architecture_design
-      - implementation_plan
-    next: implement
-
-  - id: implement
-    name: Code Implementation
-    agent: developer
-    description: Implement code based on architecture design
-    inputs:
-      - architecture_design
-      - implementation_plan
-    outputs:
-      - implementation_code
-    next: review
-
-  - id: review
-    name: Code Review
-    agent: reviewer
-    description: Review code for quality and standards
-    inputs:
-      - implementation_code
-      - architecture_design
-    outputs:
-      - review_report
-    next: test
-    on_issues: implement
-
-  - id: test
-    name: Testing
-    agent: tester
-    description: Generate and run tests
-    inputs:
-      - implementation_code
-      - requirement_analysis
-    outputs:
-      - test_cases
-      - test_report
-    next: complete
-    on_failure: implement
-
 config:
   confirm_phase_transition: true
   auto_save_context: true
-  allow_skip: false
+  allow_skip: true
   max_retries: 3
   error_handling: "pause_and_report"
 
@@ -269,6 +220,20 @@ transitions:
     condition: "tests_failed"
     description: "Return to implement when tests fail"
 
+  # Quick path: simple changes can skip design
+  - from: analyze
+    to: implement
+    trigger: "#implement"
+    guard: "requirements.yaml exists && user_confirmed && complexity_is_low"
+    description: "Quick path for simple changes that don't require architecture design"
+
+  # Iterative rollback: design phase discovers need for more requirements
+  - from: design
+    to: analyze
+    trigger: "#analyze"
+    condition: "new_requirements_discovered"
+    description: "Return to analysis when new requirements are found during design"
+
 error_recovery:
   on_missing_prerequisite:
     action: "Suggest running prerequisite phase"
@@ -282,5 +247,5 @@ error_recovery:
       - "Skip and continue (if allowed)"
 
   on_invalid_state:
-    action: "Use #recover command"
-    suggestion: "Run #recover to diagnose and fix state issues"
+    action: "Re-initialize project state"
+    suggestion: "Run #init --refresh to rebuild context, or manually check workspace/state/session.yaml"

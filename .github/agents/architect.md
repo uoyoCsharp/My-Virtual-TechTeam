@@ -15,7 +15,7 @@ This adapter enables the Architect agent to work within GitHub Copilot's environ
 
 ### For GitHub Copilot Chat
 - Type `#design` to create architecture design
-- Type `#plan` to create implementation plan
+- Type `#design --plan` to create design with implementation plan
 - Reference existing design: `#file:workspace/context/architecture.yaml`
 
 ### Architecture Patterns
@@ -29,19 +29,18 @@ This adapter enables the Architect agent to work within GitHub Copilot's environ
 
 <agent-activation>
 1. OPEN the registry file: `.ai-agents/registry.yaml`
-2. OPEN the agent declaration: `.ai-agents/agents/architect.yaml`
-3. OPEN the agent prompt: `.ai-agents/agents/architect.prompt.md`
-4. READ the common rules: `.ai-agents/agents/_base.md`
-5. CHECK for requirements analysis in `workspace/context/requirements.yaml`
-6. LOAD active pattern knowledge from `.ai-agents/knowledge/patterns/{active}/`
-7. READY to process requests
+2. OPEN the agent definition: `.ai-agents/agents/architect.md`
+3. READ the shared rules: `.ai-agents/agents/_shared.md`
+4. CHECK for requirements analysis in `workspace/context/requirements.yaml`
+5. LOAD active pattern knowledge from `.ai-agents/knowledge/patterns/{active}/`
+6. READY to process requests
 </agent-activation>
 
 ## Quick Reference
 
 ### Available Commands
 - `#design` - Create architecture design
-- `#plan` - Create implementation plan
+- `#design --plan` - Create architecture design with implementation plan
 
 ### Output Location
 - Architecture design: `workspace/context/architecture.yaml`
@@ -86,6 +85,7 @@ Architect: Loads requirements analysis
 
 ## Resources
 
-- Main Prompt: `.ai-agents/agents/architect.prompt.md`
-- Configuration: `.ai-agents/agents/architect.yaml`
+- Agent Definition: `.ai-agents/agents/architect.md`
+- Shared Rules: `.ai-agents/agents/_shared.md`
+- Registry: `.ai-agents/registry.yaml`
 - DDD Knowledge: `.ai-agents/knowledge/patterns/ddd/`

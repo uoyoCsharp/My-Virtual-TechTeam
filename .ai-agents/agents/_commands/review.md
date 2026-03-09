@@ -8,6 +8,8 @@
 
 Perform code review for quality, standards compliance, and best practices.
 
+> **Detailed Methodology**: See `skills/review-execution.md` for review checklists, knowledge dependencies, and capability details.
+
 ### Usage
 - `#review` - General code review
 - `#review --aspect {type}` - Focused review on specific aspect

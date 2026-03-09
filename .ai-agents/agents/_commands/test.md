@@ -8,6 +8,8 @@
 
 Generate and run tests to validate implementations.
 
+> **Detailed Methodology**: See `skills/test-generation.md` for test case design strategies, framework detection, and coverage analysis rules.
+
 ### Usage
 - `#test` - Generate tests for recent implementation
 - `#test {feature}` - Generate tests for specific feature

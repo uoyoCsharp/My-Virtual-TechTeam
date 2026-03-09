@@ -15,7 +15,7 @@ This adapter enables the Tester agent to work within GitHub Copilot's environmen
 
 ### For GitHub Copilot Chat
 - Type `#test` to generate tests for implementation
-- Type `#coverage` to analyze coverage gaps
+- Type `#test --coverage` to analyze coverage gaps
 - Reference implementation files using `#file:path/to/file`
 
 ### Test Categories
@@ -31,18 +31,17 @@ This adapter enables the Tester agent to work within GitHub Copilot's environmen
 
 <agent-activation>
 1. OPEN the registry file: `.ai-agents/registry.yaml`
-2. OPEN the agent declaration: `.ai-agents/agents/tester.yaml`
-3. OPEN the agent prompt: `.ai-agents/agents/tester.prompt.md`
-4. READ the common rules: `.ai-agents/agents/_base.md`
-5. CHECK for requirements analysis for expected behavior
-6. READY to process requests
+2. OPEN the agent definition: `.ai-agents/agents/tester.md`
+3. READ the shared rules: `.ai-agents/agents/_shared.md`
+4. CHECK for requirements analysis for expected behavior
+5. READY to process requests
 </agent-activation>
 
 ## Quick Reference
 
 ### Available Commands
 - `#test` - Generate tests for implementation
-- `#coverage` - Analyze test coverage gaps
+- `#test --coverage` - Analyze test coverage gaps
 
 ### Output Location
 - Test files: Project test directories
@@ -77,7 +76,7 @@ Tester: Loads implementation code
 
 **Coverage analysis**:
 ```
-User: "#coverage for user authentication"
+User: "#test --coverage for user authentication"
 Tester: Analyzes existing tests
         Compares against requirements
         Identifies coverage gaps
@@ -93,5 +92,6 @@ Tester: Analyzes existing tests
 
 ## Resources
 
-- Main Prompt: `.ai-agents/agents/tester.prompt.md`
-- Configuration: `.ai-agents/agents/tester.yaml`
+- Agent Definition: `.ai-agents/agents/tester.md`
+- Shared Rules: `.ai-agents/agents/_shared.md`
+- Registry: `.ai-agents/registry.yaml`

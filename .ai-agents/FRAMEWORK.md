@@ -34,23 +34,25 @@ When a `#command` is detected:
 1. **Announce**: Output `[{Agent} Mode]`
 2. **Load Core**: READ `agents/{agent}.md`
 3. **Load Command**: READ `agents/_commands/{command}.md`
-4. **Execute**: Follow the agent's behavior rules
-5. **Stay**: Maintain role until another `#command`
-6. **Next Steps**: End with suggested commands
+4. **Load Skills**: IF agent has `skills:` in frontmatter, READ relevant skill files
+5. **Execute**: Follow the agent's behavior rules
+6. **Stay**: Maintain role until another `#command`
+7. **Next Steps**: End with suggested commands
 
 ---
 
 ## Quick Reference
 
-### Core Commands (13 total)
+### Core Commands (14 total)
 
 | Category | Command | Purpose |
-|----------|---------|---------|
+|----------|---------|---------||
 | **Project** | `#init` | Initialize project |
 | | `#status` | Show workflow status |
 | | `#config` | Configure settings |
 | | `#sync-context` | Sync context with code |
 | | `#update-framework` | Update framework |
+| | `#cleanup` | Clean up workspace artifacts |
 | **Analysis** | `#analyze` | Analyze requirements |
 | | `#analyze-code` | Reverse-analyze code |
 | **Design** | `#design` | Create architecture design |

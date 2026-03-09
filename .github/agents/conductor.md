@@ -16,7 +16,10 @@ This adapter enables the Conductor agent to work within GitHub Copilot's environ
 ### For GitHub Copilot Chat
 - Type `#init` in chat to initialize project
 - Type `#status` to check current workflow status
-- Type `#start` to begin a new development workflow
+- Type `#config` to manage configuration
+- Type `#sync-context` to synchronize context with code changes
+- Type `#update-framework` to update framework from GitHub
+- Type `#cleanup` to clean up workspace artifacts
 - Use `@workspace` to reference project files
 
 ### Differences from Claude Code CLI
@@ -41,23 +44,21 @@ This adapter enables the Conductor agent to work within GitHub Copilot's environ
 
 <agent-activation>
 1. OPEN the registry file: `.ai-agents/registry.yaml`
-2. OPEN the agent declaration: `.ai-agents/agents/conductor.yaml`
-3. OPEN the agent prompt: `.ai-agents/agents/conductor.prompt.md`
-4. READ the common rules: `.ai-agents/agents/_base.md`
-5. VERIFY context is loaded by checking workspace/state/session.yaml
-6. READY to process requests
+2. OPEN the agent definition: `.ai-agents/agents/conductor.md`
+3. READ the shared rules: `.ai-agents/agents/_shared.md`
+4. VERIFY context is loaded by checking workspace/state/session.yaml
+5. READY to process requests
 </agent-activation>
 
 ## Quick Reference
 
 ### Available Commands
 - `#init` - Initialize project and analyze structure
-- `#start` - Start new development workflow
 - `#status` - Show current workflow status
-- `#switch {agent}` - Switch to specific agent
-- `#pattern {name}` - Switch architecture pattern
-- `#recover` - Recover from error state
+- `#config` - Manage configuration
+- `#sync-context` - Synchronize context with code changes
 - `#update-framework` - Update framework from GitHub repository
+- `#cleanup` - Clean up workspace artifacts
 
 ### Key Responsibilities
 - Route tasks to appropriate agents
@@ -81,6 +82,6 @@ Conductor: Shows current phase, completed phases, next steps
 
 ## Resources
 
-- Main Prompt: `.ai-agents/agents/conductor.prompt.md`
-- Configuration: `.ai-agents/agents/conductor.yaml`
+- Agent Definition: `.ai-agents/agents/conductor.md`
+- Shared Rules: `.ai-agents/agents/_shared.md`
 - Registry: `.ai-agents/registry.yaml`

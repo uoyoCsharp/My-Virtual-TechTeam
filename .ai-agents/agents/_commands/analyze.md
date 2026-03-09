@@ -26,6 +26,7 @@ Analyze requirements documents and extract domain concepts.
 
 **Step 1: Load Requirements**
 - IF file provided: READ the file
+- ELSE IF `workspace/requirements/` contains documents: LIST and present for selection
 - ELSE: Use requirements text from user message
 
 **Step 2: Extract Information**
@@ -134,7 +135,7 @@ User needs a login feature:
 | C3 | Is login activity logging required? | Low |
 
 ### Assumptions Made
-- JWT will be used for authentication
+- Token-based authentication mechanism will be used
 - Lockout duration is 30 minutes
 
 ---

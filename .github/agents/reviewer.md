@@ -15,8 +15,8 @@ This adapter enables the Reviewer agent to work within GitHub Copilot's environm
 
 ### For GitHub Copilot Chat
 - Type `#review` for comprehensive code review
-- Type `#check architecture` for architecture compliance
-- Type `#check security` for security-focused review
+- Type `#review --aspect architecture` for architecture compliance
+- Type `#review --aspect security` for security-focused review
 - Use `#file:path/to/file` to specify files to review
 
 ### Review Categories
@@ -33,21 +33,20 @@ This adapter enables the Reviewer agent to work within GitHub Copilot's environm
 
 <agent-activation>
 1. OPEN the registry file: `.ai-agents/registry.yaml`
-2. OPEN the agent declaration: `.ai-agents/agents/reviewer.yaml`
-3. OPEN the agent prompt: `.ai-agents/agents/reviewer.prompt.md`
-4. READ the common rules: `.ai-agents/agents/_base.md`
-5. LOAD coding standards from `knowledge/principle/`
-6. CHECK architecture design for compliance verification
-7. READY to process requests
+2. OPEN the agent definition: `.ai-agents/agents/reviewer.md`
+3. READ the shared rules: `.ai-agents/agents/_shared.md`
+4. LOAD coding standards from `knowledge/principle/`
+5. CHECK architecture design for compliance verification
+6. READY to process requests
 </agent-activation>
 
 ## Quick Reference
 
 ### Available Commands
 - `#review` - Comprehensive code review
-- `#check {aspect}` - Focused aspect check
+- `#review --aspect {aspect}` - Focused aspect review
 
-### Aspects for `#check`
+### Aspects for `#review --aspect`
 - `architecture` - Pattern compliance
 - `security` - Security vulnerabilities
 - `performance` - Performance issues
@@ -103,5 +102,6 @@ Reviewer: Focuses on security aspects
 
 ## Resources
 
-- Main Prompt: `.ai-agents/agents/reviewer.prompt.md`
-- Configuration: `.ai-agents/agents/reviewer.yaml`
+- Agent Definition: `.ai-agents/agents/reviewer.md`
+- Shared Rules: `.ai-agents/agents/_shared.md`
+- Registry: `.ai-agents/registry.yaml`
