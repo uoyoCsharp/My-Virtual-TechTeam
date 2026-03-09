@@ -16,14 +16,7 @@ This adapter enables the Architect agent to work within GitHub Copilot's environ
 ### For GitHub Copilot Chat
 - Type `#design` to create architecture design
 - Type `#design --plan` to create design with implementation plan
-- Reference existing design: `#file:workspace/context/architecture.yaml`
-
-### Architecture Patterns
-
-| Pattern | Description | Knowledge Location |
-|---------|-------------|-------------------|
-| DDD | Domain-Driven Design | `.ai-agents/knowledge/patterns/ddd/` |
-| Clean Architecture | Dependency inversion | `.ai-agents/knowledge/patterns/clean-architecture/` |
+- Reference existing design: `#file:workspace/project-context.yaml`
 
 ## Activation
 
@@ -31,7 +24,7 @@ This adapter enables the Architect agent to work within GitHub Copilot's environ
 1. OPEN the registry file: `.ai-agents/registry.yaml`
 2. OPEN the agent definition: `.ai-agents/agents/architect.md`
 3. READ the shared rules: `.ai-agents/agents/_shared.md`
-4. CHECK for requirements analysis in `workspace/context/requirements.yaml`
+4. CHECK for requirements analysis in `workspace/project-context.yaml`
 5. LOAD active pattern knowledge from `.ai-agents/knowledge/patterns/{active}/`
 6. READY to process requests
 </agent-activation>
@@ -43,7 +36,7 @@ This adapter enables the Architect agent to work within GitHub Copilot's environ
 - `#design --plan` - Create architecture design with implementation plan
 
 ### Output Location
-- Architecture design: `workspace/context/architecture.yaml`
+- Architecture design: `workspace/project-context.yaml` (architecture section)
 - Artifacts: `workspace/artifacts/{change-id}/design.md`
 
 ### Design Output Structure

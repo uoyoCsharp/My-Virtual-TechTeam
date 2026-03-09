@@ -8,7 +8,17 @@
 
 Generate and run tests to validate implementations.
 
-> **Detailed Methodology**: See `skills/test-generation.md` for test case design strategies, framework detection, and coverage analysis rules.
+### Knowledge Dependencies
+
+Before executing tests, load the following (if they exist):
+
+| Path | Description |
+|------|-------------|
+| `knowledge/core/review-principles.md` | Code quality principles |
+| `knowledge/patterns/{active}/**` | Active architecture pattern knowledge |
+| `knowledge/principle/coding-standards.md` | Project coding standards |
+
+> `{active}` refers to `pattern.active` in `config.yaml`
 
 ### Usage
 - `#test` - Generate tests for recent implementation
@@ -29,8 +39,8 @@ Generate and run tests to validate implementations.
 
 **Step 1: Load Context**
 - READ implementation files
-- READ `workspace/context/requirements.yaml`
-- Identify test framework from `workspace/context/project.yaml`
+- READ `workspace/project-context.yaml`
+- Identify test framework from `workspace/project-context.yaml`
 
 **Step 2: Analyze Test Scenarios**
 - Identify happy path scenarios

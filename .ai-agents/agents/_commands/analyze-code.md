@@ -41,9 +41,8 @@ Reverse-analyze existing code to generate context and infer requirements.
 - MAP dependencies
 
 **Step 4: Generate Context**
-- WRITE `workspace/context/architecture.yaml` (inferred)
-- WRITE `workspace/state/code-mapping.yaml`
-- WRITE `workspace/state/semantic-index.yaml`
+- UPDATE `workspace/project-context.yaml` (architecture section)
+- WRITE `workspace/artifacts/{change-id}/code-analysis.md`
 
 **Step 5: Infer Requirements**
 - GENERATE feature list from code

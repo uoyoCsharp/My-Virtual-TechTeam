@@ -46,14 +46,9 @@ Analyze requirements documents and extract domain concepts.
 
 **Step 5: Update Workspace**
 - GENERATE change-id per `_shared.md` Change ID Convention
-- CREATE `workspace/state/active-change.yaml` with new change-id
-- WRITE `workspace/context/requirements.yaml`
+- UPDATE `workspace/session.yaml` with new change-id and phase progress
+- UPDATE `workspace/project-context.yaml` (requirements section)
 - WRITE `workspace/artifacts/{change-id}/analysis.md`
-- UPDATE `session.yaml` history
-
-**Step 6: Index Update**
-- UPDATE `workspace/state/semantic-index.yaml` with extracted topics, entities, keywords
-  (See `skills/_system/semantic-indexer.md` for extraction rules)
 
 ---
 

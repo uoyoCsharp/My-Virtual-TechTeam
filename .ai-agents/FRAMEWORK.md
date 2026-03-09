@@ -46,7 +46,7 @@ When a `#command` is detected:
 ### Core Commands (14 total)
 
 | Category | Command | Purpose |
-|----------|---------|---------||
+|----------|---------|---------|
 | **Project** | `#init` | Initialize project |
 | | `#status` | Show workflow status |
 | | `#config` | Configure settings |
@@ -87,7 +87,7 @@ When a `#command` is detected:
 > Authority: `skills/_system/context-loader.md`
 
 Context loading rules are defined in the context-loader system skill.
-Required for every activation: `session.yaml` + `project.yaml`.
+Required for every activation: `workspace/session.yaml` + `workspace/project-context.yaml`.
 
 ### Command Files
 Each command has its own file in `agents/_commands/`:
@@ -114,6 +114,6 @@ Each command has its own file in `agents/_commands/`:
 
 ## Resources
 
-- **Getting Started**: `.ai-agents/docs/getting-started-guide.md`
+- **Getting Started**: `.ai-agents/README.md`
 - **Registry**: `.ai-agents/registry.yaml`
 - **Configuration**: `.ai-agents/config.yaml`

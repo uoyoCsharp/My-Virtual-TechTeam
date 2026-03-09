@@ -2,19 +2,11 @@ id: "frontend-react"
 type: "pattern"
 name: "Frontend (React)"
 version: "1.0"
-description: "Modern React frontend application patterns including component organization, state management, and best practices"
+description: "Modern React frontend application patterns"
 
 token_estimate:
   total: 3000
   breakdown:
-    - file: overview.md
-      tokens: 1200
-      load_priority: 1
-      summary: "React project structure, component patterns, state management"
-    - file: component-patterns.md
-      tokens: 1000
-      load_priority: 2
-      summary: "Component composition, hooks, custom hooks patterns"
     - file: review-checklist.md
       tokens: 800
       load_priority: 3
@@ -25,72 +17,15 @@ loading_strategy:
     tokens: 150
     use_case: "Check React pattern info"
 
-  level_2_targeted:
-    tokens: 1200-2000
-    use_case: "Specific React guidance"
-    semantic_index:
-      - keywords: ["component", "jsx", "tsx"]
-        load: ["component-patterns.md"]
-      - keywords: ["hooks", "useState", "useEffect"]
-        load: ["component-patterns.md#hooks"]
-      - keywords: ["state", "redux", "zustand", "context"]
-        load: ["overview.md#state-management"]
-      - keywords: ["folder", "structure", "organization"]
-        load: ["overview.md#project-structure"]
-
-  level_3_full:
-    tokens: 3000
-    use_case: "Complete React frontend guidance"
-
-loading:
-  priority: 5
-  auto_load: false
-
 files:
-  - path: "overview.md"
-    description: "React project structure and patterns overview"
-    required: true
-    tokens: 1200
-
-  - path: "component-patterns.md"
-    description: "Component composition and hooks patterns"
-    required: true
-    tokens: 1000
-
   - path: "review-checklist.md"
     description: "React code review checklist"
     required: false
     tokens: 800
 
-attributes:
-  terminology:
-    component: "Component"
-    hook: "Hook"
-    context: "Context"
-    props: "Props"
-    state: "State"
-    effect: "Effect"
-    custom_hook: "Custom Hook"
-    provider: "Provider"
-
-  checklist:
-    - "Components are single responsibility"
-    - "Props are typed and validated"
-    - "State is minimal and local"
-    - "Effects have proper dependencies"
-    - "No prop drilling (use context or state management)"
-    - "Custom hooks for reusable logic"
-    - "Accessibility considered"
-
 scenarios:
-  - name: "Design component structure"
-    files: ["overview.md", "component-patterns.md"]
-
   - name: "Code review"
     files: ["review-checklist.md"]
-
-  - name: "State management decision"
-    files: ["overview.md#state-management"]
 
 applicable_project_types:
   - web-app

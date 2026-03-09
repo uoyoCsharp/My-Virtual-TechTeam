@@ -15,15 +15,16 @@ Multi-agent collaboration framework for software development.
  Analyst     Architect    Developer     Reviewer    Tester
 ```
 
-## Core Commands (13 total)
+## Core Commands (14 total)
 
 | Category | Command | Purpose |
-|----------|---------|---------|
+|----------|---------|--------|
 | **Project** | `#init` | Initialize project |
 | | `#status` | Show workflow status |
 | | `#config` | Configure settings |
 | | `#sync-context` | Sync context with code |
 | | `#update-framework` | Update framework |
+| | `#cleanup` | Clean up workspace artifacts |
 | **Analysis** | `#analyze` | Analyze requirements |
 | | `#analyze-code` | Reverse-analyze code |
 | **Design** | `#design` | Create architecture design |
@@ -44,7 +45,7 @@ Multi-agent collaboration framework for software development.
 | `agents/{agent}.md` | Agent core file (role + behavioral rules) |
 | `agents/_commands/{command}.md` | Command-specific execution file |
 | `skills/` | Modular capabilities (on-demand) |
-| `skills/_system/` | System skills (context-loader, semantic-indexer) |
+| `skills/_system/` | System skills (context-loader) |
 | `workflows/` | Workflow state machine definitions |
 | `knowledge/` | Domain knowledge |
 | `knowledge/core/` | Core principles (always loaded) |
@@ -52,10 +53,11 @@ Multi-agent collaboration framework for software development.
 | `knowledge/principle/` | Project coding standards (generated) |
 | `knowledge/project/` | Project-specific knowledge |
 | `workspace/` | Project workspace |
-| `workspace/state/` | Hot data: current session |
-| `workspace/context/` | Warm data: project context |
-| `workspace/history/` | Cold data: historical archive |
+| `workspace/session.yaml` | Current session state |
+| `workspace/project-context.yaml` | Unified project context (requirements + architecture + decisions) |
 | `workspace/artifacts/` | Work artifacts (grouped by change) |
+| `workspace/requirements/` | Requirements input documents |
+| `workspace/history/` | Historical archive |
 
 ## Key Concepts
 
@@ -75,17 +77,18 @@ When a `#command` is detected, the framework:
 
 ### Data Tiering
 
-Workspace uses tiered storage strategy:
-- **Hot (state/)**: Current session, <50KB
-- **Warm (context/)**: Project context, <100KB  
-- **Cold (history/)**: Historical archive, read index only
+Workspace uses a simplified two-file structure:
+- **session.yaml**: Current session state and workflow progress
+- **project-context.yaml**: Unified project info, requirements, architecture, and decisions
+- **artifacts/**: Work outputs grouped by change-id
+- **history/**: Historical archive
 
-### Index Files Convention
+### Index Convention
 
 | File | Purpose | Used In |
-|------|---------|---------|
-| `_index.yaml` | Directory contents listing | workspace/, skills/, workflows/ |
-| `manifest.yaml` | Knowledge pack metadata with loading strategies | knowledge/*/ |
+|------|---------|--------|
+| `registry.yaml` | Global resource index | Framework root |
+| `manifest.yaml` | Knowledge pack metadata | knowledge/*/ |
 
 ## Agents
 

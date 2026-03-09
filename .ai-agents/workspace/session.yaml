@@ -1,0 +1,24 @@
+# Workspace Session State
+# Simplified session state — only fields LLM actually needs
+
+session:
+  initialized_at: ""
+  last_command: ""
+  current_agent: ""
+
+# Current active change (created by #analyze)
+active_change:
+  id: ""
+  title: ""
+  created_at: ""
+
+# Workflow progress (simplified: pending | done)
+progress:
+  analyze: pending
+  design: pending
+  implement: pending
+  review: pending
+  test: pending
+
+# Recent actions (append-only, keep max 3)
+recent_actions: []

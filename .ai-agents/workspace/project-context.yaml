@@ -1,0 +1,27 @@
+# Unified Project Context
+# Merges: project.yaml + architecture.yaml + requirements.yaml + decisions.yaml
+
+project:
+  name: ""
+  type: ""
+  initialized_at: ""
+  tech_stack:
+    language: ""
+    framework: ""
+    build_tool: ""
+    test_framework: ""
+  pattern: "ddd"
+
+# Requirements summary (written by #analyze)
+requirements:
+  features: []
+  actors: []
+  business_rules: []
+  clarifications: []
+
+# Architecture design (written by #design)
+architecture:
+  overview: ""
+  modules: []
+  components: []
+  decisions: []    # ADR list (merged from former decisions.yaml)

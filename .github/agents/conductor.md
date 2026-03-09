@@ -46,7 +46,7 @@ This adapter enables the Conductor agent to work within GitHub Copilot's environ
 1. OPEN the registry file: `.ai-agents/registry.yaml`
 2. OPEN the agent definition: `.ai-agents/agents/conductor.md`
 3. READ the shared rules: `.ai-agents/agents/_shared.md`
-4. VERIFY context is loaded by checking workspace/state/session.yaml
+4. VERIFY context is loaded by checking workspace/session.yaml
 5. READY to process requests
 </agent-activation>
 

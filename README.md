@@ -9,22 +9,26 @@ This is an AI Agent Framework built on prompt engineering principles. It defines
 ## Quick Start
 
 1. Open this project in VS Code with GitHub Copilot or Claude Code
-2. Start a chat and type `#start` to begin a new development workflow
+2. Start a chat and type `#init` to initialize your project
 3. Follow the guided prompts to move through the development phases
 
 ## Commands
 
 | Command | Description |
 |---------|-------------|
-| `#start` | Start a new development workflow |
-| `#status` | Check current workflow status |
-| `#init` | Initialize and analyze project structure |
-| `#pattern {name}` | Switch architecture pattern (ddd, clean-architecture) |
-| `#recover` | Recover from error state |
+| `#init` | Initialize project |
+| `#status` | Show workflow status |
+| `#config` | Configure settings |
+| `#sync-context` | Sync context with code |
+| `#update-framework` | Update framework |
+| `#cleanup` | Clean up workspace artifacts |
 | `#analyze` | Analyze requirements |
+| `#analyze-code` | Reverse-analyze code |
 | `#design` | Create architecture design |
-| `#implement` | Implement code |
-| `#review` | Review code |
+| `#implement` | Implement feature |
+| `#fix` | Fix bug (smart context) |
+| `#refactor` | Refactor code |
+| `#review` | Code review |
 | `#test` | Generate tests |
 
 ## Architecture 
@@ -34,7 +38,7 @@ This is an AI Agent Framework built on prompt engineering principles. It defines
 ├── registry.yaml     # Unified resource index (LLM preferred entry)
 ├── config.yaml       # System configuration
 ├── agents/           # Agent definitions (.yaml + .prompt.md)
-│   └── _base.md      # Shared activation steps 
+│   └── _shared.md    # Shared agent rules
 ├── skills/           # Modular skills
 │   └── _system/      # System skills (auto-invoked)
 ├── workflows/        # Workflow definitions
@@ -46,9 +50,8 @@ This is an AI Agent Framework built on prompt engineering principles. It defines
     └── artifacts/    # Work artifacts
 
 .github/              # GitHub Copilot adapter
-├── copilot-instructions.md
 ├── agents/           # Agent activation files
-└── skills/           # Skill references
+└── copilot-instructions.md  # Global Copilot instructions
 ```
 
 ## Agents

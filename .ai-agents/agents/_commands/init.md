@@ -8,8 +8,6 @@
 
 Build complete project context for AI-assisted development.
 
-> **Detailed Methodology**: See `skills/project-initialization.md` for deep project analysis phases, detection patterns, and knowledge generation rules.
-
 ### Variants
 
 | Variant | Behavior | Use Case |
@@ -23,38 +21,87 @@ Build complete project context for AI-assisted development.
 
 ## Execution Flow
 
-**Phase 1: Project Discovery**
-1. READ `workspace/state/session.yaml` - Check current state
-2. SCAN project root - Detect config files (package.json, pom.xml, etc.)
-3. EXTRACT tech stack - Language, framework, build tool
+### Phase 1: Project Discovery
 
-**Phase 2: Architecture Detection**
+1. READ `workspace/session.yaml` — check current state
+2. SCAN project root — detect config files:
+   - `package.json` → Node.js/TypeScript
+   - `pom.xml` / `build.gradle` → Java/Kotlin
+   - `Cargo.toml` → Rust, `go.mod` → Go
+   - `requirements.txt` / `pyproject.toml` → Python
+   - `*.csproj` → .NET/C#, `Gemfile` → Ruby
+3. Detect framework indicators: `next.config.*`, `angular.json`, `vue.config.*`, `vite.config.*`, etc.
+4. EXTRACT tech stack: language, framework, build tool, test framework, database, ORM
+
+### Phase 2: Architecture Detection
+
 1. SCAN directory structure
-2. IDENTIFY architecture pattern indicators
-3. MAP module organization
+2. IDENTIFY architecture pattern indicators:
+   - **DDD**: `domain/`, `application/`, `infrastructure/`, `*Repository*`, `*Aggregate*`
+   - **Clean Architecture**: `entities/`, `usecases/`, `interface/`, dependency inversion
+   - **MVC**: `models/`, `views/`, `controllers/`
+   - **Frontend React**: `package.json` with react/next, `components/`, `pages/`
+3. MAP module organization (name, path, purpose, layer, key files)
 
-**Phase 3: Pattern Selection** (User Confirmation Required)
+### Phase 3: Pattern Selection (User Confirmation Required)
 
 Present detected pattern with options:
-| Option | Action |
-|--------|--------|
-| `yes` | Accept recommended pattern |
-| `{pattern_id}` | Select specific pattern (ddd, clean-architecture, etc.) |
-| `analyze` | Trigger custom pattern analysis |
-| `none` | No pattern, proceed without architecture guidance |
 
-**Phase 4: Workspace Population**
+```markdown
+### Architecture Pattern Selection
+
+| Detected Pattern | Confidence |
+|------------------|------------|
+| {pattern_name} | {high/medium/low} |
+
+**Available Patterns**:
+1. `ddd` - Domain-Driven Design
+2. `clean-architecture` - Layer separation with dependency inversion
+3. `frontend-react` - React/Next.js frontend
+4. `generic` - Simple projects without specific architecture
+
+**Recommended**: `{suggested_pattern}`
+
+- Reply `yes` to accept
+- Reply with pattern name to select different
+- Reply `analyze` to create a custom pattern from project analysis
+- Reply `none` to proceed without a pattern
+```
+
+| User Reply | Action |
+|------------|--------|
+| `yes` | Accept recommended pattern |
+| `{pattern_id}` | Select specific pattern |
+| `analyze` | Deep-analyze project structure and generate custom pattern definition |
+| `none` | Proceed without architecture pattern |
+
+### Phase 4: Code Analysis (--deep mode, or lightweight for standard)
+
+Extract from source code:
+- **Entities**: classes, interfaces, types with properties and relationships
+- **Services**: service classes/functions with methods and dependencies
+- **API endpoints**: routes, controllers, handlers (if applicable)
+
+### Phase 5: Workspace Population
 
 WRITE the following files with actual content:
-- `workspace/context/project.yaml` - Project info and tech stack
-- `workspace/context/architecture.yaml` - Module structure
-- `workspace/state/code-mapping.yaml` - File-to-entity mapping
-- `workspace/state/semantic-index.yaml` - Topic/keyword index
-- `workspace/state/session.yaml` - Session state
+- `workspace/project-context.yaml` — project info, tech stack, architecture, modules, requirements
+- `workspace/session.yaml` — session state
 
-**Phase 5: Knowledge Generation** (skip if --light)
-- `knowledge/project/tech-stack.md` - Stack documentation
-- `knowledge/principle/coding-standards.md` - Coding standards
+### Phase 6: Knowledge Generation (skip if --light)
+- `knowledge/project/tech-stack.md` — stack documentation
+- `knowledge/principle/coding-standards.md` — coding standards extracted from codebase
+
+---
+
+## Custom Pattern Analysis (when user replies `analyze`)
+
+1. Deep scan directory structure for layer/module patterns
+2. Extract file naming conventions and organization
+3. Identify module boundaries and dependency flow
+4. Present analysis results for user confirmation
+5. If confirmed: write `knowledge/patterns/{pattern_id}/manifest.yaml` and `overview.md`
+6. Set as active pattern in `config.yaml`
 
 ---
 
@@ -69,10 +116,7 @@ WRITE the following files with actual content:
 - **Tech Stack**: {language} / {framework}
 
 ### Workspace Updated
-- [x] project.yaml
-- [x] architecture.yaml
-- [x] code-mapping.yaml
-- [x] semantic-index.yaml
+- [x] project-context.yaml
 - [x] session.yaml
 
 ---
@@ -91,6 +135,7 @@ WRITE the following files with actual content:
 | Multiple projects | Multiple package.json | Ask user to select primary |
 | Unrecognized stack | No known config | Ask user to describe tech stack |
 | Large codebase | > 500 source files | Default to --light, offer --deep |
+| Pattern mismatch | No clear match | Offer: select existing, `analyze` for custom, or `generic` |
 
 ---
 

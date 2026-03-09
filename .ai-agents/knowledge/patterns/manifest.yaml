@@ -20,7 +20,6 @@ available:
       - enterprise-application
       - bounded-contexts
     files:
-      - overview.md
       - tactical-patterns.md
       - review-checklist.md
 
@@ -34,8 +33,6 @@ available:
       - long-term-project
       - multi-interface-system
     files:
-      - overview.md
-      - layer-rules.md
       - review-checklist.md
 
   - id: frontend-react

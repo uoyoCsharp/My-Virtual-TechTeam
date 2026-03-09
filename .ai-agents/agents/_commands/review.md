@@ -8,7 +8,17 @@
 
 Perform code review for quality, standards compliance, and best practices.
 
-> **Detailed Methodology**: See `skills/review-execution.md` for review checklists, knowledge dependencies, and capability details.
+### Knowledge Dependencies
+
+Before executing review, load the following (if they exist):
+
+| Path | Description |
+|------|-------------|
+| `knowledge/core/review-principles.md` | Universal review principles |
+| `knowledge/principle/coding-standards.md` | Project coding standards |
+| `knowledge/patterns/{active}/review-checklist.md` | Pattern-specific checklist |
+
+> `{active}` refers to `pattern.active` in `config.yaml`
 
 ### Usage
 - `#review` - General code review
@@ -42,7 +52,7 @@ Perform code review for quality, standards compliance, and best practices.
 
 **Step 2: Load Context**
 - READ target files
-- READ `workspace/context/architecture.yaml`
+- READ `workspace/project-context.yaml`
 - READ `knowledge/patterns/{active}/review-checklist.md` (if exists)
 
 **Step 3: Analyze Code**

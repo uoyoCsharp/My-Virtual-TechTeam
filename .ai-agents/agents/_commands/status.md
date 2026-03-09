@@ -12,11 +12,9 @@ Display current project and workflow status.
 
 ## Execution
 
-1. READ `workspace/state/session.yaml`
-2. READ `workspace/context/project.yaml`
-3. READ `workspace/context/requirements.yaml` (if exists)
-4. READ `workspace/state/active-change.yaml` (if exists)
-5. COMPILE status report
+1. READ `workspace/session.yaml`
+2. READ `workspace/project-context.yaml`
+3. COMPILE status report
 
 ---
 

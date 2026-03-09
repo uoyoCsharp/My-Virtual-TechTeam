@@ -39,18 +39,6 @@ pattern:
     confirm_with_user: true
 
 # ============================================================
-# Workspace Settings
-# ============================================================
-workspace:
-  smart_loading:
-    enabled: true
-    default_level: minimal
-
-  code_mapping:
-    enabled: true
-    auto_sync: true
-
-# ============================================================
 # Knowledge Settings
 # ============================================================
 knowledge:
@@ -64,49 +52,6 @@ knowledge:
     - "patterns/{inactive}/*"
 
 # ============================================================
-# Discovery Settings
-# ============================================================
-discovery:
-  # Discovery mode: dynamic (scan on demand) | cached (use cache)
-  mode: dynamic
-
-# ============================================================
-# Quick Path Presets
-# ============================================================
-quick_paths:
-  minimal:
-    load:
-      - workspace/state/session.yaml
-      - workspace/context/project.yaml
-    analyze:
-      - changed_files_only
-    skip:
-      - full_requirements
-      - full_architecture
-    max_tokens: 2000
-
-  incremental:
-    load:
-      - workspace/state/session.yaml
-      - workspace/context/project.yaml
-      - workspace/context/architecture.yaml
-    analyze:
-      - related_modules
-    skip:
-      - full_requirements_analysis
-    max_tokens: 5000
-
-# ============================================================
-# ============================================================
-# Smart Context Rules
-# Authority: skills/_system/context-loader.md
-# Keyword-based context inference rules are defined in the
-# context-loader system skill. User-configurable overrides below.
-# ============================================================
-# smart_context:
-#   rules: (see context-loader.md for defaults)
-
-# ============================================================
 # Directory Structure (Advanced)
 # ============================================================
 directories:
@@ -115,8 +60,8 @@ directories:
   workflows: workflows/
   knowledge: knowledge/
   workspace: workspace/
-  workspace_state: workspace/state/
-  workspace_context: workspace/context/
+  workspace_session: workspace/session.yaml
+  workspace_context: workspace/project-context.yaml
   workspace_history: workspace/history/
   workspace_artifacts: workspace/artifacts/
   workspace_requirements: workspace/requirements/

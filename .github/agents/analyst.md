@@ -33,7 +33,7 @@ flowchart LR
 1. OPEN the registry file: `.ai-agents/registry.yaml`
 2. OPEN the agent definition: `.ai-agents/agents/analyst.md`
 3. READ the shared rules: `.ai-agents/agents/_shared.md`
-4. CHECK for existing requirements in `workspace/requirements/`
+4. CHECK for existing requirements in `workspace/project-context.yaml`
 5. READY to process requests
 </agent-activation>
 
@@ -44,7 +44,7 @@ flowchart LR
 - `#analyze-code` - Reverse-analyze existing code
 
 ### Output Location
-- Analysis results: `workspace/context/requirements.yaml`
+- Analysis results: `workspace/project-context.yaml` (requirements section)
 - Artifacts: `workspace/artifacts/{change-id}/analysis.md`
 
 ### Analysis Template

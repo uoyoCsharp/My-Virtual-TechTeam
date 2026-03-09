@@ -18,23 +18,24 @@ states:
     entry_actions:
       - action: "Load requirements from workspace/requirements/"
       - action: "Update session.yaml with current phase"
-      - action: "Clear previous analysis cache if needed"
 
     execution:
       commands: ["#analyze"]
       expected_outputs:
-        - workspace/context/requirements.yaml
+        - workspace/project-context.yaml (requirements section)
         - workspace/artifacts/{change-id}/analysis.md
 
     exit_criteria:
-      - type: file_exists
-        target: workspace/context/requirements.yaml
-        description: "Analysis output exists"
+      - type: context_updated
+        target: workspace/project-context.yaml
+        section: requirements
+        description: "Requirements section populated"
       - type: user_confirmation
         description: "User confirms analysis results"
 
     outputs:
-      - target: workspace/context/requirements.yaml
+      - target: workspace/project-context.yaml
+        section: requirements
         format: yaml
         description: "Structured requirements analysis"
       - target: workspace/artifacts/{change-id}/analysis.md
@@ -54,29 +55,30 @@ states:
     inputs: [requirement_analysis]
 
     entry_conditions:
-      - type: state_completed
+      - type: recommended
         state: analyze
-        description: "Requirements analysis completed"
-      - type: file_exists
-        source: workspace/context/requirements.yaml
+        description: "Requirements analysis recommended"
+        on_skip: "Requirements analysis not completed. Design may lack foundation. Continue?"
 
     entry_actions:
-      - action: "Load requirements.yaml"
+      - action: "Load project-context.yaml"
       - action: "Load active pattern knowledge"
 
     execution:
       commands: ["#design", "#design --plan"]
       expected_outputs:
-        - workspace/context/architecture.yaml
+        - workspace/project-context.yaml (architecture section)
         - workspace/artifacts/{change-id}/design.md
 
     exit_criteria:
-      - type: file_exists
-        target: workspace/context/architecture.yaml
+      - type: context_updated
+        target: workspace/project-context.yaml
+        section: architecture
       - type: user_confirmation
 
     outputs:
-      - target: workspace/context/architecture.yaml
+      - target: workspace/project-context.yaml
+        section: architecture
         format: yaml
       - target: workspace/artifacts/{change-id}/design.md
         format: markdown
@@ -94,15 +96,18 @@ states:
     inputs: [architecture_design, implementation_plan]
 
     entry_conditions:
-      - type: state_completed
+      - type: recommended
         state: design
+        description: "Architecture design recommended"
+        on_skip: "Architecture design not completed. Implementation may lack structure. Continue?"
 
     entry_actions:
-      - action: "Load architecture.yaml"
+      - action: "Load project-context.yaml"
       - action: "Load coding standards"
 
     execution:
-      commands: ["#implement", "#fix", "#refactor"]
+      commands: ["#implement"]
+      # Note: #fix and #refactor are independent shortcut operations, not part of this workflow
       expected_outputs:
         - workspace/artifacts/{change-id}/implementation/
 
@@ -124,8 +129,10 @@ states:
     inputs: [implementation_code, architecture_design]
 
     entry_conditions:
-      - type: state_completed
+      - type: recommended
         state: implement
+        description: "Implementation recommended before review"
+        on_skip: "No implementation artifacts found. Review may lack context. Continue?"
 
     entry_actions:
       - action: "Load implementation code"
@@ -142,7 +149,9 @@ states:
       - type: review_passed
         description: "No critical issues found"
 
-    on_issues: implement
+    on_issues:
+      action: implement
+      message: "Review found issues. Use `#fix` to address them, then `#review` again."
 
     rollback:
       allowed: false
@@ -155,9 +164,10 @@ states:
     inputs: [implementation_code, requirement_analysis]
 
     entry_conditions:
-      - type: state_completed
+      - type: recommended
         state: review
-      - type: review_passed
+        description: "Review recommended before testing"
+        on_skip: "Code review not completed. Testing may miss quality issues. Continue?"
 
     entry_actions:
       - action: "Load implementation code"
@@ -172,7 +182,9 @@ states:
       - type: tests_passed
         description: "All tests pass"
 
-    on_failure: implement
+    on_failure:
+      action: implement
+      message: "Tests failed. Use `#fix` to address the failures, then `#test` again."
 
     rollback:
       allowed: false
@@ -188,7 +200,7 @@ transitions:
   - from: analyze
     to: design
     trigger: "#design"
-    guard: "requirements.yaml exists && user_confirmed"
+    guard: "requirements populated && user_confirmed"
     on_success:
       - action: "Archive analysis artifacts"
       - action: "Update workflow status"
@@ -196,7 +208,7 @@ transitions:
   - from: design
     to: implement
     trigger: "#implement"
-    guard: "architecture.yaml exists && user_confirmed"
+    guard: "architecture populated && user_confirmed"
 
   - from: implement
     to: review
@@ -224,7 +236,7 @@ transitions:
   - from: analyze
     to: implement
     trigger: "#implement"
-    guard: "requirements.yaml exists && user_confirmed && complexity_is_low"
+    guard: "requirements populated && user_confirmed && complexity_is_low"
     description: "Quick path for simple changes that don't require architecture design"
 
   # Iterative rollback: design phase discovers need for more requirements
@@ -248,4 +260,4 @@ error_recovery:
 
   on_invalid_state:
     action: "Re-initialize project state"
-    suggestion: "Run #init --refresh to rebuild context, or manually check workspace/state/session.yaml"
+    suggestion: "Run #init --refresh to rebuild context, or manually check workspace/session.yaml"

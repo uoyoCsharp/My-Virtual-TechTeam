@@ -13,23 +13,22 @@ Create system architecture design based on requirements analysis.
 - `#design --plan` - Create design with implementation timeline
 
 ### Prerequisites
-- Requirements analysis completed (`workspace/context/requirements.yaml` exists and is non-empty)
+- Requirements analysis completed (`workspace/project-context.yaml` requirements section exists and is non-empty)
 - Active pattern selected in `config.yaml`
 
 ## Prerequisites Check
 
 | Check | Condition | On Failure |
 |-------|-----------|------------|
-| Requirements exist | `workspace/context/requirements.yaml` is non-empty | "No requirements found. Run `#analyze` first." |
+| Requirements exist | `workspace/project-context.yaml` requirements section is non-empty | "No requirements found. Run `#analyze` first." |
 
 ---
 
 ## Execution Flow
 
 **Step 1: Load Context**
-- READ `workspace/context/requirements.yaml`
-- READ `knowledge/patterns/{active}/overview.md`
-- READ `workspace/context/project.yaml`
+- READ `workspace/project-context.yaml`
+- READ `knowledge/patterns/{active}/` relevant files
 
 **Step 2: Identify Architectural Concerns**
 - Scalability requirements
@@ -54,12 +53,9 @@ Create system architecture design based on requirements analysis.
 - Error handling strategy
 
 **Step 6: Document Architecture**
-- WRITE `workspace/context/architecture.yaml`
+- UPDATE `workspace/project-context.yaml` (architecture section)
 - WRITE `workspace/artifacts/{change-id}/design.md`
-- UPDATE `session.yaml` history
-
-**Step 7: Index Update**
-- UPDATE `workspace/state/semantic-index.yaml` with new modules, decisions, keywords
+- UPDATE `workspace/session.yaml` progress
 
 ---
 
