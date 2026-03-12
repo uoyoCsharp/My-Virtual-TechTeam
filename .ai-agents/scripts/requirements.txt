@@ -1,0 +1,19 @@
+# AI Agent Framework - Update Script Dependencies
+#
+# This script uses ONLY Python standard library modules.
+# No external packages need to be installed.
+#
+# Standard library modules used:
+#   argparse     - CLI argument parsing
+#   hashlib      - SHA256 file integrity checks
+#   json         - JSON output formatting
+#   os           - OS-level path operations
+#   re           - Regex for YAML version extraction
+#   shutil       - File/directory copy and removal
+#   sys          - System exit and version info
+#   tempfile     - Temporary directory for atomic updates
+#   pathlib      - Cross-platform path handling
+#   urllib       - HTTP requests to GitHub
+#   datetime     - Timestamped backups
+#
+# Minimum Python version: 3.7+

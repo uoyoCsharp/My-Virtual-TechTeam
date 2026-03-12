@@ -6,7 +6,7 @@
 
 ## Purpose
 
-Check for and install framework updates from GitHub.
+Check for and install framework updates from GitHub using the update script.
 
 ### Repository
 https://github.com/uoyoCsharp/My-Virtual-TechTeam
@@ -21,54 +21,96 @@ https://github.com/uoyoCsharp/My-Virtual-TechTeam
 
 ---
 
-## Protected Files (Never Overwritten)
+## Prerequisites
+
+- Python 3.7+ must be available in the system PATH
+
+---
+
+## Protected Files (Never Overwritten by Script)
 - `workspace/**/*` — Working state
 - `knowledge/principle/**/*` — Project coding standards
 - `knowledge/project/**/*` — Custom project knowledge
 
 ---
 
-## Execution Steps
+## Execution Flow
 
-### Step 1: Detect Platform
+### Step 1: Determine Sub-command
 
-Check for platform-specific indicators. Note that a project might use **multiple platforms simultaneously** (e.g., both Claude Code and GitHub Copilot). You MUST detect and prepare to update ALL platforms present.
+Parse user input to determine the action:
 
-| Platform | Indicators |
-|----------|------------|
-| Claude Code | `CLAUDE.md` exists, `.claude/` directory |
-| GitHub Copilot | `.github/copilot-instructions.md`, `.github/agents/` directory |
+| User Input | Action |
+|------------|--------|
+| `#update-framework` | Run `check` → if update available, ask user → run `update` |
+| `#update-framework check` | Run `check` only |
+| `#update-framework rollback` | Run `rollback` |
 
-*Crucial: If both sets of indicators are found, you must update the adapter files for BOTH platforms.*
+### Step 2: Verify Python Availability
 
-### Step 2: Fetch Remote Version
+Before calling the script, verify Python is available. Try `python --version` or `python3 --version`.
 
-Fetch `registry.yaml` from GitHub and extract the `version` field:
+If Python is **not** available, display:
+
+```markdown
+## Python Required
+
+The update script requires Python 3.7+. Please install Python:
+- **Windows**: https://www.python.org/downloads/
+- **macOS**: `brew install python3`
+- **Linux**: `sudo apt install python3` or `sudo yum install python3`
+
+After installing, run `#update-framework` again.
 ```
-https://raw.githubusercontent.com/uoyoCsharp/My-Virtual-TechTeam/main/.ai-agents/registry.yaml
+
+### Step 3: Execute Script
+
+Run the script from the **project root directory** and capture its JSON output from stdout.
+
+```bash
+# Check for updates
+python .ai-agents/scripts/update_framework.py check
+
+# Execute update (after user confirmation)
+python .ai-agents/scripts/update_framework.py update
+
+# Rollback to latest backup
+python .ai-agents/scripts/update_framework.py rollback
+
+# Rollback to specific backup
+python .ai-agents/scripts/update_framework.py rollback --backup 20260312-143022
+
+# List available backups (useful before rollback)
+python .ai-agents/scripts/update_framework.py list-backups
 ```
 
-Compare with local version from `.ai-agents/registry.yaml`:
-- Remote > Local → update available
-- Remote == Local → already up to date
-- Remote < Local → development mode, skip
+> On macOS/Linux, use `python3` if `python` is not available.
 
-### Step 3: Show Update Preview
+### Step 4: Parse JSON Output
+
+The script outputs a JSON object to stdout. Parse it and act based on `status`:
+
+- `"status": "success"` → display results (see display templates below)
+- `"status": "error"` → display error message and suggestion from `error` object
+
+### Step 5: Display Results
+
+#### check → update available
 
 ```markdown
 ## Framework Update Available
 
 ### Version Information
-- **Current Version**: {local_version}
-- **Available Version**: {remote_version}
+- **Current Version**: {data.local_version}
+- **Available Version**: {data.remote_version}
+- **Detected Platforms**: {data.platforms_detected}
 
 ### Files to Update
 | Category | Files |
 |----------|-------|
-| Core Framework | .ai-agents/agents/*, .ai-agents/skills/* |
-| Platform Adapter | .claude/ and .github/agents/ (update ALL detected platforms) |
+[Generate from data.remote_file_tree — group by category keys]
 
-### What Will Be Preserved
+### Protected (Will NOT Be Modified)
 - workspace/ (your working state)
 - knowledge/principle/ (project-specific standards)
 - knowledge/project/ (custom project knowledge)
@@ -77,13 +119,91 @@ Compare with local version from `.ai-agents/registry.yaml`:
 Proceed with update? [Y/n]
 ```
 
-### Step 4: Backup & Apply
+#### check → already up to date
 
-1. Create timestamped backup at `.ai-agents/.backup/{timestamp}/`
-2. Download latest files from GitHub
-3. Apply updates, preserving protected directories
-4. Update platform-specific adapter files for ALL detected platforms (e.g., both `.claude/` and `.github/` if present)
-5. Verify file integrity and report success/failure
+```markdown
+## Framework Up to Date
+Your framework is at the latest version (**{data.local_version}**).
+```
+
+#### check → development mode
+
+```markdown
+## Development Mode
+Local version (**{data.local_version}**) is newer than remote (**{data.remote_version}**). No update needed.
+```
+
+#### update → success
+
+```markdown
+## Update Successful
+
+- **Updated**: {data.previous_version} → {data.updated_version}
+- **Backup**: {data.backup_path}
+- **Files Updated**: {len(data.files_updated)}
+- **Files Added**: {len(data.files_added)}
+- **Platform Adapters Updated**: {data.platform_adapters_updated}
+- **Integrity Check**: {data.integrity_check}
+
+---
+**Suggested Next Steps**:
+- `#status` to verify project state
+- `#update-framework check` next time for preview only
+```
+
+#### rollback → success
+
+```markdown
+## Rollback Successful
+
+- **Rolled Back**: {data.rolled_back_from} → {data.rolled_back_to}
+- **Backup Used**: {data.backup_used}
+- **Files Restored**: {data.files_restored}
+```
+
+#### error (any command)
+
+```markdown
+## Update Error
+
+**Error**: [{error.code}] {error.message}
+**Suggestion**: {error.suggestion}
+```
+
+If the error includes `data.rollback_performed: true`, also display:
+```markdown
+> The update has been automatically rolled back. Your framework remains at version {data.current_version}.
+```
+
+---
+
+## Error Code Reference
+
+| Code | Meaning |
+|------|---------|
+| `NETWORK_ERROR` | Cannot connect to GitHub |
+| `GITHUB_RATE_LIMIT` | GitHub API rate limit exceeded |
+| `REGISTRY_PARSE_ERROR` | Cannot parse registry.yaml |
+| `VERSION_PARSE_ERROR` | Invalid version number format |
+| `BACKUP_FAILED` | Cannot create backup |
+| `DOWNLOAD_FAILED` | File download failure |
+| `APPLY_FAILED` | File replacement failure (auto-rolled back) |
+| `ROLLBACK_FAILED` | Rollback failure (manual recovery needed) |
+| `NO_BACKUP_FOUND` | No backups available |
+| `PYTHON_VERSION_ERROR` | Python version too old |
+
+---
+
+## Fallback: Script Not Found
+
+If `.ai-agents/scripts/update_framework.py` does not exist (e.g., framework version < 1.3):
+
+1. Download the script directly from GitHub:
+   ```
+   https://raw.githubusercontent.com/uoyoCsharp/My-Virtual-TechTeam/main/.ai-agents/scripts/update_framework.py
+   ```
+2. Save it to `.ai-agents/scripts/update_framework.py`
+3. Then execute the script as described above
 
 ---
 
@@ -94,31 +214,51 @@ User: #update-framework
 
 [Conductor Mode]
 
+> Running update check...
+
+$ python .ai-agents/scripts/update_framework.py check
+{JSON output captured}
+
 ## Framework Update Available
 
 ### Version Information
-- **Current Version**: 0.3.0
-- **Available Version**: 0.4.0
+- **Current Version**: 1.2
+- **Available Version**: 1.3
+- **Detected Platforms**: claude_code, github_copilot
 
 ### Files to Update
-| Category | Files |
+| Category | Count |
 |----------|-------|
-| Core Framework | .ai-agents/agents/*, .ai-agents/skills/* |
-| Platform Adapter | .claude/ and .github/agents/ (Dual platforms detected) |
+| Core Framework | 3 files |
+| Agents | 6 files |
+| Commands | 14 files |
+| Skills | 1 file |
+| Platform: Claude Code | 1 file |
+| Platform: GitHub Copilot | 6 files |
 
-### What Will Be Preserved
+### Protected (Will NOT Be Modified)
 - workspace/ (your working state)
 - knowledge/principle/ (project-specific standards)
 - knowledge/project/ (custom project knowledge)
 
+---
 Proceed with update? [Y/n]
 
 User: Y
 
-Update applied successfully.
-- Backup created: .ai-agents/.backup/20260309-143022/
-- 12 files updated
-- All protected files preserved
+> Applying update...
+
+$ python .ai-agents/scripts/update_framework.py update
+{JSON output captured}
+
+## Update Successful
+
+- **Updated**: 1.2 → 1.3
+- **Backup**: .ai-agents/.backup/20260312-143022
+- **Files Updated**: 28
+- **Files Added**: 2
+- **Platform Adapters Updated**: CLAUDE.md, .github/agents/* (6 files)
+- **Integrity Check**: passed
 
 ---
 **Suggested Next Steps**:
