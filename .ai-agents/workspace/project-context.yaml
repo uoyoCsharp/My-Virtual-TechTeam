@@ -10,7 +10,6 @@ project:
     framework: ""
     build_tool: ""
     test_framework: ""
-  pattern: "ddd"
 
 # Requirements summary (written by #analyze)
 requirements:

@@ -71,6 +71,23 @@ Path safety rule:
 
 Additional context is loaded per command type — see `.ai-agents/skills/_system/context-loader.md`.
 
+### Empty Pattern Guard
+
+Before command-specific execution, agents MUST validate `pattern.active` in `.ai-agents/config.yaml`.
+
+If `pattern.active` is empty:
+1. Continue the current command only if it does not strictly require pattern knowledge.
+2. Add a warning block at the end of the response (before Suggested Next Steps):
+
+```markdown
+> Warning: `pattern.active` is empty. Pattern-based context loading may be incomplete.
+> Run `#init` to detect and initialize the project pattern.
+```
+
+3. Include `#init` as the first suggested next step.
+
+If command prerequisites explicitly require an active pattern (for example `#design`), fail fast and ask the user to run `#init`.
+
 ---
 
 ## State Updates

@@ -30,9 +30,8 @@ output:
 # ============================================================
 pattern:
   # Active architecture pattern
-  # Options: ddd, clean-architecture, frontend-react
   # Use "#init" to auto-detect or "#config" to change
-  active: ddd
+  active: ""
 
   selection:
     auto_detect: true
