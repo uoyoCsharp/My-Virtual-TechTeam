@@ -47,7 +47,7 @@ Commands fall into three modes:
 
 ### Shortcut Operation Rules
 - `#fix` and `#refactor` can execute at any time without checking workflow prerequisites
-- Only need to read `workspace/session.yaml` and `workspace/project-context.yaml`
+- Only need to read `.ai-agents/workspace/session.yaml` and `.ai-agents/workspace/project-context.yaml`
 - Do NOT update `progress` in `session.yaml` after completion
 
 ### Full Workflow Rules
@@ -60,10 +60,16 @@ Commands fall into three modes:
 ## Context Loading
 
 Always load before any operation:
-- `workspace/session.yaml`
-- `workspace/project-context.yaml`
+- `.ai-agents/workspace/session.yaml`
+- `.ai-agents/workspace/project-context.yaml`
 
-Additional context is loaded per command type — see `skills/_system/context-loader.md`.
+Path safety rule:
+- All framework paths are repository-root relative.
+- Runtime references for `agents`, `skills`, `workflows`, and `knowledge` must use `.ai-agents/...`-prefixed paths.
+- Never read or write a root-level `workspace/`; use `.ai-agents/workspace/` only.
+- Exception: `registry.yaml` internal `file`/`path` entries may remain framework-relative by design.
+
+Additional context is loaded per command type — see `.ai-agents/skills/_system/context-loader.md`.
 
 ---
 
@@ -71,7 +77,7 @@ Additional context is loaded per command type — see `skills/_system/context-lo
 
 When completing a major workflow phase (analyze/design/implement/review/test):
 
-1. UPDATE `workspace/session.yaml`:
+1. UPDATE `.ai-agents/workspace/session.yaml`:
    - Set `progress.{phase}: done`
    - Set `session.last_command: "#{command}"`
    - Append a one-line summary to `recent_actions` (keep max 3)
@@ -101,7 +107,7 @@ When creating a new change (triggered by `#analyze`):
 ```
 
 ### Workflow
-1. `#analyze` creates the change-id and writes to `workspace/session.yaml` > `active_change`
+1. `#analyze` creates the change-id and writes to `.ai-agents/workspace/session.yaml` > `active_change`
 2. All subsequent phases use the same change-id
 3. On completion, use `#cleanup` to summarize and archive old artifacts
 

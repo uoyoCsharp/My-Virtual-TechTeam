@@ -23,7 +23,7 @@ Build complete project context for AI-assisted development.
 
 ### Phase 1: Project Discovery
 
-1. READ `workspace/session.yaml` — check current state
+1. READ `.ai-agents/workspace/session.yaml` — check current state
 2. SCAN project root — detect config files:
    - `package.json` → Node.js/TypeScript
    - `pom.xml` / `build.gradle` → Java/Kotlin
@@ -85,12 +85,12 @@ Extract from source code:
 ### Phase 5: Workspace Population
 
 WRITE the following files with actual content:
-- `workspace/project-context.yaml` — project info, tech stack, architecture, modules, requirements
-- `workspace/session.yaml` — session state
+- `.ai-agents/workspace/project-context.yaml` — project info, tech stack, architecture, modules, requirements
+- `.ai-agents/workspace/session.yaml` — session state
 
 ### Phase 6: Knowledge Generation (skip if --light)
-- `knowledge/project/tech-stack.md` — stack documentation
-- `knowledge/principle/coding-standards.md` — coding standards extracted from codebase
+- `.ai-agents/knowledge/project/tech-stack.md` — stack documentation
+- `.ai-agents/knowledge/principle/coding-standards.md` — coding standards extracted from codebase
 
 ---
 
@@ -100,7 +100,7 @@ WRITE the following files with actual content:
 2. Extract file naming conventions and organization
 3. Identify module boundaries and dependency flow
 4. Present analysis results for user confirmation
-5. If confirmed: write `knowledge/patterns/{pattern_id}/manifest.yaml` and `overview.md`
+5. If confirmed: write `.ai-agents/knowledge/patterns/{pattern_id}/manifest.yaml` and `overview.md`
 6. Set as active pattern in `config.yaml`
 
 ---

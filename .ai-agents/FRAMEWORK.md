@@ -32,8 +32,8 @@ When a `#command` is detected, look up the agent and command file in `registry.y
 When a `#command` is detected:
 
 1. **Announce**: Output `[{Agent} Mode]`
-2. **Load Core**: READ `agents/{agent}.md`
-3. **Load Command**: READ `agents/_commands/{command}.md`
+2. **Load Core**: READ `.ai-agents/agents/{agent}.md`
+3. **Load Command**: READ `.ai-agents/agents/_commands/{command}.md`
 4. **Load Skills**: IF agent has `skills:` in frontmatter, READ relevant skill files
 5. **Execute**: Follow the agent's behavior rules
 6. **Stay**: Maintain role until another `#command`
@@ -84,13 +84,13 @@ When a `#command` is detected:
 
 ## Context Loading
 
-> Authority: `skills/_system/context-loader.md`
+> Authority: `.ai-agents/skills/_system/context-loader.md`
 
 Context loading rules are defined in the context-loader system skill.
-Required for every activation: `workspace/session.yaml` + `workspace/project-context.yaml`.
+Required for every activation: `.ai-agents/workspace/session.yaml` + `.ai-agents/workspace/project-context.yaml`.
 
 ### Command Files
-Each command has its own file in `agents/_commands/`:
+Each command has its own file in `.ai-agents/agents/_commands/`:
 - Auto-loaded when command is invoked
 - Contains execution flow, output format, and examples
 

@@ -41,23 +41,23 @@ Multi-agent collaboration framework for software development.
 | `FRAMEWORK.md` | Framework entry (core instructions for LLM) |
 | `registry.yaml` | Unified resource index |
 | `config.yaml` | User configuration |
-| `agents/_shared.md` | Shared behavior rules for all agents |
-| `agents/{agent}.md` | Agent core file (role + behavioral rules) |
-| `agents/_commands/{command}.md` | Command-specific execution file |
-| `skills/` | Modular capabilities (on-demand) |
-| `skills/_system/` | System skills (context-loader) |
-| `workflows/` | Workflow state machine definitions |
-| `knowledge/` | Domain knowledge |
-| `knowledge/core/` | Core principles (always loaded) |
-| `knowledge/patterns/` | Architecture patterns (on-demand) |
-| `knowledge/principle/` | Project coding standards (generated) |
-| `knowledge/project/` | Project-specific knowledge |
-| `workspace/` | Project workspace |
-| `workspace/session.yaml` | Current session state |
-| `workspace/project-context.yaml` | Unified project context (requirements + architecture + decisions) |
-| `workspace/artifacts/` | Work artifacts (grouped by change) |
-| `workspace/requirements/` | Requirements input documents |
-| `workspace/history/` | Historical archive |
+| `.ai-agents/agents/_shared.md` | Shared behavior rules for all agents |
+| `.ai-agents/agents/{agent}.md` | Agent core file (role + behavioral rules) |
+| `.ai-agents/agents/_commands/{command}.md` | Command-specific execution file |
+| `.ai-agents/skills/` | Modular capabilities (on-demand) |
+| `.ai-agents/skills/_system/` | System skills (context-loader) |
+| `.ai-agents/workflows/` | Workflow state machine definitions |
+| `.ai-agents/knowledge/` | Domain knowledge |
+| `.ai-agents/knowledge/core/` | Core principles (always loaded) |
+| `.ai-agents/knowledge/patterns/` | Architecture patterns (on-demand) |
+| `.ai-agents/knowledge/principle/` | Project coding standards (generated) |
+| `.ai-agents/knowledge/project/` | Project-specific knowledge |
+| `.ai-agents/workspace/` | Project workspace |
+| `.ai-agents/workspace/session.yaml` | Current session state |
+| `.ai-agents/workspace/project-context.yaml` | Unified project context (requirements + architecture + decisions) |
+| `.ai-agents/workspace/artifacts/` | Work artifacts (grouped by change) |
+| `.ai-agents/workspace/requirements/` | Requirements input documents |
+| `.ai-agents/workspace/history/` | Historical archive |
 
 ## Key Concepts
 
@@ -72,8 +72,8 @@ context:
 
 When a `#command` is detected, the framework:
 1. Looks up the agent in `registry.yaml`
-2. Loads `agents/{agent}.md` (agent core)
-3. Loads `agents/_commands/{command}.md` (command details)
+2. Loads `.ai-agents/agents/{agent}.md` (agent core)
+3. Loads `.ai-agents/agents/_commands/{command}.md` (command details)
 
 ### Data Tiering
 
@@ -88,7 +88,7 @@ Workspace uses a simplified two-file structure:
 | File | Purpose | Used In |
 |------|---------|--------|
 | `registry.yaml` | Global resource index | Framework root |
-| `manifest.yaml` | Knowledge pack metadata | knowledge/*/ |
+| `manifest.yaml` | Knowledge pack metadata | .ai-agents/knowledge/*/ |
 
 ## Agents
 
@@ -97,7 +97,7 @@ Each agent has a single `.md` file with:
 1. **YAML frontmatter**: id, name, commands, context requirements
 2. **Markdown body**: Core role, behavioral rules, decision framework
 
-Common rules are defined in `agents/_shared.md`.
+Common rules are defined in `.ai-agents/agents/_shared.md`.
 
 ## Skills
 
@@ -122,12 +122,12 @@ Workflows define phase transitions:
 
 ### Add Custom Agent
 
-1. Create `agents/{name}.md` with YAML frontmatter and behavior rules
+1. Create `.ai-agents/agents/{name}.md` with YAML frontmatter and behavior rules
 2. Register in `registry.yaml` under `agents` and `commands`
 
 ### Add Architecture Pattern
 
-1. Create `knowledge/patterns/{pattern}/` directory
+1. Create `.ai-agents/knowledge/patterns/{pattern}/` directory
 2. Add `manifest.yaml` with pattern metadata
 3. Add pattern documentation (overview.md, review-checklist.md)
-4. Update `knowledge/patterns/manifest.yaml` under `available`
+4. Update `.ai-agents/knowledge/patterns/manifest.yaml` under `available`

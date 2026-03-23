@@ -10,11 +10,11 @@ commands:
 
 context:
   required:
-    - workspace/session.yaml
-    - workspace/project-context.yaml
+    - .ai-agents/workspace/session.yaml
+    - .ai-agents/workspace/project-context.yaml
   optional:
-    - knowledge/principle/coding-standards.md
-    - knowledge/patterns/{active}/review-checklist.md
+    - .ai-agents/knowledge/principle/coding-standards.md
+    - .ai-agents/knowledge/patterns/{active}/review-checklist.md
 
 ---
 

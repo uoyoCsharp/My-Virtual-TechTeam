@@ -10,8 +10,8 @@ commands:
 
 context:
   required:
-    - workspace/session.yaml
-    - workspace/project-context.yaml
+    - .ai-agents/workspace/session.yaml
+    - .ai-agents/workspace/project-context.yaml
   optional: []
 
 ---

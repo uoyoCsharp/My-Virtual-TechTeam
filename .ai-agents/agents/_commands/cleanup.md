@@ -15,13 +15,13 @@ Clean up workspace artifacts, summarize old changes, and maintain workspace heal
 
 | Check | Condition | On Failure |
 |-------|-----------|------------|
-| Project initialized | `workspace/session.yaml` exists | Suggest `#init` |
+| Project initialized | `.ai-agents/workspace/session.yaml` exists | Suggest `#init` |
 
 ## Execution Flow
 
 ### Step 1: Scan Workspace State
-- READ all files under `workspace/artifacts/{change-id}/` (scan all change-id directories)
-- READ `workspace/session.yaml`
+- READ all files under `.ai-agents/workspace/artifacts/{change-id}/` (scan all change-id directories)
+- READ `.ai-agents/workspace/session.yaml`
 - COUNT total artifact files and estimate token footprint
 
 ### Step 2: Identify Cleanup Candidates

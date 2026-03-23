@@ -3,7 +3,7 @@
 # Resources (agents, skills, patterns) are discovered dynamically from their directories.
 
 name: "AI Agent Workflow Framework"
-version: "1.3"
+version: "1.4"
 
 # ============================================================
 # System Settings
@@ -54,14 +54,15 @@ knowledge:
 # ============================================================
 # Directory Structure (Advanced)
 # ============================================================
+# All directory paths below are repository-root relative.
 directories:
-  agents: agents/
-  skills: skills/
-  workflows: workflows/
-  knowledge: knowledge/
-  workspace: workspace/
-  workspace_session: workspace/session.yaml
-  workspace_context: workspace/project-context.yaml
-  workspace_history: workspace/history/
-  workspace_artifacts: workspace/artifacts/
-  workspace_requirements: workspace/requirements/
+  agents: .ai-agents/agents/
+  skills: .ai-agents/skills/
+  workflows: .ai-agents/workflows/
+  knowledge: .ai-agents/knowledge/
+  workspace: .ai-agents/workspace/
+  workspace_session: .ai-agents/workspace/session.yaml
+  workspace_context: .ai-agents/workspace/project-context.yaml
+  workspace_history: .ai-agents/workspace/history/
+  workspace_artifacts: .ai-agents/workspace/artifacts/
+  workspace_requirements: .ai-agents/workspace/requirements/

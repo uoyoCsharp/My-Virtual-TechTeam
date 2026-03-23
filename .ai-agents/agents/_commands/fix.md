@@ -23,8 +23,8 @@ Before executing fix, load the following (if they exist):
 
 | Path | Description |
 |------|-------------|
-| `knowledge/principle/coding-standards.md` | Project coding standards |
-| `knowledge/patterns/{active}/` | Active architecture pattern (for context) |
+| `.ai-agents/knowledge/principle/coding-standards.md` | Project coding standards |
+| `.ai-agents/knowledge/patterns/{active}/` | Active architecture pattern (for context) |
 
 > `{active}` refers to `pattern.active` in `config.yaml`
 
@@ -40,7 +40,7 @@ Before executing fix, load the following (if they exist):
 
 ## Context Loading
 
-Uses smart context loading — load related source files only. See `skills/_system/context-loader.md` for rules.
+Uses smart context loading — load related source files only. See `.ai-agents/skills/_system/context-loader.md` for rules.
 
 ---
 
@@ -68,7 +68,7 @@ Classify the bug to guide analysis and fix strategy:
 
 **Step 2: Load Appropriate Context**
 - Based on issue complexity, load minimal/moderate/full context
-- Use `workspace/project-context.yaml` to locate related modules
+- Use `.ai-agents/workspace/project-context.yaml` to locate related modules
 
 **Step 3: Propose Fix**
 - Present fix with explanation

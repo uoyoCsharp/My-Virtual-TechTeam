@@ -19,6 +19,12 @@ This file contains your project-specific instructions for Claude Code.
 5. **Execute**: Follow the command's execution flow. Any text after `#{command}` is the **argument/input** to that command.
 6. **Stay in Mode**: Maintain this agent role until another `#command` is received.
 
+**Path Base Rule (Mandatory):**
+- Treat all framework file paths as repository-root relative.
+- Framework resources (agents, skills, workflows, knowledge) MUST resolve under `.ai-agents/`.
+- Session/context/artifact files MUST be read/written under `.ai-agents/workspace/`.
+- Never create or use a root-level `workspace/` directory.
+
 **Command-to-Agent Mapping:**
 
 | Commands | Agent | Agent File |

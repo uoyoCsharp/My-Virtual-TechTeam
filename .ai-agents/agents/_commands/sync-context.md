@@ -19,7 +19,7 @@ Synchronize context with code changes after manual modifications.
 
 | Check | Condition | On Failure |
 |-------|-----------|------------|
-| Project initialized | `workspace/project-context.yaml` is non-empty | "Project not initialized. Run `#init` first." |
+| Project initialized | `.ai-agents/workspace/project-context.yaml` is non-empty | "Project not initialized. Run `#init` first." |
 
 ---
 
@@ -39,8 +39,8 @@ Synchronize context with code changes after manual modifications.
    - Extract keywords
 
 3. **Update Workspace**
-   - UPDATE `workspace/project-context.yaml`
-   - UPDATE `workspace/session.yaml`
+   - UPDATE `.ai-agents/workspace/project-context.yaml`
+   - UPDATE `.ai-agents/workspace/session.yaml`
 
 ---
 

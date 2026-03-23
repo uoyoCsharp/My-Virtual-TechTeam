@@ -19,9 +19,9 @@ Before executing review, load the following (if they exist):
 
 | Path | Description |
 |------|-------------|
-| `knowledge/core/review-principles.md` | Universal review principles |
-| `knowledge/principle/coding-standards.md` | Project coding standards |
-| `knowledge/patterns/{active}/review-checklist.md` | Pattern-specific checklist |
+| `.ai-agents/knowledge/core/review-principles.md` | Universal review principles |
+| `.ai-agents/knowledge/principle/coding-standards.md` | Project coding standards |
+| `.ai-agents/knowledge/patterns/{active}/review-checklist.md` | Pattern-specific checklist |
 
 > `{active}` refers to `pattern.active` in `config.yaml`
 
@@ -57,8 +57,8 @@ Before executing review, load the following (if they exist):
 
 **Step 2: Load Context**
 - READ target files
-- READ `workspace/project-context.yaml`
-- READ `knowledge/patterns/{active}/review-checklist.md` (if exists)
+- READ `.ai-agents/workspace/project-context.yaml`
+- READ `.ai-agents/knowledge/patterns/{active}/review-checklist.md` (if exists)
 
 **Step 3: Analyze Code**
 - Check architecture compliance
@@ -73,7 +73,7 @@ Before executing review, load the following (if they exist):
 - Highlight positive patterns
 
 **Step 5: Update Workspace**
-- WRITE `workspace/artifacts/{change-id}/review.md`
+- WRITE `.ai-agents/workspace/artifacts/{change-id}/review.md`
 - UPDATE `session.yaml` history
 
 ---

@@ -12,33 +12,33 @@ states:
 
     entry_conditions:
       - type: resource_available
-        source: workspace/requirements/
+        source: .ai-agents/workspace/requirements/
         description: "Requirements documents available"
 
     entry_actions:
-      - action: "Load requirements from workspace/requirements/"
+      - action: "Load requirements from .ai-agents/workspace/requirements/"
       - action: "Update session.yaml with current phase"
 
     execution:
       commands: ["#analyze"]
       expected_outputs:
-        - workspace/project-context.yaml (requirements section)
-        - workspace/artifacts/{change-id}/analysis.md
+        - .ai-agents/workspace/project-context.yaml (requirements section)
+        - .ai-agents/workspace/artifacts/{change-id}/analysis.md
 
     exit_criteria:
       - type: context_updated
-        target: workspace/project-context.yaml
+        target: .ai-agents/workspace/project-context.yaml
         section: requirements
         description: "Requirements section populated"
       - type: user_confirmation
         description: "User confirms analysis results"
 
     outputs:
-      - target: workspace/project-context.yaml
+      - target: .ai-agents/workspace/project-context.yaml
         section: requirements
         format: yaml
         description: "Structured requirements analysis"
-      - target: workspace/artifacts/{change-id}/analysis.md
+      - target: .ai-agents/workspace/artifacts/{change-id}/analysis.md
         format: markdown
         description: "Detailed analysis document"
 
@@ -67,20 +67,20 @@ states:
     execution:
       commands: ["#design", "#design --plan"]
       expected_outputs:
-        - workspace/project-context.yaml (architecture section)
-        - workspace/artifacts/{change-id}/design.md
+        - .ai-agents/workspace/project-context.yaml (architecture section)
+        - .ai-agents/workspace/artifacts/{change-id}/design.md
 
     exit_criteria:
       - type: context_updated
-        target: workspace/project-context.yaml
+        target: .ai-agents/workspace/project-context.yaml
         section: architecture
       - type: user_confirmation
 
     outputs:
-      - target: workspace/project-context.yaml
+      - target: .ai-agents/workspace/project-context.yaml
         section: architecture
         format: yaml
-      - target: workspace/artifacts/{change-id}/design.md
+      - target: .ai-agents/workspace/artifacts/{change-id}/design.md
         format: markdown
 
     rollback:
@@ -109,11 +109,11 @@ states:
       commands: ["#implement"]
       # Note: #fix and #refactor are independent shortcut operations, not part of this workflow
       expected_outputs:
-        - workspace/artifacts/{change-id}/implementation/
+        - .ai-agents/workspace/artifacts/{change-id}/implementation/
 
     exit_criteria:
       - type: file_exists
-        target: workspace/artifacts/{change-id}/implementation/
+        target: .ai-agents/workspace/artifacts/{change-id}/implementation/
       - type: user_confirmation
 
     rollback:
@@ -141,11 +141,11 @@ states:
     execution:
       commands: ["#review"]
       expected_outputs:
-        - workspace/artifacts/{change-id}/review.md
+        - .ai-agents/workspace/artifacts/{change-id}/review.md
 
     exit_criteria:
       - type: file_exists
-        target: workspace/artifacts/{change-id}/review.md
+        target: .ai-agents/workspace/artifacts/{change-id}/review.md
       - type: review_passed
         description: "No critical issues found"
 
@@ -176,7 +176,7 @@ states:
     execution:
       commands: ["#test"]
       expected_outputs:
-        - workspace/artifacts/{change-id}/tests/
+        - .ai-agents/workspace/artifacts/{change-id}/tests/
 
     exit_criteria:
       - type: tests_passed
@@ -260,4 +260,4 @@ error_recovery:
 
   on_invalid_state:
     action: "Re-initialize project state"
-    suggestion: "Run #init --refresh to rebuild context, or manually check workspace/session.yaml"
+    suggestion: "Run #init --refresh to rebuild context, or manually check .ai-agents/workspace/session.yaml"

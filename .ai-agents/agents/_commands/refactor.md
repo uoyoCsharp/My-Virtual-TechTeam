@@ -23,8 +23,8 @@ Before executing refactoring, load the following (if they exist):
 
 | Path | Description |
 |------|-------------|
-| `knowledge/patterns/{active}/` | Active architecture pattern knowledge |
-| `knowledge/principle/coding-standards.md` | Project coding standards |
+| `.ai-agents/knowledge/patterns/{active}/` | Active architecture pattern knowledge |
+| `.ai-agents/knowledge/principle/coding-standards.md` | Project coding standards |
 
 > `{active}` refers to `pattern.active` in `config.yaml`
 

@@ -18,22 +18,22 @@ Create system architecture design based on requirements analysis.
 - `#design --plan` - Create design with implementation timeline
 
 ### Prerequisites
-- Requirements analysis completed (`workspace/project-context.yaml` requirements section exists and is non-empty)
+- Requirements analysis completed (`.ai-agents/workspace/project-context.yaml` requirements section exists and is non-empty)
 - Active pattern selected in `config.yaml`
 
 ## Prerequisites Check
 
 | Check | Condition | On Failure |
 |-------|-----------|------------|
-| Requirements exist | `workspace/project-context.yaml` requirements section is non-empty | "No requirements found. Run `#analyze` first." |
+| Requirements exist | `.ai-agents/workspace/project-context.yaml` requirements section is non-empty | "No requirements found. Run `#analyze` first." |
 
 ---
 
 ## Execution Flow
 
 **Step 1: Load Context**
-- READ `workspace/project-context.yaml`
-- READ `knowledge/patterns/{active}/` relevant files
+- READ `.ai-agents/workspace/project-context.yaml`
+- READ `.ai-agents/knowledge/patterns/{active}/` relevant files
 
 **Step 2: Identify Architectural Concerns**
 - Scalability requirements
@@ -58,9 +58,9 @@ Create system architecture design based on requirements analysis.
 - Error handling strategy
 
 **Step 6: Document Architecture**
-- UPDATE `workspace/project-context.yaml` (architecture section)
-- WRITE `workspace/artifacts/{change-id}/design.md`
-- UPDATE `workspace/session.yaml` progress
+- UPDATE `.ai-agents/workspace/project-context.yaml` (architecture section)
+- WRITE `.ai-agents/workspace/artifacts/{change-id}/design.md`
+- UPDATE `.ai-agents/workspace/session.yaml` progress
 
 ---
 

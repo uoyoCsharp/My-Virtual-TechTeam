@@ -18,8 +18,8 @@ Always load these two files first:
 
 | File | Purpose |
 |------|---------|
-| `workspace/session.yaml` | Current session state, active change, progress |
-| `workspace/project-context.yaml` | Project info, tech stack, architecture, requirements |
+| `.ai-agents/workspace/session.yaml` | Current session state, active change, progress |
+| `.ai-agents/workspace/project-context.yaml` | Project info, tech stack, architecture, requirements |
 
 ---
 
@@ -30,13 +30,13 @@ After basic loading, load additional files based on the command:
 | Command | Additional Files |
 |---------|-----------------|
 | `#init` | Scan project root for config files |
-| `#analyze` | `workspace/requirements/` (if exists) |
-| `#design` | `knowledge/patterns/{active}/`, `knowledge/core/` |
-| `#implement` | `knowledge/patterns/{active}/`, `knowledge/principle/`, `workspace/artifacts/{active-change}/` |
+| `#analyze` | `.ai-agents/workspace/requirements/` (if exists) |
+| `#design` | `.ai-agents/knowledge/patterns/{active}/`, `.ai-agents/knowledge/core/` |
+| `#implement` | `.ai-agents/knowledge/patterns/{active}/`, `.ai-agents/knowledge/principle/`, `.ai-agents/workspace/artifacts/{active-change}/` |
 | `#fix` | Related source files only |
-| `#refactor` | `knowledge/patterns/{active}/`, related source files |
-| `#review` | `knowledge/core/review-principles.md`, `knowledge/principle/`, `knowledge/patterns/{active}/review-checklist.md` |
-| `#test` | `knowledge/core/review-principles.md`, `knowledge/patterns/{active}/`, implementation files |
+| `#refactor` | `.ai-agents/knowledge/patterns/{active}/`, related source files |
+| `#review` | `.ai-agents/knowledge/core/review-principles.md`, `.ai-agents/knowledge/principle/`, `.ai-agents/knowledge/patterns/{active}/review-checklist.md` |
+| `#test` | `.ai-agents/knowledge/core/review-principles.md`, `.ai-agents/knowledge/patterns/{active}/`, implementation files |
 | `#status` | None (basic loading is sufficient) |
 | `#config` | `config.yaml` |
 
@@ -50,10 +50,10 @@ When loading required files, check for empty/default content and warn the user:
 
 | File | Empty Indicator | Warning |
 |------|----------------|---------|
-| `workspace/session.yaml` | `session.initialized_at: ""` | "Session not initialized. Run `#init` first." |
-| `workspace/project-context.yaml` | `project.name: ""` | "Project not initialized. Run `#init` first." |
-| `workspace/project-context.yaml` | No features in requirements | "No requirements found. Run `#analyze` first." |
-| `workspace/project-context.yaml` | No modules in architecture | "No architecture defined. Run `#design` first." |
+| `.ai-agents/workspace/session.yaml` | `session.initialized_at: ""` | "Session not initialized. Run `#init` first." |
+| `.ai-agents/workspace/project-context.yaml` | `project.name: ""` | "Project not initialized. Run `#init` first." |
+| `.ai-agents/workspace/project-context.yaml` | No features in requirements | "No requirements found. Run `#analyze` first." |
+| `.ai-agents/workspace/project-context.yaml` | No modules in architecture | "No architecture defined. Run `#design` first." |
 
 When an empty indicator is found on a required file:
 1. Output warning message
@@ -64,10 +64,10 @@ When an empty indicator is found on a required file:
 
 ## Code Mapping
 
-Use `workspace/project-context.yaml` architecture section for efficient file location:
+Use `.ai-agents/workspace/project-context.yaml` architecture section for efficient file location:
 
 ```yaml
-# workspace/project-context.yaml → architecture.modules
+# .ai-agents/workspace/project-context.yaml → architecture.modules
 modules:
   - name: domain
     path: src/domain/
@@ -80,10 +80,10 @@ When the user mentions an entity or module name, check `project-context.yaml` to
 
 ## Topic-Based Loading
 
-Use `workspace/project-context.yaml` decisions section for topic-based lookups:
+Use `.ai-agents/workspace/project-context.yaml` decisions section for topic-based lookups:
 
 ```yaml
-# workspace/project-context.yaml → architecture.decisions
+# .ai-agents/workspace/project-context.yaml → architecture.decisions
 decisions:
   - id: auth
     topic: authentication

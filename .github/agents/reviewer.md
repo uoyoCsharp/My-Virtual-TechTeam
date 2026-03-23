@@ -35,7 +35,7 @@ This adapter enables the Reviewer agent to work within GitHub Copilot's environm
 1. OPEN the registry file: `.ai-agents/registry.yaml`
 2. OPEN the agent definition: `.ai-agents/agents/reviewer.md`
 3. READ the shared rules: `.ai-agents/agents/_shared.md`
-4. LOAD coding standards from `knowledge/principle/`
+4. LOAD coding standards from `.ai-agents/knowledge/principle/`
 5. CHECK architecture design for compliance verification
 6. READY to process requests
 </agent-activation>

@@ -28,9 +28,9 @@ https://github.com/uoyoCsharp/My-Virtual-TechTeam
 ---
 
 ## Protected Files (Never Overwritten by Script)
-- `workspace/**/*` — Working state
-- `knowledge/principle/**/*` — Project coding standards
-- `knowledge/project/**/*` — Custom project knowledge
+- `.ai-agents/workspace/**/*` — Working state
+- `.ai-agents/knowledge/principle/**/*` — Project coding standards
+- `.ai-agents/knowledge/project/**/*` — Custom project knowledge
 
 ---
 
@@ -111,9 +111,9 @@ The script outputs a JSON object to stdout. Parse it and act based on `status`:
 [Generate from data.remote_file_tree — group by category keys]
 
 ### Protected (Will NOT Be Modified)
-- workspace/ (your working state)
-- knowledge/principle/ (project-specific standards)
-- knowledge/project/ (custom project knowledge)
+- .ai-agents/workspace/ (your working state)
+- .ai-agents/knowledge/principle/ (project-specific standards)
+- .ai-agents/knowledge/project/ (custom project knowledge)
 
 ---
 Proceed with update? [Y/n]
@@ -237,9 +237,9 @@ $ python .ai-agents/scripts/update_framework.py check
 | Platform: GitHub Copilot | 6 files |
 
 ### Protected (Will NOT Be Modified)
-- workspace/ (your working state)
-- knowledge/principle/ (project-specific standards)
-- knowledge/project/ (custom project knowledge)
+- .ai-agents/workspace/ (your working state)
+- .ai-agents/knowledge/principle/ (project-specific standards)
+- .ai-agents/knowledge/project/ (custom project knowledge)
 
 ---
 Proceed with update? [Y/n]

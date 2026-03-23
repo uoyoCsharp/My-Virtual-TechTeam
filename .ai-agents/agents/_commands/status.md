@@ -14,14 +14,14 @@ Display current project and workflow status.
 
 | Check | Condition | On Failure |
 |-------|-----------|------------|
-| Project initialized | `workspace/session.yaml` exists and is non-empty | "Project not initialized. Run `#init` first." |
+| Project initialized | `.ai-agents/workspace/session.yaml` exists and is non-empty | "Project not initialized. Run `#init` first." |
 
 ---
 
 ## Execution Flow
 
-1. READ `workspace/session.yaml`
-2. READ `workspace/project-context.yaml`
+1. READ `.ai-agents/workspace/session.yaml`
+2. READ `.ai-agents/workspace/project-context.yaml`
 3. COMPILE status report
 
 ---
@@ -73,7 +73,7 @@ flowchart LR
 ## Workspace Health Check
 
 After displaying workflow status, also check:
-- Count artifact directories in `workspace/artifacts/` (each `{change-id}/` subdirectory)
+- Count artifact directories in `.ai-agents/workspace/artifacts/` (each `{change-id}/` subdirectory)
 - If count > 5, append to output:
 
 > **Workspace Notice**: {count} change artifacts found. Consider running `#cleanup` to reduce context size.

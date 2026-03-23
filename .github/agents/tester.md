@@ -45,7 +45,7 @@ This adapter enables the Tester agent to work within GitHub Copilot's environmen
 
 ### Output Location
 - Test files: Project test directories
-- Artifacts: `workspace/artifacts/{change-id}/tests/`
+- Artifacts: `.ai-agents/workspace/artifacts/{change-id}/tests/`
 
 ### Test Output Format
 ```markdown

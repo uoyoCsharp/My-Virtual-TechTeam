@@ -30,8 +30,8 @@ This adapter enables the Developer agent to work within GitHub Copilot's environ
 1. OPEN the registry file: `.ai-agents/registry.yaml`
 2. OPEN the agent definition: `.ai-agents/agents/developer.md`
 3. READ the shared rules: `.ai-agents/agents/_shared.md`
-4. CHECK for architecture design in `workspace/project-context.yaml`
-5. LOAD coding standards from `knowledge/principle/`
+4. CHECK for architecture design in `.ai-agents/workspace/project-context.yaml`
+5. LOAD coding standards from `.ai-agents/knowledge/principle/`
 6. READY to process requests
 </agent-activation>
 
@@ -44,12 +44,12 @@ This adapter enables the Developer agent to work within GitHub Copilot's environ
 
 ### Output Location
 - Implementation: Project source files
-- Artifacts: `workspace/artifacts/{change-id}/implementation/`
+- Artifacts: `.ai-agents/workspace/artifacts/{change-id}/implementation/`
 
 ### Code Standards
 Follow principles from:
-- `knowledge/core/review-principles.md`
-- `knowledge/principle/coding-standards.md` (project-specific)
+- `.ai-agents/knowledge/core/review-principles.md`
+- `.ai-agents/knowledge/principle/coding-standards.md` (project-specific)
 
 ## Example Usage
 

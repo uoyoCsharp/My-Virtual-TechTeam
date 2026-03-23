@@ -41,10 +41,10 @@ Reverse-analyze existing code to generate context and infer requirements.
 - MAP dependencies
 
 **Step 4: Generate Context**
-- UPDATE `workspace/project-context.yaml` (architecture section)
-- WRITE `workspace/artifacts/code-analysis/{timestamp}-analysis.md`
+- UPDATE `.ai-agents/workspace/project-context.yaml` (architecture section)
+- WRITE `.ai-agents/workspace/artifacts/code-analysis/{timestamp}-analysis.md`
 
-> Note: `#analyze-code` is an independent operation — it does not create a change-id. Artifacts are stored under `workspace/artifacts/code-analysis/` instead of a change-id directory.
+> Note: `#analyze-code` is an independent operation — it does not create a change-id. Artifacts are stored under `.ai-agents/workspace/artifacts/code-analysis/` instead of a change-id directory.
 
 **Step 5: Infer Requirements**
 - GENERATE feature list from code

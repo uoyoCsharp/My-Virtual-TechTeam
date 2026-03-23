@@ -26,7 +26,7 @@ Analyze requirements documents and extract domain concepts.
 
 **Step 1: Load Requirements**
 - IF file provided: READ the file
-- ELSE IF `workspace/requirements/` contains documents: LIST and present for selection
+- ELSE IF `.ai-agents/workspace/requirements/` contains documents: LIST and present for selection
 - ELSE: Use requirements text from user message
 
 **Step 2: Extract Information**
@@ -46,9 +46,9 @@ Analyze requirements documents and extract domain concepts.
 
 **Step 5: Update Workspace**
 - GENERATE change-id per `_shared.md` Change ID Convention
-- UPDATE `workspace/session.yaml` with new change-id and phase progress
-- UPDATE `workspace/project-context.yaml` (requirements section)
-- WRITE `workspace/artifacts/{change-id}/analysis.md`
+- UPDATE `.ai-agents/workspace/session.yaml` with new change-id and phase progress
+- UPDATE `.ai-agents/workspace/project-context.yaml` (requirements section)
+- WRITE `.ai-agents/workspace/artifacts/{change-id}/analysis.md`
 
 ---
 
