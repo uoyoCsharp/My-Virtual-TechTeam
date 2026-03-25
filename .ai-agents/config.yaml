@@ -3,7 +3,7 @@
 # Resources (agents, skills, patterns) are discovered dynamically from their directories.
 
 name: "AI Agent Workflow Framework"
-version: "1.4"
+version: "1.5"
 
 # ============================================================
 # System Settings

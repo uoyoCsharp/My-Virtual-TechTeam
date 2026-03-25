@@ -36,6 +36,9 @@ PROTECTED_PATHS = [
     "knowledge/project/",
 ]
 
+# Top-level keys in config.yaml that belong to the user and must NOT be overwritten
+CONFIG_USER_KEYS = {"system", "output", "pattern", "knowledge"}
+
 BACKUP_DIR_NAME = ".backup"
 MAX_BACKUPS = 5
 HTTP_TIMEOUT = 30
@@ -393,6 +396,84 @@ def compute_file_hash(filepath):
     return h.hexdigest()
 
 
+def _split_yaml_sections(text):
+    """
+    Split a YAML file into top-level sections.
+
+    Returns a list of (key, raw_text) tuples where *key* is the top-level
+    YAML key (e.g. "system") and *raw_text* is the full text of that section
+    including the key line and all indented lines below it.
+
+    Lines before the first top-level key (comments / blank lines) are returned
+    with key=None.
+    """
+    sections = []
+    current_key = None
+    current_lines = []
+
+    for line in text.splitlines(True):
+        # A top-level key: starts at column 0, is not a comment, contains ':'
+        stripped = line.rstrip()
+        if stripped and not stripped.startswith("#") and not stripped[0].isspace() and ":" in stripped:
+            # Flush previous section
+            if current_lines:
+                sections.append((current_key, "".join(current_lines)))
+            current_key = stripped.split(":")[0].strip()
+            current_lines = [line]
+        else:
+            current_lines.append(line)
+
+    if current_lines:
+        sections.append((current_key, "".join(current_lines)))
+
+    return sections
+
+
+def merge_config_yaml(local_text, remote_text):
+    """
+    Merge remote config.yaml with local config.yaml, preserving user-owned
+    sections (CONFIG_USER_KEYS) from the local file while taking everything
+    else from the remote file.
+
+    If a new top-level key exists only in the remote version, it is added.
+    If a user-owned key exists only in the local version, it is preserved.
+    """
+    local_sections = _split_yaml_sections(local_text)
+    remote_sections = _split_yaml_sections(remote_text)
+
+    # Build lookup: key -> raw_text (last occurrence wins for duplicates)
+    local_map = {k: v for k, v in local_sections if k is not None}
+
+    # Build result by iterating the remote layout (keeps remote ordering)
+    result_parts = []
+    seen_keys = set()
+
+    for key, raw in remote_sections:
+        if key is None:
+            # Header comments / preamble — always take from remote
+            result_parts.append(raw)
+        elif key in CONFIG_USER_KEYS:
+            # User-owned section: keep local version if it exists
+            if key in local_map:
+                result_parts.append(local_map[key])
+            else:
+                result_parts.append(raw)
+            seen_keys.add(key)
+        else:
+            # Framework-owned section: take remote version
+            result_parts.append(raw)
+            seen_keys.add(key)
+
+    # Append any local-only user sections that don't exist in remote
+    for key, raw in local_sections:
+        if key is not None and key in CONFIG_USER_KEYS and key not in seen_keys:
+            result_parts.append(raw)
+
+    merged = "".join(result_parts)
+    # Ensure file ends with a single newline
+    return merged.rstrip("\n") + "\n"
+
+
 def apply_update(temp_dir, project_root):
     """
     Apply downloaded files from temp_dir to the project.
@@ -402,6 +483,7 @@ def apply_update(temp_dir, project_root):
     updated_files = []
     added_files = []
     skipped_protected = []
+    merged_config = []
 
     temp_path = Path(temp_dir)
     for src_file in temp_path.rglob("*"):
@@ -422,12 +504,25 @@ def apply_update(temp_dir, project_root):
         else:
             added_files.append(rel_path)
 
+        # Smart merge for config.yaml: preserve user-owned sections
+        if rel_path == ".ai-agents/config.yaml" and dest_file.exists():
+            try:
+                local_text = dest_file.read_text(encoding="utf-8")
+                remote_text = src_file.read_text(encoding="utf-8")
+                merged_text = merge_config_yaml(local_text, remote_text)
+                dest_file.write_text(merged_text, encoding="utf-8")
+                merged_config.append(rel_path)
+                continue
+            except Exception:
+                pass  # Fall through to plain copy on any error
+
         shutil.copy2(src_file, dest_file)
 
     return {
         "files_updated": updated_files,
         "files_added": added_files,
         "files_skipped_protected": skipped_protected,
+        "files_merged": merged_config,
     }
 
 
@@ -661,6 +756,7 @@ def cmd_update(project_root):
             "files_updated": result["files_updated"],
             "files_added": result["files_added"],
             "files_skipped_protected": result["files_skipped_protected"],
+            "files_merged": result["files_merged"],
             "files_failed": [f["file"] for f in failed] if failed else [],
             "platform_adapters_updated": platform_adapters,
             "integrity_check": "passed",

@@ -32,6 +32,9 @@ https://github.com/uoyoCsharp/My-Virtual-TechTeam
 - `.ai-agents/knowledge/principle/**/*` — Project coding standards
 - `.ai-agents/knowledge/project/**/*` — Custom project knowledge
 
+## Smart-Merged Files
+- `.ai-agents/config.yaml` — User-owned sections (`system`, `output`, `pattern`, `knowledge`) are preserved from the local file; framework-owned sections (`name`, `version`, `directories`, and any new keys) are updated from remote
+
 ---
 
 ## Execution Flow
@@ -142,6 +145,7 @@ Local version (**{data.local_version}**) is newer than remote (**{data.remote_ve
 - **Backup**: {data.backup_path}
 - **Files Updated**: {len(data.files_updated)}
 - **Files Added**: {len(data.files_added)}
+- **Files Merged** (user settings preserved): {data.files_merged}
 - **Platform Adapters Updated**: {data.platform_adapters_updated}
 - **Integrity Check**: {data.integrity_check}
 
