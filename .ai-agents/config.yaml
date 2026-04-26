@@ -28,16 +28,3 @@ pattern:
   selection:
     auto_detect: true
     confirm_with_user: true
-
-# ============================================================
-# Knowledge Settings
-# ============================================================
-knowledge:
-  loading_order:
-    - core/*
-    - "patterns/{active}/*"
-    - principle/*
-    - project/*
-
-  lazy_load:
-    - "patterns/{inactive}/*"

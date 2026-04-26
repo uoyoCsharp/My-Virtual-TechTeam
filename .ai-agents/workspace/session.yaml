@@ -4,7 +4,6 @@
 session:
   initialized_at: ""
   last_command: ""
-  current_agent: ""
 
 # Current active change (created by #analyze)
 active_change:

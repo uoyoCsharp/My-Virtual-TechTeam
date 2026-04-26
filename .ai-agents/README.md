@@ -106,19 +106,11 @@ Workspace uses a simplified two-file structure:
 
 Agent roles (Conductor, Analyst, Architect, Developer, Reviewer, Tester) are embedded directly in each SKILL.md file.
 
-## Workflows
+## Extending Capabilities
 
-Workflows define phase transitions:
+### Add Custom Skill
 
-- **requirement-to-code**: Full development cycle
-  - analyze → design → implement → review → test
-
-## Extending
-
-### Add Custom Agent
-
-1. Create `.ai-agents/agents/{name}.md` with YAML frontmatter and behavior rules
-2. Register in `registry.yaml` under `agents` and `commands`
+Use `/mvt-create-skill` to create a custom skill through guided workflow. Custom skills must include `custom: true` in `registry.yaml` to be protected from framework updates.
 
 ### Add Architecture Pattern
 
