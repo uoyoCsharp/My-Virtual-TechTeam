@@ -9,72 +9,104 @@ This is an AI Agent Framework built on prompt engineering principles. It defines
 ## Quick Start
 
 1. Open this project in VS Code with GitHub Copilot or Claude Code
-2. Start a chat and type `#init` to initialize your project
-3. Follow the guided prompts to move through the development phases
+2. Start a chat and use `/mvt-init` to initialize your project
+3. Use `/mvt-help` to see all available skills
+4. Follow the guided workflow to move through development phases
 
-## Commands
+## Skills
 
-| Command | Description |
-|---------|-------------|
-| `#init` | Initialize project |
-| `#status` | Show workflow status |
-| `#config` | Configure settings |
-| `#sync-context` | Sync context with code |
-| `#update-framework` | Update framework |
-| `#cleanup` | Clean up workspace artifacts |
-| `#analyze` | Analyze requirements |
-| `#analyze-code` | Reverse-analyze code |
-| `#design` | Create architecture design |
-| `#implement` | Implement feature |
-| `#fix` | Fix bug (smart context) |
-| `#refactor` | Refactor code |
-| `#review` | Code review |
-| `#test` | Generate tests |
+### Workflow Skills (Sequential Phases)
+
+| Skill | Description |
+|-------|-------------|
+| `/mvt-analyze` | Analyze requirements and extract domain concepts |
+| `/mvt-analyze-code` | Reverse-analyze existing code to generate context |
+| `/mvt-design` | Create architecture design based on requirements |
+| `/mvt-implement` | Implement features based on architecture design |
+| `/mvt-review` | Code review for quality and standards compliance |
+| `/mvt-test` | Generate tests to validate implementations |
+
+### Shortcut Skills (Anytime)
+
+| Skill | Description |
+|-------|-------------|
+| `/mvt-fix` | Diagnose and fix bugs or issues |
+| `/mvt-refactor` | Refactor code while preserving behavior |
+
+### Project Management Skills
+
+| Skill | Description |
+|-------|-------------|
+| `/mvt-init` | Initialize or refresh project setup |
+| `/mvt-status` | Show current project and workflow status |
+| `/mvt-config` | Manage framework configuration |
+| `/mvt-sync-context` | Synchronize context with code changes |
+| `/mvt-update` | Check for and install framework updates |
+| `/mvt-cleanup` | Clean up workspace artifacts |
+
+### Utility Skills
+
+| Skill | Description |
+|-------|-------------|
+| `/mvt-help` | Show available skills and workflow guidance |
+| `/mvt-create-skill` | Create custom MVTT skills |
+| `/mvt-add-context` | Add or update project context interactively |
+| `/mvt-check-context` | Analyze context token load and optimization |
+| `/mvt-template` | View and customize output templates |
+
+## Standard Workflow
+
+```
+/mvt-analyze → /mvt-design → /mvt-implement → /mvt-review → /mvt-test
+  Analyst       Architect      Developer       Reviewer       Tester
+```
 
 ## Architecture 
 
 ```
-.ai-agents/           # Core framework (platform-agnostic)
-├── registry.yaml     # Unified resource index (LLM preferred entry)
-├── config.yaml       # System configuration
-├── agents/           # Agent definitions (.yaml + .prompt.md)
-│   └── _shared.md    # Shared agent rules
-├── skills/           # Modular skills
-│   └── _system/      # System skills (auto-invoked)
-├── workflows/        # Workflow definitions
-├── knowledge/        # Domain knowledge (with semantic index)
-└── workspace/        # Project workspace
-    ├── state/        # Hot data (current session)
-    ├── context/      # Warm data (project context)
-    ├── history/      # Cold data (historical archive)
-    └── artifacts/    # Work artifacts
+.claude/                # Claude Skill definitions (auto-discovered)
+└── skills/             # One directory per skill
+    └── mvt-*/SKILL.md  # Self-contained skill instructions
 
-.github/              # GitHub Copilot adapter
-├── agents/           # Agent activation files
-└── copilot-instructions.md  # Global Copilot instructions
+.ai-agents/             # Core framework (platform-agnostic)
+├── registry.yaml       # Unified resource index (includes skills registry)
+├── config.yaml         # User preferences (language, output style)
+├── skills/             # Output templates
+│   └── _templates/     # Output templates for skills
+├── knowledge/          # Domain knowledge
+│   ├── core/           # Universal principles
+│   ├── patterns/       # Architecture patterns
+│   ├── principle/      # Project coding standards
+│   └── project/        # Custom project knowledge
+├── workspace/          # Project workspace
+│   ├── session.yaml    # Current session state
+│   ├── project-context.yaml  # Project context
+│   └── artifacts/      # Work artifacts
+└── scripts/            # Update and utility scripts
 ```
 
-## Agents
+## Architecture
 
-| Agent | Role |
-|-------|------|
-| **Conductor** | Workflow coordinator and task dispatcher |
-| **Analyst** | Requirements analysis and concept extraction |
-| **Architect** | System architecture and technical design |
-| **Developer** | Code implementation |
-| **Reviewer** | Code quality review |
-| **Tester** | Test design and execution |
+Agent roles (Conductor, Analyst, Architect, Developer, Reviewer, Tester) are embedded directly in each SKILL.md file.
+
+All skills share a standardized 4-step Activation Protocol:
+1. **Load Context** — session.yaml + project-context.yaml + skill-specific context
+2. **Load Config & Apply Preferences** — Read config.yaml, enforce language and output style
+3. **Pre-flight Checks** — Validate prerequisites
+4. **Execute** — Run skill-specific logic
 
 ## Features
 
 - **Role Separation**: Each agent has clear responsibilities and boundaries
-- **Platform Agnostic**: Works with GitHub Copilot (Claude Code adapter planned)
-- **Unified Resource Registry**: `registry.yaml` provides quick access to all resources
-- **Context Contract**: Each agent declares required/conditional context
-- **Data Tiering**: Hot/warm/cold storage strategy for efficient memory management
+- **Native Skill System**: Skills auto-discovered by Claude from `.claude/skills/`
+- **Standardized Activation Protocol**: Every skill follows the same 4-step activation
+- **Unified Config Center**: `config.yaml` preferences enforced across all skills
+- **Context Management**: session.yaml + project-context.yaml as shared foundation
+- **Output Templates**: Customizable output templates for consistent formatting
 - **Semantic Knowledge Index**: Load only relevant knowledge sections
 - **Semi-automatic Workflow**: Guided progression with user confirmation
-- **Modular Skills**: Load capabilities on-demand to optimize context usage
+- **Custom Skills**: Create project-specific skills via `/mvt-create-skill`
+- **Context Management**: Track and optimize context token usage
 - **Language Agnostic**: Supports any programming language
 
 ## License

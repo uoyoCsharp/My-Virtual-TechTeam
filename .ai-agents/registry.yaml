@@ -1,106 +1,157 @@
 # AI Agent Framework Registry
 # Single source of truth for framework configuration
 
-version: "1.5"
-last_updated: "2026-03-08"
+version: "2.0"
+last_updated: "2026-04-25"
 
 # ============================================================
-# Agent Registry
+# Claude Skills Registry
+# Skills are auto-discovered by Claude from .claude/skills/
+# This section serves as the framework's single source of truth
+#
+# User-created skills MUST include `custom: true` to be protected
+# from overwrite during framework updates (mvt-update).
 # ============================================================
-agents:
-  - id: conductor
-    name: Conductor
-    file: agents/conductor.md
-    commands: [init, status, config, sync-context, update-framework, cleanup]
-
-  - id: analyst
-    name: Analyst
-    file: agents/analyst.md
-    commands: [analyze, analyze-code]
-
-  - id: architect
-    name: Architect
-    file: agents/architect.md
-    commands: [design]
-
-  - id: developer
-    name: Developer
-    file: agents/developer.md
-    commands: [implement, fix, refactor]
-
-  - id: reviewer
-    name: Reviewer
-    file: agents/reviewer.md
-    commands: [review]
-
-  - id: tester
-    name: Tester
-    file: agents/tester.md
-    commands: [test]
-
-# ============================================================
-# Command-to-File Mapping
-# Each command maps to its specific file for efficient loading
-# ============================================================
-commands:
-  # Conductor commands
-  init:
+skills:
+  # --- Conductor Skills ---
+  mvt-init:
     agent: conductor
-    file: agents/_commands/init.md
-  status:
-    agent: conductor
-    file: agents/_commands/status.md
-  config:
-    agent: conductor
-    file: agents/_commands/config.md
-  sync-context:
-    agent: conductor
-    file: agents/_commands/sync-context.md
-  update-framework:
-    agent: conductor
-    file: agents/_commands/update-framework.md
-  cleanup:
-    agent: conductor
-    file: agents/_commands/cleanup.md
+    path: .claude/skills/mvt-init/SKILL.md
+    template: skills/_templates/init-output.md
+    category: project
+    mode: independent
 
-  # Analyst commands
-  analyze:
+  mvt-status:
+    agent: conductor
+    path: .claude/skills/mvt-status/SKILL.md
+    template: skills/_templates/status-output.md
+    category: project
+    mode: independent
+
+  mvt-config:
+    agent: conductor
+    path: .claude/skills/mvt-config/SKILL.md
+    template: skills/_templates/config-output.md
+    category: project
+    mode: independent
+
+  mvt-sync-context:
+    agent: conductor
+    path: .claude/skills/mvt-sync-context/SKILL.md
+    template: skills/_templates/sync-context-output.md
+    category: project
+    mode: independent
+
+  mvt-update:
+    agent: conductor
+    path: .claude/skills/mvt-update/SKILL.md
+    template: skills/_templates/update-framework-output.md
+    category: project
+    mode: independent
+
+  mvt-cleanup:
+    agent: conductor
+    path: .claude/skills/mvt-cleanup/SKILL.md
+    template: skills/_templates/cleanup-output.md
+    category: project
+    mode: independent
+
+  # --- Analyst Skills ---
+  mvt-analyze:
     agent: analyst
-    file: agents/_commands/analyze.md
-  analyze-code:
-    agent: analyst
-    file: agents/_commands/analyze-code.md
+    path: .claude/skills/mvt-analyze/SKILL.md
+    template: skills/_templates/analyze-output.md
+    category: workflow
+    mode: full-workflow
 
-  # Architect commands
-  design:
+  mvt-analyze-code:
+    agent: analyst
+    path: .claude/skills/mvt-analyze-code/SKILL.md
+    template: skills/_templates/analyze-code-output.md
+    category: workflow
+    mode: independent
+
+  # --- Architect Skills ---
+  mvt-design:
     agent: architect
-    file: agents/_commands/design.md
+    path: .claude/skills/mvt-design/SKILL.md
+    template: skills/_templates/design-output.md
+    category: workflow
+    mode: full-workflow
 
-  # Developer commands
-  implement:
+  # --- Developer Skills ---
+  mvt-implement:
     agent: developer
-    file: agents/_commands/implement.md
-  fix:
-    agent: developer
-    file: agents/_commands/fix.md
-  refactor:
-    agent: developer
-    file: agents/_commands/refactor.md
+    path: .claude/skills/mvt-implement/SKILL.md
+    template: skills/_templates/implement-output.md
+    category: workflow
+    mode: full-workflow
 
-  # Reviewer commands
-  review:
+  mvt-fix:
+    agent: developer
+    path: .claude/skills/mvt-fix/SKILL.md
+    template: skills/_templates/fix-output.md
+    category: workflow
+    mode: shortcut
+
+  mvt-refactor:
+    agent: developer
+    path: .claude/skills/mvt-refactor/SKILL.md
+    template: skills/_templates/refactor-output.md
+    category: workflow
+    mode: shortcut
+
+  # --- Reviewer Skills ---
+  mvt-review:
     agent: reviewer
-    file: agents/_commands/review.md
+    path: .claude/skills/mvt-review/SKILL.md
+    template: skills/_templates/review-output.md
+    category: workflow
+    mode: full-workflow
 
-  # Tester commands
-  test:
+  # --- Tester Skills ---
+  mvt-test:
     agent: tester
-    file: agents/_commands/test.md
+    path: .claude/skills/mvt-test/SKILL.md
+    template: skills/_templates/test-output.md
+    category: workflow
+    mode: full-workflow
 
-# ============================================================
-# Context Level Definitions
-# Authority: skills/_system/context-loader.md
-# ============================================================
+  # --- Utility Skills ---
+  mvt-help:
+    agent: conductor
+    path: .claude/skills/mvt-help/SKILL.md
+    template: null
+    category: utility
+    mode: independent
+
+  mvt-create-skill:
+    agent: conductor
+    path: .claude/skills/mvt-create-skill/SKILL.md
+    template: null
+    category: utility
+    mode: independent
+
+  mvt-add-context:
+    agent: conductor
+    path: .claude/skills/mvt-add-context/SKILL.md
+    template: null
+    category: utility
+    mode: independent
+
+  mvt-check-context:
+    agent: conductor
+    path: .claude/skills/mvt-check-context/SKILL.md
+    template: skills/_templates/context-check-output.md
+    category: utility
+    mode: independent
+
+  mvt-template:
+    agent: conductor
+    path: .claude/skills/mvt-template/SKILL.md
+    template: null
+    category: utility
+    mode: independent
 
 # ============================================================
 # Workflows
@@ -143,12 +194,15 @@ knowledge:
 # ============================================================
 platforms:
   claude_code:
-    command_prefix: "#"
+    command_prefix: "/mvt-"
+    legacy_prefix: "#"
     entry_file: "CLAUDE.md"
+    skills_dir: ".claude/skills/"
     features:
       - persistent_memory
       - direct_file_access
       - slash_commands
+      - native_skills
 
   github_copilot:
     command_prefix: "#"

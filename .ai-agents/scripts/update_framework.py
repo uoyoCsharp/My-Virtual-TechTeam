@@ -36,6 +36,12 @@ PROTECTED_PATHS = [
     "knowledge/project/",
 ]
 
+# Directories within .claude/skills/ that are user custom skills
+# and should NOT be overwritten during updates.
+# Detection: (1) non-mvt- prefix, OR (2) marked custom: true in registry.yaml
+CLAUDE_SKILLS_DIR = ".claude/skills/"
+FRAMEWORK_SKILL_PREFIX = "mvt-"
+
 # Top-level keys in config.yaml that belong to the user and must NOT be overwritten
 CONFIG_USER_KEYS = {"system", "output", "pattern", "knowledge"}
 
@@ -201,6 +207,8 @@ def categorize_files(file_list):
             categories["agents"].append(f)
         elif f.startswith(".ai-agents/skills/"):
             categories["skills"].append(f)
+        elif f.startswith(".claude/skills/"):
+            categories["skills"].append(f)
         elif f.startswith(".ai-agents/knowledge/core/"):
             categories["knowledge_core"].append(f)
         elif f.startswith(".ai-agents/knowledge/patterns/"):
@@ -225,6 +233,73 @@ def categorize_files(file_list):
     return {k: v for k, v in categories.items() if v}
 
 
+def _load_custom_skill_names(project_root=None):
+    """Load skill names marked custom: true from registry.yaml."""
+    custom_names = set()
+    if project_root is None:
+        project_root = find_project_root()
+    registry_path = project_root / ".ai-agents" / "registry.yaml"
+    if not registry_path.exists():
+        return custom_names
+    try:
+        content = registry_path.read_text(encoding="utf-8")
+        # Parse skills section for entries with custom: true
+        in_skills = False
+        current_skill = None
+        is_custom = False
+        for line in content.splitlines():
+            stripped = line.strip()
+            # Detect top-level 'skills:' section
+            if line.startswith("skills:"):
+                in_skills = True
+                continue
+            # Exit skills section when hitting another top-level key
+            if in_skills and line and not line[0].isspace() and ":" in line:
+                in_skills = False
+                continue
+            if not in_skills:
+                continue
+            # Detect skill entry (2-space indent, ends with ':')
+            if re.match(r'^  [a-zA-Z]', line) and stripped.endswith(":"):
+                # Save previous skill if custom
+                if current_skill and is_custom:
+                    custom_names.add(current_skill)
+                current_skill = stripped.rstrip(":")
+                is_custom = False
+            # Detect custom: true field
+            if current_skill and re.match(r'^\s+custom:\s*true', line):
+                is_custom = True
+        # Don't forget the last entry
+        if current_skill and is_custom:
+            custom_names.add(current_skill)
+    except Exception:
+        pass
+    return custom_names
+
+
+def is_user_custom_skill(file_path, project_root=None):
+    """Check if a file belongs to a user custom skill.
+
+    A skill is considered user-custom if EITHER:
+    1. Its directory does not start with the framework prefix (mvt-), OR
+    2. It is marked with custom: true in registry.yaml
+    """
+    normalized = file_path.replace("\\", "/")
+    if not normalized.startswith(CLAUDE_SKILLS_DIR):
+        return False
+    # Extract the skill directory name after .claude/skills/
+    remainder = normalized[len(CLAUDE_SKILLS_DIR):]
+    if not remainder:
+        return False
+    skill_dir = remainder.split("/")[0]
+    # Check 1: Non-mvt- prefix is always user custom
+    if not skill_dir.startswith(FRAMEWORK_SKILL_PREFIX):
+        return True
+    # Check 2: Marked custom: true in registry.yaml
+    custom_names = _load_custom_skill_names(project_root)
+    return skill_dir in custom_names
+
+
 def should_download(file_path):
     """Determine if a file should be downloaded during update."""
     # Download .ai-agents/ files (framework core)
@@ -235,6 +310,10 @@ def should_download(file_path):
         # Skip workspace and protected knowledge (will not overwrite anyway)
         if is_protected(file_path):
             return False
+        return True
+
+    # Download .claude/skills/ files (framework skills only)
+    if file_path.startswith(CLAUDE_SKILLS_DIR):
         return True
 
     # Download platform adapter files
@@ -265,6 +344,14 @@ def create_backup(project_root):
             shutil.copytree(item, dest)
         else:
             shutil.copy2(item, dest)
+
+    # Backup .claude/skills/ (framework skills only)
+    claude_skills_dir = project_root / ".claude" / "skills"
+    if claude_skills_dir.is_dir():
+        for item in claude_skills_dir.iterdir():
+            if item.is_dir() and item.name.startswith(FRAMEWORK_SKILL_PREFIX):
+                dest = backup_path / "_claude_skills" / item.name
+                shutil.copytree(item, dest)
 
     # Backup platform adapter files
     platforms = detect_platforms(project_root)
@@ -308,7 +395,7 @@ def restore_backup(backup_path, project_root):
 
     # Restore .ai-agents/ contents
     for item in backup_path.iterdir():
-        if item.name == "_platform_adapters":
+        if item.name in ("_platform_adapters", "_claude_skills"):
             continue
         dest = ai_dir / item.name
         if dest.exists():
@@ -320,6 +407,17 @@ def restore_backup(backup_path, project_root):
             shutil.copytree(item, dest)
         else:
             shutil.copy2(item, dest)
+
+    # Restore .claude/skills/ (framework skills only)
+    claude_skills_backup = backup_path / "_claude_skills"
+    if claude_skills_backup.exists():
+        claude_skills_dir = project_root / ".claude" / "skills"
+        claude_skills_dir.mkdir(parents=True, exist_ok=True)
+        for item in claude_skills_backup.iterdir():
+            dest = claude_skills_dir / item.name
+            if dest.exists():
+                shutil.rmtree(dest)
+            shutil.copytree(item, dest)
 
     # Restore platform adapters
     platform_dir = backup_path / "_platform_adapters"
@@ -493,6 +591,11 @@ def apply_update(temp_dir, project_root):
         rel_path = str(src_file.relative_to(temp_path)).replace("\\", "/")
 
         if is_protected(rel_path):
+            skipped_protected.append(rel_path)
+            continue
+
+        # Protect user custom skills (non-mvt- prefix OR custom: true in registry)
+        if is_user_custom_skill(rel_path, project_root):
             skipped_protected.append(rel_path)
             continue
 

@@ -1,0 +1,83 @@
+# Output Template Manifest
+# Maps skills to their output templates
+
+version: "1.0"
+
+templates:
+  - id: init-output
+    file: init-output.md
+    skill: mvt-init
+    command: "#init"
+
+  - id: status-output
+    file: status-output.md
+    skill: mvt-status
+    command: "#status"
+
+  - id: analyze-output
+    file: analyze-output.md
+    skill: mvt-analyze
+    command: "#analyze"
+
+  - id: analyze-code-output
+    file: analyze-code-output.md
+    skill: mvt-analyze-code
+    command: "#analyze-code"
+
+  - id: design-output
+    file: design-output.md
+    skill: mvt-design
+    command: "#design"
+
+  - id: implement-output
+    file: implement-output.md
+    skill: mvt-implement
+    command: "#implement"
+
+  - id: fix-output
+    file: fix-output.md
+    skill: mvt-fix
+    command: "#fix"
+
+  - id: refactor-output
+    file: refactor-output.md
+    skill: mvt-refactor
+    command: "#refactor"
+
+  - id: review-output
+    file: review-output.md
+    skill: mvt-review
+    command: "#review"
+
+  - id: test-output
+    file: test-output.md
+    skill: mvt-test
+    command: "#test"
+
+  - id: config-output
+    file: config-output.md
+    skill: mvt-config
+    command: "#config"
+
+  - id: sync-context-output
+    file: sync-context-output.md
+    skill: mvt-sync-context
+    command: "#sync-context"
+
+  - id: update-framework-output
+    file: update-framework-output.md
+    skill: mvt-update-framework
+    command: "#update-framework"
+
+  - id: cleanup-output
+    file: cleanup-output.md
+    skill: mvt-cleanup
+    command: "#cleanup"
+
+  - id: context-check-output
+    file: context-check-output.md
+    skill: mvt-check-context
+    command: null
+
+# Custom templates directory
+custom_dir: custom/

@@ -1,36 +1,28 @@
-# AI Agent Framework - User Configuration
-# This file contains user-configurable settings only.
-# Resources (agents, skills, patterns) are discovered dynamically from their directories.
+# MVTT Framework - User Configuration
+# Unified config center: all skills read and enforce these settings via Activation Protocol
+# Modify via: /mvt-config or edit directly
 
-name: "AI Agent Workflow Framework"
-version: "1.5"
+version: "2.0"
 
 # ============================================================
-# System Settings
+# User Preferences (enforced by Activation Protocol Step 2)
 # ============================================================
-system:
-  default_agent: conductor
+preferences:
+  # Output language for all skill responses and document artifacts
+  # Options: en-US, zh-CN
   language: en-US
-  interaction_mode: semi-auto
-  confirm_before_generate: true
-  confirm_before_save: true
 
-# ============================================================
-# Output Settings
-# ============================================================
-output:
-  no_emojis: true
-  flow_charts:
-    use_mermaid: true
-  data_format: yaml
-  max_description: 500
+  # Output style
+  output:
+    no_emojis: true          # Disable emojis in output
+    data_format: yaml        # Data output format: yaml | json
 
 # ============================================================
 # Pattern Settings
 # ============================================================
 pattern:
   # Active architecture pattern
-  # Use "#init" to auto-detect or "#config" to change
+  # Use /mvt-init to auto-detect or /mvt-config to change
   active: ""
 
   selection:
@@ -49,19 +41,3 @@ knowledge:
 
   lazy_load:
     - "patterns/{inactive}/*"
-
-# ============================================================
-# Directory Structure (Advanced)
-# ============================================================
-# All directory paths below are repository-root relative.
-directories:
-  agents: .ai-agents/agents/
-  skills: .ai-agents/skills/
-  workflows: .ai-agents/workflows/
-  knowledge: .ai-agents/knowledge/
-  workspace: .ai-agents/workspace/
-  workspace_session: .ai-agents/workspace/session.yaml
-  workspace_context: .ai-agents/workspace/project-context.yaml
-  workspace_history: .ai-agents/workspace/history/
-  workspace_artifacts: .ai-agents/workspace/artifacts/
-  workspace_requirements: .ai-agents/workspace/requirements/
