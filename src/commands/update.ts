@@ -1,4 +1,5 @@
 import { existsSync } from "node:fs";
+import path from "node:path";
 import { materializeProject } from "../fs/materialize.js";
 import {
   readInstallationManifest,
@@ -38,7 +39,7 @@ export function updateCommand(args: string[]): void {
   const modified: string[] = [];
   for (const [relPath, record] of Object.entries(existing.files)) {
     if (record.category !== "generated") continue;
-    const absPath = projectRoot + "/" + relPath;
+    const absPath = path.resolve(projectRoot, relPath);
     if (!existsSync(absPath)) continue;
     const currentHash = hashFile(absPath);
     if (currentHash !== record.hash) {

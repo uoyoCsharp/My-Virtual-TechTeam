@@ -1,17 +1,50 @@
-# My-Virtual-TechTeam
+# My-Virtual-TechTeam (MVTT)
 
 A virtual IT team made up of AI agents. Help unleash your potential by leveraging the power of AI.
 
 ## Overview
 
-This is an AI Agent Framework built on prompt engineering principles. It defines multiple AI agent roles that work together to assist in software development workflows, similar to BMAD Method or Open Spec approaches.
+MVTT is an AI-guided prompt orchestration framework built for Claude Code. It defines multiple AI agent roles (Analyst, Architect, Developer, Reviewer, Tester, Conductor) that work together to assist in software development workflows.
+
+## Installation
+
+Install MVTT into any project with one command:
+
+```bash
+npx @uoyo/mvtt install
+```
+
+Optional flags:
+
+```bash
+npx @uoyo/mvtt install --pattern ddd    # Pre-set architecture pattern
+```
+
+This generates:
+- `.claude/skills/mvt-*/SKILL.md` — 18 skill definitions (auto-discovered by Claude Code)
+- `.ai-agents/skills/_templates/*-output.md` — Output templates
+- `.ai-agents/knowledge/` — Domain knowledge and architecture patterns
+- `.ai-agents/registry.yaml` — Skill metadata
+- `.ai-agents/config.yaml`, `workspace/session.yaml`, `workspace/project-context.yaml` — User-editable defaults (only created on first install)
+
+## CLI Commands
+
+| Command | Purpose |
+|---|---|
+| `npx @uoyo/mvtt install` | First-time installation |
+| `npx @uoyo/mvtt install --pattern <name>` | Install with architecture pattern |
+| `npx @uoyo/mvtt update` | Upgrade to latest version (preserves user data) |
+| `npx @uoyo/mvtt update --check` | Show version diff without modifying |
+| `npx @uoyo/mvtt doctor` | Check installation health |
+| `npx @uoyo/mvtt uninstall --yes` | Remove generated files (preserves user data) |
 
 ## Quick Start
 
-1. Open this project in VS Code with GitHub Copilot or Claude Code
-2. Start a chat and use `/mvt-init` to initialize your project
-3. Use `/mvt-help` to see all available skills
-4. Follow the guided workflow to move through development phases
+1. Run `npx @uoyo/mvtt install` in your project root
+2. Open the project in Claude Code
+3. Run `/mvt-init` to initialize the workspace
+4. Run `/mvt-help` to see all available skills
+5. Follow the guided workflow through development phases
 
 ## Skills
 
@@ -41,7 +74,6 @@ This is an AI Agent Framework built on prompt engineering principles. It defines
 | `/mvt-status` | Show current project and workflow status |
 | `/mvt-config` | Manage framework configuration |
 | `/mvt-sync-context` | Synchronize context with code changes |
-| `/mvt-update` | Check for and install framework updates |
 | `/mvt-cleanup` | Clean up workspace artifacts |
 
 ### Utility Skills
@@ -61,53 +93,81 @@ This is an AI Agent Framework built on prompt engineering principles. It defines
   Analyst       Architect      Developer       Reviewer       Tester
 ```
 
-## Architecture 
+## Runtime Layout
+
+After `install`, your project has:
 
 ```
-.claude/                # Claude Skill definitions (auto-discovered)
-└── skills/             # One directory per skill
-    └── mvt-*/SKILL.md  # Self-contained skill instructions
-
-.ai-agents/             # Core framework (platform-agnostic)
-├── registry.yaml       # Unified resource index (includes skills registry)
-├── config.yaml         # User preferences (language, output style)
-├── skills/             # Output templates
-│   └── _templates/     # Output templates for skills
-├── knowledge/          # Domain knowledge
-│   ├── core/           # Universal principles
-│   ├── patterns/       # Architecture patterns
-│   ├── principle/      # Project coding standards
-│   └── project/        # Custom project knowledge
-├── workspace/          # Project workspace
-│   ├── session.yaml    # Current session state
-│   ├── project-context.yaml  # Project context
-│   └── artifacts/      # Work artifacts
-└── scripts/            # Update and utility scripts
+.claude/skills/mvt-*/SKILL.md       # GENERATED (18 skills)
+.ai-agents/
+├── config.yaml                      # CREATE_ONCE (user-editable)
+├── registry.yaml                    # GENERATED (skill metadata)
+├── .mvtt-manifest.json              # GENERATED (install metadata)
+├── workspace/
+│   ├── session.yaml                 # CREATE_ONCE
+│   ├── project-context.yaml         # CREATE_ONCE
+│   └── artifacts/                   # USER DATA
+├── skills/_templates/
+│   ├── *-output.md                  # GENERATED (14 templates)
+│   └── custom/                      # USER DATA
+└── knowledge/
+    ├── core/                        # GENERATED
+    ├── patterns/                    # GENERATED (ddd, clean-architecture, frontend-react)
+    ├── principle/                   # USER DATA
+    └── project/                     # USER DATA
 ```
 
-## Architecture
+- **GENERATED**: owned by CLI; overwritten on every update
+- **CREATE_ONCE**: only created on first install; never overwritten
+- **USER DATA**: never touched by CLI
 
-Agent roles (Conductor, Analyst, Architect, Developer, Reviewer, Tester) are embedded directly in each SKILL.md file.
+Every `SKILL.md` starts with a `<!-- GENERATED by mvtt -->` marker so the CLI can detect manual edits during `doctor` / `update`.
 
-All skills share a standardized 4-step Activation Protocol:
+## Activation Protocol (Runtime)
+
+Every skill shares a 4-step activation sequence embedded inline in its `SKILL.md`:
+
 1. **Load Context** — session.yaml + project-context.yaml + skill-specific context
-2. **Load Config & Apply Preferences** — Read config.yaml, enforce language and output style
-3. **Pre-flight Checks** — Validate prerequisites
-4. **Execute** — Run skill-specific logic
+2. **Load Config & Apply Preferences** — read config.yaml, enforce language and output style
+3. **Pre-flight Checks** — validate prerequisites
+4. **Execute** — run skill-specific logic
+
+All activation steps are inlined at build time from shared source sections — DRY at source, flat at runtime.
 
 ## Features
 
+- **One-command install**: `npx @uoyo/mvtt install`
+- **Safe updates**: User data never overwritten
 - **Role Separation**: Each agent has clear responsibilities and boundaries
 - **Native Skill System**: Skills auto-discovered by Claude from `.claude/skills/`
 - **Standardized Activation Protocol**: Every skill follows the same 4-step activation
 - **Unified Config Center**: `config.yaml` preferences enforced across all skills
-- **Context Management**: session.yaml + project-context.yaml as shared foundation
 - **Output Templates**: Customizable output templates for consistent formatting
-- **Semantic Knowledge Index**: Load only relevant knowledge sections
-- **Semi-automatic Workflow**: Guided progression with user confirmation
 - **Custom Skills**: Create project-specific skills via `/mvt-create-skill`
 - **Context Management**: Track and optimize context token usage
 - **Language Agnostic**: Supports any programming language
+
+## Development (Contributing to MVTT Itself)
+
+If you're working on the MVTT framework source:
+
+```bash
+npm install
+npm run build        # Compile TypeScript
+npm test             # Run test suite (64 tests)
+npm test -- --coverage    # With coverage report
+
+# Build skills from sources into current repo for local testing
+node dist/index.js build --out .test-output
+```
+
+Source layout:
+- `src/` — CLI TypeScript source
+- `sources/skills/<name>/manifest.yaml + business.md` — Skill source files
+- `sources/templates/<name>/manifest.yaml + body.md` — Template source files
+- `sources/sections/*.md` — Shared activation protocol sections
+- `registry.yaml` — Single source of truth for skill metadata
+- `install-manifest.yaml` — File classification (generated / create_once / user_data)
 
 ## License
 

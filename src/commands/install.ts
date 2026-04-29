@@ -7,6 +7,7 @@ import {
   writeInstallationManifest,
 } from "../fs/install-manifest.js";
 import { getPackageRoot, getVersion } from "./shared.js";
+import { color } from "../util/color.js";
 
 export function installCommand(args: string[]): void {
   const projectRoot = process.cwd();
@@ -45,10 +46,10 @@ export function installCommand(args: string[]): void {
   const generatedCount = materialized.filter((f) => f.category === "generated").length;
   const createOnceCount = materialized.filter((f) => f.category === "create_once").length;
 
-  console.log(`\nInstallation complete:`);
+  console.log(`\n${color.green("Installation complete:")}`);
   console.log(`  ${generatedCount} generated files`);
   console.log(`  ${createOnceCount} user-editable files`);
-  console.log(`  Manifest: ${path.relative(projectRoot, manifestPath(projectRoot))}`);
-  console.log(`\nNext steps:`);
-  console.log(`  Run /mvt-init in Claude Code to initialize the project`);
+  console.log(`  Manifest: ${color.gray(path.relative(projectRoot, manifestPath(projectRoot)))}`);
+  console.log(`\n${color.bold("Next steps:")}`);
+  console.log(`  Run ${color.cyan("/mvt-init")} in Claude Code to initialize the project`);
 }

@@ -3,6 +3,7 @@ import path from "node:path";
 import { readInstallationManifest } from "../fs/install-manifest.js";
 import { hashFile } from "../fs/hash.js";
 import { getVersion } from "./shared.js";
+import { color } from "../util/color.js";
 
 export function doctorCommand(_args: string[]): void {
   const projectRoot = process.cwd();
@@ -72,9 +73,16 @@ export function doctorCommand(_args: string[]): void {
 
 function report(checks: Array<{ status: "PASS" | "WARN" | "FAIL"; message: string }>): void {
   for (const c of checks) {
-    console.log(`[${c.status}] ${c.message}`);
+    const tag =
+      c.status === "PASS"
+        ? color.green(`[${c.status}]`)
+        : c.status === "WARN"
+          ? color.yellow(`[${c.status}]`)
+          : color.red(`[${c.status}]`);
+    console.log(`${tag} ${c.message}`);
   }
   const errors = checks.filter((c) => c.status === "FAIL").length;
   const warnings = checks.filter((c) => c.status === "WARN").length;
-  console.log(`\nSummary: ${warnings} warning${warnings === 1 ? "" : "s"}, ${errors} error${errors === 1 ? "" : "s"}`);
+  const summary = `\nSummary: ${warnings} warning${warnings === 1 ? "" : "s"}, ${errors} error${errors === 1 ? "" : "s"}`;
+  console.log(errors > 0 ? color.red(summary) : warnings > 0 ? color.yellow(summary) : color.green(summary));
 }

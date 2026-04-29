@@ -1,10 +1,12 @@
-import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { readFileSync } from "node:fs";
 import path from "node:path";
 import { parse as parseYaml } from "yaml";
 import type { Manifest } from "../types/manifest.js";
 import { loadSection } from "./section-loader.js";
 
-const PKG_VERSION = "2.0.0";
+import { getVersion } from "../util/package.js";
+
+const PKG_VERSION = getVersion();
 
 function generatedHeader(timestamp?: string): string {
   const ts = timestamp ?? new Date().toISOString();
@@ -50,32 +52,4 @@ export function assembleFromManifest(
   }
 
   return parts.join("\n");
-}
-
-export function assembleAll(
-  sourcesDir: string,
-  kind: "skills" | "templates",
-  timestamp?: string,
-): Array<{ outputPath: string; content: string }> {
-  const baseDir = path.resolve(sourcesDir, kind);
-  const results: Array<{ outputPath: string; content: string }> = [];
-
-  if (!existsSync(baseDir)) return results;
-
-  for (const entry of readdirSync(baseDir)) {
-    const manifestPath = path.join(baseDir, entry, "manifest.yaml");
-    if (!existsSync(manifestPath)) continue;
-
-    const raw = readFileSync(manifestPath, "utf-8");
-    const manifest: Manifest = parseYaml(raw);
-
-    const content = assembleFromManifest(manifestPath, {
-      sourcesDir,
-      timestamp,
-    });
-
-    results.push({ outputPath: manifest.output, content });
-  }
-
-  return results;
 }
