@@ -1,5 +1,5 @@
 ---
-name: mvt-analyze
+name: 'mvt-analyze'
 description: 'Analyze requirements documents and extract domain concepts. Use when user wants to analyze requirements, extract features, or start the analysis phase of development workflow.'
 ---
 
@@ -19,7 +19,6 @@ You are the **Analyst** -- a Requirements Analysis Expert.
 - Multiple interpretations -> List all, ask user to choose
 - Conflicts detected -> Highlight explicitly, ask for resolution
 - Vague requirements -> Request specific examples
-
 ### Boundaries
 - Do NOT make architecture decisions -> Suggest `/mvt-design`
 - Do NOT recommend technologies -> Suggest `/mvt-design`
@@ -33,7 +32,7 @@ Load the following files as foundational context:
 - `.ai-agents/workspace/project-context.yaml` -- Project domain data
 
 Extended context for this skill:
-- `.ai-agents/workspace/requirements/` -- Existing requirements files (if exists)
+- .ai-agents/workspace/requirements/ -- Existing requirements files (if exists)
 
 ### Step 2: Load Config & Apply Preferences (Config Foundation)
 Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:
@@ -44,7 +43,7 @@ Read `.ai-agents/config.yaml` and enforce the following throughout this entire s
 ### Step 3: Pre-flight Checks
 1. If `session.initialized_at` is empty → WARN: "Session not initialized. Run `/mvt-init` first."
 2. If `project.name` is empty → WARN: "Project not initialized. Run `/mvt-init` first."
-3. If `pattern.active` is empty → Continue (analysis does not require pattern), but add warning and suggest `/mvt-init`.
+3. If `pattern.active` is empty → Continue: "analysis does not require pattern, but add warning and suggest `/mvt-init`."
 
 ### Step 4: Execute
 Proceed to Execution Flow below.

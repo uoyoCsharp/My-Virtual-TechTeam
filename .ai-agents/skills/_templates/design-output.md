@@ -1,7 +1,7 @@
 ---
-id: design-output
-version: "1.0"
-skill: mvt-design
+id: 'design-output'
+version: '1.0'
+skill: 'mvt-design'
 ---
 
 ## Architecture Design: {Feature Name}

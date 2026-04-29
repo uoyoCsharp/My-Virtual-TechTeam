@@ -1,3 +1,4 @@
+import { Command } from "commander";
 import { buildCommand } from "./commands/build.js";
 import { installCommand } from "./commands/install.js";
 import { updateCommand } from "./commands/update.js";
@@ -5,56 +6,52 @@ import { doctorCommand } from "./commands/doctor.js";
 import { uninstallCommand } from "./commands/uninstall.js";
 import { getVersion } from "./commands/shared.js";
 
-const COMMANDS: Record<string, (args: string[]) => void> = {
-  build: buildCommand,
-  install: installCommand,
-  update: updateCommand,
-  doctor: doctorCommand,
-  uninstall: uninstallCommand,
-};
+export async function run(argv: string[]): Promise<void> {
+  const program = new Command();
 
-export function run(args: string[]): void {
-  const command = args[0];
+  program
+    .name("mvtt")
+    .description("My Virtual Tech Team CLI")
+    .version(getVersion(), "-v, --version");
 
-  if (!command || command === "--help" || command === "-h") {
-    printHelp();
-    return;
-  }
+  program
+    .command("install")
+    .description("Install MVTT into current project")
+    .option("--pattern <name>", "Set architecture pattern (ddd, clean-architecture, etc.)")
+    .action(async (opts) => {
+      await installCommand(opts);
+    });
 
-  if (command === "--version" || command === "-v") {
-    console.log(getVersion());
-    return;
-  }
+  program
+    .command("update")
+    .description("Update MVTT to latest version")
+    .option("--check", "Only report version diff, do not modify")
+    .action((opts) => {
+      updateCommand(opts);
+    });
 
-  const handler = COMMANDS[command];
-  if (!handler) {
-    console.error(`Unknown command: ${command}`);
-    printHelp();
-    process.exit(1);
-  }
+  program
+    .command("doctor")
+    .description("Check installation health")
+    .action(() => {
+      doctorCommand();
+    });
 
-  handler(args.slice(1));
-}
+  program
+    .command("uninstall")
+    .description("Remove MVTT generated files")
+    .option("-y, --yes", "Skip confirmation prompt")
+    .action((opts) => {
+      uninstallCommand(opts);
+    });
 
-function printHelp(): void {
-  console.log(`
-mvtt - My Virtual Tech Team CLI
+  program
+    .command("build")
+    .description("Build skills and templates from sources (dev)")
+    .option("--out <dir>", "Output directory (default: cwd)")
+    .action((opts) => {
+      buildCommand(opts);
+    });
 
-Usage: mvtt <command> [options]
-
-Commands:
-  install              Install MVTT into current project
-    --pattern <name>   Set architecture pattern (ddd, clean-architecture, etc.)
-  update               Update MVTT to latest version
-    --check            Only report version diff, do not modify
-  doctor               Check installation health
-  uninstall            Remove MVTT generated files
-    --yes              Skip confirmation prompt
-  build                Build skills and templates from sources (dev)
-    --out <dir>        Output directory (default: cwd)
-
-Options:
-  --help, -h           Show help
-  --version, -v        Show version
-`);
+  await program.parseAsync(argv, { from: "user" });
 }

@@ -1,5 +1,5 @@
 ---
-name: mvt-design
+name: 'mvt-design'
 description: 'Create architecture design based on analyzed requirements. Applies architectural patterns, defines module structure, and creates technical blueprints. Use when user wants to design system architecture.'
 ---
 
@@ -20,7 +20,6 @@ You are the **Architect** -- a System Architecture Expert.
 - Design needs breaking change -> Highlight impact scope, list affected files, propose migration
 - Requirements are ambiguous -> Stop and ask clarification before designing
 - Pattern conflicts with project structure -> Report conflict, suggest pattern change via `/mvt-config`
-
 ### Boundaries
 - Do NOT write implementation code -> Suggest `/mvt-implement`
 - Do NOT re-analyze requirements -> Suggest `/mvt-analyze`
@@ -41,9 +40,9 @@ Load the following files as foundational context:
 - `.ai-agents/workspace/project-context.yaml` -- Project domain data
 
 Extended context for this skill:
-- `.ai-agents/knowledge/patterns/{pattern.active}/` -- Active architecture pattern knowledge
-- `.ai-agents/knowledge/core/` -- Core knowledge files
-- `.ai-agents/workspace/artifacts/{active_change.id}/analysis.md` -- Analysis from previous phase
+- .ai-agents/knowledge/patterns/{pattern.active}/ -- Active architecture pattern knowledge
+- .ai-agents/knowledge/core/ -- Core knowledge files
+- .ai-agents/workspace/artifacts/{active_change.id}/analysis.md -- Analysis from previous phase
 
 ### Step 2: Load Config & Apply Preferences (Config Foundation)
 Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:
@@ -55,7 +54,7 @@ Read `.ai-agents/config.yaml` and enforce the following throughout this entire s
 1. If `session.initialized_at` is empty → BLOCK: "Session not initialized. Run `/mvt-init` first."
 2. If `project.name` is empty → BLOCK: "Project not initialized. Run `/mvt-init` first."
 3. If `pattern.active` is empty → BLOCK: "Architecture pattern required. Run `/mvt-init` to detect and set the pattern."
-4. If no requirements in project-context → WARN: "No requirements found. Run `/mvt-analyze` first." (allow user to proceed)
+4. If `requirements in project-context` is empty → WARN: "No requirements found. Run `/mvt-analyze` first." (allow user to proceed)"
 
 ### Step 4: Execute
 Proceed to Execution Flow below.

@@ -1,5 +1,5 @@
 ---
-name: mvt-review
+name: 'mvt-review'
 description: 'Perform code review for quality, standards compliance, and best practices. Identifies issues by severity and suggests improvements. Use when user wants code reviewed or quality checked.'
 ---
 
@@ -21,11 +21,10 @@ You are the **Reviewer** -- a Code Quality Guardian.
 - Good code pattern found -> Highlight positively
 - Bug found -> Document with reproduction steps, suggest `/mvt-fix`
 - Insufficient test coverage -> Recommend specific scenarios, suggest `/mvt-test`
-
 ### Boundaries
 - Do NOT fix code directly -> Suggest `/mvt-fix`
 - Do NOT make architecture decisions -> Suggest `/mvt-design`
-- Do NOT modify source code -> This is a read-only review
+- Do NOT modify source code -> Suggest `(This is a read-only review)`
 
 ## Aspect Options
 
@@ -46,9 +45,9 @@ Load the following files as foundational context:
 - `.ai-agents/workspace/project-context.yaml` -- Project domain data
 
 Extended context for this skill:
-- `.ai-agents/knowledge/core/review-principles.md` -- Universal review principles
-- `.ai-agents/knowledge/principle/coding-standards.md` -- Project coding standards
-- `.ai-agents/knowledge/patterns/{pattern.active}/review-checklist.md` -- Pattern-specific checklist
+- .ai-agents/knowledge/core/review-principles.md -- Universal review principles
+- .ai-agents/knowledge/principle/coding-standards.md -- Project coding standards
+- .ai-agents/knowledge/patterns/{pattern.active}/review-checklist.md -- Pattern-specific checklist
 
 ### Step 2: Load Config & Apply Preferences (Config Foundation)
 Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:
@@ -58,8 +57,8 @@ Read `.ai-agents/config.yaml` and enforce the following throughout this entire s
 
 ### Step 3: Pre-flight Checks
 1. If `session.initialized_at` is empty → WARN: "Session not initialized. Run `/mvt-init` first."
-2. If no code to review → WARN: "No code to review. Run `/mvt-implement` first or specify files."
-3. If `pattern.active` is empty → WARN: "Architecture pattern not set. Suggest `/mvt-init`." (allow user to proceed)
+2. If `no code to review` is empty → WARN: "No code to review. Run `/mvt-implement` first or specify files."
+3. If `pattern.active` is empty → WARN: "Architecture pattern not set. Suggest `/mvt-init`." (allow user to proceed)"
 
 ### Step 4: Execute
 Proceed to Execution Flow below.

@@ -1,7 +1,7 @@
 ---
-id: refactor-output
-version: "1.0"
-skill: mvt-refactor
+id: 'refactor-output'
+version: '1.0'
+skill: 'mvt-refactor'
 ---
 
 ## Refactoring: {Target}

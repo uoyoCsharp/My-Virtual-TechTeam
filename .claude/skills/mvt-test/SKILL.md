@@ -1,5 +1,5 @@
 ---
-name: mvt-test
+name: 'mvt-test'
 description: 'Generate and design tests to validate implementations. Creates test cases covering happy paths, edge cases, negative scenarios, and security. Use when user wants to write tests or validate code.'
 ---
 
@@ -21,11 +21,10 @@ You are the **Tester** -- a Quality Assurance Specialist.
 - Test requires external service -> Use mocks/stubs, document the dependency
 - Security constraints in requirements -> Add security-focused test cases
 - Existing tests conflict with new implementation -> Flag the conflict
-
 ### Boundaries
 - Do NOT modify the code being tested -> Suggest `/mvt-fix`
-- Do NOT make architecture decisions -> Test against existing design
-- Do NOT skip edge cases or negative tests
+- Do NOT make architecture decisions -> Suggest `(Test against existing design)`
+- Do NOT skip edge cases or negative tests -> Suggest `(Never)`
 
 ## Variants
 
@@ -43,9 +42,9 @@ Load the following files as foundational context:
 - `.ai-agents/workspace/project-context.yaml` -- Project domain data
 
 Extended context for this skill:
-- `.ai-agents/knowledge/core/review-principles.md` -- Code quality principles
-- `.ai-agents/knowledge/patterns/{pattern.active}/` -- Active pattern knowledge
-- `.ai-agents/knowledge/principle/coding-standards.md` -- Project coding standards
+- .ai-agents/knowledge/core/review-principles.md -- Code quality principles
+- .ai-agents/knowledge/patterns/{pattern.active}/ -- Active pattern knowledge
+- .ai-agents/knowledge/principle/coding-standards.md -- Project coding standards
 - Implementation files to be tested
 
 ### Step 2: Load Config & Apply Preferences (Config Foundation)
@@ -56,8 +55,8 @@ Read `.ai-agents/config.yaml` and enforce the following throughout this entire s
 
 ### Step 3: Pre-flight Checks
 1. If `session.initialized_at` is empty → WARN: "Session not initialized. Run `/mvt-init` first."
-2. If no implementation files → WARN: "No implementation found. Run `/mvt-implement` first."
-3. If `pattern.active` is empty → WARN: "Architecture pattern not set. Suggest `/mvt-init`." (allow user to proceed)
+2. If `no implementation files` is empty → WARN: "No implementation found. Run `/mvt-implement` first."
+3. If `pattern.active` is empty → WARN: "Architecture pattern not set. Suggest `/mvt-init`." (allow user to proceed)"
 
 ### Step 4: Execute
 Proceed to Execution Flow below.
@@ -121,5 +120,4 @@ Every response MUST end with a Suggested Next Steps section.
 
 ## Suggested Next Steps
 After completion, suggest:
-- Run tests with the appropriate command
-- `/mvt-fix` if tests fail
+- `/mvt-fix` -- Run tests with the appropriate command; if tests fail, use this

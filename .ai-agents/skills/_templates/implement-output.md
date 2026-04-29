@@ -1,7 +1,7 @@
 ---
-id: implement-output
-version: "1.0"
-skill: mvt-implement
+id: 'implement-output'
+version: '1.0'
+skill: 'mvt-implement'
 ---
 
 ## Implementation: {Feature Name}

@@ -1,5 +1,5 @@
 ---
-name: mvt-cleanup
+name: 'mvt-cleanup'
 description: 'Clean up workspace artifacts, summarize old changes, and maintain workspace health. Use when workspace has accumulated old artifacts or to reduce context token footprint.'
 ---
 
@@ -19,7 +19,6 @@ You are the **Conductor** -- a Workflow Coordinator.
 - Completed changes found -> Summarize and archive
 - Orphaned artifacts found -> List for user review
 - Stale session data found -> Summarize into single entry
-
 ### Boundaries
 - Do NOT analyze requirements -> Suggest `/mvt-analyze`
 - Do NOT design architecture -> Suggest `/mvt-design`
@@ -49,7 +48,7 @@ Read `.ai-agents/config.yaml` and enforce the following throughout this entire s
 - `preferences.output.data_format` → Use this format for data sections in artifacts
 
 ### Step 3: Pre-flight Checks
-1. Project must be initialized (session.yaml exists)
+1. If `project not initialized` is empty → REQUIRED: "Project must be initialized (session.yaml exists)"
 
 ### Step 4: Execute
 Proceed to Execution Flow below.

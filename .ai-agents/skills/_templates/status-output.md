@@ -1,7 +1,7 @@
 ---
-id: status-output
-version: "1.0"
-skill: mvt-status
+id: 'status-output'
+version: '1.0'
+skill: 'mvt-status'
 ---
 
 ## Project Status

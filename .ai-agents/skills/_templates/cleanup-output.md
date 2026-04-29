@@ -1,7 +1,7 @@
 ---
-id: cleanup-output
-version: "1.0"
-skill: mvt-cleanup
+id: 'cleanup-output'
+version: '1.0'
+skill: 'mvt-cleanup'
 ---
 
 ## Workspace Cleanup

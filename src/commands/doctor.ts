@@ -5,7 +5,7 @@ import { hashFile } from "../fs/hash.js";
 import { getVersion } from "./shared.js";
 import { color } from "../util/color.js";
 
-export function doctorCommand(_args: string[]): void {
+export function doctorCommand(): void {
   const projectRoot = process.cwd();
   const version = getVersion();
   const checks: Array<{ status: "PASS" | "WARN" | "FAIL"; message: string }> = [];

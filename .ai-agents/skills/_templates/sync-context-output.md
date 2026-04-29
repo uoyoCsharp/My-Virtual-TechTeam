@@ -1,7 +1,7 @@
 ---
-id: sync-context-output
-version: "1.0"
-skill: mvt-sync-context
+id: 'sync-context-output'
+version: '1.0'
+skill: 'mvt-sync-context'
 ---
 
 ## Context Sync Complete

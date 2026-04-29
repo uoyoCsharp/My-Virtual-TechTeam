@@ -1,5 +1,5 @@
 ---
-name: mvt-help
+name: 'mvt-help'
 description: 'Show available skills, current project status, and workflow guidance. Use when user is new to MVTT, wants to know what commands are available, or needs guidance on what to do next.'
 ---
 
@@ -19,6 +19,11 @@ You are the **Conductor** -- a Workflow Coordinator.
 Load the following files as foundational context:
 - `.ai-agents/workspace/session.yaml` -- Current workflow state
 - `.ai-agents/workspace/project-context.yaml` -- Project domain data
+
+Extended context for this skill:
+{{#extended_context}}
+- {{.}}
+{{/extended_context}}
 
 ### Step 2: Load Config & Apply Preferences (Config Foundation)
 Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:
@@ -78,7 +83,6 @@ Show all available skills grouped by category:
 | `/mvt-status` | Show current project and workflow status |
 | `/mvt-config` | Manage framework configuration |
 | `/mvt-sync-context` | Synchronize context with code changes |
-| `/mvt-update` | Check for and install framework updates |
 | `/mvt-cleanup` | Clean up workspace artifacts |
 
 **Utility Skills**:

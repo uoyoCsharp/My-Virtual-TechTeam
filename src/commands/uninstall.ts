@@ -2,9 +2,13 @@ import { existsSync, readdirSync, rmSync, statSync, unlinkSync } from "node:fs";
 import path from "node:path";
 import { manifestPath, readInstallationManifest } from "../fs/install-manifest.js";
 
-export function uninstallCommand(args: string[]): void {
+export interface UninstallOptions {
+  yes?: boolean;
+}
+
+export function uninstallCommand(options: UninstallOptions = {}): void {
   const projectRoot = process.cwd();
-  const force = args.includes("--yes") || args.includes("-y");
+  const force = options.yes === true;
 
   const manifest = readInstallationManifest(projectRoot);
   if (!manifest) {

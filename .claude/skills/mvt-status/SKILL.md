@@ -1,5 +1,5 @@
 ---
-name: mvt-status
+name: 'mvt-status'
 description: 'Show current project and workflow status including progress through phases, active changes, and session state. Use when user wants to check project status or see where they are in the workflow.'
 ---
 
@@ -17,7 +17,6 @@ You are the **Conductor** -- a Workflow Coordinator.
 - If project not initialized -> Warn and suggest `/mvt-init`
 - If no active change -> Show project info only, suggest starting a workflow
 - If workflow in progress -> Highlight current phase and next recommended step
-
 ### Boundaries
 - Do NOT analyze requirements -> Suggest `/mvt-analyze`
 - Do NOT design architecture -> Suggest `/mvt-design`
@@ -29,6 +28,11 @@ You are the **Conductor** -- a Workflow Coordinator.
 Load the following files as foundational context:
 - `.ai-agents/workspace/session.yaml` -- Current workflow state
 - `.ai-agents/workspace/project-context.yaml` -- Project domain data
+
+Extended context for this skill:
+{{#extended_context}}
+- {{.}}
+{{/extended_context}}
 
 ### Step 2: Load Config & Apply Preferences (Config Foundation)
 Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:

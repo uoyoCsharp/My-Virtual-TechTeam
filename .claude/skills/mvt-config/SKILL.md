@@ -1,5 +1,5 @@
 ---
-name: mvt-config
+name: 'mvt-config'
 description: 'Interactive configuration management for framework settings. Use when user wants to change language, output format, architecture pattern, or other framework settings.'
 ---
 
@@ -21,7 +21,6 @@ You are the **Conductor** -- a Workflow Coordinator.
 - `reset` argument -> Reset all settings to defaults after confirmation
 - Invalid key -> Show available keys and exit
 - Invalid value type -> Show expected type and exit
-
 ### Boundaries
 - Do NOT analyze requirements -> Suggest `/mvt-analyze`
 - Do NOT design architecture -> Suggest `/mvt-design`
@@ -43,7 +42,9 @@ You are the **Conductor** -- a Workflow Coordinator.
 Load the following files as foundational context:
 - `.ai-agents/workspace/session.yaml` -- Current workflow state
 - `.ai-agents/workspace/project-context.yaml` -- Project domain data
-- `.ai-agents/config.yaml` -- Current configuration (this skill's primary target)
+
+Extended context for this skill:
+- .ai-agents/config.yaml -- Current configuration (this skill's primary target)
 
 ### Step 2: Load Config & Apply Preferences (Config Foundation)
 Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:
@@ -112,6 +113,5 @@ Every response MUST end with a Suggested Next Steps section.
 
 ## Suggested Next Steps
 After completion, suggest:
-- `/mvt-config show` -- Verify changes
-- `/mvt-init --refresh` -- Re-analyze with new pattern
-- `/mvt-status` -- Check current project state
+- `/mvt-config` -- `show` -- Verify changes
+- `/mvt-init` -- --refresh -- Re-analyze with new pattern- `/mvt-status` -- Check current project state

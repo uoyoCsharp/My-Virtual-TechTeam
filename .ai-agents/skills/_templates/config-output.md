@@ -1,7 +1,7 @@
 ---
-id: config-output
-version: "1.0"
-skill: mvt-config
+id: 'config-output'
+version: '1.0'
+skill: 'mvt-config'
 ---
 
 ## Configuration Manager

@@ -1,7 +1,7 @@
 ---
-id: context-check-output
-version: "1.0"
-skill: mvt-context-check
+id: 'context-check-output'
+version: '1.0'
+skill: 'mvt-context-check'
 ---
 
 ## Context Load Analysis Report

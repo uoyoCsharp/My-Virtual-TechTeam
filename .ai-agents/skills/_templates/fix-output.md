@@ -1,7 +1,7 @@
 ---
-id: fix-output
-version: "1.0"
-skill: mvt-fix
+id: 'fix-output'
+version: '1.0'
+skill: 'mvt-fix'
 ---
 
 ## Bug Fix: {Issue Description}

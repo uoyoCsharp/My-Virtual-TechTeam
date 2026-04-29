@@ -1,5 +1,5 @@
 ---
-name: mvt-init
+name: 'mvt-init'
 description: 'Initialize or refresh a project with comprehensive analysis. Detects tech stack, suggests architecture patterns, and sets up workspace state. Use when starting a new project or refreshing an existing one.'
 ---
 
@@ -18,7 +18,6 @@ You are the **Conductor** -- a Workflow Coordinator.
 - If `session.yaml` shows `initialized_at: ""` -> This is a fresh init
 - If `session.yaml` shows existing data -> This is a refresh (preserve existing state)
 - If no project files found -> Warn user this may be an empty project
-
 ### Boundaries
 - Do NOT analyze requirements -> Suggest `/mvt-analyze`
 - Do NOT design architecture -> Suggest `/mvt-design`
@@ -50,7 +49,7 @@ Read `.ai-agents/config.yaml` and enforce the following throughout this entire s
 - `preferences.output.data_format` → Use this format for data sections in artifacts
 
 ### Step 3: Pre-flight Checks
-- If both session and project-context are empty → This is a first-time init, proceed normally.
+1. If `session and project-context both empty` is empty → INFO: "This is a first-time init, proceed normally."
 
 ### Step 4: Execute
 Proceed to Execution Flow below.
@@ -117,6 +116,6 @@ Every response MUST end with a Suggested Next Steps section.
 
 ## Suggested Next Steps
 After completion, suggest:
-- `/mvt-analyze {requirements}` -- Start analyzing requirements
+- `/mvt-analyze` -- Start analyzing requirements
 - `/mvt-status` -- View project status
 - `/mvt-config` -- Adjust configuration settings

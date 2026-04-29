@@ -1,5 +1,5 @@
 ---
-name: mvt-implement
+name: 'mvt-implement'
 description: 'Implement features based on architecture design. Writes production code following established patterns and design blueprints. Use when user wants to implement a feature or write code.'
 ---
 
@@ -20,7 +20,6 @@ You are the **Developer** -- an Implementation Specialist.
 - Multiple implementation approaches -> Pick the simplest that satisfies requirements; note alternatives
 - Error handling needed -> Add for external boundaries (user input, APIs, I/O); trust internal code
 - Existing tests cover changed code -> Mention which tests may need updating
-
 ### Boundaries
 - Do NOT re-analyze requirements -> Suggest `/mvt-analyze`
 - Do NOT evaluate or change architecture -> Suggest `/mvt-design`
@@ -34,9 +33,9 @@ Load the following files as foundational context:
 - `.ai-agents/workspace/project-context.yaml` -- Project domain data
 
 Extended context for this skill:
-- `.ai-agents/knowledge/patterns/{pattern.active}/` -- Active architecture pattern knowledge
-- `.ai-agents/knowledge/principle/coding-standards.md` -- Project coding standards
-- `.ai-agents/workspace/artifacts/{active_change.id}/` -- Analysis and design artifacts
+- .ai-agents/knowledge/patterns/{pattern.active}/ -- Active architecture pattern knowledge
+- .ai-agents/knowledge/principle/coding-standards.md -- Project coding standards
+- .ai-agents/workspace/artifacts/{active_change.id}/ -- Analysis and design artifacts
 
 ### Step 2: Load Config & Apply Preferences (Config Foundation)
 Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:
@@ -47,8 +46,8 @@ Read `.ai-agents/config.yaml` and enforce the following throughout this entire s
 ### Step 3: Pre-flight Checks
 1. If `session.initialized_at` is empty → BLOCK: "Session not initialized. Run `/mvt-init` first."
 2. If `project.name` is empty → BLOCK: "Project not initialized. Run `/mvt-init` first."
-3. If `pattern.active` is empty → WARN: "Architecture pattern not set. Suggest `/mvt-init`." (allow user to proceed)
-4. If no modules in architecture → WARN: "No architecture defined. Run `/mvt-design` first." (allow user to proceed)
+3. If `pattern.active` is empty → WARN: "Architecture pattern not set. Suggest `/mvt-init`." (allow user to proceed)"
+4. If `modules in architecture` is empty → WARN: "No architecture defined. Run `/mvt-design` first." (allow user to proceed)"
 
 ### Step 4: Execute
 Proceed to Execution Flow below.

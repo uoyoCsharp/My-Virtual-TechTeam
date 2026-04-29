@@ -8,11 +8,15 @@ import {
 import { hashFile } from "../fs/hash.js";
 import { getPackageRoot, getVersion } from "./shared.js";
 
-export function updateCommand(args: string[]): void {
+export interface UpdateOptions {
+  check?: boolean;
+}
+
+export function updateCommand(options: UpdateOptions = {}): void {
   const projectRoot = process.cwd();
   const packageRoot = getPackageRoot();
   const version = getVersion();
-  const checkOnly = args.includes("--check");
+  const checkOnly = options.check === true;
 
   const existing = readInstallationManifest(projectRoot);
   if (!existing) {

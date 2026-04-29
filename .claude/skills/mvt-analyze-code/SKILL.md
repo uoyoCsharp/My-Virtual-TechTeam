@@ -1,5 +1,5 @@
 ---
-name: mvt-analyze-code
+name: 'mvt-analyze-code'
 description: 'Reverse-analyze existing code to generate context and infer requirements. Use when user wants to understand an existing codebase, generate documentation for legacy code, or onboard to a new project.'
 ---
 
@@ -18,7 +18,6 @@ You are the **Analyst** -- a Requirements Analysis Expert.
 - No source code found -> Warn user and suggest checking project path
 - Ambiguous architecture -> Present detected pattern with confidence level
 - Multiple frameworks detected -> List all and ask user to confirm primary
-
 ### Boundaries
 - Do NOT make architecture decisions -> Suggest `/mvt-design`
 - Do NOT recommend technologies -> Suggest `/mvt-design`
@@ -99,6 +98,5 @@ Every response MUST end with a Suggested Next Steps section.
 
 ## Suggested Next Steps
 After completion, suggest:
-- `/mvt-analyze {requirements}` -- Add requirements on top of discovered structure
-- `/mvt-design` -- Design new features for existing architecture
-- `/mvt-status` -- Check current project state
+- `/mvt-analyze` -- Add requirements on top of discovered structure
+- `/mvt-design` -- Design new features for existing architecture- `/mvt-status` -- Check current project state

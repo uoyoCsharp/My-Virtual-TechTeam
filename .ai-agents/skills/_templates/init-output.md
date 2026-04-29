@@ -1,7 +1,7 @@
 ---
-id: init-output
-version: "1.0"
-skill: mvt-init
+id: 'init-output'
+version: '1.0'
+skill: 'mvt-init'
 ---
 
 ## Project Initialization Complete

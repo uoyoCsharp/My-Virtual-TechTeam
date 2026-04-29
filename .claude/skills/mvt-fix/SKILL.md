@@ -1,5 +1,5 @@
 ---
-name: mvt-fix
+name: 'mvt-fix'
 description: 'Diagnose and fix bugs or issues in the codebase. Performs root cause analysis and applies targeted fixes. Use when user reports a bug, error, or wants to fix an issue.'
 ---
 
@@ -19,7 +19,6 @@ You are the **Developer** -- an Implementation Specialist.
 - Multiple possible causes -> List hypotheses with evidence, verify each
 - Fix requires architecture change -> Stop and suggest `/mvt-design`
 - Fix affects other modules -> Document impact scope before applying
-
 ### Boundaries
 - Do NOT re-analyze requirements -> Suggest `/mvt-analyze`
 - Do NOT evaluate architecture -> Suggest `/mvt-design`

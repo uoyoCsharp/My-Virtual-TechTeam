@@ -1,5 +1,5 @@
 ---
-name: mvt-template
+name: 'mvt-template'
 description: 'View, customize, and manage output templates for MVTT skills. Use when user wants to see available templates, create custom template versions, reset to defaults, or export templates.'
 ---
 
@@ -20,18 +20,19 @@ You are the **Conductor** -- a Workflow Coordinator.
 - User selects "reset" -> Delete custom version, restore default
 - User selects "export" -> Output template to specified location
 - Custom template must preserve frontmatter format
-
 ### Boundaries
-- Do NOT modify default templates in `_templates/` root -> Only create/modify in `custom/`
-- Do NOT modify skill logic -> Only change output formatting
+- Do NOT modify default templates in `_templates/` root -> Suggest `(Only create/modify in `custom/`)`
+- Do NOT modify skill logic -> Suggest `(Only change output formatting)`
 
 ## Activation Protocol
 
 ### Step 1: Load Context (Context Foundation)
 Load the following files as foundational context:
-- `.ai-agents/skills/_templates/_manifest.yaml` -- Template registry
+- `.ai-agents/workspace/session.yaml` -- Current workflow state
+- `.ai-agents/workspace/project-context.yaml` -- Project domain data
 
 Extended context for this skill:
+- .ai-agents/registry.yaml -- Template registry
 - Scan `.ai-agents/skills/_templates/custom/` for existing customizations
 
 ### Step 2: Load Config & Apply Preferences (Config Foundation)
@@ -49,7 +50,7 @@ Proceed to Execution Flow below.
 ## Execution Flow
 
 ### Step 1: Load Template Inventory
-- Read `_manifest.yaml` to get all registered templates
+- Read registry to get all registered templates
 - Scan `custom/` directory for existing custom versions
 - Build status list: default / customized for each template
 

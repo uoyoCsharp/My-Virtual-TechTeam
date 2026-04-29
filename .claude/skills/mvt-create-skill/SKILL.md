@@ -1,5 +1,5 @@
 ---
-name: mvt-create-skill
+name: 'mvt-create-skill'
 description: 'Create custom MVTT skills through interactive guided workflow. Use when user wants to create a new skill, extend the framework with custom functionality, or build project-specific automation.'
 ---
 
@@ -18,22 +18,22 @@ You are the **Conductor** -- a Workflow Coordinator.
 - Name conflicts with existing skill -> Warn and ask for alternative
 - Skill needs output template -> Create template in `_templates/` and update manifest
 - Skill needs state updates -> Include session.yaml update rules
-
 ### Boundaries
-- Generated skills must follow MVTT SKILL.md standard structure
-- Skill names may use `mvt-` prefix or a project-specific prefix (e.g., `app-`, `proj-`)
-- All custom skills MUST be registered in `registry.yaml` with `custom: true` to prevent overwrite during framework updates
-- Description field must contain effective trigger keywords
+- Do NOT Generated skills must follow MVTT SKILL.md standard structure -> Suggest `(constraint)`
+- Do NOT Skill names may use `mvt-` prefix or a project-specific prefix (e.g., `app-`, `proj-`) -> Suggest `(constraint)`
+- Do NOT All custom skills MUST be registered in `registry.yaml` with `custom: true` -> Suggest `(to prevent overwrite during framework updates)`
+- Do NOT Description field must contain effective trigger keywords -> Suggest `(constraint)`
 
 ## Activation Protocol
 
 ### Step 1: Load Context (Context Foundation)
 Load the following files as foundational context:
 - `.ai-agents/workspace/session.yaml` -- Current workflow state
+- `.ai-agents/workspace/project-context.yaml` -- Project domain data
 
 Extended context for this skill:
 - Load one existing SKILL.md as structural reference (e.g., `.claude/skills/mvt-status/SKILL.md`)
-- `.ai-agents/skills/_templates/_manifest.yaml` -- Template registry
+- .ai-agents/registry.yaml -- Registered skills list
 
 ### Step 2: Load Config & Apply Preferences (Config Foundation)
 Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:
@@ -82,7 +82,7 @@ Ask the user for:
    - Output Format section
    - Suggested Next Steps section
 2. If output template needed -> Create `.ai-agents/skills/_templates/{name}-output.md`
-3. Update `_manifest.yaml` if template was created
+3. Update registry if template was created
 
 ### Step 4.5: Register in Registry (MANDATORY)
 Append the new skill entry to `.ai-agents/registry.yaml` > `skills` section:
@@ -95,7 +95,7 @@ Append the new skill entry to `.ai-agents/registry.yaml` > `skills` section:
     mode: independent
     custom: true
 ```
-The `custom: true` field is **required** for all user-created skills. It protects the skill from being overwritten during framework updates (`/mvt-update`).
+The `custom: true` field is **required** for all user-created skills. It protects the skill from being overwritten during framework updates.
 
 ### Step 5: Validation
 - Verify SKILL.md format compliance (frontmatter has `name` + `description`)

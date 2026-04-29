@@ -1,7 +1,7 @@
 ---
-id: analyze-code-output
-version: "1.0"
-skill: mvt-analyze-code
+id: 'analyze-code-output'
+version: '1.0'
+skill: 'mvt-analyze-code'
 ---
 
 ## Codebase Analysis Report

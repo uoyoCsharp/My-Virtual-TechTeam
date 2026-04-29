@@ -21,7 +21,7 @@ interface Captured {
   exitCode: number | null;
 }
 
-function captureIO(tmpDir: string, fn: () => void): Captured {
+async function captureIO(tmpDir: string, fn: () => void | Promise<void>): Promise<Captured> {
   const captured: Captured = { stdout: [], stderr: [], exitCode: null };
   const cwdSpy = vi.spyOn(process, "cwd").mockReturnValue(tmpDir);
   const logSpy = vi.spyOn(console, "log").mockImplementation((...args: unknown[]) => {
@@ -33,6 +33,18 @@ function captureIO(tmpDir: string, fn: () => void): Captured {
   const warnSpy = vi.spyOn(console, "warn").mockImplementation((...args: unknown[]) => {
     captured.stdout.push(args.map(String).join(" "));
   });
+  const stdoutWriteSpy = vi
+    .spyOn(process.stdout, "write")
+    .mockImplementation((chunk: unknown) => {
+      captured.stdout.push(String(chunk));
+      return true;
+    });
+  const stderrWriteSpy = vi
+    .spyOn(process.stderr, "write")
+    .mockImplementation((chunk: unknown) => {
+      captured.stderr.push(String(chunk));
+      return true;
+    });
   const exitSpy = vi
     .spyOn(process, "exit")
     .mockImplementation((code?: number | string | null) => {
@@ -41,7 +53,7 @@ function captureIO(tmpDir: string, fn: () => void): Captured {
     });
 
   try {
-    fn();
+    await fn();
   } catch (e) {
     if (!(e instanceof Error && e.message.startsWith("__EXIT_"))) throw e;
   } finally {
@@ -49,6 +61,8 @@ function captureIO(tmpDir: string, fn: () => void): Captured {
     logSpy.mockRestore();
     errSpy.mockRestore();
     warnSpy.mockRestore();
+    stdoutWriteSpy.mockRestore();
+    stderrWriteSpy.mockRestore();
     exitSpy.mockRestore();
   }
 
@@ -66,106 +80,112 @@ describe("CLI commands (in-process)", () => {
   });
 
   describe("install", () => {
-    it("installs into empty directory", () => {
-      const r = captureIO(tmpDir, () => installCommand([]));
+    it("installs into empty directory", async () => {
+      const r = await captureIO(tmpDir, () => installCommand());
       expect(r.stdout.join("\n")).toContain("Installation complete");
       expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-analyze/SKILL.md"))).toBe(true);
       expect(existsSync(path.join(tmpDir, ".ai-agents/.mvtt-manifest.json"))).toBe(true);
     });
 
-    it("sets pattern when --pattern provided", () => {
-      captureIO(tmpDir, () => installCommand(["--pattern", "ddd"]));
+    it("sets pattern when pattern provided", async () => {
+      await captureIO(tmpDir, () => installCommand({ pattern: "ddd" }));
       const config = readFileSync(path.join(tmpDir, ".ai-agents/config.yaml"), "utf-8");
       expect(config).toContain('active: "ddd"');
     });
 
-    it("refuses re-install when already installed", () => {
-      captureIO(tmpDir, () => installCommand([]));
-      const r = captureIO(tmpDir, () => installCommand([]));
+    it("non-TTY install defaults language to en-US", async () => {
+      await captureIO(tmpDir, () => installCommand());
+      const config = readFileSync(path.join(tmpDir, ".ai-agents/config.yaml"), "utf-8");
+      expect(config).toMatch(/language:\s*en-US/);
+    });
+
+    it("refuses re-install when already installed", async () => {
+      await captureIO(tmpDir, () => installCommand());
+      const r = await captureIO(tmpDir, () => installCommand());
       expect(r.exitCode).toBe(1);
       expect(r.stderr.join("\n")).toContain("already installed");
     });
   });
 
   describe("doctor", () => {
-    it("fails when not installed", () => {
-      const r = captureIO(tmpDir, () => doctorCommand([]));
+    it("fails when not installed", async () => {
+      const r = await captureIO(tmpDir, () => doctorCommand());
       expect(r.exitCode).toBe(1);
       expect(r.stdout.join("\n")).toContain("[FAIL]");
     });
 
-    it("passes on clean install", () => {
-      captureIO(tmpDir, () => installCommand([]));
-      const r = captureIO(tmpDir, () => doctorCommand([]));
+    it("passes on clean install", async () => {
+      await captureIO(tmpDir, () => installCommand());
+      const r = await captureIO(tmpDir, () => doctorCommand());
       const out = r.stdout.join("\n");
       expect(out).toContain("[PASS]");
       expect(out).not.toContain("[FAIL]");
     });
 
-    it("detects manually modified files", () => {
-      captureIO(tmpDir, () => installCommand([]));
+    it("detects manually modified files", async () => {
+      await captureIO(tmpDir, () => installCommand());
       writeFileSync(
         path.join(tmpDir, ".claude/skills/mvt-analyze/SKILL.md"),
         "tampered",
         "utf-8",
       );
-      const r = captureIO(tmpDir, () => doctorCommand([]));
+      const r = await captureIO(tmpDir, () => doctorCommand());
       expect(r.stdout.join("\n")).toContain("Manually modified");
     });
 
-    it("detects missing user dirs", () => {
-      captureIO(tmpDir, () => installCommand([]));
+    it("detects missing user dirs", async () => {
+      await captureIO(tmpDir, () => installCommand());
       rmSync(path.join(tmpDir, ".ai-agents/knowledge/principle"), { recursive: true });
-      const r = captureIO(tmpDir, () => doctorCommand([]));
+      const r = await captureIO(tmpDir, () => doctorCommand());
       expect(r.stdout.join("\n")).toContain("User data dir missing");
     });
 
-    it("detects missing tracked files", () => {
-      captureIO(tmpDir, () => installCommand([]));
+    it("detects missing tracked files", async () => {
+      await captureIO(tmpDir, () => installCommand());
       rmSync(path.join(tmpDir, ".claude/skills/mvt-analyze/SKILL.md"));
-      const r = captureIO(tmpDir, () => doctorCommand([]));
+      const r = await captureIO(tmpDir, () => doctorCommand());
       expect(r.stdout.join("\n")).toContain("Missing file");
     });
   });
 
   describe("update", () => {
-    it("fails when not installed", () => {
-      const r = captureIO(tmpDir, () => updateCommand([]));
+    it("fails when not installed", async () => {
+      const r = await captureIO(tmpDir, () => updateCommand());
       expect(r.exitCode).toBe(1);
       expect(r.stderr.join("\n")).toContain("not installed");
     });
 
-    it("reports up-to-date with --check", () => {
-      captureIO(tmpDir, () => installCommand([]));
-      const r = captureIO(tmpDir, () => updateCommand(["--check"]));
+    it("reports up-to-date with check flag", async () => {
+      await captureIO(tmpDir, () => installCommand());
+      const r = await captureIO(tmpDir, () => updateCommand({ check: true }));
       expect(r.stdout.join("\n")).toContain("Up to date");
     });
 
-    it("says nothing to update when versions match", () => {
-      captureIO(tmpDir, () => installCommand([]));
-      const r = captureIO(tmpDir, () => updateCommand([]));
+    it("says nothing to update when versions match", async () => {
+      await captureIO(tmpDir, () => installCommand());
+      const r = await captureIO(tmpDir, () => updateCommand());
       expect(r.stdout.join("\n")).toContain("Nothing to update");
     });
   });
 
   describe("uninstall", () => {
-    it("fails when not installed", () => {
-      const r = captureIO(tmpDir, () => uninstallCommand([]));
+    it("fails when not installed", async () => {
+      const r = await captureIO(tmpDir, () => uninstallCommand());
       expect(r.exitCode).toBe(1);
       expect(r.stderr.join("\n")).toContain("not installed");
     });
 
-    it("requires --yes to actually delete", () => {
-      captureIO(tmpDir, () => installCommand([]));
-      captureIO(tmpDir, () => uninstallCommand([]));
+    it("requires yes flag to actually delete", async () => {
+      await captureIO(tmpDir, () => installCommand());
+      await captureIO(tmpDir, () => uninstallCommand());
       expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-analyze/SKILL.md"))).toBe(true);
     });
 
-    it("removes generated files with --yes", () => {
-      captureIO(tmpDir, () => installCommand([]));
+    it("removes generated files with yes flag", async () => {
+      await captureIO(tmpDir, () => installCommand());
       const userFile = path.join(tmpDir, ".ai-agents/workspace/artifacts/mine.md");
       writeFileSync(userFile, "my work", "utf-8");
-      captureIO(tmpDir, () => uninstallCommand(["--yes"]));
+      await captureIO(tmpDir, () => uninstallCommand({ yes: true }));
       expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-analyze/SKILL.md"))).toBe(false);
       expect(existsSync(path.join(tmpDir, ".ai-agents/.mvtt-manifest.json"))).toBe(false);
       expect(readFileSync(userFile, "utf-8")).toBe("my work");
@@ -174,38 +194,35 @@ describe("CLI commands (in-process)", () => {
   });
 
   describe("build", () => {
-    it("builds skills with --out directory", () => {
-      const r = captureIO(process.cwd(), () => buildCommand(["--out", tmpDir]));
+    it("builds skills with out directory", async () => {
+      const r = await captureIO(process.cwd(), () => buildCommand({ out: tmpDir }));
       expect(r.stdout.join("\n")).toContain("Build complete");
       expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-analyze/SKILL.md"))).toBe(true);
     });
   });
 
   describe("router", () => {
-    it("shows help on no args", () => {
-      const r = captureIO(tmpDir, () => run([]));
-      expect(r.stdout.join("\n")).toContain("mvtt - My Virtual Tech Team CLI");
+    it("shows help on --help", async () => {
+      const r = await captureIO(tmpDir, () => run(["--help"]));
+      const out = r.stdout.join("\n");
+      expect(out).toContain("Usage:");
+      expect(out).toContain("install");
     });
 
-    it("shows help on --help", () => {
-      const r = captureIO(tmpDir, () => run(["--help"]));
-      expect(r.stdout.join("\n")).toContain("mvtt - My Virtual Tech Team CLI");
+    it("shows version on --version", async () => {
+      const r = await captureIO(tmpDir, () => run(["--version"]));
+      expect(r.stdout.join("\n")).toMatch(/\d+\.\d+\.\d+/);
     });
 
-    it("shows version on --version", () => {
-      const r = captureIO(tmpDir, () => run(["--version"]));
-      expect(r.stdout.join("\n")).toMatch(/^\d+\.\d+\.\d+/);
-    });
-
-    it("rejects unknown command", () => {
-      const r = captureIO(tmpDir, () => run(["nonexistent"]));
+    it("rejects unknown command", async () => {
+      const r = await captureIO(tmpDir, () => run(["nonexistent"]));
       expect(r.exitCode).toBe(1);
-      expect(r.stderr.join("\n")).toContain("Unknown command");
+      expect(r.stderr.join("\n")).toContain("unknown command");
     });
 
-    it("dispatches to doctor", () => {
-      captureIO(tmpDir, () => installCommand([]));
-      const r = captureIO(tmpDir, () => run(["doctor"]));
+    it("dispatches to doctor", async () => {
+      await captureIO(tmpDir, () => installCommand());
+      const r = await captureIO(tmpDir, () => run(["doctor"]));
       expect(r.stdout.join("\n")).toContain("[PASS]");
     });
   });

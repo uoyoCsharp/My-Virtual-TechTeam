@@ -1,5 +1,5 @@
 ---
-name: mvt-sync-context
+name: 'mvt-sync-context'
 description: 'Synchronize workspace context with code changes after manual modifications or git operations. Use when context seems out of sync with code, after manual edits, or after git merge/rebase.'
 ---
 
@@ -18,7 +18,6 @@ You are the **Conductor** -- a Workflow Coordinator.
 - Git not available -> Scan for recently modified files
 - Changes detected -> Analyze and update context
 - No changes detected -> Report context is already in sync
-
 ### Boundaries
 - Do NOT analyze requirements -> Suggest `/mvt-analyze`
 - Do NOT design architecture -> Suggest `/mvt-design`
@@ -36,6 +35,11 @@ Load the following files as foundational context:
 - `.ai-agents/workspace/session.yaml` -- Current workflow state
 - `.ai-agents/workspace/project-context.yaml` -- Project domain data
 
+Extended context for this skill:
+{{#extended_context}}
+- {{.}}
+{{/extended_context}}
+
 ### Step 2: Load Config & Apply Preferences (Config Foundation)
 Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:
 - `preferences.language` → Use this language for ALL output (responses, artifact content, comments)
@@ -43,7 +47,7 @@ Read `.ai-agents/config.yaml` and enforce the following throughout this entire s
 - `preferences.output.data_format` → Use this format for data sections in artifacts
 
 ### Step 3: Pre-flight Checks
-1. If project-context is empty → WARN: "Project not initialized. Run `/mvt-init` first."
+1. If `project-context is empty` is empty → WARN: "Project not initialized. Run `/mvt-init` first."
 
 ### Step 4: Execute
 Proceed to Execution Flow below.
@@ -86,5 +90,5 @@ Every response MUST end with a Suggested Next Steps section.
 
 ## Suggested Next Steps
 After completion, suggest:
-- Continue with your current task
-- `/mvt-status` -- Verify context state
+- `/mvt-status` -- Verify context state after sync
+- `/(continue)` -- Continue with your current task

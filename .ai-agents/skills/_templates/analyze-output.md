@@ -1,7 +1,7 @@
 ---
-id: analyze-output
-version: "1.0"
-skill: mvt-analyze
+id: 'analyze-output'
+version: '1.0'
+skill: 'mvt-analyze'
 ---
 
 ## Requirements Analysis: {Feature Name}

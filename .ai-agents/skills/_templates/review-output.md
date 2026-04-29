@@ -1,7 +1,7 @@
 ---
-id: review-output
-version: "1.0"
-skill: mvt-review
+id: 'review-output'
+version: '1.0'
+skill: 'mvt-review'
 ---
 
 ## Code Review Report

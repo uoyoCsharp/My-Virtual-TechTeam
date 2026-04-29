@@ -1,5 +1,5 @@
 ---
-name: mvt-check-context
+name: 'mvt-check-context'
 description: 'Analyze context token load and give optimization recommendations. Use when user wants to check how much context MVTT loads, identify large files, or optimize workspace size for better performance.'
 ---
 
@@ -18,9 +18,8 @@ You are the **Conductor** -- a Workflow Coordinator.
 - Total tokens 5,000-15,000 -> Report as "Moderate"
 - Total tokens 15,000-30,000 -> Report as "High", suggest optimizations
 - Total tokens > 30,000 -> Report as "Overloaded", strongly recommend cleanup
-
 ### Boundaries
-- Do NOT modify any files -> Only analyze and recommend
+- Do NOT modify any files -> Suggest `(Only analyze and recommend)`
 - Do NOT clean up artifacts -> Suggest `/mvt-cleanup`
 - Do NOT modify context -> Suggest `/mvt-add-context`
 
@@ -32,7 +31,7 @@ Load the following files as foundational context:
 - `.ai-agents/workspace/project-context.yaml` -- Project domain data
 
 Extended context for this skill:
-- `.ai-agents/config.yaml` -- Framework configuration (to be scanned for size)
+- .ai-agents/config.yaml -- Framework configuration (to be scanned for size)
 
 ### Step 2: Load Config & Apply Preferences (Config Foundation)
 Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:

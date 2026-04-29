@@ -5,12 +5,14 @@ import type { Manifest } from "../types/manifest.js";
 import { assembleFromManifest } from "../build/assembler.js";
 import { validateManifest } from "../build/validator.js";
 
-export function buildCommand(args: string[]): void {
+export interface BuildOptions {
+  out?: string;
+}
+
+export function buildCommand(options: BuildOptions = {}): void {
   const projectRoot = process.cwd();
   const sourcesDir = path.resolve(projectRoot, "sources");
-  const outputRoot = args.includes("--out")
-    ? path.resolve(args[args.indexOf("--out") + 1])
-    : projectRoot;
+  const outputRoot = options.out ? path.resolve(options.out) : projectRoot;
 
   const timestamp = new Date().toISOString();
   let totalFiles = 0;
