@@ -1,0 +1,88 @@
+name: mvt-analyze-code
+output: .claude/skills/mvt-analyze-code/SKILL.md
+
+frontmatter:
+  name: mvt-analyze-code
+  description: "Reverse-analyze existing code to generate context and infer requirements. Use when user wants to understand an existing codebase, generate documentation for legacy code, or onboard to a new project."
+
+sections:
+  - type: inline
+    content: |
+      # MVT Analyze Code
+
+      ## Purpose
+
+      Reverse-analyze existing code to generate context, discover architecture, and infer requirements. Unlike `/mvt-analyze` which works from requirements documents, this skill works from source code. This is an independent operation that does not create a change-id.
+
+  - type: shared
+    source: sections/role-header.md
+    params:
+      role: Analyst
+      role_desc: "a Requirements Analysis Expert"
+      decision_rules:
+        - rule: "Source code exists -> Proceed with codebase scanning"
+        - rule: "No source code found -> Warn user and suggest checking project path"
+        - rule: "Ambiguous architecture -> Present detected pattern with confidence level"
+        - rule: "Multiple frameworks detected -> List all and ask user to confirm primary"
+      boundaries:
+        - scope: "make architecture decisions"
+          skill: "/mvt-design"
+        - scope: "recommend technologies"
+          skill: "/mvt-design"
+        - scope: "write implementation code"
+          skill: "/mvt-implement"
+
+  - type: shared
+    source: sections/activation-load-context.md
+    params:
+      extended_context:
+        - "Scan project source directories for analysis"
+
+  - type: shared
+    source: sections/activation-load-config.md
+
+  - type: shared
+    source: sections/activation-preflight.md
+    params:
+      checks:
+        - order: "1"
+          field: "session.initialized_at"
+          level: "WARN"
+          message: 'Session not initialized. Run `/mvt-init` first.'
+
+  - type: inline
+    content: |
+      ### Independent Operation Rules
+      - This is an independent operation -- no workflow prerequisites required
+      - Does NOT create a change-id
+      - Artifacts stored under `.ai-agents/workspace/artifacts/code-analysis/` instead of a change-id directory
+
+      ### Step 4: Execute
+      Proceed to Execution Flow below.
+
+  - type: file
+    source: ./business.md
+
+  - type: inline
+    content: |
+      ## Output Format
+
+      Read and use the output template from: `.ai-agents/skills/_templates/analyze-code-output.md`
+
+      If a custom version exists at `.ai-agents/skills/_templates/custom/analyze-code-output.md`, use the custom version instead.
+
+      Fill the template placeholders with the analysis results.
+
+      Every response MUST end with a Suggested Next Steps section.
+
+  - type: shared
+    source: sections/footer-next-steps.md
+    params:
+      next_primary: mvt-analyze
+      next_primary_desc: "Add requirements on top of discovered structure"
+      next_alternatives:
+        - skill: mvt-design
+          when: "Design new features for existing architecture"
+      always_show:
+        - skill: mvt-status
+          desc: "Check current project state"

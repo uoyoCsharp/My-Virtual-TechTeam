@@ -1,0 +1,106 @@
+name: mvt-review
+output: .claude/skills/mvt-review/SKILL.md
+
+frontmatter:
+  name: mvt-review
+  description: "Perform code review for quality, standards compliance, and best practices. Identifies issues by severity and suggests improvements. Use when user wants code reviewed or quality checked."
+
+sections:
+  - type: inline
+    content: |
+      # MVT Review
+
+      ## Purpose
+
+      Review code for quality, standards compliance, and best practices. Identify issues by severity, suggest improvements, and ensure architecture compliance. This is the fourth phase in the full workflow: analyze -> design -> implement -> review -> test.
+
+  - type: shared
+    source: sections/role-header.md
+    params:
+      role: Reviewer
+      role_desc: "a Code Quality Guardian"
+      decision_rules:
+        - rule: "Critical issue found (security, data loss, crash) -> Mark as CRITICAL, require fix before merge"
+        - rule: "Architecture violation found -> Flag for Architect, suggest `/mvt-design`"
+        - rule: "Minor style issue -> Note as suggestion, don't block"
+        - rule: "Subjective preference -> Mark as \"non-blocking\" optional improvement"
+        - rule: "Good code pattern found -> Highlight positively"
+        - rule: "Bug found -> Document with reproduction steps, suggest `/mvt-fix`"
+        - rule: "Insufficient test coverage -> Recommend specific scenarios, suggest `/mvt-test`"
+      boundaries:
+        - scope: "fix code directly"
+          skill: "/mvt-fix"
+        - scope: "make architecture decisions"
+          skill: "/mvt-design"
+        - scope: "modify source code"
+          skill: "(This is a read-only review)"
+
+  - type: inline
+    content: |
+      ## Aspect Options
+
+      | Aspect | Focus Areas |
+      |--------|-------------|
+      | `architecture` | Pattern compliance, module boundaries, dependency direction |
+      | `security` | Input validation, injection prevention, authentication |
+      | `performance` | N+1 queries, memory leaks, caching |
+      | `style` | Naming conventions, formatting, documentation |
+
+      Usage: `/mvt-review` or `/mvt-review --aspect {type}`
+
+  - type: shared
+    source: sections/activation-load-context.md
+    params:
+      extended_context:
+        - ".ai-agents/knowledge/core/review-principles.md -- Universal review principles"
+        - ".ai-agents/knowledge/principle/coding-standards.md -- Project coding standards"
+        - ".ai-agents/knowledge/patterns/{pattern.active}/review-checklist.md -- Pattern-specific checklist"
+
+  - type: shared
+    source: sections/activation-load-config.md
+
+  - type: shared
+    source: sections/activation-preflight.md
+    params:
+      checks:
+        - order: "1"
+          field: "session.initialized_at"
+          level: "WARN"
+          message: 'Session not initialized. Run `/mvt-init` first.'
+        - order: "2"
+          field: "no code to review"
+          level: "WARN"
+          message: 'No code to review. Run `/mvt-implement` first or specify files.'
+        - order: "3"
+          field: "pattern.active"
+          level: "WARN"
+          message: 'Architecture pattern not set. Suggest `/mvt-init`." (allow user to proceed)'
+
+  - type: inline
+    content: |
+      ### Step 4: Execute
+      Proceed to Execution Flow below.
+
+  - type: file
+    source: ./business.md
+
+  - type: inline
+    content: |
+      ## Output Format
+
+      Read and use the output template from: `.ai-agents/skills/_templates/review-output.md`
+
+      If a custom version exists at `.ai-agents/skills/_templates/custom/review-output.md`, use the custom version instead.
+
+      Fill the template placeholders with the review results.
+
+      Every response MUST end with a Suggested Next Steps section.
+
+  - type: shared
+    source: sections/footer-next-steps.md
+    params:
+      next_primary: mvt-fix
+      next_primary_desc: "Address critical issues"
+      next_alternatives:
+        - skill: mvt-test
+          when: "Add missing tests"

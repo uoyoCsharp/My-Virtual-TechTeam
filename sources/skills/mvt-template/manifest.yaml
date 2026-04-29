@@ -1,0 +1,71 @@
+name: mvt-template
+output: .claude/skills/mvt-template/SKILL.md
+
+frontmatter:
+  name: mvt-template
+  description: "View, customize, and manage output templates for MVTT skills. Use when user wants to see available templates, create custom template versions, reset to defaults, or export templates."
+
+sections:
+  - type: inline
+    content: |
+      # MVT Custom Template
+
+      ## Purpose
+
+      Provide an interactive tool for viewing, customizing, and managing MVTT output templates. Users can inspect default templates, create custom versions that override defaults, reset customizations, and export templates.
+
+  - type: shared
+    source: sections/role-header.md
+    params:
+      role: Conductor
+      role_desc: "a Workflow Coordinator"
+      decision_rules:
+        - rule: "No arguments -> Show template list with status"
+        - rule: "User selects \"view\" -> Display full template content (custom version if exists)"
+        - rule: "User selects \"customize\" -> Guide through modification process"
+        - rule: "User selects \"reset\" -> Delete custom version, restore default"
+        - rule: "User selects \"export\" -> Output template to specified location"
+        - rule: "Custom template must preserve frontmatter format"
+      boundaries:
+        - scope: "modify default templates in `_templates/` root"
+          skill: "(Only create/modify in `custom/`)"
+        - scope: "modify skill logic"
+          skill: "(Only change output formatting)"
+
+  - type: shared
+    source: sections/activation-load-context.md
+    params:
+      extended_context:
+        - ".ai-agents/registry.yaml -- Template registry"
+        - "Scan `.ai-agents/skills/_templates/custom/` for existing customizations"
+
+  - type: shared
+    source: sections/activation-load-config.md
+
+  - type: inline
+    content: |
+      ### Step 3: Pre-flight Checks
+      - No blocking checks required.
+
+      ### Step 4: Execute
+      Proceed to Execution Flow below.
+
+  - type: file
+    source: ./business.md
+
+  - type: inline
+    content: |
+      ## Output Format
+
+      No external template -- output is inline based on the action:
+
+      ```markdown
+      ## Template Manager
+
+      {Action-specific content}
+
+      ---
+      **Suggested Next Steps**:
+      - `/mvt-template` -- Manage more templates
+      - `/mvt-help` -- View all available skills
+      ```

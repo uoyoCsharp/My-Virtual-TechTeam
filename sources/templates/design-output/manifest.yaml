@@ -1,0 +1,11 @@
+name: design-output
+output: .ai-agents/skills/_templates/design-output.md
+
+frontmatter:
+  id: design-output
+  version: "1.0"
+  skill: mvt-design
+
+sections:
+  - type: file
+    source: ./body.md

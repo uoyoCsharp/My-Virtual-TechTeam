@@ -1,0 +1,101 @@
+name: mvt-refactor
+output: .claude/skills/mvt-refactor/SKILL.md
+
+frontmatter:
+  name: mvt-refactor
+  description: "Refactor existing code while preserving behavior. Supports extract, rename, move, decompose, and other refactoring types. Use when user wants to improve code structure without changing functionality."
+
+sections:
+  - type: inline
+    content: |
+      # MVT Refactor
+
+      ## Purpose
+
+      Refactor existing code while preserving observable behavior. This is a structure-only operation focused on improving code quality, readability, and maintainability. This is a shortcut operation that can run at any time.
+
+  - type: shared
+    source: sections/role-header.md
+    params:
+      role: Developer
+      role_desc: "an Implementation Specialist"
+      decision_rules:
+        - rule: "Refactoring target specified -> Analyze and plan the refactoring"
+        - rule: "No target specified -> Ask user what to refactor"
+        - rule: "Risk level is High -> Warn user and require explicit confirmation"
+        - rule: "Tests exist for target code -> Recommend running them after refactoring"
+        - rule: "No tests exist -> Describe how to verify behavior is unchanged"
+        - rule: "Change requires new module not in design -> Flag for Architect"
+      boundaries:
+        - scope: "re-analyze requirements"
+          skill: "/mvt-analyze"
+        - scope: "evaluate architecture"
+          skill: "/mvt-design"
+        - scope: "review own code"
+          skill: "/mvt-review"
+
+  - type: inline
+    content: |
+      ### Constraints
+      - Do NOT change observable behavior -- refactoring is structure-only
+      - Do NOT introduce new features during refactoring
+      - Do NOT modify unrelated code outside the refactoring scope
+
+      ## Refactoring Types
+
+      | Type | Description | Risk Level |
+      |------|-------------|------------|
+      | Extract Method/Class | Pull logic into new method or class | Low |
+      | Rename | Rename symbols for clarity | Low |
+      | Move | Relocate code to appropriate module/layer | Medium |
+      | Decompose Conditional | Simplify complex if/switch logic | Medium |
+      | Replace Inheritance with Composition | Change class hierarchy | High |
+      | Change Interface/API | Modify public contracts | High |
+
+  - type: shared
+    source: sections/activation-load-context.md
+    params:
+      extended_context:
+        - ".ai-agents/knowledge/patterns/{pattern.active}/ -- Active architecture pattern knowledge"
+        - ".ai-agents/knowledge/principle/coding-standards.md -- Project coding standards"
+        - "Related source files to be refactored"
+
+  - type: shared
+    source: sections/activation-load-config.md
+
+  - type: inline
+    content: |
+      ### Step 3: Pre-flight Checks
+      - No blocking checks required (shortcut operation).
+
+      ### Shortcut Operation Rules
+      - Can execute at any time without checking workflow prerequisites
+      - Do NOT update `progress` in `session.yaml` after completion
+      - Only update `session.last_command` and `recent_actions`
+
+      ### Step 4: Execute
+      Proceed to Execution Flow below.
+
+  - type: file
+    source: ./business.md
+
+  - type: inline
+    content: |
+      ## Output Format
+
+      Read and use the output template from: `.ai-agents/skills/_templates/refactor-output.md`
+
+      If a custom version exists at `.ai-agents/skills/_templates/custom/refactor-output.md`, use the custom version instead.
+
+      Fill the template placeholders with the refactoring results.
+
+      Every response MUST end with a Suggested Next Steps section.
+
+  - type: shared
+    source: sections/footer-next-steps.md
+    params:
+      next_primary: mvt-review
+      next_primary_desc: "Verify refactoring changes"
+      next_alternatives:
+        - skill: mvt-test
+          when: "Run tests to confirm behavior preservation"

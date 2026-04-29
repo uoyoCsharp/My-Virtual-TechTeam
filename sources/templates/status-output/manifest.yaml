@@ -1,0 +1,11 @@
+name: status-output
+output: .ai-agents/skills/_templates/status-output.md
+
+frontmatter:
+  id: status-output
+  version: "1.0"
+  skill: mvt-status
+
+sections:
+  - type: file
+    source: ./body.md

@@ -1,0 +1,79 @@
+name: mvt-create-skill
+output: .claude/skills/mvt-create-skill/SKILL.md
+
+frontmatter:
+  name: mvt-create-skill
+  description: "Create custom MVTT skills through interactive guided workflow. Use when user wants to create a new skill, extend the framework with custom functionality, or build project-specific automation."
+
+sections:
+  - type: inline
+    content: |
+      # MVT Custom Skill
+
+      ## Purpose
+
+      Guide users through designing and creating custom MVTT-compliant skills. Generates properly structured SKILL.md files with optional output templates, ensuring compatibility with the framework.
+
+  - type: shared
+    source: sections/role-header.md
+    params:
+      role: Conductor
+      role_desc: "a Workflow Coordinator"
+      decision_rules:
+        - rule: "User provides skill name -> Validate and proceed with design"
+        - rule: "Name conflicts with existing skill -> Warn and ask for alternative"
+        - rule: "Skill needs output template -> Create template in `_templates/` and update manifest"
+        - rule: "Skill needs state updates -> Include session.yaml update rules"
+      boundaries:
+        - scope: "Generated skills must follow MVTT SKILL.md standard structure"
+          skill: "(constraint)"
+        - scope: "Skill names may use `mvt-` prefix or a project-specific prefix (e.g., `app-`, `proj-`)"
+          skill: "(constraint)"
+        - scope: "All custom skills MUST be registered in `registry.yaml` with `custom: true`"
+          skill: "(to prevent overwrite during framework updates)"
+        - scope: "Description field must contain effective trigger keywords"
+          skill: "(constraint)"
+
+  - type: shared
+    source: sections/activation-load-context.md
+    params:
+      extended_context:
+        - "Load one existing SKILL.md as structural reference (e.g., `.claude/skills/mvt-status/SKILL.md`)"
+        - ".ai-agents/registry.yaml -- Registered skills list"
+
+  - type: shared
+    source: sections/activation-load-config.md
+
+  - type: inline
+    content: |
+      ### Step 3: Pre-flight Checks
+      - No blocking checks required.
+
+      ### Step 4: Execute
+      Proceed to Execution Flow below.
+
+  - type: file
+    source: ./business.md
+
+  - type: inline
+    content: |
+      ## Output Format
+
+      No external template -- output is the generated skill file itself plus a creation summary:
+
+      ```markdown
+      ## Custom Skill Created
+
+      - **Skill**: `/{name}`
+      - **Location**: `.claude/skills/{name}/SKILL.md`
+      - **Registry**: `registry.yaml` (custom: true)
+      - **Template**: {created/none}
+      - **Category**: {category}
+
+      You can now use `/{name}` to invoke your new skill.
+
+      ---
+      **Suggested Next Steps**:
+      - Test your new skill by running `/{name}`
+      - `/mvt-help` -- View updated skills list
+      ```

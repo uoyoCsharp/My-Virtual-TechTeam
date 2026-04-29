@@ -1,0 +1,44 @@
+id: "frontend-react"
+type: "pattern"
+name: "Frontend (React)"
+version: "1.0"
+description: "Modern React frontend application patterns"
+
+token_estimate:
+  total: 3000
+  breakdown:
+    - file: review-checklist.md
+      tokens: 800
+      load_priority: 3
+      summary: "React code review checklist"
+
+loading_strategy:
+  level_1_manifest_only:
+    tokens: 150
+    use_case: "Check React pattern info"
+
+files:
+  - path: "review-checklist.md"
+    description: "React code review checklist"
+    required: false
+    tokens: 800
+
+scenarios:
+  - name: "Code review"
+    files: ["review-checklist.md"]
+
+applicable_project_types:
+  - web-app
+  - spa
+  - pwa
+
+frameworks:
+  - react
+  - next.js
+  - remix
+  - vite-react
+
+not_recommended_for:
+  - backend-api
+  - cli
+  - library (unless UI library)

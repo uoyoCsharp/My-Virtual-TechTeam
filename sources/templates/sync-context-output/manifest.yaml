@@ -1,0 +1,11 @@
+name: sync-context-output
+output: .ai-agents/skills/_templates/sync-context-output.md
+
+frontmatter:
+  id: sync-context-output
+  version: "1.0"
+  skill: mvt-sync-context
+
+sections:
+  - type: file
+    source: ./body.md

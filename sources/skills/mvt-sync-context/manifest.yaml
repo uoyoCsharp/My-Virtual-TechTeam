@@ -1,0 +1,84 @@
+name: mvt-sync-context
+output: .claude/skills/mvt-sync-context/SKILL.md
+
+frontmatter:
+  name: mvt-sync-context
+  description: "Synchronize workspace context with code changes after manual modifications or git operations. Use when context seems out of sync with code, after manual edits, or after git merge/rebase."
+
+sections:
+  - type: inline
+    content: |
+      # MVT Sync Context
+
+      ## Purpose
+
+      Synchronize the MVTT workspace context with code changes made outside the workflow. This is a code-driven, automatic synchronization that scans git diffs and file changes to update project context.
+
+  - type: shared
+    source: sections/role-header.md
+    params:
+      role: Conductor
+      role_desc: "a Workflow Coordinator"
+      decision_rules:
+        - rule: "Git available -> Use git diff to detect changes"
+        - rule: "Git not available -> Scan for recently modified files"
+        - rule: "Changes detected -> Analyze and update context"
+        - rule: "No changes detected -> Report context is already in sync"
+      boundaries:
+        - scope: "analyze requirements"
+          skill: "/mvt-analyze"
+        - scope: "design architecture"
+          skill: "/mvt-design"
+        - scope: "write implementation code"
+          skill: "/mvt-implement"
+
+  - type: inline
+    content: |
+      ### When to Use
+      - After manual code changes outside the workflow
+      - When context seems out of sync with code
+      - After git operations (merge, rebase, etc.)
+
+  - type: shared
+    source: sections/activation-load-context.md
+
+  - type: shared
+    source: sections/activation-load-config.md
+
+  - type: shared
+    source: sections/activation-preflight.md
+    params:
+      checks:
+        - order: "1"
+          field: "project-context is empty"
+          level: "WARN"
+          message: 'Project not initialized. Run `/mvt-init` first.'
+
+  - type: inline
+    content: |
+      ### Step 4: Execute
+      Proceed to Execution Flow below.
+
+  - type: file
+    source: ./business.md
+
+  - type: inline
+    content: |
+      ## Output Format
+
+      Read and use the output template from: `.ai-agents/skills/_templates/sync-context-output.md`
+
+      If a custom version exists at `.ai-agents/skills/_templates/custom/sync-context-output.md`, use the custom version instead.
+
+      Fill the template placeholders with the sync results.
+
+      Every response MUST end with a Suggested Next Steps section.
+
+  - type: shared
+    source: sections/footer-next-steps.md
+    params:
+      next_primary: mvt-status
+      next_primary_desc: "Verify context state after sync"
+      next_alternatives:
+        - skill: "(continue)"
+          when: "Continue with your current task"

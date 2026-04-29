@@ -1,0 +1,209 @@
+# MVTT Framework Registry (v2)
+# Single source of truth for skill metadata. Consumed at build-time by mvtt CLI
+# and at runtime by /mvt-status and /mvt-help.
+
+version: "2.0"
+last_updated: "2026-04-28"
+
+skills:
+  # --- Conductor Skills ---
+  mvt-init:
+    agent: conductor
+    description: "Initialize or refresh a project with comprehensive analysis"
+    path: .claude/skills/mvt-init/SKILL.md
+    template: .ai-agents/skills/_templates/init-output.md
+    category: project
+    mode: independent
+    phase: null
+    depends_on: []
+    next_suggestions:
+      primary: mvt-analyze
+      primary_desc: "Start analyzing requirements"
+
+  mvt-status:
+    agent: conductor
+    description: "Show current project and workflow status"
+    path: .claude/skills/mvt-status/SKILL.md
+    template: .ai-agents/skills/_templates/status-output.md
+    category: project
+    mode: independent
+    phase: null
+    depends_on: []
+
+  mvt-config:
+    agent: conductor
+    description: "Interactive configuration management for framework settings"
+    path: .claude/skills/mvt-config/SKILL.md
+    template: .ai-agents/skills/_templates/config-output.md
+    category: project
+    mode: independent
+    phase: null
+    depends_on: []
+
+  mvt-sync-context:
+    agent: conductor
+    description: "Synchronize workspace context with code changes"
+    path: .claude/skills/mvt-sync-context/SKILL.md
+    template: .ai-agents/skills/_templates/sync-context-output.md
+    category: project
+    mode: independent
+    phase: null
+    depends_on: []
+
+  mvt-cleanup:
+    agent: conductor
+    description: "Clean up workspace artifacts and maintain workspace health"
+    path: .claude/skills/mvt-cleanup/SKILL.md
+    template: .ai-agents/skills/_templates/cleanup-output.md
+    category: project
+    mode: independent
+    phase: null
+    depends_on: []
+
+  # --- Analyst Skills ---
+  mvt-analyze:
+    agent: analyst
+    description: "Analyze requirements documents and extract domain concepts"
+    path: .claude/skills/mvt-analyze/SKILL.md
+    template: .ai-agents/skills/_templates/analyze-output.md
+    category: workflow
+    mode: full-workflow
+    phase: analyze
+    depends_on: []
+    next_suggestions:
+      primary: mvt-design
+      primary_desc: "Create architecture based on this analysis"
+
+  mvt-analyze-code:
+    agent: analyst
+    description: "Reverse-analyze existing code to generate context"
+    path: .claude/skills/mvt-analyze-code/SKILL.md
+    template: .ai-agents/skills/_templates/analyze-code-output.md
+    category: workflow
+    mode: independent
+    phase: null
+    depends_on: []
+
+  # --- Architect Skills ---
+  mvt-design:
+    agent: architect
+    description: "Create architecture design based on analyzed requirements"
+    path: .claude/skills/mvt-design/SKILL.md
+    template: .ai-agents/skills/_templates/design-output.md
+    category: workflow
+    mode: full-workflow
+    phase: design
+    depends_on: [mvt-analyze]
+    next_suggestions:
+      primary: mvt-implement
+      primary_desc: "Implement features based on this design"
+
+  # --- Developer Skills ---
+  mvt-implement:
+    agent: developer
+    description: "Implement features based on architecture design"
+    path: .claude/skills/mvt-implement/SKILL.md
+    template: .ai-agents/skills/_templates/implement-output.md
+    category: workflow
+    mode: full-workflow
+    phase: implement
+    depends_on: [mvt-design]
+    next_suggestions:
+      primary: mvt-review
+      primary_desc: "Review the implementation"
+
+  mvt-fix:
+    agent: developer
+    description: "Diagnose and fix bugs or issues in the codebase"
+    path: .claude/skills/mvt-fix/SKILL.md
+    template: .ai-agents/skills/_templates/fix-output.md
+    category: shortcut
+    mode: shortcut
+    phase: null
+    depends_on: []
+
+  mvt-refactor:
+    agent: developer
+    description: "Refactor existing code while preserving behavior"
+    path: .claude/skills/mvt-refactor/SKILL.md
+    template: .ai-agents/skills/_templates/refactor-output.md
+    category: shortcut
+    mode: shortcut
+    phase: null
+    depends_on: []
+
+  # --- Reviewer Skills ---
+  mvt-review:
+    agent: reviewer
+    description: "Perform code review for quality and standards compliance"
+    path: .claude/skills/mvt-review/SKILL.md
+    template: .ai-agents/skills/_templates/review-output.md
+    category: workflow
+    mode: full-workflow
+    phase: review
+    depends_on: [mvt-implement]
+    next_suggestions:
+      primary: mvt-fix
+      primary_desc: "Address critical issues"
+
+  # --- Tester Skills ---
+  mvt-test:
+    agent: tester
+    description: "Generate and design tests to validate implementations"
+    path: .claude/skills/mvt-test/SKILL.md
+    template: .ai-agents/skills/_templates/test-output.md
+    category: workflow
+    mode: full-workflow
+    phase: test
+    depends_on: [mvt-implement]
+
+  # --- Utility Skills ---
+  mvt-help:
+    agent: conductor
+    description: "Show available skills, current project status, and workflow guidance"
+    path: .claude/skills/mvt-help/SKILL.md
+    template: null
+    category: utility
+    mode: independent
+    phase: null
+    depends_on: []
+
+  mvt-create-skill:
+    agent: conductor
+    description: "Create custom MVTT skills through interactive guided workflow"
+    path: .claude/skills/mvt-create-skill/SKILL.md
+    template: null
+    category: utility
+    mode: independent
+    phase: null
+    depends_on: []
+
+  mvt-add-context:
+    agent: conductor
+    description: "Interactively add or update project context information"
+    path: .claude/skills/mvt-add-context/SKILL.md
+    template: null
+    category: utility
+    mode: independent
+    phase: null
+    depends_on: []
+
+  mvt-check-context:
+    agent: conductor
+    description: "Analyze context token load and give optimization recommendations"
+    path: .claude/skills/mvt-check-context/SKILL.md
+    template: .ai-agents/skills/_templates/context-check-output.md
+    category: utility
+    mode: independent
+    phase: null
+    depends_on: []
+
+  mvt-template:
+    agent: conductor
+    description: "View, customize, and manage output templates for MVTT skills"
+    path: .claude/skills/mvt-template/SKILL.md
+    template: null
+    category: utility
+    mode: independent
+    phase: null
+    depends_on: []

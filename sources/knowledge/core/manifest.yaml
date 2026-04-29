@@ -1,0 +1,47 @@
+id: "core"
+type: "core"
+name: "Core Knowledge"
+version: "1.0"
+description: "Actionable review principles for code quality"
+
+token_estimate:
+  total: 800
+  breakdown:
+    - file: review-principles.md
+      tokens: 800
+      load_priority: 1
+      summary: "Naming, SRP, dependency direction, error handling, duplication, state, testing checklist"
+
+loading_strategy:
+  level_1_overview:
+    description: "Read manifest only for summary"
+    tokens: 100
+    use_case: "Check available knowledge"
+
+  level_2_full:
+    description: "Load complete knowledge files"
+    tokens: 800
+    use_case: "Complete principles reference"
+
+loading:
+  priority: 1
+  auto_load: true
+
+files:
+  - path: "review-principles.md"
+    description: "Actionable code review checklist: naming, SRP, dependencies, errors, duplication, state, testing"
+    required: true
+    tokens: 800
+
+attributes:
+  checklist: []
+
+scenarios:
+  - name: "Code review"
+    files: ["review-principles.md"]
+
+  - name: "Refactoring guidance"
+    files: ["review-principles.md"]
+
+  - name: "Architecture design"
+    files: ["review-principles.md"]

@@ -1,0 +1,11 @@
+name: test-output
+output: .ai-agents/skills/_templates/test-output.md
+
+frontmatter:
+  id: test-output
+  version: "1.0"
+  skill: mvt-test
+
+sections:
+  - type: file
+    source: ./body.md

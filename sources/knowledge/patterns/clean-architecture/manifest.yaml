@@ -1,0 +1,66 @@
+id: "clean-architecture"
+type: "pattern"
+name: "Clean Architecture"
+version: "1.0"
+description: "Robert C. Martin's Clean Architecture for testable, maintainable systems"
+
+token_estimate:
+  total: 800
+  breakdown:
+    - file: review-checklist.md
+      tokens: 800
+      load_priority: 1
+      summary: "Clean Architecture compliance checklist"
+
+loading_strategy:
+  level_1_manifest_only:
+    tokens: 150
+    use_case: "Check available Clean Architecture patterns"
+
+  level_2_full:
+    tokens: 800
+    use_case: "Complete Clean Architecture review guidance"
+
+loading:
+  priority: 10
+  auto_load: false
+
+files:
+  - path: "review-checklist.md"
+    description: "Checklist for reviewing code against Clean Architecture"
+    required: true
+    tokens: 800
+
+attributes:
+  terminology:
+    entity: "Entity"
+    use_case: "Use Case"
+    interface_adapter: "Interface Adapter"
+    framework: "Framework"
+    boundary: "Boundary"
+    presenter: "Presenter"
+    controller: "Controller"
+    gateway: "Gateway"
+    request_model: "Request Model"
+    response_model: "Response Model"
+    view_model: "View Model"
+
+  checklist:
+    - "Dependencies point inward"
+    - "Entities are pure business objects"
+    - "Use Cases contain application logic"
+    - "Interfaces defined by inner layer"
+    - "Frameworks are details"
+    - "Database is a detail"
+    - "UI is a detail"
+    - "Testable without external dependencies"
+
+scenarios:
+  - name: "Design application architecture"
+    files: ["overview.md"]
+
+  - name: "Code review"
+    files: ["review-checklist.md"]
+
+  - name: "Understand layer separation"
+    files: ["overview.md"]

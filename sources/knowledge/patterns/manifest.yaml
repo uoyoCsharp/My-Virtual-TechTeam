@@ -1,0 +1,113 @@
+patterns:
+  id: patterns
+  name: Architecture Patterns
+  version: "1.0"
+  description: Collection of architecture patterns for software design
+
+loading:
+  priority: 2
+  auto_load: false
+  load_rule: "Load patterns/{active}/* based on config.yaml pattern.active"
+
+available:
+  - id: ddd
+    name: Domain-Driven Design
+    path: ddd/
+    manifest: ddd/manifest.yaml
+    description: Tactical and strategic patterns for complex domain modeling
+    suitable_for:
+      - complex-domain
+      - enterprise-application
+      - bounded-contexts
+    files:
+      - tactical-patterns.md
+      - review-checklist.md
+
+  - id: clean-architecture
+    name: Clean Architecture
+    path: clean-architecture/
+    manifest: clean-architecture/manifest.yaml
+    description: Dependency inversion and layer separation patterns
+    suitable_for:
+      - enterprise-application
+      - long-term-project
+      - multi-interface-system
+    files:
+      - review-checklist.md
+
+  - id: frontend-react
+    name: Frontend (React)
+    path: frontend-react/
+    manifest: frontend-react/manifest.yaml
+    description: Modern React frontend application patterns
+    suitable_for:
+      - web-app
+      - spa
+      - pwa
+      - next.js
+    frameworks:
+      - react
+      - next.js
+      - remix
+    files:
+      - overview.md
+      - component-patterns.md
+      - review-checklist.md
+
+# Custom patterns will be added here during #init analyze
+# Example:
+# custom:
+#   - id: my-custom-pattern
+#     name: My Custom Pattern
+#     path: my-custom-pattern/
+#     generated: true
+#     generated_at: "2026-03-08T12:00:00Z"
+
+custom: []
+
+discovery:
+  description: |
+    To discover available patterns:
+    1. List subdirectories of knowledge/patterns/
+    2. Each subdirectory is a pattern pack
+    3. Read {pattern}/manifest.yaml for pattern details
+
+  to_add_pattern: |
+    1. Create knowledge/patterns/{pattern}/ directory
+    2. Add manifest.yaml with pattern metadata
+    3. Add pattern documentation files
+    4. Register in config.yaml under pattern.available
+    5. Add to this file's available or custom list
+
+pattern_selection_guide:
+  description: |
+    During #init, analyze project and suggest appropriate pattern:
+
+  decision_tree: |
+    1. Is this a frontend web application?
+       → If React/Next.js/Remix: suggest frontend-react
+       → If Vue/Svelte: suggest generic (or add more patterns)
+
+    2. Is this a CLI tool, library, or simple service?
+       → Suggest generic
+
+    3. Does the domain have complex business rules?
+       → Suggest DDD
+
+    4. Is this a long-term enterprise application?
+       → Suggest Clean Architecture or DDD
+
+    5. Uncertain or unique architecture?
+       → Offer "analyze" option to create custom pattern
+
+  user_options:
+    - id: yes
+      description: Accept recommended pattern
+    - id: "{pattern_id}"
+      description: Select specific pattern by ID
+    - id: analyze
+      description: Analyze project and create custom pattern
+    - id: generic
+      description: Use generic pattern
+    - id: none
+      description: Proceed without architecture pattern
