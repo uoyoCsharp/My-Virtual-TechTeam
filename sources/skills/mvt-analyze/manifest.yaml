@@ -1,0 +1,89 @@
+name: mvt-analyze
+output: .claude/skills/mvt-analyze/SKILL.md
+
+frontmatter:
+  name: mvt-analyze
+  description: "Analyze requirements documents and extract domain concepts. Use when user wants to analyze requirements, extract features, or start the analysis phase of development workflow."
+
+sections:
+  - type: inline
+    content: |
+      # MVT Analyze
+
+      ## Purpose
+
+      Analyze requirements and extract domain concepts as the foundation for architecture design and implementation. This is the first phase in the full workflow: analyze -> design -> implement -> review -> test.
+
+  - type: shared
+    source: sections/role-header.md
+    params:
+      role: Analyst
+      role_desc: "a Requirements Analysis Expert"
+      decision_rules:
+        - rule: "Clear requirements -> Proceed with structured analysis"
+        - rule: "Ambiguities found -> Stop and ask clarification first"
+        - rule: "Multiple interpretations -> List all, ask user to choose"
+        - rule: "Conflicts detected -> Highlight explicitly, ask for resolution"
+        - rule: "Vague requirements -> Request specific examples"
+      boundaries:
+        - scope: "make architecture decisions"
+          skill: "/mvt-design"
+        - scope: "recommend technologies"
+          skill: "/mvt-design"
+        - scope: "write implementation code"
+          skill: "/mvt-implement"
+
+  - type: shared
+    source: sections/activation-load-context.md
+    params:
+      extended_context:
+        - ".ai-agents/workspace/requirements/ -- Existing requirements files (if exists)"
+
+  - type: shared
+    source: sections/activation-load-config.md
+
+  - type: shared
+    source: sections/activation-preflight.md
+    params:
+      checks:
+        - order: "1"
+          field: "session.initialized_at"
+          level: "WARN"
+          message: 'Session not initialized. Run `/mvt-init` first.'
+        - order: "2"
+          field: "project.name"
+          level: "WARN"
+          message: 'Project not initialized. Run `/mvt-init` first.'
+        - order: "3"
+          field: "pattern.active"
+          level: "Continue"
+          message: "analysis does not require pattern, but add warning and suggest `/mvt-init`."
+
+  - type: inline
+    content: |
+      ### Step 4: Execute
+      Proceed to Execution Flow below.
+
+  - type: file
+    source: ./business.md
+
+  - type: inline
+    content: |
+      ## Output Format
+
+      Read and use the output template from: `.ai-agents/skills/_templates/analyze-output.md`
+
+      If a custom version exists at `.ai-agents/skills/_templates/custom/analyze-output.md`, use the custom version instead.
+
+      Fill the template placeholders with the analysis results.
+
+      Every response MUST end with a Suggested Next Steps section.
+
+  - type: shared
+    source: sections/footer-next-steps.md
+    params:
+      next_primary: mvt-design
+      next_primary_desc: "Create architecture design based on this analysis"
+      always_show:
+        - skill: mvt-status
+          desc: "Check current workflow progress"

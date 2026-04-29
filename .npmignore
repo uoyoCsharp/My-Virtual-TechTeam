@@ -1,0 +1,12 @@
+src/
+test/
+tsconfig.json
+tsconfig.build.json
+vitest.config.ts
+.ai-agents/
+.claude/
+docs/
+.git/
+.gitignore
+*.md
+!README.md

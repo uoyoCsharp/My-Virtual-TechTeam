@@ -1,0 +1,30 @@
+# MVTT Framework - User Configuration
+# Unified config center: all skills read and enforce these settings via Activation Protocol
+# Modify via: /mvt-config or edit directly
+
+version: "2.0"
+
+# ============================================================
+# User Preferences (enforced by Activation Protocol Step 2)
+# ============================================================
+preferences:
+  # Output language for all skill responses and document artifacts
+  # Options: en-US, zh-CN
+  language: en-US
+
+  # Output style
+  output:
+    no_emojis: true          # Disable emojis in output
+    data_format: yaml        # Data output format: yaml | json
+
+# ============================================================
+# Pattern Settings
+# ============================================================
+pattern:
+  # Active architecture pattern
+  # Use /mvt-init to auto-detect or /mvt-config to change
+  active: ""
+
+  selection:
+    auto_detect: true
+    confirm_with_user: true
