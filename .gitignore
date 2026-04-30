@@ -1,3 +1,7 @@
 node_modules/
 dist/
 *.tsbuildinfo
+
+# Self-install artifacts (this repo is the CLI source; install outputs belong in consumer projects)
+.ai-agents/
+.claude/
