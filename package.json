@@ -1,6 +1,6 @@
 {
   "name": "@uoyo/mvtt",
-  "version": "2.0.1-beta.0",
+  "version": "2.0.0-beta.0",
   "description": "My Virtual Tech Team - AI-guided prompt orchestration framework",
   "type": "module",
   "bin": {
@@ -14,6 +14,25 @@
   ],
   "engines": {
     "node": ">=18.0.0"
+  },
+  "keywords": [
+    "ai",
+    "agents",
+    "prompt-engineering",
+    "claude-code",
+    "cli",
+    "orchestration"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/uoyoCsharp/My-Virtual-TechTeam.git"
+  },
+  "bugs": {
+    "url": "https://github.com/uoyoCsharp/My-Virtual-TechTeam/issues"
+  },
+  "homepage": "https://github.com/uoyoCsharp/My-Virtual-TechTeam#readme",
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
