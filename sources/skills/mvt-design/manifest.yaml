@@ -1,0 +1,105 @@
+name: mvt-design
+output: .claude/skills/mvt-design/SKILL.md
+
+frontmatter:
+  name: mvt-design
+  description: "Create architecture design based on analyzed requirements. Applies architectural patterns, defines module structure, and creates technical blueprints. Use when user wants to design system architecture."
+
+sections:
+  - type: inline
+    content: |
+      # MVT Design
+
+      ## Purpose
+
+      Design system architecture based on analyzed requirements. Apply architectural patterns and create technical blueprints that guide implementation. This is the second phase in the full workflow: analyze -> design -> implement -> review -> test.
+
+  - type: shared
+    source: sections/role-header.md
+    params:
+      role: Architect
+      role_desc: "a System Architecture Expert"
+      decision_rules:
+        - rule: "Multiple valid patterns exist -> Present top 2-3 options with pros/cons table, recommend one"
+        - rule: "Trade-off affects performance vs maintainability -> Document as ADR, state the trade-off"
+        - rule: "User asks for technology choice -> Evaluate against: requirements fit, team familiarity, maintenance cost"
+        - rule: "Design needs breaking change -> Highlight impact scope, list affected files, propose migration"
+        - rule: "Requirements are ambiguous -> Stop and ask clarification before designing"
+        - rule: "Pattern conflicts with project structure -> Report conflict, suggest pattern change via `/mvt-config`"
+      boundaries:
+        - scope: "write implementation code"
+          skill: "/mvt-implement"
+        - scope: "re-analyze requirements"
+          skill: "/mvt-analyze"
+        - scope: "review code"
+          skill: "/mvt-review"
+
+  - type: inline
+    content: |
+      ## Variants
+
+      | Variant | Description |
+      |---------|-------------|
+      | `/mvt-design` | Full architecture design |
+      | `/mvt-design --plan` | High-level implementation plan only |
+
+  - type: shared
+    source: sections/activation-load-context.md
+    params:
+      extended_context:
+        - ".ai-agents/knowledge/patterns/{pattern.active}/ -- Active architecture pattern knowledge"
+        - ".ai-agents/knowledge/core/ -- Core knowledge files"
+        - ".ai-agents/workspace/artifacts/{active_change.id}/analysis.md -- Analysis from previous phase"
+
+  - type: shared
+    source: sections/activation-load-config.md
+
+  - type: shared
+    source: sections/activation-preflight.md
+    params:
+      checks:
+        - order: "1"
+          field: "session.initialized_at"
+          level: "BLOCK"
+          message: 'Session not initialized. Run `/mvt-init` first.'
+        - order: "2"
+          field: "project.name"
+          level: "BLOCK"
+          message: 'Project not initialized. Run `/mvt-init` first.'
+        - order: "3"
+          field: "pattern.active"
+          level: "BLOCK"
+          message: 'Architecture pattern required. Run `/mvt-init` to detect and set the pattern.'
+        - order: "4"
+          field: "requirements in project-context"
+          level: "WARN"
+          message: 'No requirements found. Run `/mvt-analyze` first." (allow user to proceed)'
+
+  - type: inline
+    content: |
+      ### Step 4: Execute
+      Proceed to Execution Flow below.
+
+  - type: file
+    source: ./business.md
+
+  - type: inline
+    content: |
+      ## Output Format
+
+      Read and use the output template from: `.ai-agents/skills/_templates/design-output.md`
+
+      If a custom version exists at `.ai-agents/skills/_templates/custom/design-output.md`, use the custom version instead.
+
+      Fill the template placeholders with the design results.
+
+      Every response MUST end with a Suggested Next Steps section.
+
+  - type: shared
+    source: sections/footer-next-steps.md
+    params:
+      next_primary: mvt-implement
+      next_primary_desc: "Start implementing this design"
+      always_show:
+        - skill: mvt-status
+          desc: "Check current workflow progress"

@@ -1,0 +1,11 @@
+name: review-output
+output: .ai-agents/skills/_templates/review-output.md
+
+frontmatter:
+  id: review-output
+  version: "1.0"
+  skill: mvt-review
+
+sections:
+  - type: file
+    source: ./body.md

@@ -1,0 +1,96 @@
+name: mvt-implement
+output: .claude/skills/mvt-implement/SKILL.md
+
+frontmatter:
+  name: mvt-implement
+  description: "Implement features based on architecture design. Writes production code following established patterns and design blueprints. Use when user wants to implement a feature or write code."
+
+sections:
+  - type: inline
+    content: |
+      # MVT Implement
+
+      ## Purpose
+
+      Write production code based on architecture designs. Follow established patterns, module boundaries, and coding standards. This is the third phase in the full workflow: analyze -> design -> implement -> review -> test.
+
+  - type: shared
+    source: sections/role-header.md
+    params:
+      role: Developer
+      role_desc: "an Implementation Specialist"
+      decision_rules:
+        - rule: "Architecture design exists -> Follow the module boundaries, interfaces, and patterns defined in it"
+        - rule: "Architecture missing -> Warn that `/mvt-design` is recommended, proceed if user confirms"
+        - rule: "Code requires new module not in design -> Stop and flag for Architect via `/mvt-design`"
+        - rule: "Multiple implementation approaches -> Pick the simplest that satisfies requirements; note alternatives"
+        - rule: "Error handling needed -> Add for external boundaries (user input, APIs, I/O); trust internal code"
+        - rule: "Existing tests cover changed code -> Mention which tests may need updating"
+      boundaries:
+        - scope: "re-analyze requirements"
+          skill: "/mvt-analyze"
+        - scope: "evaluate or change architecture"
+          skill: "/mvt-design"
+        - scope: "review own code"
+          skill: "/mvt-review"
+
+  - type: shared
+    source: sections/activation-load-context.md
+    params:
+      extended_context:
+        - ".ai-agents/knowledge/patterns/{pattern.active}/ -- Active architecture pattern knowledge"
+        - ".ai-agents/knowledge/principle/coding-standards.md -- Project coding standards"
+        - ".ai-agents/workspace/artifacts/{active_change.id}/ -- Analysis and design artifacts"
+
+  - type: shared
+    source: sections/activation-load-config.md
+
+  - type: shared
+    source: sections/activation-preflight.md
+    params:
+      checks:
+        - order: "1"
+          field: "session.initialized_at"
+          level: "BLOCK"
+          message: 'Session not initialized. Run `/mvt-init` first.'
+        - order: "2"
+          field: "project.name"
+          level: "BLOCK"
+          message: 'Project not initialized. Run `/mvt-init` first.'
+        - order: "3"
+          field: "pattern.active"
+          level: "WARN"
+          message: 'Architecture pattern not set. Suggest `/mvt-init`." (allow user to proceed)'
+        - order: "4"
+          field: "modules in architecture"
+          level: "WARN"
+          message: 'No architecture defined. Run `/mvt-design` first." (allow user to proceed)'
+
+  - type: inline
+    content: |
+      ### Step 4: Execute
+      Proceed to Execution Flow below.
+
+  - type: file
+    source: ./business.md
+
+  - type: inline
+    content: |
+      ## Output Format
+
+      Read and use the output template from: `.ai-agents/skills/_templates/implement-output.md`
+
+      If a custom version exists at `.ai-agents/skills/_templates/custom/implement-output.md`, use the custom version instead.
+
+      Fill the template placeholders with the implementation results.
+
+      Every response MUST end with a Suggested Next Steps section.
+
+  - type: shared
+    source: sections/footer-next-steps.md
+    params:
+      next_primary: mvt-review
+      next_primary_desc: "Review the implementation"
+      next_alternatives:
+        - skill: mvt-test
+          when: "Write tests for the implementation"

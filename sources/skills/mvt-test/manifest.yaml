@@ -1,0 +1,111 @@
+name: mvt-test
+output: .claude/skills/mvt-test/SKILL.md
+
+frontmatter:
+  name: mvt-test
+  description: "Generate and design tests to validate implementations. Creates test cases covering happy paths, edge cases, negative scenarios, and security. Use when user wants to write tests or validate code."
+
+sections:
+  - type: inline
+    content: |
+      # MVT Test
+
+      ## Purpose
+
+      Design and write tests to validate implementations against requirements. Ensure code works correctly with comprehensive coverage of happy paths, edge cases, and error scenarios. This is the fifth phase in the full workflow: analyze -> design -> implement -> review -> test.
+
+  - type: shared
+    source: sections/role-header.md
+    params:
+      role: Tester
+      role_desc: "a Quality Assurance Specialist"
+      decision_rules:
+        - rule: "Happy path works -> Add edge case and boundary tests"
+        - rule: "Bug found during testing -> Document with reproduction steps, suggest `/mvt-fix`"
+        - rule: "Coverage gap found -> Add tests focused on that area"
+        - rule: "Flaky test detected -> Flag for investigation"
+        - rule: "Test requires external service -> Use mocks/stubs, document the dependency"
+        - rule: "Security constraints in requirements -> Add security-focused test cases"
+        - rule: "Existing tests conflict with new implementation -> Flag the conflict"
+      boundaries:
+        - scope: "modify the code being tested"
+          skill: "/mvt-fix"
+        - scope: "make architecture decisions"
+          skill: "(Test against existing design)"
+        - scope: "skip edge cases or negative tests"
+          skill: "(Never)"
+
+  - type: inline
+    content: |
+      ## Variants
+
+      | Variant | Description |
+      |---------|-------------|
+      | `/mvt-test` | Generate tests for recent implementation |
+      | `/mvt-test {feature}` | Generate tests for specific feature |
+      | `/mvt-test --coverage` | Generate tests with coverage analysis |
+
+  - type: shared
+    source: sections/activation-load-context.md
+    params:
+      extended_context:
+        - ".ai-agents/knowledge/core/review-principles.md -- Code quality principles"
+        - ".ai-agents/knowledge/patterns/{pattern.active}/ -- Active pattern knowledge"
+        - ".ai-agents/knowledge/principle/coding-standards.md -- Project coding standards"
+        - "Implementation files to be tested"
+
+  - type: shared
+    source: sections/activation-load-config.md
+
+  - type: shared
+    source: sections/activation-preflight.md
+    params:
+      checks:
+        - order: "1"
+          field: "session.initialized_at"
+          level: "WARN"
+          message: 'Session not initialized. Run `/mvt-init` first.'
+        - order: "2"
+          field: "no implementation files"
+          level: "WARN"
+          message: 'No implementation found. Run `/mvt-implement` first.'
+        - order: "3"
+          field: "pattern.active"
+          level: "WARN"
+          message: 'Architecture pattern not set. Suggest `/mvt-init`." (allow user to proceed)'
+
+  - type: inline
+    content: |
+      ### Step 4: Execute
+      Proceed to Execution Flow below.
+
+      ## Test Case Types
+
+      | Type | Description | Priority |
+      |------|-------------|----------|
+      | Happy Path | Normal successful flow | High |
+      | Edge Case | Boundary conditions | High |
+      | Negative | Invalid inputs, errors | High |
+      | Security | Authentication, injection | Medium |
+      | Performance | Load, stress | Low |
+
+  - type: file
+    source: ./business.md
+
+  - type: inline
+    content: |
+      ## Output Format
+
+      Read and use the output template from: `.ai-agents/skills/_templates/test-output.md`
+
+      If a custom version exists at `.ai-agents/skills/_templates/custom/test-output.md`, use the custom version instead.
+
+      Fill the template placeholders with the test design results.
+
+      Every response MUST end with a Suggested Next Steps section.
+
+  - type: shared
+    source: sections/footer-next-steps.md
+    params:
+      next_primary: mvt-fix
+      next_primary_desc: "Run tests with the appropriate command; if tests fail, use this"

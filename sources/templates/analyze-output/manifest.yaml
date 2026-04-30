@@ -1,0 +1,11 @@
+name: analyze-output
+output: .ai-agents/skills/_templates/analyze-output.md
+
+frontmatter:
+  id: analyze-output
+  version: "1.0"
+  skill: mvt-analyze
+
+sections:
+  - type: file
+    source: ./body.md

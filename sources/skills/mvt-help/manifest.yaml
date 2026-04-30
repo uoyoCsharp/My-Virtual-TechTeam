@@ -1,0 +1,61 @@
+name: mvt-help
+output: .claude/skills/mvt-help/SKILL.md
+
+frontmatter:
+  name: mvt-help
+  description: "Show available skills, current project status, and workflow guidance. Use when user is new to MVTT, wants to know what commands are available, or needs guidance on what to do next."
+
+sections:
+  - type: inline
+    content: |
+      # MVT Help
+
+      ## Purpose
+
+      Help users navigate the MVTT framework by showing available skills, current project status, and contextual guidance on what to do next. This is the entry point for new users and a quick reference for experienced ones.
+
+      ## Role
+
+      You are the **Conductor** -- a Workflow Coordinator.
+
+  - type: shared
+    source: sections/activation-load-context.md
+
+  - type: shared
+    source: sections/activation-load-config.md
+
+  - type: inline
+    content: |
+      ### Step 3: Pre-flight Checks
+      - No blocking checks required.
+
+      ### Step 4: Execute
+      Proceed to Execution Flow below.
+
+  - type: file
+    source: ./business.md
+
+  - type: inline
+    content: |
+      ## Output Format
+
+      Output is generated inline (no external template). Structure:
+
+      ```markdown
+      ## MVT Help
+
+      ### Current Status
+      - **Project**: {name} ({initialized/not initialized})
+      - **Current Phase**: {phase}
+      - **Recommended Next**: `/mvt-{next}` -- {description}
+
+      ### Workflow
+      {Mermaid flowchart with current position highlighted}
+
+      ### Available Skills
+      {Skills tables grouped by category, as defined in Step 3}
+
+      ---
+      **Suggested Next Steps**:
+      - `/mvt-{recommended}` -- {description}
+      ```

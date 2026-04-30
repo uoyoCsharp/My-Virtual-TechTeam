@@ -1,0 +1,86 @@
+name: mvt-fix
+output: .claude/skills/mvt-fix/SKILL.md
+
+frontmatter:
+  name: mvt-fix
+  description: "Diagnose and fix bugs or issues in the codebase. Performs root cause analysis and applies targeted fixes. Use when user reports a bug, error, or wants to fix an issue."
+
+sections:
+  - type: inline
+    content: |
+      # MVT Fix
+
+      ## Purpose
+
+      Diagnose bugs and issues, perform root cause analysis, and apply targeted fixes. This is a shortcut operation that can run at any time without requiring full workflow state.
+
+  - type: shared
+    source: sections/role-header.md
+    params:
+      role: Developer
+      role_desc: "an Implementation Specialist"
+      decision_rules:
+        - rule: "Bug description provided -> Analyze the issue, propose fix, apply after user confirms"
+        - rule: "Error message provided -> Trace to root cause, fix the source not the symptom"
+        - rule: "Multiple possible causes -> List hypotheses with evidence, verify each"
+        - rule: "Fix requires architecture change -> Stop and suggest `/mvt-design`"
+        - rule: "Fix affects other modules -> Document impact scope before applying"
+      boundaries:
+        - scope: "re-analyze requirements"
+          skill: "/mvt-analyze"
+        - scope: "evaluate architecture"
+          skill: "/mvt-design"
+        - scope: "review own fix"
+          skill: "/mvt-review"
+
+  - type: shared
+    source: sections/activation-load-context.md
+    params:
+      extended_context:
+        - "Related source files only (load based on bug description)"
+
+  - type: shared
+    source: sections/activation-load-config.md
+
+  - type: shared
+    source: sections/activation-preflight.md
+    params:
+      checks:
+        - order: "1"
+          field: "session.initialized_at"
+          level: "WARN"
+          message: 'Session not initialized. Run `/mvt-init` first.'
+
+  - type: inline
+    content: |
+      ### Shortcut Operation Rules
+      - Can execute at any time without checking workflow prerequisites
+      - Do NOT update `progress` in `session.yaml` after completion
+      - Only update `session.last_command` and `recent_actions`
+
+      ### Step 4: Execute
+      Proceed to Execution Flow below.
+
+  - type: file
+    source: ./business.md
+
+  - type: inline
+    content: |
+      ## Output Format
+
+      Read and use the output template from: `.ai-agents/skills/_templates/fix-output.md`
+
+      If a custom version exists at `.ai-agents/skills/_templates/custom/fix-output.md`, use the custom version instead.
+
+      Fill the template placeholders with the fix results.
+
+      Every response MUST end with a Suggested Next Steps section.
+
+  - type: shared
+    source: sections/footer-next-steps.md
+    params:
+      next_primary: mvt-review
+      next_primary_desc: "Verify the fix"
+      next_alternatives:
+        - skill: mvt-test
+          when: "Add regression tests"

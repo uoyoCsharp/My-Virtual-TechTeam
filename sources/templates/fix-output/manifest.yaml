@@ -1,0 +1,11 @@
+name: fix-output
+output: .ai-agents/skills/_templates/fix-output.md
+
+frontmatter:
+  id: fix-output
+  version: "1.0"
+  skill: mvt-fix
+
+sections:
+  - type: file
+    source: ./body.md

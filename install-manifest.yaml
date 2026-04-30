@@ -1,0 +1,27 @@
+version: 2
+
+generated:
+  - pattern: ".claude/skills/mvt-*/SKILL.md"
+    source: "build:skills"
+  - pattern: ".ai-agents/skills/_templates/*-output.md"
+    source: "build:templates"
+  - pattern: ".ai-agents/knowledge/core/**"
+    source: "copy:sources/knowledge/core/"
+  - pattern: ".ai-agents/knowledge/patterns/**"
+    source: "copy:sources/knowledge/patterns/"
+  - pattern: ".ai-agents/registry.yaml"
+    source: "copy:registry.yaml"
+
+create_once:
+  - path: ".ai-agents/config.yaml"
+    source: "sources/defaults/config.yaml"
+  - path: ".ai-agents/workspace/session.yaml"
+    source: "sources/defaults/session.yaml"
+  - path: ".ai-agents/workspace/project-context.yaml"
+    source: "sources/defaults/project-context.yaml"
+
+user_data_dirs:
+  - ".ai-agents/workspace/artifacts/"
+  - ".ai-agents/skills/_templates/custom/"
+  - ".ai-agents/knowledge/principle/"
+  - ".ai-agents/knowledge/project/"

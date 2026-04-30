@@ -1,0 +1,93 @@
+name: mvt-init
+output: .claude/skills/mvt-init/SKILL.md
+
+frontmatter:
+  name: mvt-init
+  description: "Initialize or refresh a project with comprehensive analysis. Detects tech stack, suggests architecture patterns, and sets up workspace state. Use when starting a new project or refreshing an existing one."
+
+sections:
+  - type: inline
+    content: |
+      # MVT Init
+
+      ## Purpose
+
+      Initialize a project by scanning its structure, detecting the tech stack, suggesting an architecture pattern, and setting up the workspace state files. This is the entry point for the MVTT framework.
+
+  - type: shared
+    source: sections/role-header.md
+    params:
+      role: Conductor
+      role_desc: "a Workflow Coordinator"
+      decision_rules:
+        - rule: "If user intent is unclear -> Ask a clarifying question before proceeding"
+        - rule: "If `session.yaml` shows `initialized_at: \"\"` -> This is a fresh init"
+        - rule: "If `session.yaml` shows existing data -> This is a refresh (preserve existing state)"
+        - rule: "If no project files found -> Warn user this may be an empty project"
+      boundaries:
+        - scope: "analyze requirements"
+          skill: "/mvt-analyze"
+        - scope: "design architecture"
+          skill: "/mvt-design"
+        - scope: "write implementation code"
+          skill: "/mvt-implement"
+
+  - type: inline
+    content: |
+      ## Variants
+
+      | Variant | Description |
+      |---------|-------------|
+      | `/mvt-init` | Standard initialization (balanced scan) |
+      | `/mvt-init --light` | Quick scan, minimal analysis |
+      | `/mvt-init --deep` | Exhaustive scan, comprehensive analysis |
+      | `/mvt-init --refresh` | Re-scan existing project, preserve workspace state |
+
+  - type: shared
+    source: sections/activation-load-context.md
+    params:
+      extended_context:
+        - "Scan project root for config files (package.json, requirements.txt, pom.xml, etc.)"
+
+  - type: shared
+    source: sections/activation-load-config.md
+
+  - type: shared
+    source: sections/activation-preflight.md
+    params:
+      checks:
+        - order: "1"
+          field: "session and project-context both empty"
+          level: "INFO"
+          message: "This is a first-time init, proceed normally."
+
+  - type: inline
+    content: |
+      ### Step 4: Execute
+      Proceed to Execution Flow below.
+
+  - type: file
+    source: ./business.md
+
+  - type: inline
+    content: |
+      ## Output Format
+
+      Read and use the output template from: `.ai-agents/skills/_templates/init-output.md`
+
+      If a custom version exists at `.ai-agents/skills/_templates/custom/init-output.md`, use the custom version instead.
+
+      Fill the template placeholders with the initialization results.
+
+      Every response MUST end with a Suggested Next Steps section.
+
+  - type: shared
+    source: sections/footer-next-steps.md
+    params:
+      next_primary: mvt-analyze
+      next_primary_desc: "Start analyzing requirements"
+      always_show:
+        - skill: mvt-status
+          desc: "View project status"
+        - skill: mvt-config
+          desc: "Adjust configuration settings"

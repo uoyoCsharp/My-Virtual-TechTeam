@@ -1,0 +1,11 @@
+name: cleanup-output
+output: .ai-agents/skills/_templates/cleanup-output.md
+
+frontmatter:
+  id: cleanup-output
+  version: "1.0"
+  skill: mvt-cleanup
+
+sections:
+  - type: file
+    source: ./body.md

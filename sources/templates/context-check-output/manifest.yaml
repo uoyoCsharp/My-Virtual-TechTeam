@@ -1,0 +1,11 @@
+name: context-check-output
+output: .ai-agents/skills/_templates/context-check-output.md
+
+frontmatter:
+  id: context-check-output
+  version: "1.0"
+  skill: mvt-context-check
+
+sections:
+  - type: file
+    source: ./body.md

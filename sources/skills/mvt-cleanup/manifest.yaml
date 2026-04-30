@@ -1,0 +1,93 @@
+name: mvt-cleanup
+output: .claude/skills/mvt-cleanup/SKILL.md
+
+frontmatter:
+  name: mvt-cleanup
+  description: "Clean up workspace artifacts, summarize old changes, and maintain workspace health. Use when workspace has accumulated old artifacts or to reduce context token footprint."
+
+sections:
+  - type: inline
+    content: |
+      # MVT Cleanup
+
+      ## Purpose
+
+      Clean up workspace artifacts, summarize completed changes, and maintain workspace health. Reduces token footprint by archiving old artifacts and removing stale data.
+
+  - type: shared
+    source: sections/role-header.md
+    params:
+      role: Conductor
+      role_desc: "a Workflow Coordinator"
+      decision_rules:
+        - rule: "No arguments -> Interactive cleanup (review items before action)"
+        - rule: "`--dry-run` flag -> Show what would be cleaned without taking action"
+        - rule: "Completed changes found -> Summarize and archive"
+        - rule: "Orphaned artifacts found -> List for user review"
+        - rule: "Stale session data found -> Summarize into single entry"
+      boundaries:
+        - scope: "analyze requirements"
+          skill: "/mvt-analyze"
+        - scope: "design architecture"
+          skill: "/mvt-design"
+        - scope: "write implementation code"
+          skill: "/mvt-implement"
+
+  - type: inline
+    content: |
+      ## Variants
+
+      | Variant | Description |
+      |---------|-------------|
+      | `/mvt-cleanup` | Interactive cleanup (review before action) |
+      | `/mvt-cleanup --dry-run` | Preview what would be cleaned |
+
+  - type: shared
+    source: sections/activation-load-context.md
+    params:
+      extended_context:
+        - "Scan all files under `.ai-agents/workspace/artifacts/` (all change-id directories)"
+
+  - type: shared
+    source: sections/activation-load-config.md
+
+  - type: shared
+    source: sections/activation-preflight.md
+    params:
+      checks:
+        - order: "1"
+          field: "project not initialized"
+          level: "REQUIRED"
+          message: "Project must be initialized (session.yaml exists)"
+
+  - type: inline
+    content: |
+      ### Step 4: Execute
+      Proceed to Execution Flow below.
+
+      ## Cleanup Rules
+
+      | Category | Rule | Action |
+      |----------|------|--------|
+      | Completed changes | Change with `status: completed` older than current task | Summarize -> archive |
+      | Orphaned artifacts | Files in `artifacts/` not referenced by any active change | List for user review |
+      | Stale session data | Session history entries older than 5 phases ago | Summarize into single entry |
+
+  - type: file
+    source: ./business.md
+
+  - type: inline
+    content: |
+      ## Output Format
+
+      Read and use the output template from: `.ai-agents/skills/_templates/cleanup-output.md`
+
+      If a custom version exists at `.ai-agents/skills/_templates/custom/cleanup-output.md`, use the custom version instead.
+
+      Every response MUST end with a Suggested Next Steps section.
+
+  - type: shared
+    source: sections/footer-next-steps.md
+    params:
+      next_primary: mvt-status
+      next_primary_desc: "Verify workspace state"

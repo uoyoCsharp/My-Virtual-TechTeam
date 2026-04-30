@@ -1,0 +1,108 @@
+name: mvt-config
+output: .claude/skills/mvt-config/SKILL.md
+
+frontmatter:
+  name: mvt-config
+  description: "Interactive configuration management for framework settings. Use when user wants to change language, output format, architecture pattern, or other framework settings."
+
+sections:
+  - type: inline
+    content: |
+      # MVT Config
+
+      ## Purpose
+
+      Interactive configuration management for MVTT framework settings. Provides guided setup, direct key-value setting, and a setup wizard for common configurations.
+
+  - type: shared
+    source: sections/role-header.md
+    params:
+      role: Conductor
+      role_desc: "a Workflow Coordinator"
+      decision_rules:
+        - rule: "No arguments -> Show interactive configuration menu"
+        - rule: "`show` argument -> Display all current settings"
+        - rule: "`set {key} {value}` -> Validate and apply the specific setting"
+        - rule: "`wizard` argument -> Start guided setup flow"
+        - rule: "`reset` argument -> Reset all settings to defaults after confirmation"
+        - rule: "Invalid key -> Show available keys and exit"
+        - rule: "Invalid value type -> Show expected type and exit"
+      boundaries:
+        - scope: "analyze requirements"
+          skill: "/mvt-analyze"
+        - scope: "design architecture"
+          skill: "/mvt-design"
+        - scope: "write implementation code"
+          skill: "/mvt-implement"
+
+  - type: inline
+    content: |
+      ## Variants
+
+      | Variant | Description |
+      |---------|-------------|
+      | `/mvt-config` | Show interactive configuration menu |
+      | `/mvt-config show` | Display all current settings |
+      | `/mvt-config set {key} {value}` | Set a specific configuration value |
+      | `/mvt-config wizard` | Start guided setup wizard |
+      | `/mvt-config reset` | Reset all settings to defaults |
+
+  - type: shared
+    source: sections/activation-load-context.md
+    params:
+      extended_context:
+        - ".ai-agents/config.yaml -- Current configuration (this skill's primary target)"
+
+  - type: shared
+    source: sections/activation-load-config.md
+
+  - type: inline
+    content: |
+      ### Step 3: Pre-flight Checks
+      - No blocking checks required (config is always accessible)
+
+      ### Step 4: Execute
+      Proceed to Execution Flow below.
+
+      ## Configuration Keys
+
+      ### User Preferences
+
+      | Key | Type | Default | Description |
+      |-----|------|---------|-------------|
+      | `preferences.language` | enum | `en-US` | Output language for all responses and documents (en-US, zh-CN) |
+      | `preferences.output.no_emojis` | bool | `true` | Disable emojis in output |
+      | `preferences.output.data_format` | enum | `yaml` | Data output format (yaml, json) |
+
+      ### Pattern Settings
+
+      | Key | Type | Default | Description |
+      |-----|------|---------|-------------|
+      | `pattern.active` | enum | `` | Active architecture pattern |
+      | `pattern.selection.auto_detect` | bool | `true` | Auto-detect pattern on init |
+      | `pattern.selection.confirm_with_user` | bool | `true` | Confirm pattern with user |
+
+  - type: file
+    source: ./business.md
+
+  - type: inline
+    content: |
+      ## Output Format
+
+      Read and use the output template from: `.ai-agents/skills/_templates/config-output.md`
+
+      If a custom version exists at `.ai-agents/skills/_templates/custom/config-output.md`, use the custom version instead.
+
+      Every response MUST end with a Suggested Next Steps section.
+
+  - type: shared
+    source: sections/footer-next-steps.md
+    params:
+      next_primary: mvt-config
+      next_primary_desc: "`show` -- Verify changes"
+      next_alternatives:
+        - skill: mvt-init
+          when: "--refresh -- Re-analyze with new pattern"
+      always_show:
+        - skill: mvt-status
+          desc: "Check current project state"

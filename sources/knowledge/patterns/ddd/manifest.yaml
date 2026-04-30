@@ -1,0 +1,83 @@
+id: "ddd"
+type: "pattern"
+name: "Domain-Driven Design"
+version: "1.0"
+description: "Tactical and strategic patterns for complex domain modeling"
+
+token_estimate:
+  total: 1400
+  breakdown:
+    - file: tactical-patterns.md
+      tokens: 800
+      load_priority: 1
+      summary: "DDD key rules"
+    - file: review-checklist.md
+      tokens: 600
+      load_priority: 2
+      summary: "DDD compliance checklist"
+
+loading_strategy:
+  level_1_overview:
+    description: "Read manifest only for summary"
+    tokens: 150
+    use_case: "Check available DDD patterns"
+
+  level_2_full:
+    description: "Load complete knowledge files"
+    tokens: 1400
+    use_case: "Complete DDD implementation guidance"
+
+loading:
+  priority: 10
+  auto_load: false
+
+files:
+  - path: "tactical-patterns.md"
+    description: "Key rules for DDD building blocks"
+    required: true
+    tokens: 800
+
+  - path: "review-checklist.md"
+    description: "Checklist for reviewing DDD code"
+    required: false
+    tokens: 600
+
+attributes:
+  terminology:
+    aggregate: "Aggregate"
+    aggregate_root: "Aggregate Root"
+    entity: "Entity"
+    value_object: "Value Object"
+    domain_event: "Domain Event"
+    domain_service: "Domain Service"
+    repository: "Repository"
+    factory: "Factory"
+    bounded_context: "Bounded Context"
+    ubiquitous_language: "Ubiquitous Language"
+    context_map: "Context Map"
+    anti_corruption_layer: "Anti-Corruption Layer"
+    shared_kernel: "Shared Kernel"
+    customer_supplier: "Customer-Supplier"
+
+  checklist:
+    - "Aggregate boundaries protect invariants"
+    - "Entities have identity and lifecycle"
+    - "Value objects are immutable"
+    - "Domain events capture state changes"
+    - "Repositories only for aggregates"
+    - "No anemic domain models"
+    - "Business logic in domain layer"
+    - "Ubiquitous language used consistently"
+
+scenarios:
+  - name: "Design domain model"
+    files: ["overview.md", "tactical-patterns.md"]
+
+  - name: "Code review"
+    files: ["review-checklist.md"]
+
+  - name: "Understand DDD concepts"
+    files: ["overview.md"]
+
+  - name: "Event-driven design"
+    files: ["tactical-patterns.md"]

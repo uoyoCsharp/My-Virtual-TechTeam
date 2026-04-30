@@ -1,0 +1,65 @@
+name: Publish to npm
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      dist-tag:
+        description: 'npm dist-tag (latest, beta, next)'
+        required: true
+        default: 'beta'
+        type: choice
+        options:
+          - latest
+          - beta
+          - next
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://registry.npmjs.org'
+
+      - run: npm ci
+
+      - run: npm run build
+
+      - run: npm test
+
+      - name: Determine dist-tag
+        id: tag
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "value=${{ inputs.dist-tag }}" >> "$GITHUB_OUTPUT"
+          else
+            VERSION="${GITHUB_REF_NAME#v}"
+            case "$VERSION" in
+              *-beta*)  echo "value=beta"   >> "$GITHUB_OUTPUT" ;;
+              *-alpha*) echo "value=alpha"  >> "$GITHUB_OUTPUT" ;;
+              *-rc*|*-next*) echo "value=next" >> "$GITHUB_OUTPUT" ;;
+              *) echo "value=latest" >> "$GITHUB_OUTPUT" ;;
+            esac
+          fi
+
+      - name: Verify tag matches package.json (tag push only)
+        if: github.event_name == 'push'
+        run: |
+          PKG_VERSION=$(node -p "require('./package.json').version")
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          if [ "$PKG_VERSION" != "$TAG_VERSION" ]; then
+            echo "::error::Tag $TAG_VERSION does not match package.json version $PKG_VERSION"
+            exit 1
+          fi
+
+      - run: npm publish --tag ${{ steps.tag.outputs.value }} --provenance

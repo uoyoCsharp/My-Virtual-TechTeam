@@ -1,0 +1,11 @@
+name: implement-output
+output: .ai-agents/skills/_templates/implement-output.md
+
+frontmatter:
+  id: implement-output
+  version: "1.0"
+  skill: mvt-implement
+
+sections:
+  - type: file
+    source: ./body.md
