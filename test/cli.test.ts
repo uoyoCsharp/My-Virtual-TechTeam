@@ -8,6 +8,7 @@ import {
 } from "node:fs";
 import path from "node:path";
 import os from "node:os";
+import prompts from "prompts";
 import { installCommand } from "../src/commands/install.js";
 import { updateCommand } from "../src/commands/update.js";
 import { doctorCommand } from "../src/commands/doctor.js";
@@ -175,17 +176,20 @@ describe("CLI commands (in-process)", () => {
       expect(r.stderr.join("\n")).toContain("not installed");
     });
 
-    it("requires yes flag to actually delete", async () => {
+    it("aborts when user declines the confirm prompt", async () => {
       await captureIO(tmpDir, () => installCommand());
-      await captureIO(tmpDir, () => uninstallCommand());
+      prompts.inject([false]);
+      const r = await captureIO(tmpDir, () => uninstallCommand());
+      expect(r.stdout.join("\n")).toContain("Uninstall cancelled");
       expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-analyze/SKILL.md"))).toBe(true);
     });
 
-    it("removes generated files with yes flag", async () => {
+    it("removes generated files when user confirms", async () => {
       await captureIO(tmpDir, () => installCommand());
       const userFile = path.join(tmpDir, ".ai-agents/workspace/artifacts/mine.md");
       writeFileSync(userFile, "my work", "utf-8");
-      await captureIO(tmpDir, () => uninstallCommand({ yes: true }));
+      prompts.inject([true]);
+      await captureIO(tmpDir, () => uninstallCommand());
       expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-analyze/SKILL.md"))).toBe(false);
       expect(existsSync(path.join(tmpDir, ".ai-agents/.mvtt-manifest.json"))).toBe(false);
       expect(readFileSync(userFile, "utf-8")).toBe("my work");

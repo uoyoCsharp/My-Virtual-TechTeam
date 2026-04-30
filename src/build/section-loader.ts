@@ -65,11 +65,8 @@ export function loadSection(
     case "shared":
     case "template": {
       const filePath = path.resolve(sourcesDir, section.source);
-      let content = readFileSync(filePath, "utf-8");
-      if (section.params) {
-        content = applyParams(content, section.params);
-      }
-      return content;
+      const content = readFileSync(filePath, "utf-8");
+      return applyParams(content, section.params ?? {});
     }
   }
 }

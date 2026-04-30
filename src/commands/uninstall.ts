@@ -1,14 +1,10 @@
 import { existsSync, readdirSync, rmSync, statSync, unlinkSync } from "node:fs";
 import path from "node:path";
+import prompts from "prompts";
 import { manifestPath, readInstallationManifest } from "../fs/install-manifest.js";
 
-export interface UninstallOptions {
-  yes?: boolean;
-}
-
-export function uninstallCommand(options: UninstallOptions = {}): void {
+export async function uninstallCommand(): Promise<void> {
   const projectRoot = process.cwd();
-  const force = options.yes === true;
 
   const manifest = readInstallationManifest(projectRoot);
   if (!manifest) {
@@ -24,8 +20,9 @@ export function uninstallCommand(options: UninstallOptions = {}): void {
   for (const [rel] of generated) console.log(`  - ${rel}`);
   console.log(`\nUser data (workspace/, custom/, principle/, project/, config.yaml) will be PRESERVED.`);
 
-  if (!force) {
-    console.log(`\nRe-run with --yes to confirm uninstall.`);
+  const confirmed = await confirmUninstall();
+  if (!confirmed) {
+    console.log(`\nUninstall cancelled.`);
     return;
   }
 
@@ -47,4 +44,26 @@ export function uninstallCommand(options: UninstallOptions = {}): void {
   unlinkSync(manifestPath(projectRoot));
 
   console.log(`\nUninstall complete. User data preserved.`);
+}
+
+async function confirmUninstall(): Promise<boolean> {
+  const response = await prompts(
+    {
+      type: "select",
+      name: "value",
+      message: "Proceed with uninstall?",
+      choices: [
+        { title: "No, keep everything", value: false },
+        { title: "Yes, remove generated files", value: true },
+      ],
+      initial: 0,
+    },
+    {
+      onCancel: () => {
+        throw new Error("Cancelled");
+      },
+    },
+  );
+
+  return response.value === true;
 }

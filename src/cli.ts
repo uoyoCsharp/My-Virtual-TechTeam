@@ -40,9 +40,8 @@ export async function run(argv: string[]): Promise<void> {
   program
     .command("uninstall")
     .description("Remove MVTT generated files")
-    .option("-y, --yes", "Skip confirmation prompt")
-    .action((opts) => {
-      uninstallCommand(opts);
+    .action(async () => {
+      await uninstallCommand();
     });
 
   program

@@ -1,5 +1,8 @@
-import { describe, it, expect } from "vitest";
-import { applyParams } from "../src/build/section-loader.js";
+import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { mkdtempSync, mkdirSync, rmSync, writeFileSync } from "node:fs";
+import path from "node:path";
+import os from "node:os";
+import { applyParams, loadSection } from "../src/build/section-loader.js";
 
 describe("applyParams", () => {
   it("replaces simple variables", () => {
@@ -89,5 +92,39 @@ Content here: {{name}}
     expect(result).toContain("- a: x");
     expect(result).toContain("- b: y");
     expect(result).toContain("- b: z");
+  });
+});
+
+describe("loadSection", () => {
+  let tmpDir: string;
+
+  beforeEach(() => {
+    tmpDir = mkdtempSync(path.join(os.tmpdir(), "section-loader-"));
+  });
+
+  afterEach(() => {
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it("renders shared section with mustache blocks when params omitted", () => {
+    const sourcesDir = path.join(tmpDir, "sources");
+    mkdirSync(path.join(sourcesDir, "sections"), { recursive: true });
+    const templatePath = path.join(sourcesDir, "sections", "context.md");
+    writeFileSync(
+      templatePath,
+      `Header\n{{#items}}\n- {{.}}\n{{/items}}\nFooter\n`,
+      "utf-8",
+    );
+
+    const result = loadSection(
+      { type: "shared", source: "sections/context.md" },
+      tmpDir,
+      sourcesDir,
+    );
+
+    expect(result).not.toContain("{{#items}}");
+    expect(result).not.toContain("{{/items}}");
+    expect(result).toContain("Header");
+    expect(result).toContain("Footer");
   });
 });
