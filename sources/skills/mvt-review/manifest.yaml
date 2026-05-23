@@ -3,7 +3,7 @@ output: .claude/skills/mvt-review/SKILL.md
 
 frontmatter:
   name: mvt-review
-  description: "Perform code review for quality, standards compliance, and best practices. Identifies issues by severity and suggests improvements. Use when user wants code reviewed or quality checked."
+  description: "Perform code review for quality, standards compliance, and best practices. This skill should be used when user wants code reviewed, quality checked, or to identify issues before merging."
 
 sections:
   - type: inline
@@ -12,7 +12,7 @@ sections:
 
       ## Purpose
 
-      Review code for quality, standards compliance, and best practices. Identify issues by severity, suggest improvements, and ensure architecture compliance. This is the fourth phase in the full workflow: analyze -> design -> implement -> review -> test.
+      Review code for quality, standards compliance, and best practices. Identify issues by severity, suggest improvements, and ensure architecture compliance.
 
   - type: shared
     source: sections/role-header.md
@@ -97,10 +97,9 @@ sections:
       Every response MUST end with a Suggested Next Steps section.
 
   - type: shared
+    source: sections/session-update.md
+
+  - type: shared
     source: sections/footer-next-steps.md
     params:
-      next_primary: mvt-fix
-      next_primary_desc: "Address critical issues"
-      next_alternatives:
-        - skill: mvt-test
-          when: "Add missing tests"
+      current_skill: mvt-review

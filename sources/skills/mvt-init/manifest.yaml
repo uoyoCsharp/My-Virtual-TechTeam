@@ -3,7 +3,7 @@ output: .claude/skills/mvt-init/SKILL.md
 
 frontmatter:
   name: mvt-init
-  description: "Initialize or refresh a project with comprehensive analysis. Detects tech stack, suggests architecture patterns, and sets up workspace state. Use when starting a new project or refreshing an existing one."
+  description: "Initialize or refresh a project with comprehensive analysis. This skill should be used when starting a new project, re-initializing after structural changes, or setting up the MVTT workspace. Detects tech stack, infers project type, suggests architecture patterns, and collects environment info."
 
 sections:
   - type: inline
@@ -12,7 +12,7 @@ sections:
 
       ## Purpose
 
-      Initialize a project by scanning its structure, detecting the tech stack, suggesting an architecture pattern, and setting up the workspace state files. This is the entry point for the MVTT framework.
+      Initialize a project by scanning its structure, detecting the tech stack, inferring the project type, suggesting an architecture pattern, collecting environment information, and setting up the workspace state files. This is the entry point for the MVTT framework.
 
   - type: shared
     source: sections/role-header.md
@@ -24,6 +24,9 @@ sections:
         - rule: "If `session.yaml` shows `initialized_at: \"\"` -> This is a fresh init"
         - rule: "If `session.yaml` shows existing data -> This is a refresh (preserve existing state)"
         - rule: "If no project files found -> Warn user this may be an empty project"
+        - rule: "If multiple languages detected -> Flag as monorepo candidate, identify primary language"
+        - rule: "If project type is ambiguous -> Prompt for confirmation between top candidates"
+        - rule: "If existing workspace files found on refresh -> Show diff and confirm before overwrite"
       boundaries:
         - scope: "analyze requirements"
           skill: "/mvt-analyze"
@@ -38,16 +41,18 @@ sections:
 
       | Variant | Description |
       |---------|-------------|
-      | `/mvt-init` | Standard initialization (balanced scan) |
-      | `/mvt-init --light` | Quick scan, minimal analysis |
-      | `/mvt-init --deep` | Exhaustive scan, comprehensive analysis |
-      | `/mvt-init --refresh` | Re-scan existing project, preserve workspace state |
+      | `/mvt-init` | Standard initialization (balanced scan, project type inference, pattern suggestion) |
+      | `/mvt-init --light` | Quick scan -- minimal detection, no project type inference, no pattern suggestion, no user confirmation |
+      | `/mvt-init --deep` | Exhaustive scan -- includes module mapping, dependency analysis, architecture diagram (Mermaid) |
+      | `/mvt-init --refresh` | Re-scan existing project -- preserve user state, update auto-detectable fields, show diff before writing |
 
   - type: shared
     source: sections/activation-load-context.md
     params:
       extended_context:
         - "Scan project root for config files (package.json, requirements.txt, pom.xml, etc.)"
+        - "Scan project root for directory structure (src/, lib/, app/, tests/, etc.)"
+        - ".ai-agents/knowledge/patterns/ -- Available architecture patterns (read subdirectories)"
 
   - type: shared
     source: sections/activation-load-config.md
@@ -82,12 +87,11 @@ sections:
       Every response MUST end with a Suggested Next Steps section.
 
   - type: shared
+    source: sections/session-update.md
+    params:
+      update_initialized_at: true
+
+  - type: shared
     source: sections/footer-next-steps.md
     params:
-      next_primary: mvt-analyze
-      next_primary_desc: "Start analyzing requirements"
-      always_show:
-        - skill: mvt-status
-          desc: "View project status"
-        - skill: mvt-config
-          desc: "Adjust configuration settings"
+      current_skill: mvt-init

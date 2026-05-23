@@ -1,23 +1,22 @@
-# Workspace Session State
-# Simplified session state — only fields LLM actually needs
+# Workspace Session State (v2)
+# Supports flexible workflows -- no longer bound to a fixed pipeline
 
 session:
   initialized_at: ""
   last_command: ""
 
-# Current active change (created by #analyze)
+# Current active change (created by /mvt-analyze)
 active_change:
   id: ""
   title: ""
   created_at: ""
 
-# Workflow progress (simplified: pending | done)
-progress:
-  analyze: pending
-  design: pending
-  implement: pending
-  review: pending
-  test: pending
+# Skill execution history (append-only, max 10)
+# Records which skills have been executed, replacing the old progress field
+skill_history: []
+  # - command: "/mvt-analyze"
+  #   completed_at: "2026-05-23T14:30:00"
+  #   summary: "Analyzed user authentication requirements"
 
-# Recent actions (append-only, keep max 3)
+# Recent actions (append-only, max 5)
 recent_actions: []

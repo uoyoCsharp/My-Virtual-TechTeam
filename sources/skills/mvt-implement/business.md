@@ -23,10 +23,6 @@
 - Verify dependency direction (no layer violations)
 - Confirm interface contracts are satisfied
 
-### Step 5: Update Workspace
-1. Update `.ai-agents/workspace/session.yaml`:
-   - Set `progress.implement: done`
-   - Set `session.last_command: "/mvt-implement"`
-   - Append one-line summary to `recent_actions` (keep max 3)
-2. Write artifact: `.ai-agents/workspace/artifacts/{change-id}/implementation.md`
-3. Write the actual code files to the project
+### Step 5: Write Artifacts
+1. Write artifact: `.ai-agents/workspace/artifacts/{change-id}/implementation.md`
+2. Write the actual code files to the project

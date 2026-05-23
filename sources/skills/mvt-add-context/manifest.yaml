@@ -3,7 +3,7 @@ output: .claude/skills/mvt-add-context/SKILL.md
 
 frontmatter:
   name: mvt-add-context
-  description: "Interactively add or update project context information to the MVTT workspace. Use when user wants to manually add project details, requirements, architecture info, coding standards, or team conventions."
+  description: "Interactively add or update project context information in the MVTT workspace. This skill should be used when user wants to manually add project details, requirements, architecture info, coding standards, or team conventions."
 
 sections:
   - type: inline
@@ -12,7 +12,7 @@ sections:
 
       ## Purpose
 
-      Guide users through adding or updating project context information in the MVTT workspace. This is a user-driven, interactive process complementary to `/mvt-sync-context` (which is code-driven and automatic).
+      Add or update project context information in the MVTT workspace through interactive guidance. Complementary to `/mvt-sync-context` (code-driven and automatic), this is a user-driven process for manual context entry.
 
   - type: shared
     source: sections/role-header.md
@@ -74,10 +74,12 @@ sections:
 
       ### Files Modified
       - {list of modified files}
-
-      ---
-      **Suggested Next Steps**:
-      - `/mvt-check-context` -- Analyze context load if context is large
-      - `/mvt-analyze` -- Start requirements analysis
-      - `/mvt-status` -- View current project status
       ```
+
+  - type: shared
+    source: sections/session-update.md
+
+  - type: shared
+    source: sections/footer-next-steps.md
+    params:
+      current_skill: mvt-add-context

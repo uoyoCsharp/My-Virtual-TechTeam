@@ -3,7 +3,7 @@ output: .claude/skills/mvt-cleanup/SKILL.md
 
 frontmatter:
   name: mvt-cleanup
-  description: "Clean up workspace artifacts, summarize old changes, and maintain workspace health. Use when workspace has accumulated old artifacts or to reduce context token footprint."
+  description: "Clean up workspace artifacts, summarize completed changes, and maintain workspace health. This skill should be used when workspace has accumulated old artifacts, token footprint needs reduction, or to archive completed change records."
 
 sections:
   - type: inline
@@ -87,7 +87,9 @@ sections:
       Every response MUST end with a Suggested Next Steps section.
 
   - type: shared
+    source: sections/session-update.md
+
+  - type: shared
     source: sections/footer-next-steps.md
     params:
-      next_primary: mvt-status
-      next_primary_desc: "Verify workspace state"
+      current_skill: mvt-cleanup

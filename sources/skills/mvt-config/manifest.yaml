@@ -3,7 +3,7 @@ output: .claude/skills/mvt-config/SKILL.md
 
 frontmatter:
   name: mvt-config
-  description: "Interactive configuration management for framework settings. Use when user wants to change language, output format, architecture pattern, or other framework settings."
+  description: "Manage MVTT framework configuration interactively. This skill should be used when user wants to change language, output format, architecture pattern, or other framework settings."
 
 sections:
   - type: inline
@@ -12,7 +12,7 @@ sections:
 
       ## Purpose
 
-      Interactive configuration management for MVTT framework settings. Provides guided setup, direct key-value setting, and a setup wizard for common configurations.
+      Manage MVTT framework configuration interactively. Provide guided setup, direct key-value setting, and a setup wizard for common configurations.
 
   - type: shared
     source: sections/role-header.md
@@ -82,6 +82,12 @@ sections:
       | `pattern.selection.auto_detect` | bool | `true` | Auto-detect pattern on init |
       | `pattern.selection.confirm_with_user` | bool | `true` | Confirm pattern with user |
 
+      ### Knowledge Settings
+
+      | Key | Type | Default | Description |
+      |-----|------|---------|-------------|
+      | `knowledge.shared` | list | `[core, pattern-active]` | Shared knowledge entries in registry.yaml, loaded by all skills |
+
   - type: file
     source: ./business.md
 
@@ -96,13 +102,9 @@ sections:
       Every response MUST end with a Suggested Next Steps section.
 
   - type: shared
+    source: sections/session-update.md
+
+  - type: shared
     source: sections/footer-next-steps.md
     params:
-      next_primary: mvt-config
-      next_primary_desc: "`show` -- Verify changes"
-      next_alternatives:
-        - skill: mvt-init
-          when: "--refresh -- Re-analyze with new pattern"
-      always_show:
-        - skill: mvt-status
-          desc: "Check current project state"
+      current_skill: mvt-config

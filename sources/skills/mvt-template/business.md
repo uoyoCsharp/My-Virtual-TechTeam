@@ -29,7 +29,7 @@ Show all templates with their status:
 
 **Customize**:
 1. Show current default template
-2. Ask user to describe desired modifications
+2. Prompt for desired modifications
 3. Generate new template based on modifications
 4. Preview the customized template
 5. Save to `custom/{template-name}` after user confirmation

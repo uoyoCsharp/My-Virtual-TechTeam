@@ -3,7 +3,7 @@ output: .claude/skills/mvt-analyze-code/SKILL.md
 
 frontmatter:
   name: mvt-analyze-code
-  description: "Reverse-analyze existing code to generate context and infer requirements. Use when user wants to understand an existing codebase, generate documentation for legacy code, or onboard to a new project."
+  description: "Reverse-analyze existing code to generate context and infer requirements. This skill should be used when user wants to understand an existing codebase, generate documentation for legacy code, onboard to a new project, or extract requirements from source code."
 
 sections:
   - type: inline
@@ -23,7 +23,7 @@ sections:
         - rule: "Source code exists -> Proceed with codebase scanning"
         - rule: "No source code found -> Warn user and suggest checking project path"
         - rule: "Ambiguous architecture -> Present detected pattern with confidence level"
-        - rule: "Multiple frameworks detected -> List all and ask user to confirm primary"
+        - rule: "Multiple frameworks detected -> List all and prompt for primary confirmation"
       boundaries:
         - scope: "make architecture decisions"
           skill: "/mvt-design"
@@ -76,13 +76,9 @@ sections:
       Every response MUST end with a Suggested Next Steps section.
 
   - type: shared
+    source: sections/session-update.md
+
+  - type: shared
     source: sections/footer-next-steps.md
     params:
-      next_primary: mvt-analyze
-      next_primary_desc: "Add requirements on top of discovered structure"
-      next_alternatives:
-        - skill: mvt-design
-          when: "Design new features for existing architecture"
-      always_show:
-        - skill: mvt-status
-          desc: "Check current project state"
+      current_skill: mvt-analyze-code

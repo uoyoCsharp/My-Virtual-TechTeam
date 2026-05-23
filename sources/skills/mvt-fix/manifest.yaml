@@ -3,7 +3,7 @@ output: .claude/skills/mvt-fix/SKILL.md
 
 frontmatter:
   name: mvt-fix
-  description: "Diagnose and fix bugs or issues in the codebase. Performs root cause analysis and applies targeted fixes. Use when user reports a bug, error, or wants to fix an issue."
+  description: "Diagnose and fix bugs or issues in the codebase. This skill should be used when user reports a bug, encounters an error, or wants to diagnose and resolve an issue."
 
 sections:
   - type: inline
@@ -55,8 +55,6 @@ sections:
     content: |
       ### Shortcut Operation Rules
       - Can execute at any time without checking workflow prerequisites
-      - Do NOT update `progress` in `session.yaml` after completion
-      - Only update `session.last_command` and `recent_actions`
 
       ### Step 4: Execute
       Proceed to Execution Flow below.
@@ -77,10 +75,9 @@ sections:
       Every response MUST end with a Suggested Next Steps section.
 
   - type: shared
+    source: sections/session-update.md
+
+  - type: shared
     source: sections/footer-next-steps.md
     params:
-      next_primary: mvt-review
-      next_primary_desc: "Verify the fix"
-      next_alternatives:
-        - skill: mvt-test
-          when: "Add regression tests"
+      current_skill: mvt-fix

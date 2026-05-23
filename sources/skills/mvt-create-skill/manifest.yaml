@@ -3,16 +3,16 @@ output: .claude/skills/mvt-create-skill/SKILL.md
 
 frontmatter:
   name: mvt-create-skill
-  description: "Create custom MVTT skills through interactive guided workflow. Use when user wants to create a new skill, extend the framework with custom functionality, or build project-specific automation."
+  description: "Create custom MVTT skills through interactive guided workflow. This skill should be used when user wants to create a new skill, extend the framework with custom functionality, or build project-specific automation."
 
 sections:
   - type: inline
     content: |
-      # MVT Custom Skill
+      # MVT Create Skill
 
       ## Purpose
 
-      Guide users through designing and creating custom MVTT-compliant skills. Generates properly structured SKILL.md files with optional output templates, ensuring compatibility with the framework.
+      Guide users through designing and creating custom MVTT-compliant skills. Follows a structured process: understand use cases, plan reusable resources, design the skill, generate files, and validate. Generates properly structured SKILL.md files with optional bundled resources (scripts, references, assets), manifest.yaml, and registry entries -- ensuring compatibility with the MVTT framework.
 
   - type: shared
     source: sections/role-header.md
@@ -24,6 +24,8 @@ sections:
         - rule: "Name conflicts with existing skill -> Warn and ask for alternative"
         - rule: "Skill needs output template -> Create template in `_templates/` and update manifest"
         - rule: "Skill needs state updates -> Include session.yaml update rules"
+        - rule: "Skill needs bundled resources -> Plan scripts/references/assets in Step 3"
+        - rule: "Usage patterns unclear -> Ask for concrete examples before proceeding"
       boundaries:
         - scope: "Generated skills must follow MVTT SKILL.md standard structure"
           skill: "(constraint)"
@@ -31,8 +33,10 @@ sections:
           skill: "(constraint)"
         - scope: "All custom skills MUST be registered in `registry.yaml` with `custom: true`"
           skill: "(to prevent overwrite during framework updates)"
-        - scope: "Description field must contain effective trigger keywords"
+        - scope: "Description field must use third-person with effective trigger keywords"
           skill: "(constraint)"
+        - scope: "SKILL.md body target <5k words; move detailed content to references/"
+          skill: "(progressive disclosure)"
 
   - type: shared
     source: sections/activation-load-context.md
@@ -40,6 +44,7 @@ sections:
       extended_context:
         - "Load one existing SKILL.md as structural reference (e.g., `.claude/skills/mvt-status/SKILL.md`)"
         - ".ai-agents/registry.yaml -- Registered skills list"
+        - ".ai-agents/config.yaml -- Project configuration"
 
   - type: shared
     source: sections/activation-load-config.md
@@ -59,21 +64,34 @@ sections:
     content: |
       ## Output Format
 
-      No external template -- output is the generated skill file itself plus a creation summary:
+      No external template -- output is the generated skill files plus a creation summary:
 
       ```markdown
       ## Custom Skill Created
 
       - **Skill**: `/{name}`
+      - **Agent**: {agent role}
       - **Location**: `.claude/skills/{name}/SKILL.md`
+      - **Manifest**: Generated with shared sections
       - **Registry**: `registry.yaml` (custom: true)
       - **Template**: {created/none}
-      - **Category**: {category}
+      - **Resources**: {scripts/references/assets listing, or none}
+      - **Knowledge**: {per-skill entries / shared only}
+      - **Context Budget**: SKILL.md body ~{N} words
 
-      You can now use `/{name}` to invoke your new skill.
+      Use `/{name}` to invoke the new skill.
 
-      ---
-      **Suggested Next Steps**:
-      - Test your new skill by running `/{name}`
-      - `/mvt-help` -- View updated skills list
+      ### Iteration
+      1. Use `/{name}` on real tasks
+      2. Notice struggles or inefficiencies
+      3. Update SKILL.md or bundled resources as needed
+      4. Use `/mvt-create-skill` to refine, or edit skill files directly
       ```
+
+  - type: shared
+    source: sections/session-update.md
+
+  - type: shared
+    source: sections/footer-next-steps.md
+    params:
+      current_skill: mvt-create-skill

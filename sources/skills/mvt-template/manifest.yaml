@@ -3,7 +3,7 @@ output: .claude/skills/mvt-template/SKILL.md
 
 frontmatter:
   name: mvt-template
-  description: "View, customize, and manage output templates for MVTT skills. Use when user wants to see available templates, create custom template versions, reset to defaults, or export templates."
+  description: "View, customize, and manage output templates for MVTT skills. This skill should be used when user wants to inspect available templates, create custom template versions, reset customizations, or export templates."
 
 sections:
   - type: inline
@@ -12,7 +12,7 @@ sections:
 
       ## Purpose
 
-      Provide an interactive tool for viewing, customizing, and managing MVTT output templates. Users can inspect default templates, create custom versions that override defaults, reset customizations, and export templates.
+      View, customize, and manage MVTT output templates. Inspect default templates, create custom versions that override defaults, reset customizations, and export templates.
 
   - type: shared
     source: sections/role-header.md
@@ -63,9 +63,12 @@ sections:
       ## Template Manager
 
       {Action-specific content}
-
-      ---
-      **Suggested Next Steps**:
-      - `/mvt-template` -- Manage more templates
-      - `/mvt-help` -- View all available skills
       ```
+
+  - type: shared
+    source: sections/session-update.md
+
+  - type: shared
+    source: sections/footer-next-steps.md
+    params:
+      current_skill: mvt-template

@@ -21,8 +21,4 @@
 - Verify fix addresses the root cause
 - Document what was changed and why
 
-### Step 5: Update Workspace
-1. Update `.ai-agents/workspace/session.yaml`:
-   - Set `session.last_command: "/mvt-fix"`
-   - Append one-line summary to `recent_actions` (keep max 3)
-   - Do NOT update `progress` (shortcut operation)
+### Step 5: (session update handled by shared section)

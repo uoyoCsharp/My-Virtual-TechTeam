@@ -27,12 +27,8 @@ Classify each finding by severity:
 | **Warning** | Code quality issues, potential bugs | Should fix |
 | **Suggestion** | Improvements, best practices | Nice to have |
 
-### Step 5: Update Workspace
-1. Update `.ai-agents/workspace/session.yaml`:
-   - Set `progress.review: done`
-   - Set `session.last_command: "/mvt-review"`
-   - Append one-line summary to `recent_actions` (keep max 3)
-2. Write artifact: `.ai-agents/workspace/artifacts/{change-id}/review.md`
+### Step 5: Write Artifacts
+1. Write artifact: `.ai-agents/workspace/artifacts/{change-id}/review.md`
 
 ## Review Checklist
 

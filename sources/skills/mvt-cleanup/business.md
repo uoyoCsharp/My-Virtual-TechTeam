@@ -25,7 +25,4 @@ If `--dry-run` flag is set -> Stop here. Do not proceed.
 - Update `session.yaml` to reflect cleanup
 - Output summary of actions taken
 
-### Step 5: Update Workspace
-1. Update `.ai-agents/workspace/session.yaml`:
-   - Set `session.last_command: "/mvt-cleanup"`
-   - Append one-line summary to `recent_actions` (keep max 3)
+### Step 5: (session update handled by shared section)

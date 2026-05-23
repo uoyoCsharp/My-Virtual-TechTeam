@@ -3,7 +3,7 @@ output: .claude/skills/mvt-design/SKILL.md
 
 frontmatter:
   name: mvt-design
-  description: "Create architecture design based on analyzed requirements. Applies architectural patterns, defines module structure, and creates technical blueprints. Use when user wants to design system architecture."
+  description: "Create architecture design based on analyzed requirements. This skill should be used when user wants to design system architecture, define module structure, apply architectural patterns, or create technical blueprints for implementation."
 
 sections:
   - type: inline
@@ -12,7 +12,7 @@ sections:
 
       ## Purpose
 
-      Design system architecture based on analyzed requirements. Apply architectural patterns and create technical blueprints that guide implementation. This is the second phase in the full workflow: analyze -> design -> implement -> review -> test.
+      Design system architecture based on analyzed requirements. Apply architectural patterns and create technical blueprints that guide implementation.
 
   - type: shared
     source: sections/role-header.md
@@ -96,10 +96,9 @@ sections:
       Every response MUST end with a Suggested Next Steps section.
 
   - type: shared
+    source: sections/session-update.md
+
+  - type: shared
     source: sections/footer-next-steps.md
     params:
-      next_primary: mvt-implement
-      next_primary_desc: "Start implementing this design"
-      always_show:
-        - skill: mvt-status
-          desc: "Check current workflow progress"
+      current_skill: mvt-design

@@ -25,11 +25,8 @@
 - Identify business rules from logic
 - Document inferred requirements with confidence levels
 
-### Step 6: Update Workspace
+### Step 6: Write Artifacts
 1. Update `.ai-agents/workspace/project-context.yaml`:
    - Write detected architecture to `architecture` section
    - Write discovered modules, entities, services
 2. Write artifact: `.ai-agents/workspace/artifacts/code-analysis/{timestamp}-analysis.md`
-3. Update `.ai-agents/workspace/session.yaml`:
-   - Set `session.last_command: "/mvt-analyze-code"`
-   - Append one-line summary to `recent_actions` (keep max 3)

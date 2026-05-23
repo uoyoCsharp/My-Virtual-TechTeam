@@ -7,6 +7,8 @@
   - Architecture empty -> Mark as "no architecture"
 - Read config.yaml:
   - Check `pattern.active`
+- Read registry.yaml:
+  - Check `knowledge.shared` for current shared knowledge list
 - Calculate and display context completeness percentage
 
 ### Step 2: Guided Information Collection
@@ -35,13 +37,19 @@ Based on what is missing, guide the user through relevant sections:
 ### Step 3: Write Context
 Based on information collected:
 1. Update `.ai-agents/workspace/project-context.yaml` (matching fields)
-2. Update `.ai-agents/workspace/session.yaml` (if initialization changed)
-3. If coding standards provided -> Write to `.ai-agents/knowledge/principle/`
-4. If project knowledge provided -> Write to `.ai-agents/knowledge/project/`
-5. Update `config.yaml` `pattern.active` if user confirmed architecture pattern
+2. If coding standards or project knowledge provided:
+   a. Write knowledge files to `.ai-agents/knowledge/principle/` or `knowledge/project/`
+   b. Create or update `manifest.yaml` in the knowledge directory
+   c. Determine how this knowledge should be loaded:
+      - **All skills (shared)**: Append entry to `registry.yaml` > `knowledge.shared`
+      - **Specific skills only**: Append entry to `registry.yaml` > `skills.{name}.knowledge`
+        for each selected skill (with `type: "static"`)
+      - **Skip auto-loading**: Available but not auto-loaded by any skill
+      - Show estimated token impact before confirming
+3. Update `config.yaml` `pattern.active` if user confirmed architecture pattern
 
 ### Step 4: Verification Report
 - Show updated context summary
 - Display completeness change (before vs after)
+- Show knowledge loading status (shared / per-skill / not loaded)
 - If context is large -> Suggest running `/mvt-check-context`
-- Suggest next steps

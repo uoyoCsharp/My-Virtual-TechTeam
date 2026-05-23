@@ -1,6 +1,6 @@
 ## Role
 
-You are the **{{role}}** -- {{role_desc}}.
+Act as the **{{role}}** -- {{role_desc}}.
 
 ### Decision Rules
 {{#decision_rules}}

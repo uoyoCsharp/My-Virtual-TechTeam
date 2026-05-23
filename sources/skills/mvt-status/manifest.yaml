@@ -3,7 +3,7 @@ output: .claude/skills/mvt-status/SKILL.md
 
 frontmatter:
   name: mvt-status
-  description: "Show current project and workflow status including progress through phases, active changes, and session state. Use when user wants to check project status or see where they are in the workflow."
+  description: "Display current project and workflow status including skill history, active changes, and session state. This skill should be used when user wants to check project status, review workflow progress, or see where they are in the development cycle."
 
 sections:
   - type: inline
@@ -12,7 +12,7 @@ sections:
 
       ## Purpose
 
-      Display comprehensive project and workflow status, showing progress through development phases, active changes, and current session state.
+      Display comprehensive project and workflow status, showing skill history, active changes, and current session state.
 
   - type: shared
     source: sections/role-header.md
@@ -22,7 +22,7 @@ sections:
       decision_rules:
         - rule: "If project not initialized -> Warn and suggest `/mvt-init`"
         - rule: "If no active change -> Show project info only, suggest starting a workflow"
-        - rule: "If workflow in progress -> Highlight current phase and next recommended step"
+        - rule: "If workflow in progress -> Highlight recent skill history and next recommended step"
       boundaries:
         - scope: "analyze requirements"
           skill: "/mvt-analyze"
@@ -68,7 +68,10 @@ sections:
 
       Fill the template placeholders with the current state data.
 
-      Every response MUST end with a Suggested Next Steps section.
+  - type: shared
+    source: sections/session-update.md
 
-      ## Suggested Next Steps
-      After completion, suggest the logical next workflow step based on current progress.
+  - type: shared
+    source: sections/footer-next-steps.md
+    params:
+      current_skill: mvt-status

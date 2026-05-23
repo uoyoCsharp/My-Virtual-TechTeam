@@ -3,7 +3,7 @@ output: .claude/skills/mvt-check-context/SKILL.md
 
 frontmatter:
   name: mvt-check-context
-  description: "Analyze context token load and give optimization recommendations. Use when user wants to check how much context MVTT loads, identify large files, or optimize workspace size for better performance."
+  description: "Analyze context token load and provide optimization recommendations. This skill should be used when user wants to check how much context MVTT loads, identify large files, or optimize workspace size for better performance."
 
 sections:
   - type: inline
@@ -65,10 +65,9 @@ sections:
       Every response MUST end with a Suggested Next Steps section.
 
   - type: shared
+    source: sections/session-update.md
+
+  - type: shared
     source: sections/footer-next-steps.md
     params:
-      next_primary: mvt-cleanup
-      next_primary_desc: "Clean up old artifacts to reduce context size"
-      next_alternatives:
-        - skill: mvt-add-context
-          when: "Update project context if information is outdated"
+      current_skill: mvt-check-context

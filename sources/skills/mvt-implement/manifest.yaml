@@ -3,7 +3,7 @@ output: .claude/skills/mvt-implement/SKILL.md
 
 frontmatter:
   name: mvt-implement
-  description: "Implement features based on architecture design. Writes production code following established patterns and design blueprints. Use when user wants to implement a feature or write code."
+  description: "Implement features based on architecture design. This skill should be used when user wants to implement a feature, write production code, or translate design blueprints into working code."
 
 sections:
   - type: inline
@@ -12,7 +12,7 @@ sections:
 
       ## Purpose
 
-      Write production code based on architecture designs. Follow established patterns, module boundaries, and coding standards. This is the third phase in the full workflow: analyze -> design -> implement -> review -> test.
+      Write production code based on architecture designs. Follow established patterns, module boundaries, and coding standards.
 
   - type: shared
     source: sections/role-header.md
@@ -87,10 +87,9 @@ sections:
       Every response MUST end with a Suggested Next Steps section.
 
   - type: shared
+    source: sections/session-update.md
+
+  - type: shared
     source: sections/footer-next-steps.md
     params:
-      next_primary: mvt-review
-      next_primary_desc: "Review the implementation"
-      next_alternatives:
-        - skill: mvt-test
-          when: "Write tests for the implementation"
+      current_skill: mvt-implement

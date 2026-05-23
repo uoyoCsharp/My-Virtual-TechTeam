@@ -24,11 +24,7 @@
 - Record Architecture Decision Records (ADRs)
 - Include rationale, alternatives considered, and trade-offs
 
-### Step 6: Update Workspace
-1. Update `.ai-agents/workspace/session.yaml`:
-   - Set `progress.design: done`
-   - Set `session.last_command: "/mvt-design"`
-   - Append one-line summary to `recent_actions` (keep max 3)
-2. Update `.ai-agents/workspace/project-context.yaml`:
+### Step 6: Write Artifacts
+1. Update `.ai-agents/workspace/project-context.yaml`:
    - Write to `architecture` section (modules, decisions, interfaces)
-3. Write artifact: `.ai-agents/workspace/artifacts/{change-id}/design.md`
+2. Write artifact: `.ai-agents/workspace/artifacts/{change-id}/design.md`

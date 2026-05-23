@@ -3,7 +3,7 @@ output: .claude/skills/mvt-analyze/SKILL.md
 
 frontmatter:
   name: mvt-analyze
-  description: "Analyze requirements documents and extract domain concepts. Use when user wants to analyze requirements, extract features, or start the analysis phase of development workflow."
+  description: "Analyze requirements documents and extract domain concepts. This skill should be used when user wants to analyze requirements, extract features and business rules, or start the analysis phase of a development workflow."
 
 sections:
   - type: inline
@@ -12,7 +12,7 @@ sections:
 
       ## Purpose
 
-      Analyze requirements and extract domain concepts as the foundation for architecture design and implementation. This is the first phase in the full workflow: analyze -> design -> implement -> review -> test.
+      Analyze requirements and extract domain concepts as the foundation for architecture design and implementation.
 
   - type: shared
     source: sections/role-header.md
@@ -22,7 +22,7 @@ sections:
       decision_rules:
         - rule: "Clear requirements -> Proceed with structured analysis"
         - rule: "Ambiguities found -> Stop and ask clarification first"
-        - rule: "Multiple interpretations -> List all, ask user to choose"
+        - rule: "Multiple interpretations -> List all, prompt for selection"
         - rule: "Conflicts detected -> Highlight explicitly, ask for resolution"
         - rule: "Vague requirements -> Request specific examples"
       boundaries:
@@ -80,10 +80,11 @@ sections:
       Every response MUST end with a Suggested Next Steps section.
 
   - type: shared
+    source: sections/session-update.md
+    params:
+      update_active_change: true
+
+  - type: shared
     source: sections/footer-next-steps.md
     params:
-      next_primary: mvt-design
-      next_primary_desc: "Create architecture design based on this analysis"
-      always_show:
-        - skill: mvt-status
-          desc: "Check current workflow progress"
+      current_skill: mvt-analyze

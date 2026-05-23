@@ -3,7 +3,7 @@ output: .claude/skills/mvt-sync-context/SKILL.md
 
 frontmatter:
   name: mvt-sync-context
-  description: "Synchronize workspace context with code changes after manual modifications or git operations. Use when context seems out of sync with code, after manual edits, or after git merge/rebase."
+  description: "Synchronize workspace context with code changes after manual modifications or git operations. This skill should be used when context appears out of sync with code, after manual edits outside the workflow, or after git merge/rebase."
 
 sections:
   - type: inline
@@ -75,10 +75,9 @@ sections:
       Every response MUST end with a Suggested Next Steps section.
 
   - type: shared
+    source: sections/session-update.md
+
+  - type: shared
     source: sections/footer-next-steps.md
     params:
-      next_primary: mvt-status
-      next_primary_desc: "Verify context state after sync"
-      next_alternatives:
-        - skill: "(continue)"
-          when: "Continue with your current task"
+      current_skill: mvt-sync-context

@@ -1,24 +1,21 @@
 ## Execution Flow
 
 ### Step 1: Load State
-- Read `session.yaml` for progress, active change, recent actions
+- Read `session.yaml` for skill_history, active_change, recent_actions
 - Read `project-context.yaml` for project info, tech stack, architecture
 
-### Step 2: Determine Current Phase
-- Check `progress` fields (analyze, design, implement, review, test)
-- Identify which phases are `done`, `pending`, or `in-progress`
-- Determine the current active phase
+### Step 2: Build Activity Timeline
+- Parse `skill_history` into chronological timeline
+- Group by change-id if multiple skills relate to the same change
+- Identify the most recent activity focus
 
-### Step 3: Build Workflow Visualization
-- Generate Mermaid flowchart showing phase progression
-- Color-code phases: green (done), yellow (current), gray (pending)
-
-### Step 4: Compile Status Report
-- Project info summary
-- Progress table with phase status
+### Step 3: Build Status Report
+- Project info summary (name, type, tech stack, pattern)
 - Active change details (if any)
-- Recent actions history
+- Skill history timeline (recent 5 entries)
+- Recent actions summary
+- Context completeness indicator
 
-### Step 5: Suggest Next Step
-- Based on current progress, recommend the logical next command
-- If all phases done -> Suggest `/mvt-cleanup` or starting a new feature
+### Step 4: Suggest Next Step
+- Based on skill_history and active_change, suggest relevant next skill
+- Use registry.yaml to find available skills matching current context

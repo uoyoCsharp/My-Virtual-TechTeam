@@ -27,10 +27,6 @@
 - Identify coverage gaps
 - Recommend additional tests for missing coverage
 
-### Step 6: Update Workspace
-1. Update `.ai-agents/workspace/session.yaml`:
-   - Set `progress.test: done`
-   - Set `session.last_command: "/mvt-test"`
-   - Append one-line summary to `recent_actions` (keep max 3)
-2. Write test files to the project
-3. Write artifact: `.ai-agents/workspace/artifacts/{change-id}/tests/`
+### Step 6: Write Artifacts
+1. Write test files to the project
+2. Write artifact: `.ai-agents/workspace/artifacts/{change-id}/tests/`

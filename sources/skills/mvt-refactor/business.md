@@ -26,8 +26,4 @@
 - If no tests -> Describe how to verify behavior is unchanged
 - Confirm no regressions in dependent code
 
-### Step 6: Update Workspace
-1. Update `.ai-agents/workspace/session.yaml`:
-   - Set `session.last_command: "/mvt-refactor"`
-   - Append one-line summary to `recent_actions` (keep max 3)
-   - Do NOT update `progress` (shortcut operation)
+### Step 6: (session update handled by shared section)

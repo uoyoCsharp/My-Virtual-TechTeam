@@ -15,11 +15,8 @@
 - Extract services (service classes, API handlers)
 - Extract keywords and topics
 
-### Step 3: Update Workspace
+### Step 3: Write Artifacts
 1. Update `.ai-agents/workspace/project-context.yaml`:
    - Add new entities to architecture section
    - Add new services
    - Update module mappings
-2. Update `.ai-agents/workspace/session.yaml`:
-   - Set `session.last_command: "/mvt-sync-context"`
-   - Append one-line summary to `recent_actions` (keep max 3)

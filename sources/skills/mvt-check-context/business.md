@@ -7,12 +7,16 @@ Scan all files that MVTT may load during operation:
 - `.ai-agents/workspace/session.yaml`
 - `.ai-agents/workspace/project-context.yaml`
 - `.ai-agents/config.yaml`
+- `.ai-agents/registry.yaml`
 
-**Knowledge files** (loaded per config):
-- `.ai-agents/knowledge/core/`
-- `.ai-agents/knowledge/patterns/{active}/`
-- `.ai-agents/knowledge/principle/`
-- `.ai-agents/knowledge/project/`
+**Shared knowledge files** (loaded by all skills):
+- Read `registry.yaml` > `knowledge.shared` for the list
+- For each entry, scan the referenced files
+- For `dynamic` entries, resolve variables (e.g., `{pattern.active}`) and scan resolved files
+
+**Per-skill knowledge files** (loaded by specific skills):
+- Read `registry.yaml` > `skills.*.knowledge` for all entries
+- Group by skill, list referenced files per skill
 
 **Artifact files**:
 - `.ai-agents/workspace/artifacts/` (all subdirectories)
@@ -23,11 +27,14 @@ Scan all files that MVTT may load during operation:
 ### Step 2: Estimate Token Consumption
 - Calculate approximate tokens for each file: `characters / 4`
 - Group by category:
-  - Core (session + context + config)
-  - Knowledge (knowledge/)
+  - Core (session + context + config + registry)
+  - Shared Knowledge (registry.yaml > knowledge.shared)
+  - Per-Skill Knowledge (registry.yaml > skills.*.knowledge)
   - Artifacts (artifacts/)
   - Skills (skills/)
 - Sum totals per category and overall
+- Show shared knowledge token cost as "per-skill overhead" (loaded every time)
+- Show per-skill knowledge token cost individually by skill
 
 ### Step 3: Assess and Recommend
 - Determine health status based on total tokens
@@ -35,7 +42,8 @@ Scan all files that MVTT may load during operation:
 - Generate optimization recommendations:
   - Oversized project-context.yaml -> Suggest trimming
   - Too many old artifacts -> Suggest `/mvt-cleanup`
-  - Unused knowledge files -> Suggest removal or lazy_load
+  - Shared knowledge too large -> Suggest moving entries to per-skill
+  - Unused knowledge files -> Suggest removal or move to per-skill
   - Redundant information -> Suggest consolidation
 - Each recommendation should be specific and actionable
 
