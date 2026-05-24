@@ -2,11 +2,12 @@
 
 ### Step 1: Assess Current State
 - Read project-context.yaml and evaluate completeness:
-  - Project name empty -> Mark as "not initialized"
-  - Requirements empty -> Mark as "no requirements"
-  - Architecture empty -> Mark as "no architecture"
-- Read config.yaml:
-  - Check `pattern.active`
+  - Projects list empty -> Mark as "not initialized"
+  - Project type empty -> Mark as "type missing"
+  - Tech stack empty -> Mark as "tech stack missing"
+- Read project-context.md and evaluate completeness:
+  - File does not exist -> Mark as "no semantic context"
+  - Core sections empty -> Mark which sections are missing
 - Read registry.yaml:
   - Check `knowledge.shared` for current shared knowledge list
 - Calculate and display context completeness percentage
@@ -19,15 +20,16 @@ Based on what is missing, guide the user through relevant sections:
 - Tech stack (language, framework, build tool, test framework)
 - Suggest running `/mvt-init` for automatic detection
 
+**If no semantic context** (project understanding):
+- Core terms and domain concepts
+- Module structure and layer boundaries
+- Key business rules
+- Suggest running `/mvt-analyze-code` for automatic code analysis
+
 **If no requirements** (requirements & background):
 - Main features and goals
 - User roles and use cases
 - Known constraints and limitations
-
-**If no architecture** (architecture info):
-- Architecture pattern (DDD / Clean Architecture / etc.)
-- Module structure
-- Key technical decisions
 
 **Supplementary information** (always available):
 - Project-specific coding standards
@@ -35,9 +37,21 @@ Based on what is missing, guide the user through relevant sections:
 - Third-party integration details
 
 ### Step 3: Write Context
-Based on information collected:
-1. Update `.ai-agents/workspace/project-context.yaml` (matching fields)
-2. If coding standards or project knowledge provided:
+Based on information collected, route to the correct file:
+
+**Structural information** -> Write to `project-context.yaml`:
+- Project name, type, path -> `projects[]` entry
+- Tech stack details -> `projects[].tech_stack`
+
+**Semantic information** -> Write to `project-context.md`:
+- Core terms -> `## Core Terms` section
+- Module structure -> `## Module Structure` section
+- Business rules -> `## Key Business Rules` section
+- API overview -> `## API Overview` section
+- Requirements analysis -> `## Requirements Analysis` section
+
+**Knowledge files** -> Write to knowledge directories:
+1. If coding standards or project knowledge provided:
    a. Write knowledge files to `.ai-agents/knowledge/principle/` or `knowledge/project/`
    b. Create or update `manifest.yaml` in the knowledge directory
    c. Determine how this knowledge should be loaded:
@@ -46,7 +60,6 @@ Based on information collected:
         for each selected skill (with `type: "static"`)
       - **Skip auto-loading**: Available but not auto-loaded by any skill
       - Show estimated token impact before confirming
-3. Update `config.yaml` `pattern.active` if user confirmed architecture pattern
 
 ### Step 4: Verification Report
 - Show updated context summary

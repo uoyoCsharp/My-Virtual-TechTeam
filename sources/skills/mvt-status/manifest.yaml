@@ -12,7 +12,7 @@ sections:
 
       ## Purpose
 
-      Display comprehensive project and workflow status, showing skill history, active changes, and current session state.
+      Display comprehensive project and workflow status, showing project list, semantic context availability, skill history, active changes, and current session state.
 
   - type: shared
     source: sections/role-header.md
@@ -23,6 +23,7 @@ sections:
         - rule: "If project not initialized -> Warn and suggest `/mvt-init`"
         - rule: "If no active change -> Show project info only, suggest starting a workflow"
         - rule: "If workflow in progress -> Highlight recent skill history and next recommended step"
+        - rule: "If project-context.md missing -> Suggest `/mvt-analyze-code` to generate semantic context"
       boundaries:
         - scope: "analyze requirements"
           skill: "/mvt-analyze"
@@ -44,11 +45,7 @@ sections:
         - order: "1"
           field: "session.initialized_at"
           level: "WARN"
-          message: 'Session not initialized. Run `/mvt-init` first.'
-        - order: "2"
-          field: "project.name"
-          level: "WARN"
-          message: 'Project not initialized. Run `/mvt-init` first.'
+          message: "Session not initialized. Run `/mvt-init` first."
 
   - type: inline
     content: |

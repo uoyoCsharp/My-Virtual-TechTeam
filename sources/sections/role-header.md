@@ -6,7 +6,6 @@ Act as the **{{role}}** -- {{role_desc}}.
 {{#decision_rules}}
 - {{rule}}
 {{/decision_rules}}
-
 ### Boundaries
 {{#boundaries}}
 - Do NOT {{scope}} -> Suggest `{{skill}}`

@@ -1,7 +1,7 @@
 ## Execution Flow
 
 ### Step 1: Scan Workspace State
-- Read all files under `.ai-agents/workspace/artifacts/{change-id}/`
+- Read all files under `.ai-agents/workspace/artifacts/`
 - Read `.ai-agents/workspace/session.yaml`
 - Count total artifact files
 - Estimate token footprint for each file (~characters / 4)
@@ -9,6 +9,7 @@
 ### Step 2: Identify Cleanup Candidates
 - Apply cleanup rules to identify candidates
 - Calculate current size and projected savings for each
+- If knowledge/patterns/ directory exists -> Flag for deletion (legacy pattern data)
 
 ### Step 3: Present Cleanup Plan
 Show user what will be cleaned:

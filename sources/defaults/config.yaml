@@ -16,15 +16,3 @@ preferences:
   output:
     no_emojis: true          # Disable emojis in output
     data_format: yaml        # Data output format: yaml | json
-
-# ============================================================
-# Pattern Settings
-# ============================================================
-pattern:
-  # Active architecture pattern
-  # Use /mvt-init to auto-detect or /mvt-config to change
-  active: ""
-
-  selection:
-    auto_detect: true
-    confirm_with_user: true

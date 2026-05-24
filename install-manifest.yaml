@@ -5,10 +5,10 @@ generated:
     source: "build:skills"
   - pattern: ".ai-agents/skills/_templates/*-output.md"
     source: "build:templates"
+  - pattern: ".ai-agents/skills/_templates/project-context.md"
+    source: "build:templates"
   - pattern: ".ai-agents/knowledge/core/**"
     source: "copy:sources/knowledge/core/"
-  - pattern: ".ai-agents/knowledge/patterns/**"
-    source: "copy:sources/knowledge/patterns/"
   - pattern: ".ai-agents/registry.yaml"
     source: "copy:registry.yaml"
 

@@ -65,12 +65,11 @@ sections:
       - **After**: {pct_after}%
 
       ### Changes Made
-      | Section | Status | Details |
-      |---------|--------|---------|
-      | Project Info | {Updated/Unchanged} | {summary} |
-      | Requirements | {Updated/Unchanged} | {summary} |
-      | Architecture | {Updated/Unchanged} | {summary} |
-      | Knowledge | {Updated/Unchanged} | {summary} |
+      | Section | Target File | Status | Details |
+      |---------|------------|--------|---------|
+      | Project Info | project-context.yaml | {Updated/Unchanged} | {summary} |
+      | Semantic Context | project-context.md | {Updated/Unchanged} | {summary} |
+      | Knowledge | knowledge/* | {Updated/Unchanged} | {summary} |
 
       ### Files Modified
       - {list of modified files}

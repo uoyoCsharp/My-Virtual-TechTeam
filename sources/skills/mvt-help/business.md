@@ -2,8 +2,8 @@
 
 ### Step 1: Load Current State
 - Read session.yaml: check initialization, active change, phase progress
-- Read project-context.yaml: check project info completeness
-- Read config.yaml: check pattern.active
+- Read project-context.yaml: check projects list and completeness
+- Check if project-context.md exists
 
 ### Step 2: Assess User Position
 Determine where the user is in the workflow and what to recommend:
@@ -11,7 +11,8 @@ Determine where the user is in the workflow and what to recommend:
 | Condition | Recommendation |
 |-----------|---------------|
 | Not initialized | `/mvt-init` -- Initialize the project |
-| Initialized, no requirements | `/mvt-analyze` -- Analyze requirements |
+| Initialized, no semantic context | `/mvt-analyze-code` -- Analyze existing code |
+| No requirements | `/mvt-analyze` -- Analyze requirements |
 | Requirements exist, no architecture | `/mvt-design` -- Design architecture |
 | Architecture exists, not implemented | `/mvt-implement` -- Implement the design |
 | Implemented, not reviewed | `/mvt-review` -- Review the code |
@@ -25,7 +26,7 @@ Show all available skills grouped by category:
 | Skill | Description |
 |-------|-------------|
 | `/mvt-analyze` | Analyze requirements and extract domain concepts |
-| `/mvt-analyze-code` | Reverse-analyze existing code to generate context |
+| `/mvt-analyze-code` | Analyze existing code to generate project-context.md |
 | `/mvt-design` | Create architecture design based on requirements |
 | `/mvt-implement` | Implement features based on architecture design |
 | `/mvt-review` | Code review for quality and standards compliance |
@@ -60,7 +61,7 @@ Display the standard workflow with current position highlighted:
 
 ```mermaid
 flowchart LR
-    A[analyze] --> B[design] --> C[implement] --> D[review] --> E[test]
+    A[init] --> B[analyze-code] --> C[analyze] --> D[design] --> E[implement] --> F[review] --> G[test]
 ```
 
 Color-code based on current progress: green (done), yellow (current/recommended), gray (pending).

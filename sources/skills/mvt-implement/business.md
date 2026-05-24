@@ -2,7 +2,7 @@
 
 ### Step 1: Load Design Context
 - Read architecture design from artifacts
-- Read module structure from `project-context.yaml`
+- Read module structure and layer constraints from `project-context.md`
 - Read coding standards if available
 - Identify files to create or modify
 
@@ -10,6 +10,7 @@
 - Map design components to file structure
 - Define implementation order (dependencies first)
 - Identify shared utilities or base classes needed
+- Respect existing layer boundaries from project-context.md
 
 ### Step 3: Implement Code
 - Follow architecture module boundaries
@@ -20,7 +21,7 @@
 
 ### Step 4: Verify Design Compliance
 - Check each file against its designated module/layer
-- Verify dependency direction (no layer violations)
+- Verify dependency direction against project-context.md layer constraints
 - Confirm interface contracts are satisfied
 
 ### Step 5: Write Artifacts

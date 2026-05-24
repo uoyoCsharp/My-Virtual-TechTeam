@@ -22,6 +22,11 @@
 
 ### Step 5: Write Artifacts
 1. Generate change-id: `{YYYYMMDD}-{slug}` format (e.g., `20260425-user-authentication`)
-2. Update `.ai-agents/workspace/project-context.yaml`:
-   - Write to `requirements` section (features, actors, business_rules, clarifications)
+2. Append a `## Requirements Analysis` section to `.ai-agents/workspace/project-context.md`:
+   - If the file does not exist, create it with the section
+   - If the file exists and already has a `## Requirements Analysis` section, replace it
+   - The section contains:
+     - `### Features` -- table with ID, feature, priority, source
+     - `### Actors` -- table with role, description
+     - `### Open Questions` -- list of items needing clarification
 3. Write artifact: `.ai-agents/workspace/artifacts/{change-id}/analysis.md`

@@ -4,7 +4,7 @@
 |---|----------|------------------|
 | 1 | System | Language: {lang}, Mode: {mode} |
 | 2 | Output | Format: {format}, Emojis: {on/off} |
-| 3 | Pattern | Active: {pattern} |
+| 3 | Knowledge | Shared: {shared_count} entries, Per-skill: {per_skill_count} skills |
 | 4 | Wizard | Start guided setup |
 | 5 | Reset | Reset to defaults |
 

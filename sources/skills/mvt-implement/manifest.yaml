@@ -12,7 +12,7 @@ sections:
 
       ## Purpose
 
-      Write production code based on architecture designs. Follow established patterns, module boundaries, and coding standards.
+      Write production code based on architecture designs. Follow established module boundaries, layer constraints, and coding standards.
 
   - type: shared
     source: sections/role-header.md
@@ -38,7 +38,7 @@ sections:
     source: sections/activation-load-context.md
     params:
       extended_context:
-        - ".ai-agents/knowledge/patterns/{pattern.active}/ -- Active architecture pattern knowledge"
+        - ".ai-agents/workspace/project-context.md -- Project semantic context (modules, layers, business rules)"
         - ".ai-agents/knowledge/principle/coding-standards.md -- Project coding standards"
         - ".ai-agents/workspace/artifacts/{active_change.id}/ -- Analysis and design artifacts"
 
@@ -52,19 +52,15 @@ sections:
         - order: "1"
           field: "session.initialized_at"
           level: "BLOCK"
-          message: 'Session not initialized. Run `/mvt-init` first.'
+          message: "Session not initialized. Run `/mvt-init` first."
         - order: "2"
-          field: "project.name"
+          field: "projects[] in project-context.yaml"
           level: "BLOCK"
-          message: 'Project not initialized. Run `/mvt-init` first.'
+          message: "Project not initialized. Run `/mvt-init` first."
         - order: "3"
-          field: "pattern.active"
+          field: "modules in project-context.md"
           level: "WARN"
-          message: 'Architecture pattern not set. Suggest `/mvt-init`." (allow user to proceed)'
-        - order: "4"
-          field: "modules in architecture"
-          level: "WARN"
-          message: 'No architecture defined. Run `/mvt-design` first." (allow user to proceed)'
+          message: "No architecture defined. Run `/mvt-design` first. (allow user to proceed)"
 
   - type: inline
     content: |

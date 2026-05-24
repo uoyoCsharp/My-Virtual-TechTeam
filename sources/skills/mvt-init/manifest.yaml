@@ -3,7 +3,7 @@ output: .claude/skills/mvt-init/SKILL.md
 
 frontmatter:
   name: mvt-init
-  description: "Initialize or refresh a project with comprehensive analysis. This skill should be used when starting a new project, re-initializing after structural changes, or setting up the MVTT workspace. Detects tech stack, infers project type, suggests architecture patterns, and collects environment info."
+  description: "Initialize or refresh a project by scanning its structure, detecting tech stack, and inferring project type. This skill should be used when starting a new project, re-initializing after structural changes, or setting up the MVTT workspace."
 
 sections:
   - type: inline
@@ -12,7 +12,7 @@ sections:
 
       ## Purpose
 
-      Initialize a project by scanning its structure, detecting the tech stack, inferring the project type, suggesting an architecture pattern, collecting environment information, and setting up the workspace state files. This is the entry point for the MVTT framework.
+      Initialize a project by scanning its structure, detecting tech stack, inferring project type, and writing the lean project index. This is the entry point for the MVTT framework.
 
   - type: shared
     source: sections/role-header.md
@@ -30,6 +30,8 @@ sections:
       boundaries:
         - scope: "analyze requirements"
           skill: "/mvt-analyze"
+        - scope: "analyze existing code"
+          skill: "/mvt-analyze-code"
         - scope: "design architecture"
           skill: "/mvt-design"
         - scope: "write implementation code"
@@ -41,9 +43,7 @@ sections:
 
       | Variant | Description |
       |---------|-------------|
-      | `/mvt-init` | Standard initialization (balanced scan, project type inference, pattern suggestion) |
-      | `/mvt-init --light` | Quick scan -- minimal detection, no project type inference, no pattern suggestion, no user confirmation |
-      | `/mvt-init --deep` | Exhaustive scan -- includes module mapping, dependency analysis, architecture diagram (Mermaid) |
+      | `/mvt-init` | Standard initialization (scan + detect + write index) |
       | `/mvt-init --refresh` | Re-scan existing project -- preserve user state, update auto-detectable fields, show diff before writing |
 
   - type: shared
@@ -52,7 +52,6 @@ sections:
       extended_context:
         - "Scan project root for config files (package.json, requirements.txt, pom.xml, etc.)"
         - "Scan project root for directory structure (src/, lib/, app/, tests/, etc.)"
-        - ".ai-agents/knowledge/patterns/ -- Available architecture patterns (read subdirectories)"
 
   - type: shared
     source: sections/activation-load-config.md

@@ -7,11 +7,11 @@
 
 ### Step 2: Load Context
 - Read target files
-- Read project-context for architecture expectations
-- Load review checklist for active pattern (if available)
+- Read project-context.md for module structure, layer constraints, and business rules
+- Load coding standards if available
 
 ### Step 3: Analyze Code
-- Check architecture compliance (layer assignments, dependencies)
+- Check layer compliance against project-context.md (layer assignments, dependency direction)
 - Check code quality (functions small/focused, naming, duplication)
 - Check error handling
 - Check edge cases
@@ -33,7 +33,7 @@ Classify each finding by severity:
 ## Review Checklist
 
 ### Architecture Compliance
-- [ ] Follows established architecture pattern
+- [ ] Respects existing layer structure from project-context.md
 - [ ] Correct layer assignment
 - [ ] Proper dependency direction
 - [ ] Module boundaries respected

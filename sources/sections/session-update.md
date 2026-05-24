@@ -15,16 +15,18 @@ After execution, update `.ai-agents/workspace/session.yaml` with the following f
 - `recent_actions`: Append one-line summary with format:
   `[{YYYY-MM-DD HH:MM}] /{command}: {one-line summary}`
   Keep max 5 entries. If exceeds, drop the oldest.
+{{#update_active_change}}
 
 ### Conditional (set only when applicable)
 
-{{#update_active_change}}
 - `active_change.id`: Set when this skill creates a new change
 - `active_change.title`: Set when this skill creates a new change
 - `active_change.created_at`: Set when this skill creates a new change
 {{/update_active_change}}
-
 {{#update_initialized_at}}
+
+### Conditional (set only when applicable)
+
 - `session.initialized_at`: Set to current timestamp when this skill initializes the project
 {{/update_initialized_at}}
 

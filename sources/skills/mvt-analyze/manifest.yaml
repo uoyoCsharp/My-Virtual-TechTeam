@@ -51,13 +51,9 @@ sections:
           level: "WARN"
           message: 'Session not initialized. Run `/mvt-init` first.'
         - order: "2"
-          field: "project.name"
+          field: "projects[] in project-context.yaml"
           level: "WARN"
           message: 'Project not initialized. Run `/mvt-init` first.'
-        - order: "3"
-          field: "pattern.active"
-          level: "Continue"
-          message: "analysis does not require pattern, but add warning and suggest `/mvt-init`."
 
   - type: inline
     content: |

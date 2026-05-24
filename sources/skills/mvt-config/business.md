@@ -3,7 +3,7 @@
 ### Interactive Menu (Default)
 1. Read current settings from `config.yaml`
 2. Display configuration menu with categories and current values
-3. Wait for user to select a category (1-6)
+3. Wait for user to select a category (1-4)
 4. Show category detail view with editable settings
 5. Apply changes after user confirmation
 
@@ -17,9 +17,7 @@
 ### Guided Wizard (`wizard`)
 1. Step 1: Language Preference
 2. Step 2: Output Style (emojis, data format)
-3. Step 3: Architecture Pattern
-4. Step 4: Knowledge Loading
-5. Summary Preview -> User confirms -> Apply all changes
+3. Summary Preview -> User confirms -> Apply all changes
 
 ### Reset (`reset`)
 1. Show all settings that will be reset
@@ -35,14 +33,6 @@
 | `preferences.language` | enum | `en-US` | Output language for all responses and documents (en-US, zh-CN) |
 | `preferences.output.no_emojis` | bool | `true` | Disable emojis in output |
 | `preferences.output.data_format` | enum | `yaml` | Data output format (yaml, json) |
-
-### Pattern Settings
-
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `pattern.active` | enum | `` | Active architecture pattern |
-| `pattern.selection.auto_detect` | bool | `true` | Auto-detect pattern on init |
-| `pattern.selection.confirm_with_user` | bool | `true` | Confirm pattern with user |
 
 ### Knowledge Management
 

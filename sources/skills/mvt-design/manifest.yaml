@@ -3,7 +3,7 @@ output: .claude/skills/mvt-design/SKILL.md
 
 frontmatter:
   name: mvt-design
-  description: "Create architecture design based on analyzed requirements. This skill should be used when user wants to design system architecture, define module structure, apply architectural patterns, or create technical blueprints for implementation."
+  description: "Create architecture design based on analyzed requirements. This skill should be used when user wants to design system architecture, define module structure, or create technical blueprints for implementation."
 
 sections:
   - type: inline
@@ -12,7 +12,7 @@ sections:
 
       ## Purpose
 
-      Design system architecture based on analyzed requirements. Apply architectural patterns and create technical blueprints that guide implementation.
+      Design system architecture based on analyzed requirements. Create technical blueprints that guide implementation, respecting existing project structure and constraints.
 
   - type: shared
     source: sections/role-header.md
@@ -20,12 +20,12 @@ sections:
       role: Architect
       role_desc: "a System Architecture Expert"
       decision_rules:
-        - rule: "Multiple valid patterns exist -> Present top 2-3 options with pros/cons table, recommend one"
+        - rule: "Multiple valid approaches exist -> Present top 2-3 options with pros/cons table, recommend one"
         - rule: "Trade-off affects performance vs maintainability -> Document as ADR, state the trade-off"
         - rule: "User asks for technology choice -> Evaluate against: requirements fit, team familiarity, maintenance cost"
         - rule: "Design needs breaking change -> Highlight impact scope, list affected files, propose migration"
         - rule: "Requirements are ambiguous -> Stop and ask clarification before designing"
-        - rule: "Pattern conflicts with project structure -> Report conflict, suggest pattern change via `/mvt-config`"
+        - rule: "Layer constraint violation in design -> Flag and suggest alternative that respects existing boundaries"
       boundaries:
         - scope: "write implementation code"
           skill: "/mvt-implement"
@@ -47,9 +47,9 @@ sections:
     source: sections/activation-load-context.md
     params:
       extended_context:
-        - ".ai-agents/knowledge/patterns/{pattern.active}/ -- Active architecture pattern knowledge"
-        - ".ai-agents/knowledge/core/ -- Core knowledge files"
+        - ".ai-agents/workspace/project-context.md -- Project semantic context (modules, layers, business rules)"
         - ".ai-agents/workspace/artifacts/{active_change.id}/analysis.md -- Analysis from previous phase"
+        - ".ai-agents/knowledge/core/ -- Core knowledge files"
 
   - type: shared
     source: sections/activation-load-config.md
@@ -61,19 +61,19 @@ sections:
         - order: "1"
           field: "session.initialized_at"
           level: "BLOCK"
-          message: 'Session not initialized. Run `/mvt-init` first.'
+          message: "Session not initialized. Run `/mvt-init` first."
         - order: "2"
-          field: "project.name"
+          field: "projects[] in project-context.yaml"
           level: "BLOCK"
-          message: 'Project not initialized. Run `/mvt-init` first.'
+          message: "Project not initialized. Run `/mvt-init` first."
         - order: "3"
-          field: "pattern.active"
-          level: "BLOCK"
-          message: 'Architecture pattern required. Run `/mvt-init` to detect and set the pattern.'
-        - order: "4"
-          field: "requirements in project-context"
+          field: "project-context.md"
           level: "WARN"
-          message: 'No requirements found. Run `/mvt-analyze` first." (allow user to proceed)'
+          message: "No project-context.md found. Run `/mvt-analyze-code` for better design context. (allow user to proceed)"
+        - order: "4"
+          field: "requirements in project-context.md"
+          level: "WARN"
+          message: "No requirements found. Run `/mvt-analyze` first. (allow user to proceed)"
 
   - type: inline
     content: |

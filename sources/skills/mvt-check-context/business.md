@@ -12,11 +12,14 @@ Scan all files that MVTT may load during operation:
 **Shared knowledge files** (loaded by all skills):
 - Read `registry.yaml` > `knowledge.shared` for the list
 - For each entry, scan the referenced files
-- For `dynamic` entries, resolve variables (e.g., `{pattern.active}`) and scan resolved files
+- For `dynamic` entries, resolve variables and scan resolved files
 
 **Per-skill knowledge files** (loaded by specific skills):
 - Read `registry.yaml` > `skills.*.knowledge` for all entries
 - Group by skill, list referenced files per skill
+
+**Semantic context** (loaded by all skills when present):
+- `.ai-agents/workspace/project-context.md`
 
 **Artifact files**:
 - `.ai-agents/workspace/artifacts/` (all subdirectories)
@@ -27,7 +30,9 @@ Scan all files that MVTT may load during operation:
 ### Step 2: Estimate Token Consumption
 - Calculate approximate tokens for each file: `characters / 4`
 - Group by category:
-  - Core (session + context + config + registry)
+  - Core (session + config + registry)
+  - Index (project-context.yaml)
+  - Semantic Context (project-context.md)
   - Shared Knowledge (registry.yaml > knowledge.shared)
   - Per-Skill Knowledge (registry.yaml > skills.*.knowledge)
   - Artifacts (artifacts/)
@@ -40,7 +45,7 @@ Scan all files that MVTT may load during operation:
 - Determine health status based on total tokens
 - Identify Top 5 largest files
 - Generate optimization recommendations:
-  - Oversized project-context.yaml -> Suggest trimming
+  - Oversized project-context.md -> Suggest `/mvt-analyze-code` regeneration with leaner sections
   - Too many old artifacts -> Suggest `/mvt-cleanup`
   - Shared knowledge too large -> Suggest moving entries to per-skill
   - Unused knowledge files -> Suggest removal or move to per-skill

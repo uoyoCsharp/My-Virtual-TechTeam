@@ -8,7 +8,7 @@ last_updated: "2026-05-23"
 # ============================================================
 # Shared Knowledge
 # Loaded by ALL skills at execution time.
-# Managed by /mvt-add-context (user selects "shared") and /mvt-init (pattern-active).
+# Managed by /mvt-add-context (user selects "shared") and /mvt-init (project-context).
 # Reviewed by /mvt-config and /mvt-check-context.
 # ============================================================
 knowledge:
@@ -16,10 +16,13 @@ knowledge:
     - id: "core"
       path: "knowledge/core/"
       files: ["review-principles.md"]
-    - id: "pattern-active"
+    - id: "project-context"
       type: "dynamic"
-      source: "knowledge/patterns/{pattern.active}/"
-      files_from_manifest: true
+      source: "workspace"
+      files: ["project-context.md"]
+      # Loading: check .ai-agents/workspace/project-context.md exists
+      # Exists -> load entire file
+      # Not exists -> skip (analyze-code not yet run)
     # - id: "project-conventions"
     #   path: "knowledge/principle/project-conventions/"
     #   files: ["coding-standards.md"]
@@ -31,7 +34,7 @@ skills:
   # --- Conductor Skills ---
   mvt-init:
     agent: conductor
-    description: "Initialize or refresh a project with comprehensive analysis. This skill should be used when starting a new project, re-initializing after structural changes, or setting up the MVTT workspace. Detects tech stack, infers project type, suggests architecture patterns, and collects environment info."
+    description: "Initialize or refresh a project by scanning its structure, detecting tech stack, and inferring project type. This skill should be used when starting a new project, re-initializing after structural changes, or setting up the MVTT workspace."
     path: .claude/skills/mvt-init/SKILL.md
     template: .ai-agents/skills/_templates/init-output.md
     category: project
@@ -52,7 +55,7 @@ skills:
 
   mvt-config:
     agent: conductor
-    description: "Manage MVTT framework configuration interactively. This skill should be used when user wants to change language, output format, architecture pattern, or other framework settings."
+    description: "Manage MVTT framework configuration interactively. This skill should be used when user wants to change language, output format, or other framework settings."
     path: .claude/skills/mvt-config/SKILL.md
     template: .ai-agents/skills/_templates/config-output.md
     category: project
@@ -92,9 +95,9 @@ skills:
 
   mvt-analyze-code:
     agent: analyst
-    description: "Reverse-analyze existing code to generate context and infer requirements. This skill should be used when user wants to understand an existing codebase, generate documentation for legacy code, onboard to a new project, or extract requirements from source code."
+    description: "Analyze existing code to generate project-context.md with terms, modules, layers, and business rules. This skill should be used when user wants to understand an existing codebase, generate documentation for legacy code, onboard to a new project, or extract requirements from source code."
     path: .claude/skills/mvt-analyze-code/SKILL.md
-    template: .ai-agents/skills/_templates/analyze-code-output.md
+    template: .ai-agents/skills/_templates/project-context.md
     category: workflow
     depends_on: []
     knowledge: []
@@ -102,7 +105,7 @@ skills:
   # --- Architect Skills ---
   mvt-design:
     agent: architect
-    description: "Create architecture design based on analyzed requirements. This skill should be used when user wants to design system architecture, define module structure, apply architectural patterns, or create technical blueprints for implementation."
+    description: "Create architecture design based on analyzed requirements. This skill should be used when user wants to design system architecture, define module structure, or create technical blueprints for implementation."
     path: .claude/skills/mvt-design/SKILL.md
     template: .ai-agents/skills/_templates/design-output.md
     category: workflow

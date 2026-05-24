@@ -1,0 +1,12 @@
+name: project-context
+output: .ai-agents/skills/_templates/project-context.md
+
+frontmatter:
+  id: project-context
+  version: "1.0"
+  skill: mvt-analyze-code
+  description: "Project semantic document template -- defines section structure for project-context.md"
+
+sections:
+  - type: file
+    source: ./body.md

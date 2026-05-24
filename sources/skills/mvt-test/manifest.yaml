@@ -12,7 +12,7 @@ sections:
 
       ## Purpose
 
-      Design and write tests to validate implementations against requirements. Ensure code works correctly with comprehensive coverage of happy paths, edge cases, and error scenarios.
+      Design and write tests to validate implementations against requirements and business rules. Ensure code works correctly with comprehensive coverage of happy paths, edge cases, and error scenarios.
 
   - type: shared
     source: sections/role-header.md
@@ -49,8 +49,8 @@ sections:
     source: sections/activation-load-context.md
     params:
       extended_context:
+        - ".ai-agents/workspace/project-context.md -- Project semantic context (business rules for test design)"
         - ".ai-agents/knowledge/core/review-principles.md -- Code quality principles"
-        - ".ai-agents/knowledge/patterns/{pattern.active}/ -- Active pattern knowledge"
         - ".ai-agents/knowledge/principle/coding-standards.md -- Project coding standards"
         - "Implementation files to be tested"
 
@@ -64,15 +64,11 @@ sections:
         - order: "1"
           field: "session.initialized_at"
           level: "WARN"
-          message: 'Session not initialized. Run `/mvt-init` first.'
+          message: "Session not initialized. Run `/mvt-init` first."
         - order: "2"
           field: "no implementation files"
           level: "WARN"
-          message: 'No implementation found. Run `/mvt-implement` first.'
-        - order: "3"
-          field: "pattern.active"
-          level: "WARN"
-          message: 'Architecture pattern not set. Suggest `/mvt-init`." (allow user to proceed)'
+          message: "No implementation found. Run `/mvt-implement` first."
 
   - type: inline
     content: |

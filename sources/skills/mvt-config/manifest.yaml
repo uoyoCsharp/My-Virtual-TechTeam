@@ -3,7 +3,7 @@ output: .claude/skills/mvt-config/SKILL.md
 
 frontmatter:
   name: mvt-config
-  description: "Manage MVTT framework configuration interactively. This skill should be used when user wants to change language, output format, architecture pattern, or other framework settings."
+  description: "Manage MVTT framework configuration interactively. This skill should be used when user wants to change language, output format, or other framework settings."
 
 sections:
   - type: inline
@@ -74,19 +74,11 @@ sections:
       | `preferences.output.no_emojis` | bool | `true` | Disable emojis in output |
       | `preferences.output.data_format` | enum | `yaml` | Data output format (yaml, json) |
 
-      ### Pattern Settings
-
-      | Key | Type | Default | Description |
-      |-----|------|---------|-------------|
-      | `pattern.active` | enum | `` | Active architecture pattern |
-      | `pattern.selection.auto_detect` | bool | `true` | Auto-detect pattern on init |
-      | `pattern.selection.confirm_with_user` | bool | `true` | Confirm pattern with user |
-
       ### Knowledge Settings
 
       | Key | Type | Default | Description |
       |-----|------|---------|-------------|
-      | `knowledge.shared` | list | `[core, pattern-active]` | Shared knowledge entries in registry.yaml, loaded by all skills |
+      | `knowledge.shared` | list | `[core, project-context]` | Shared knowledge entries in registry.yaml, loaded by all skills |
 
   - type: file
     source: ./business.md
