@@ -22,7 +22,7 @@
 
 ### Step 5: Write Artifacts
 1. Generate change-id: `{YYYYMMDD}-{slug}` format (e.g., `20260425-user-authentication`)
-2. Append a `## Requirements Analysis` section to `.ai-agents/workspace/project-context.md`:
+2. Append a `## Requirements Analysis` section to `.ai-agents/knowledge/project/_generated/project-context.md`:
    - If the file does not exist, create it with the section
    - If the file exists and already has a `## Requirements Analysis` section, replace it
    - The section contains:

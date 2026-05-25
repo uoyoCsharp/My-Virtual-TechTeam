@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, rmSync, readdirSync } from "node:fs";
 import path from "node:path";
 import { materializeProject } from "../fs/materialize.js";
 import {
@@ -7,9 +7,20 @@ import {
 } from "../fs/install-manifest.js";
 import { hashFile } from "../fs/hash.js";
 import { getPackageRoot, getVersion } from "./shared.js";
+import {
+  migrateAll,
+  migrateConfig,
+  migrateManifests,
+  migratePaths,
+  type MigrationResult,
+} from "./migrate.js";
 
 export interface UpdateOptions {
   check?: boolean;
+  migrateManifests?: boolean;
+  migratePaths?: boolean;
+  migrateConfig?: boolean;
+  migrateAll?: boolean;
 }
 
 export function updateCommand(options: UpdateOptions = {}): void {
@@ -17,6 +28,16 @@ export function updateCommand(options: UpdateOptions = {}): void {
   const packageRoot = getPackageRoot();
   const version = getVersion();
   const checkOnly = options.check === true;
+
+  if (
+    options.migrateAll ||
+    options.migrateManifests ||
+    options.migratePaths ||
+    options.migrateConfig
+  ) {
+    runMigrations(projectRoot, options);
+    return;
+  }
 
   const existing = readInstallationManifest(projectRoot);
   if (!existing) {
@@ -65,7 +86,77 @@ export function updateCommand(options: UpdateOptions = {}): void {
     overwriteCreateOnce: false,
   });
 
+  const removed = removeStaleGeneratedFiles(projectRoot, existing.files, materialized);
+  if (removed.length > 0) {
+    console.log(`Removed ${removed.length} stale generated file(s):`);
+    for (const f of removed) console.log(`  - ${f}`);
+  }
+
   writeInstallationManifest(projectRoot, version, existing.pattern, materialized, existing);
 
   console.log(`\nUpdate complete: ${materialized.length} files processed.`);
+}
+
+function runMigrations(projectRoot: string, options: UpdateOptions): void {
+  const ran: Array<[string, MigrationResult]> = [];
+
+  if (options.migrateAll) {
+    const result = migrateAll(projectRoot);
+    ran.push(["manifests", result.manifests]);
+    ran.push(["paths", result.paths]);
+    ran.push(["config", result.config]);
+  } else {
+    if (options.migrateManifests) ran.push(["manifests", migrateManifests(projectRoot)]);
+    if (options.migratePaths) ran.push(["paths", migratePaths(projectRoot)]);
+    if (options.migrateConfig) ran.push(["config", migrateConfig(projectRoot)]);
+  }
+
+  let migrated = 0;
+  for (const [label, result] of ran) {
+    if (result.skipped) {
+      console.log(`[skip] ${label}: ${result.reason ?? "nothing to migrate"}`);
+      continue;
+    }
+    migrated++;
+    console.log(`[done] ${label}: ${result.changes?.join("; ") ?? "migrated"}`);
+    if (result.backup) {
+      console.log(`       backup -> ${path.relative(projectRoot, result.backup)}`);
+    }
+  }
+
+  console.log(
+    `\nMigration complete: ${migrated} migrated, ${ran.length - migrated} skipped.`,
+  );
+}
+
+function removeStaleGeneratedFiles(
+  projectRoot: string,
+  previousFiles: Record<string, { category: string; hash: string }>,
+  current: Array<{ relPath: string; category: string }>,
+): string[] {
+  const currentSet = new Set(current.map((m) => m.relPath));
+  const removed: string[] = [];
+
+  for (const [relPath, record] of Object.entries(previousFiles)) {
+    if (record.category !== "generated") continue;
+    if (currentSet.has(relPath)) continue;
+
+    const absPath = path.resolve(projectRoot, relPath);
+    if (!existsSync(absPath)) continue;
+
+    rmSync(absPath, { force: true });
+    removed.push(relPath);
+
+    let parent = path.dirname(absPath);
+    const stopAt = path.resolve(projectRoot);
+    while (parent.startsWith(stopAt) && parent !== stopAt) {
+      if (!existsSync(parent)) break;
+      const entries = readdirSync(parent);
+      if (entries.length > 0) break;
+      rmSync(parent, { recursive: true, force: true });
+      parent = path.dirname(parent);
+    }
+  }
+
+  return removed;
 }

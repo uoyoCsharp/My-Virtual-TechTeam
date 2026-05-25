@@ -8,21 +8,26 @@ last_updated: "2026-05-23"
 # ============================================================
 # Shared Knowledge
 # Loaded by ALL skills at execution time.
-# Managed by /mvt-add-context (user selects "shared") and /mvt-init (project-context).
+# Managed by /mvt-manage-context (user selects "shared") and /mvt-init (project-context).
 # Reviewed by /mvt-config and /mvt-check-context.
 # ============================================================
 knowledge:
   shared:
     - id: "core"
-      path: "knowledge/core/"
-      files: ["review-principles.md"]
+      type: "dynamic"
+      source: "knowledge/core/"
+      files_from_manifest: true
+      # Loading: read .ai-agents/knowledge/core/manifest.yaml > files[]
+      # All entries with auto_load: true are loaded (mix of framework + user origin).
     - id: "project-context"
       type: "dynamic"
-      source: "workspace"
+      source: "knowledge/project/_generated/"
       files: ["project-context.md"]
-      # Loading: check .ai-agents/workspace/project-context.md exists
+      # Loading: check .ai-agents/knowledge/project/_generated/project-context.md exists
       # Exists -> load entire file
       # Not exists -> skip (analyze-code not yet run)
+      # Note: legacy installs may still have this file at workspace/project-context.md.
+      # Run `mvtt update --migrate-paths` to relocate.
     # - id: "project-conventions"
     #   path: "knowledge/principle/project-conventions/"
     #   files: ["coding-standards.md"]
@@ -41,8 +46,23 @@ skills:
     depends_on: []
     knowledge: []
     next_suggestions:
-      primary: mvt-analyze
-      primary_desc: "Start analyzing requirements"
+      conditional:
+        - condition: "has_existing_code"
+          primary: mvt-analyze-code
+          primary_desc: "Reverse-analyze existing codebase to generate project-context.md"
+        - condition: "empty_project"
+          primary: mvt-manage-context
+          primary_desc: "Manually add project context, requirements, or team conventions"
+        - condition: "default"
+          primary: mvt-analyze
+          primary_desc: "Start analyzing requirements"
+      alternatives:
+        - skill: mvt-manage-context
+          desc: "Manually add team conventions or domain knowledge"
+        - skill: mvt-analyze
+          desc: "Start from a requirements document"
+        - skill: mvt-status
+          desc: "Inspect current project status"
 
   mvt-status:
     agent: conductor
@@ -183,6 +203,15 @@ skills:
     depends_on: []
     knowledge: []
 
+  mvt-resume:
+    agent: conductor
+    description: "Resume an in-progress development task in a new conversation. Reads session.yaml (active_change, skill_history, recent_actions) and recent artifacts to reconstruct context. Does not read git state."
+    path: .claude/skills/mvt-resume/SKILL.md
+    template: .ai-agents/skills/_templates/resume-output.md
+    category: utility
+    depends_on: []
+    knowledge: []
+
   mvt-create-skill:
     agent: conductor
     description: "Create custom MVTT skills through interactive guided workflow. This skill should be used when user wants to create a new skill, extend the framework with custom functionality, or build project-specific automation."
@@ -192,10 +221,10 @@ skills:
     depends_on: []
     knowledge: []
 
-  mvt-add-context:
+  mvt-manage-context:
     agent: conductor
-    description: "Interactively add or update project context information in the MVTT workspace. This skill should be used when user wants to manually add project details, requirements, architecture info, coding standards, or team conventions."
-    path: .claude/skills/mvt-add-context/SKILL.md
+    description: "Unified entry point for managing knowledge and registry. Supports subcommands: add (with AI routing), remove, move, rename, list. Use this skill instead of mvt-add-context."
+    path: .claude/skills/mvt-manage-context/SKILL.md
     template: null
     category: utility
     depends_on: []

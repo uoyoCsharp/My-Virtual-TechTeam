@@ -73,7 +73,7 @@ Resource categories:
 | Template | `_templates/` | Structured output format template | `_templates/{name}-output.md` |
 
 **Knowledge vs References mapping**:
-- `knowledge` (MVTT concept): Entries declared in registry.yaml, loaded via Activation Protocol. Use for knowledge that applies across multiple skills or is managed by `/mvt-add-context`.
+- `knowledge` (MVTT concept): Entries declared in registry.yaml, loaded via Activation Protocol. Use for knowledge that applies across multiple skills or is managed by `/mvt-manage-context`.
 - `references/` (per-skill concept): Files bundled inside the skill directory, loaded on demand. Use for documentation specific to this skill only.
 
 To avoid duplication, information should live in either SKILL.md, references files, or knowledge entries -- not in multiple places.

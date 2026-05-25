@@ -7,11 +7,14 @@
 ### Breakdown by Category
 | Category | Files | Est. Tokens | Percentage |
 |----------|-------|-------------|------------|
-| Core (session + context) | {n} | {tokens} | {pct}% |
-| Knowledge | {n} | {tokens} | {pct}% |
+| Index (project-context.yaml) | {n} | {tokens} | {pct}% |
+| Semantic Context (project-context.md) | {n} | {tokens} | {pct}% |
+| Shared Knowledge | {n} | {tokens} | {pct}% |
+| Per-Skill Knowledge | {n} | {tokens} | {pct}% |
 | Artifacts | {n} | {tokens} | {pct}% |
-| Skills | {n} | {tokens} | {pct}% |
 | **Total** | **{n}** | **{tokens}** | **100%** |
+
+> Framework-fixed overhead (skill definitions, `core/_framework/`, config, session) is intentionally excluded -- this report shows only what the user can actually optimize.
 
 ### Top 5 Largest Files
 | Rank | File | Est. Tokens | Suggestion |
@@ -29,4 +32,4 @@
 ---
 **Suggested Next Steps**:
 - `/mvt-cleanup` - Clean up old artifacts to reduce context size
-- `/mvt-context-add` - Update project context if information is outdated
+- `/mvt-manage-context` - Add, remove, move, or rename knowledge entries

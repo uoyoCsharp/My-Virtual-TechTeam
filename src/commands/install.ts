@@ -30,7 +30,8 @@ export async function installCommand(options: InstallOptions = {}): Promise<void
   }
 
   const pattern = options.pattern ?? null;
-  const language = await selectLanguage();
+  const interactionLanguage = await selectLanguage("interaction");
+  const documentLanguage = await selectLanguage("document", interactionLanguage);
 
   console.log(`Installing MVTT v${version} into ${projectRoot}...`);
 
@@ -46,7 +47,14 @@ export async function installCommand(options: InstallOptions = {}): Promise<void
     config = config.replace(/active:\s*""/, `active: "${pattern}"`);
     console.log(`Pattern set: ${pattern}`);
   }
-  config = config.replace(/language:\s*en-US/, `language: ${language}`);
+  config = config.replace(
+    /interaction_language:\s*en-US/,
+    `interaction_language: ${interactionLanguage}`,
+  );
+  config = config.replace(
+    /document_output_language:\s*en-US/,
+    `document_output_language: ${documentLanguage}`,
+  );
   writeFileSync(configPath, config, "utf-8");
 
   writeInstallationManifest(projectRoot, version, pattern, materialized, null);
@@ -57,25 +65,41 @@ export async function installCommand(options: InstallOptions = {}): Promise<void
   console.log(`\n${color.green("Installation complete:")}`);
   console.log(`  ${generatedCount} generated files`);
   console.log(`  ${createOnceCount} user-editable files`);
-  console.log(`  Language: ${language}`);
+  console.log(`  Interaction language: ${interactionLanguage}`);
+  console.log(`  Document output language: ${documentLanguage}`);
   console.log(`  Manifest: ${color.gray(path.relative(projectRoot, manifestPath(projectRoot)))}`);
   console.log(`\n${color.bold("Next steps:")}`);
   console.log(`  Run ${color.cyan("/mvt-init")} in Claude Code to initialize the project`);
 }
 
-async function selectLanguage(): Promise<Language> {
-  if (!process.stdin.isTTY) return "en-US";
+async function selectLanguage(
+  kind: "interaction" | "document",
+  fallback?: Language,
+): Promise<Language> {
+  if (!process.stdin.isTTY) return fallback ?? "en-US";
+
+  const message =
+    kind === "interaction"
+      ? "Interaction language (chat replies, prompts) / 交互语言"
+      : `Document output language (artifacts, project-context.md) / 文档输出语言${
+          fallback ? ` [default: ${fallback}]` : ""
+        }`;
+
+  const initial =
+    kind === "document" && fallback === "zh-CN"
+      ? 1
+      : 0;
 
   const response = await prompts(
     {
       type: "select",
       name: "language",
-      message: "Select language / 选择语言",
+      message,
       choices: [
         { title: "English (en-US)", value: "en-US" },
         { title: "中文 (zh-CN)", value: "zh-CN" },
       ],
-      initial: 0,
+      initial,
     },
     {
       onCancel: () => {

@@ -72,7 +72,7 @@ Identify public interfaces:
    - Fill each template section with analysis results
    - If a section has no relevant content, include the heading with "(No relevant content detected)"
 
-2. Write the output to `.ai-agents/workspace/project-context.md`:
+2. Write the output to `.ai-agents/knowledge/project/_generated/project-context.md`:
    - If analyzing a single project, write that project's section
    - If analyzing multiple projects (`--all`), write all sections separated by `---`
    - If the file already exists, merge with existing content:

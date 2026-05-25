@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import {
   existsSync,
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   rmSync,
@@ -13,6 +14,7 @@ import {
   readInstallationManifest,
   writeInstallationManifest,
 } from "../../src/fs/install-manifest.js";
+import { updateCommand } from "../../src/commands/update.js";
 
 const PACKAGE_ROOT = path.resolve(".");
 
@@ -56,6 +58,37 @@ describe("update (via re-materialize)", () => {
     const content = readFileSync(skillPath, "utf-8");
     expect(content.startsWith("---\n")).toBe(true);
     expect(content).not.toBe("tampered");
+  });
+
+  it("removes stale generated files (e.g. retired skills)", () => {
+    const initial = materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
+    const stalePath = ".claude/skills/mvt-add-context/SKILL.md";
+    const staleAbs = path.join(tmpDir, stalePath);
+    mkdirSync(path.dirname(staleAbs), { recursive: true });
+    writeFileSync(staleAbs, "stale legacy skill", "utf-8");
+
+    const initialPlusStale = [
+      ...initial,
+      {
+        absPath: staleAbs,
+        relPath: stalePath,
+        hash: "deadbeef",
+        category: "generated" as const,
+      },
+    ];
+    writeInstallationManifest(tmpDir, "2.0.0", null, initialPlusStale, null);
+
+    const originalCwd = process.cwd();
+    process.chdir(tmpDir);
+    try {
+      updateCommand();
+    } finally {
+      process.chdir(originalCwd);
+    }
+
+    expect(existsSync(staleAbs)).toBe(false);
+    expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-add-context"))).toBe(false);
+    expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-manage-context/SKILL.md"))).toBe(true);
   });
 
   it("updates last_updated_at on re-install", () => {

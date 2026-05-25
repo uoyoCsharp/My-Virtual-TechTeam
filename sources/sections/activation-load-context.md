@@ -23,8 +23,8 @@ For each entry:
   4. If resolved variable is empty or path does not exist → Skip this entry
 
 Default shared entries (always present):
-- `core` → `knowledge/core/review-principles.md`
-- `project-context` → `workspace/project-context.md` (skipped if file does not exist)
+- `core` → `knowledge/core/manifest.yaml` (resolved via `files_from_manifest: true`; loads every entry where `auto_load: true`, mixing framework + user origin)
+- `project-context` → `knowledge/project/_generated/project-context.md` (skipped if file does not exist; legacy path was `workspace/project-context.md` -- run `mvtt update --migrate-paths` to relocate)
 
 #### B. Per-Skill Knowledge (current skill only)
 Read `.ai-agents/registry.yaml` > `skills.{{current_skill}}.knowledge`.

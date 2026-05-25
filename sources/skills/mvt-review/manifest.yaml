@@ -52,8 +52,8 @@ sections:
     source: sections/activation-load-context.md
     params:
       extended_context:
-        - ".ai-agents/workspace/project-context.md -- Project semantic context (layers, modules, business rules)"
-        - ".ai-agents/knowledge/core/review-principles.md -- Universal review principles"
+        - ".ai-agents/knowledge/project/_generated/project-context.md -- Project semantic context (layers, modules, business rules)"
+        - ".ai-agents/knowledge/core/_framework/review-principles.md -- Universal review principles"
         - ".ai-agents/knowledge/principle/coding-standards.md -- Project coding standards"
 
   - type: shared

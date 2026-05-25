@@ -7,8 +7,8 @@ generated:
     source: "build:templates"
   - pattern: ".ai-agents/skills/_templates/project-context.md"
     source: "build:templates"
-  - pattern: ".ai-agents/knowledge/core/**"
-    source: "copy:sources/knowledge/core/"
+  - pattern: ".ai-agents/knowledge/core/_framework/**"
+    source: "copy:sources/knowledge/core/_framework/"
   - pattern: ".ai-agents/registry.yaml"
     source: "copy:registry.yaml"
 
@@ -19,9 +19,13 @@ create_once:
     source: "sources/defaults/session.yaml"
   - path: ".ai-agents/workspace/project-context.yaml"
     source: "sources/defaults/project-context.yaml"
+  - path: ".ai-agents/knowledge/core/manifest.yaml"
+    source: "sources/knowledge/core/manifest.yaml"
 
 user_data_dirs:
   - ".ai-agents/workspace/artifacts/"
   - ".ai-agents/skills/_templates/custom/"
   - ".ai-agents/knowledge/principle/"
   - ".ai-agents/knowledge/project/"
+  - ".ai-agents/knowledge/project/_generated/"
+  - ".ai-agents/knowledge/core/user/"

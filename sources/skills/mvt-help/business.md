@@ -51,8 +51,9 @@ Show all available skills grouped by category:
 | Skill | Description |
 |-------|-------------|
 | `/mvt-help` | Show this help information |
+| `/mvt-resume` | Resume an in-progress task in a new conversation (reads session state) |
 | `/mvt-create-skill` | Create custom MVTT skills through guided workflow |
-| `/mvt-add-context` | Interactively add or update project context |
+| `/mvt-manage-context` | Add, remove, move, rename, or list knowledge entries (with AI routing) |
 | `/mvt-check-context` | Analyze context token load and optimization |
 | `/mvt-template` | View, customize, and manage output templates |
 

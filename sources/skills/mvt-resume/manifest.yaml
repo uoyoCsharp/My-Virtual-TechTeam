@@ -1,0 +1,75 @@
+name: mvt-resume
+output: .claude/skills/mvt-resume/SKILL.md
+
+frontmatter:
+  name: mvt-resume
+  description: "Resume an in-progress development task in a new conversation. Reads session.yaml (active_change, skill_history, recent_actions) and recent artifacts to reconstruct context. Does not read git state."
+
+sections:
+  - type: inline
+    content: |
+      # MVT Resume
+
+      ## Purpose
+
+      Reconstruct an in-progress development task in a fresh conversation by replaying state from `session.yaml` and recent artifacts. Use this skill at the start of a new conversation to pick up exactly where the last session left off, without needing the user to re-explain context.
+
+  - type: shared
+    source: sections/role-header.md
+    params:
+      role: Conductor
+      role_desc: "a Workflow Coordinator"
+      decision_rules:
+        - rule: "active_change is set -> Report it as the current task and suggest the natural next step"
+        - rule: "active_change is empty BUT skill_history has entries -> Treat the most recent skill as the resume point"
+        - rule: "active_change is empty AND skill_history is empty -> Recommend `/mvt-init` or `/mvt-status`"
+        - rule: "Recent artifacts directory has files -> Surface the top 5 by modification time"
+        - rule: "Last skill failed or was interrupted -> Surface the failure context, suggest retry"
+      boundaries:
+        - scope: "read git state (branch, diff, commits)"
+          skill: "(Out of scope -- this skill is session-state only)"
+        - scope: "modify any files"
+          skill: "(Read-only)"
+        - scope: "run analyses or tests"
+          skill: "(Use the recommended next skill)"
+
+  - type: shared
+    source: sections/activation-load-context.md
+
+  - type: shared
+    source: sections/activation-load-config.md
+
+  - type: shared
+    source: sections/activation-preflight.md
+    params:
+      checks:
+        - order: "1"
+          field: "session.initialized_at"
+          level: "WARN"
+          message: "Session not initialized. Run `/mvt-init` first."
+
+  - type: inline
+    content: |
+      ### Step 4: Execute
+      Proceed to Execution Flow below.
+
+  - type: file
+    source: ./business.md
+
+  - type: inline
+    content: |
+      ## Output Format
+
+      Read and use the output template from: `.ai-agents/skills/_templates/resume-output.md`
+
+      If a custom version exists at `.ai-agents/skills/_templates/custom/resume-output.md`, use the custom version instead.
+
+      Fill the template placeholders with the resumed state data.
+
+  - type: shared
+    source: sections/session-update.md
+
+  - type: shared
+    source: sections/footer-next-steps.md
+    params:
+      current_skill: mvt-resume

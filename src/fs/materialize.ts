@@ -12,6 +12,7 @@ import { parse as parseYaml } from "yaml";
 import type { Manifest } from "../types/manifest.js";
 import { assembleFromManifest } from "../build/assembler.js";
 import { hashString, hashFile } from "./hash.js";
+import { updateCoreManifest } from "./core-manifest.js";
 
 export interface MaterializedFile {
   absPath: string;
@@ -27,17 +28,31 @@ export interface MaterializeOptions {
   overwriteCreateOnce?: boolean;
 }
 
-function copyRecursive(srcDir: string, destDir: string, collected: MaterializedFile[], projectRoot: string): void {
+function copyRecursive(
+  srcDir: string,
+  destDir: string,
+  collected: MaterializedFile[],
+  projectRoot: string,
+  shouldSkip?: (relSrcPath: string) => boolean,
+  baseSrcDir?: string,
+): void {
   if (!existsSync(srcDir)) return;
   mkdirSync(destDir, { recursive: true });
+
+  const rootSrcDir = baseSrcDir ?? srcDir;
 
   for (const entry of readdirSync(srcDir)) {
     const srcPath = path.join(srcDir, entry);
     const destPath = path.join(destDir, entry);
     const stat = statSync(srcPath);
 
+    if (shouldSkip) {
+      const relFromRoot = path.relative(rootSrcDir, srcPath).replace(/\\/g, "/");
+      if (shouldSkip(relFromRoot)) continue;
+    }
+
     if (stat.isDirectory()) {
-      copyRecursive(srcPath, destPath, collected, projectRoot);
+      copyRecursive(srcPath, destPath, collected, projectRoot, shouldSkip, rootSrcDir);
     } else {
       copyFileSync(srcPath, destPath);
       collected.push({
@@ -85,9 +100,30 @@ export function materializeProject(options: MaterializeOptions): MaterializedFil
     }
   }
 
+  // Skip core/manifest.yaml during the recursive copy: it is treated as
+  // CREATE_ONCE and reconciled separately via updateCoreManifest() below so
+  // that user-added entries (origin: user) are preserved across `mvtt update`.
   const knowledgeSrc = path.resolve(sourcesDir, "knowledge");
   const knowledgeDest = path.resolve(projectRoot, ".ai-agents/knowledge");
-  copyRecursive(knowledgeSrc, knowledgeDest, materialized, projectRoot);
+  copyRecursive(
+    knowledgeSrc,
+    knowledgeDest,
+    materialized,
+    projectRoot,
+    (relPath) => relPath === "core/manifest.yaml",
+  );
+
+  const coreManifestDest = path.resolve(
+    projectRoot,
+    ".ai-agents/knowledge/core/manifest.yaml",
+  );
+  updateCoreManifest(projectRoot, packageRoot);
+  materialized.push({
+    absPath: coreManifestDest,
+    relPath: ".ai-agents/knowledge/core/manifest.yaml",
+    hash: hashFile(coreManifestDest),
+    category: "create_once",
+  });
 
   const registrySrc = path.resolve(packageRoot, "registry.yaml");
   const registryDest = path.resolve(projectRoot, ".ai-agents/registry.yaml");
@@ -140,6 +176,8 @@ export function materializeProject(options: MaterializeOptions): MaterializedFil
     ".ai-agents/skills/_templates/custom",
     ".ai-agents/knowledge/principle",
     ".ai-agents/knowledge/project",
+    ".ai-agents/knowledge/project/_generated",
+    ".ai-agents/knowledge/core/user",
   ];
   for (const dir of userDataDirs) {
     mkdirSync(path.resolve(projectRoot, dir), { recursive: true });

@@ -49,8 +49,8 @@ sections:
     source: sections/activation-load-context.md
     params:
       extended_context:
-        - ".ai-agents/workspace/project-context.md -- Project semantic context (business rules for test design)"
-        - ".ai-agents/knowledge/core/review-principles.md -- Code quality principles"
+        - ".ai-agents/knowledge/project/_generated/project-context.md -- Project semantic context (business rules for test design)"
+        - ".ai-agents/knowledge/core/_framework/review-principles.md -- Code quality principles"
         - ".ai-agents/knowledge/principle/coding-standards.md -- Project coding standards"
         - "Implementation files to be tested"
 

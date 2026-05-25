@@ -30,7 +30,7 @@ sections:
         - scope: "clean up artifacts"
           skill: "/mvt-cleanup"
         - scope: "modify context"
-          skill: "/mvt-add-context"
+          skill: "/mvt-manage-context"
 
   - type: shared
     source: sections/activation-load-context.md

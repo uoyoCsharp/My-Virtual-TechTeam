@@ -72,7 +72,7 @@ sections:
       ### Independent Operation Rules
       - This is an independent operation -- no workflow prerequisites required
       - Does NOT create a change-id
-      - Output is written to `.ai-agents/workspace/project-context.md`
+      - Output is written to `.ai-agents/knowledge/project/_generated/project-context.md`
 
       ### Step 4: Execute
       Proceed to Execution Flow below.
@@ -90,7 +90,7 @@ sections:
 
       The template defines section headings only. Generate content for each section based on code analysis results.
 
-      Write the final output to: `.ai-agents/workspace/project-context.md`
+      Write the final output to: `.ai-agents/knowledge/project/_generated/project-context.md`
 
       Every response MUST end with a Suggested Next Steps section.
 

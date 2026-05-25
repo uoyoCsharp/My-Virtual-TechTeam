@@ -70,9 +70,11 @@ sections:
 
       | Key | Type | Default | Description |
       |-----|------|---------|-------------|
-      | `preferences.language` | enum | `en-US` | Output language for all responses and documents (en-US, zh-CN) |
+      | `preferences.interaction_language` | enum | `en-US` | Language for interactive output: chat replies, prompts, tables (en-US, zh-CN) |
+      | `preferences.document_output_language` | enum | `en-US` | Language for persisted documents: artifacts, project-context.md (falls back to interaction_language) |
       | `preferences.output.no_emojis` | bool | `true` | Disable emojis in output |
       | `preferences.output.data_format` | enum | `yaml` | Data output format (yaml, json) |
+      | `preferences.context_routing.relevance_threshold` | int | `70` | AI routing threshold for `/mvt-manage-context add` (0-100) |
 
       ### Knowledge Settings
 

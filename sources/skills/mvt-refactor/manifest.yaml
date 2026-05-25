@@ -56,7 +56,7 @@ sections:
     source: sections/activation-load-context.md
     params:
       extended_context:
-        - ".ai-agents/workspace/project-context.md -- Project semantic context (modules, layers, business rules)"
+        - ".ai-agents/knowledge/project/_generated/project-context.md -- Project semantic context (modules, layers, business rules)"
         - ".ai-agents/knowledge/principle/coding-standards.md -- Project coding standards"
         - "Related source files to be refactored"
 

@@ -1,0 +1,11 @@
+name: resume-output
+output: .ai-agents/skills/_templates/resume-output.md
+
+frontmatter:
+  id: resume-output
+  version: "1.0"
+  skill: mvt-resume
+
+sections:
+  - type: file
+    source: ./body.md

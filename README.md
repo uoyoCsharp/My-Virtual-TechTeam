@@ -88,7 +88,7 @@ npx @uoyo/mvtt install --pattern ddd    # Preset architecture pattern (ddd | cle
 |-------|-------------|
 | `/mvt-help` | Show available skills and workflow guidance |
 | `/mvt-create-skill` | Create custom MVTT skills |
-| `/mvt-add-context` | Add or update project context interactively |
+| `/mvt-manage-context` | Add, remove, move, rename, or list knowledge entries (with AI routing) |
 | `/mvt-check-context` | Analyze context token load and optimization |
 | `/mvt-template` | View and customize output templates |
 

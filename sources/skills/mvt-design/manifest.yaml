@@ -47,7 +47,7 @@ sections:
     source: sections/activation-load-context.md
     params:
       extended_context:
-        - ".ai-agents/workspace/project-context.md -- Project semantic context (modules, layers, business rules)"
+        - ".ai-agents/knowledge/project/_generated/project-context.md -- Project semantic context (modules, layers, business rules)"
         - ".ai-agents/workspace/artifacts/{active_change.id}/analysis.md -- Analysis from previous phase"
         - ".ai-agents/knowledge/core/ -- Core knowledge files"
 

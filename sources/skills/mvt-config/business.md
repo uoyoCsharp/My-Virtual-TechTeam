@@ -15,9 +15,11 @@
 5. Apply and write `config.yaml`
 
 ### Guided Wizard (`wizard`)
-1. Step 1: Language Preference
-2. Step 2: Output Style (emojis, data format)
-3. Summary Preview -> User confirms -> Apply all changes
+1. Step 1: Interaction Language (chat replies, prompts)
+2. Step 2: Document Output Language (artifacts, persisted markdown) -- defaults to interaction language; user can override
+3. Step 3: Output Style (emojis, data format)
+4. Step 4: Context Routing Threshold (`/mvt-manage-context add`)
+5. Summary Preview -> User confirms -> Apply all changes
 
 ### Reset (`reset`)
 1. Show all settings that will be reset
@@ -30,9 +32,13 @@
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| `preferences.language` | enum | `en-US` | Output language for all responses and documents (en-US, zh-CN) |
+| `preferences.interaction_language` | enum | `en-US` | Language for interactive output: chat replies, prompts, tables (en-US, zh-CN) |
+| `preferences.document_output_language` | enum | `en-US` | Language for persisted documents: artifacts, project-context.md, reports (en-US, zh-CN). Falls back to `interaction_language` if missing. |
 | `preferences.output.no_emojis` | bool | `true` | Disable emojis in output |
 | `preferences.output.data_format` | enum | `yaml` | Data output format (yaml, json) |
+| `preferences.context_routing.relevance_threshold` | int | `70` | AI routing threshold for `/mvt-manage-context add` (0-100) |
+
+**Legacy compatibility**: older installs may still have `preferences.language`. Run `mvtt update --migrate-config` to split it into the two fields above.
 
 ### Knowledge Management
 

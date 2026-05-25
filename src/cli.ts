@@ -26,6 +26,10 @@ export async function run(argv: string[]): Promise<void> {
     .command("update")
     .description("Update MVTT to latest version")
     .option("--check", "Only report version diff, do not modify")
+    .option("--migrate-manifests", "Clean up legacy core/manifest.yaml fields and add origin")
+    .option("--migrate-paths", "Move workspace/project-context.md to knowledge/project/_generated/")
+    .option("--migrate-config", "Split config.yaml language into interaction_language + document_output_language")
+    .option("--migrate-all", "Run every available migration")
     .action((opts) => {
       updateCommand(opts);
     });

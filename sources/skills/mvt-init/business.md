@@ -155,3 +155,15 @@ When `--refresh` is specified:
    - Discard `requirements`, `architecture` sections -- suggest running `/mvt-analyze-code` to regenerate
    - Discard `environment` section
    - Discard any `pattern` related fields
+
+### Step 7: Determine Project State (drives next-step recommendation)
+
+After Step 5 writes are committed, classify the project state to select the appropriate next_suggestions branch from registry.yaml:
+
+| Condition | Detection logic |
+|-----------|-----------------|
+| `has_existing_code` | Step 1 detected at least one source file (any language) under recognized source directories (`src/`, `lib/`, `app/`, `cmd/`, `internal/`, `pkg/`) OR a package manager file at root |
+| `empty_project` | Step 1 found no source files AND no package manager file (truly empty or docs-only repo) -- the recommended next step is `/mvt-manage-context` to manually capture context |
+| `default` | Neither condition matched (rare -- fallback path) |
+
+Pass the resolved condition to the output template so the suggested next steps section renders the matching branch from `registry.yaml > skills.mvt-init.next_suggestions.conditional[]`.
