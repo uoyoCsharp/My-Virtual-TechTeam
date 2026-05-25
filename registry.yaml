@@ -17,20 +17,10 @@ knowledge:
       type: "dynamic"
       source: "knowledge/core/"
       files_from_manifest: true
-      # Loading: read .ai-agents/knowledge/core/manifest.yaml > files[]
-      # All entries with auto_load: true are loaded (mix of framework + user origin).
     - id: "project-context"
       type: "dynamic"
       source: "knowledge/project/_generated/"
       files: ["project-context.md"]
-      # Loading: check .ai-agents/knowledge/project/_generated/project-context.md exists
-      # Exists -> load entire file
-      # Not exists -> skip (analyze-code not yet run)
-      # Note: legacy installs may still have this file at workspace/project-context.md.
-      # Run `mvtt update --migrate-paths` to relocate.
-    # - id: "project-conventions"
-    #   path: "knowledge/principle/project-conventions/"
-    #   files: ["coding-standards.md"]
 
 # ============================================================
 # Skills
@@ -43,26 +33,6 @@ skills:
     path: .claude/skills/mvt-init/SKILL.md
     template: .ai-agents/skills/_templates/init-output.md
     category: project
-    depends_on: []
-    knowledge: []
-    next_suggestions:
-      conditional:
-        - condition: "has_existing_code"
-          primary: mvt-analyze-code
-          primary_desc: "Reverse-analyze existing codebase to generate project-context.md"
-        - condition: "empty_project"
-          primary: mvt-manage-context
-          primary_desc: "Manually add project context, requirements, or team conventions"
-        - condition: "default"
-          primary: mvt-analyze
-          primary_desc: "Start analyzing requirements"
-      alternatives:
-        - skill: mvt-manage-context
-          desc: "Manually add team conventions or domain knowledge"
-        - skill: mvt-analyze
-          desc: "Start from a requirements document"
-        - skill: mvt-status
-          desc: "Inspect current project status"
 
   mvt-status:
     agent: conductor
@@ -70,8 +40,6 @@ skills:
     path: .claude/skills/mvt-status/SKILL.md
     template: .ai-agents/skills/_templates/status-output.md
     category: project
-    depends_on: []
-    knowledge: []
 
   mvt-config:
     agent: conductor
@@ -79,8 +47,6 @@ skills:
     path: .claude/skills/mvt-config/SKILL.md
     template: .ai-agents/skills/_templates/config-output.md
     category: project
-    depends_on: []
-    knowledge: []
 
   mvt-sync-context:
     agent: conductor
@@ -88,8 +54,6 @@ skills:
     path: .claude/skills/mvt-sync-context/SKILL.md
     template: .ai-agents/skills/_templates/sync-context-output.md
     category: project
-    depends_on: []
-    knowledge: []
 
   mvt-cleanup:
     agent: conductor
@@ -97,8 +61,6 @@ skills:
     path: .claude/skills/mvt-cleanup/SKILL.md
     template: .ai-agents/skills/_templates/cleanup-output.md
     category: project
-    depends_on: []
-    knowledge: []
 
   # --- Analyst Skills ---
   mvt-analyze:
@@ -107,11 +69,6 @@ skills:
     path: .claude/skills/mvt-analyze/SKILL.md
     template: .ai-agents/skills/_templates/analyze-output.md
     category: workflow
-    depends_on: []
-    knowledge: []
-    next_suggestions:
-      primary: mvt-design
-      primary_desc: "Create architecture based on this analysis"
 
   mvt-analyze-code:
     agent: analyst
@@ -119,8 +76,6 @@ skills:
     path: .claude/skills/mvt-analyze-code/SKILL.md
     template: .ai-agents/skills/_templates/project-context.md
     category: workflow
-    depends_on: []
-    knowledge: []
 
   # --- Architect Skills ---
   mvt-design:
@@ -130,13 +85,6 @@ skills:
     template: .ai-agents/skills/_templates/design-output.md
     category: workflow
     depends_on: [mvt-analyze]
-    knowledge: []
-    next_suggestions:
-      primary: mvt-implement
-      primary_desc: "Implement features based on this design"
-      alternatives:
-        - skill: mvt-plan-dev
-          desc: "If the change is large, decompose it into a tracked plan first"
 
   mvt-plan-dev:
     agent: architect
@@ -145,15 +93,6 @@ skills:
     template: .ai-agents/skills/_templates/plan-dev-output.md
     category: workflow
     depends_on: [mvt-analyze]
-    knowledge: []
-    next_suggestions:
-      primary: mvt-implement
-      primary_desc: "Start implementing the plan's current task"
-      alternatives:
-        - skill: mvt-update-plan
-          desc: "Mark task progress (done/blocked/skipped) and advance current_task"
-        - skill: mvt-resume
-          desc: "Pick this plan up later from a fresh conversation"
 
   mvt-update-plan:
     agent: architect
@@ -161,21 +100,6 @@ skills:
     path: .claude/skills/mvt-update-plan/SKILL.md
     template: null
     category: project
-    depends_on: []
-    knowledge: []
-    next_suggestions:
-      conditional:
-        - condition: "plan_done"
-          primary: mvt-cleanup
-          primary_desc: "All tasks complete -- clean up artifacts and prepare to start the next change"
-        - condition: "default"
-          primary: mvt-implement
-          primary_desc: "Continue with the next current_task"
-      alternatives:
-        - skill: mvt-resume
-          desc: "Refresh context after task transitions"
-        - skill: mvt-status
-          desc: "Inspect overall progress across changes"
 
   # --- Developer Skills ---
   mvt-implement:
@@ -185,10 +109,6 @@ skills:
     template: .ai-agents/skills/_templates/implement-output.md
     category: workflow
     depends_on: [mvt-design]
-    knowledge: []
-    next_suggestions:
-      primary: mvt-review
-      primary_desc: "Review the implementation"
 
   mvt-fix:
     agent: developer
@@ -196,8 +116,6 @@ skills:
     path: .claude/skills/mvt-fix/SKILL.md
     template: .ai-agents/skills/_templates/fix-output.md
     category: shortcut
-    depends_on: []
-    knowledge: []
 
   mvt-refactor:
     agent: developer
@@ -205,8 +123,6 @@ skills:
     path: .claude/skills/mvt-refactor/SKILL.md
     template: .ai-agents/skills/_templates/refactor-output.md
     category: shortcut
-    depends_on: []
-    knowledge: []
 
   # --- Reviewer Skills ---
   mvt-review:
@@ -221,9 +137,6 @@ skills:
         type: "static"
         source: "knowledge/principle/coding-standards/"
         files: ["rules.md", "naming-conventions.md"]
-    next_suggestions:
-      primary: mvt-fix
-      primary_desc: "Address critical issues"
 
   # --- Tester Skills ---
   mvt-test:
@@ -233,7 +146,6 @@ skills:
     template: .ai-agents/skills/_templates/test-output.md
     category: workflow
     depends_on: [mvt-implement]
-    knowledge: []
 
   # --- Utility Skills ---
   mvt-help:
@@ -242,8 +154,6 @@ skills:
     path: .claude/skills/mvt-help/SKILL.md
     template: null
     category: utility
-    depends_on: []
-    knowledge: []
 
   mvt-resume:
     agent: conductor
@@ -251,8 +161,6 @@ skills:
     path: .claude/skills/mvt-resume/SKILL.md
     template: .ai-agents/skills/_templates/resume-output.md
     category: utility
-    depends_on: []
-    knowledge: []
 
   mvt-create-skill:
     agent: conductor
@@ -260,8 +168,6 @@ skills:
     path: .claude/skills/mvt-create-skill/SKILL.md
     template: null
     category: utility
-    depends_on: []
-    knowledge: []
 
   mvt-manage-context:
     agent: conductor
@@ -269,8 +175,6 @@ skills:
     path: .claude/skills/mvt-manage-context/SKILL.md
     template: null
     category: utility
-    depends_on: []
-    knowledge: []
 
   mvt-check-context:
     agent: conductor
@@ -278,8 +182,6 @@ skills:
     path: .claude/skills/mvt-check-context/SKILL.md
     template: .ai-agents/skills/_templates/context-check-output.md
     category: utility
-    depends_on: []
-    knowledge: []
 
   mvt-template:
     agent: conductor
@@ -287,5 +189,3 @@ skills:
     path: .claude/skills/mvt-template/SKILL.md
     template: null
     category: utility
-    depends_on: []
-    knowledge: []

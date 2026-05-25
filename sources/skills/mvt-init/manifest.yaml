@@ -94,3 +94,21 @@ sections:
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-init
+      conditional_suggestions:
+        conditions:
+          - condition: "has_existing_code"
+            primary: mvt-analyze-code
+            primary_desc: "Reverse-analyze existing codebase to generate project-context.md"
+          - condition: "empty_project"
+            primary: mvt-manage-context
+            primary_desc: "Manually add project context, requirements, or team conventions"
+          - condition: "default"
+            primary: mvt-analyze
+            primary_desc: "Start analyzing requirements"
+        alternatives:
+          - skill: mvt-manage-context
+            desc: "Manually add team conventions or domain knowledge"
+          - skill: mvt-analyze
+            desc: "Start from a requirements document"
+          - skill: mvt-status
+            desc: "Inspect current project status"

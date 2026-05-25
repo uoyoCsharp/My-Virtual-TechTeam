@@ -117,3 +117,16 @@ sections:
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-update-plan
+      conditional_suggestions:
+        conditions:
+          - condition: "plan_done"
+            primary: mvt-cleanup
+            primary_desc: "All tasks complete -- clean up artifacts and prepare to start the next change"
+          - condition: "default"
+            primary: mvt-implement
+            primary_desc: "Continue with the next current_task"
+        alternatives:
+          - skill: mvt-resume
+            desc: "Refresh context after task transitions"
+          - skill: mvt-status
+            desc: "Inspect overall progress across changes"

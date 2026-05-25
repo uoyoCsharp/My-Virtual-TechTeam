@@ -1,25 +1,33 @@
 ## Suggested Next Steps
 
 Recommend 2-3 relevant next skills based on the skill just completed (`{{current_skill}}`) and the current project state.
+{{#conditional_suggestions}}
+
+### Conditional Recommendations (built into this skill)
+
+The skill's business flow determines which branch applies:
+
+{{#conditions}}
+- **When `{{condition}}`**: Primary → `/{primary}` -- {primary_desc}
+{{/conditions}}
+
+{{#alternatives}}
+- `/{skill}` -- {desc}
+{{/alternatives}}
+
+Find the entry whose `condition` matches the detected state. If none match, use the entry with `condition: "default"`.
+Render the matched `primary` as the primary recommendation, then render each `alternatives[]` entry.
+{{/conditional_suggestions}}
+{{^conditional_suggestions}}
 
 ### Resolution order
 
-1. **Check `registry.yaml > skills.{{current_skill}}.next_suggestions` first.** If present, prefer it over generic recommendations.
-
-2. **Conditional form** (if `next_suggestions.conditional[]` exists):
-   - The skill's business flow determines which branch applies (see the skill's own logic).
-   - Find the entry whose `condition` matches the detected state. If none match, use the entry with `condition: "default"` (every conditional block is required to include a `default` branch).
-   - Render the matched entry's `primary` as the primary recommendation: `/{primary}` -- {primary_desc}
-   - Then render each `alternatives[]` entry: `/{skill}` -- {desc}
-
-3. **Legacy single-primary form** (if only `next_suggestions.primary` exists):
-   - Render: `/{primary}` -- {primary_desc}
-   - Add 1-2 more suggestions inferred from `skill_history`, the current `active_change`, and other skill descriptions in `registry.yaml`.
-
-4. **No `next_suggestions` declared**: Infer 2-3 suggestions from:
-   - `skill_history` in `session.yaml`
-   - `category` and `description` of each skill in `registry.yaml`
-   - The current `active_change` state (if in progress)
+Infer 2-3 suggestions from:
+- `skill_history` in `session.yaml`
+- `category` and `description` of each skill in `registry.yaml`
+- The current `active_change` state (if in progress)
+- The `depends_on` relationships between skills
+{{/conditional_suggestions}}
 
 ### Format
 
