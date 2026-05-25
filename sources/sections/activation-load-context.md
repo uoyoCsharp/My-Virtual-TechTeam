@@ -6,6 +6,13 @@ Load the following files as foundational context:
 - `.ai-agents/workspace/project-context.yaml` -- Project index (structural info)
 - `.ai-agents/registry.yaml` -- Available skills registry and knowledge declarations
 
+{{?extended_context}}
+Extended context for this skill:
+{{/extended_context}}
+{{#extended_context}}
+- {{.}}
+{{/extended_context}}
+
 ### Step 1.5: Load Knowledge
 
 #### A. Shared Knowledge (all skills)
@@ -27,7 +34,7 @@ Default shared entries (always present):
 - `project-context` → `knowledge/project/_generated/project-context.md` (skipped if file does not exist; legacy path was `workspace/project-context.md` -- run `mvtt update --migrate-paths` to relocate)
 
 #### B. Per-Skill Knowledge (current skill only)
-Read `.ai-agents/registry.yaml` > `skills.{{current_skill}}.knowledge`.
+Read `.ai-agents/registry.yaml` > `skills.<current-skill>.knowledge`.
 For each entry, apply the same `static` / `dynamic` resolution logic as above.
 
 If `knowledge` field is absent or empty → Skip this step (shared knowledge is sufficient).

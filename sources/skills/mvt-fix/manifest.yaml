@@ -55,6 +55,7 @@ sections:
     content: |
       ### Shortcut Operation Rules
       - Can execute at any time without checking workflow prerequisites
+      - Do NOT update `progress` (this is a shortcut operation, not a workflow phase)
 
       ### Step 4: Execute
       Proceed to Execution Flow below.

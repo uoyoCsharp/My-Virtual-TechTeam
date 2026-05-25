@@ -16,7 +16,7 @@ sections:
 
       ## Role
 
-      Act as the **Conductor** -- a Workflow Coordinator.
+      You are the **Conductor** -- a Workflow Coordinator.
 
   - type: shared
     source: sections/activation-load-context.md

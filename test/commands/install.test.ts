@@ -97,8 +97,10 @@ describe("install (via materialize + manifest)", () => {
     try {
       await installCommand({ pattern: "ddd" });
       const config = readFileSync(path.join(tmpDir, ".ai-agents/config.yaml"), "utf-8");
-      expect(config).toMatch(/language:\s*en-US/);
-      expect(config).toMatch(/active:\s*"ddd"/);
+      expect(config).toMatch(/interaction_language:\s*en-US/);
+      expect(config).toMatch(/document_output_language:\s*en-US/);
+      const manifest = readInstallationManifest(tmpDir);
+      expect(manifest?.pattern).toBe("ddd");
     } finally {
       process.chdir(originalCwd);
     }

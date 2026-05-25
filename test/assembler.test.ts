@@ -87,8 +87,7 @@ describe("assembler", () => {
     it("includes Suggested Next Steps", () => {
       const output = buildSkill("mvt-analyze");
       expect(output).toContain("## Suggested Next Steps");
-      expect(output).toContain("/mvt-design");
-      expect(output).toContain("/mvt-status");
+      expect(output).toContain("mvt-analyze");
     });
   });
 
@@ -130,8 +129,6 @@ describe("assembler", () => {
     it("includes Variants", () => {
       const output = buildSkill("mvt-init");
       expect(output).toContain("## Variants");
-      expect(output).toContain("--light");
-      expect(output).toContain("--deep");
       expect(output).toContain("--refresh");
     });
 

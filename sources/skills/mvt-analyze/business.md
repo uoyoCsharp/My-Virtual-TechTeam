@@ -20,7 +20,7 @@
 - If ambiguities found -> List each with specific question, prioritized by impact
 - If no ambiguities -> Skip this step
 
-### Step 5: Write Artifacts
+### Step 5: Update Workspace
 1. Generate change-id: `{YYYYMMDD}-{slug}` format (e.g., `20260425-user-authentication`)
 2. Append a `## Requirements Analysis` section to `.ai-agents/knowledge/project/_generated/project-context.md`:
    - If the file does not exist, create it with the section

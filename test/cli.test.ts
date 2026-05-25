@@ -89,15 +89,20 @@ describe("CLI commands (in-process)", () => {
     });
 
     it("sets pattern when pattern provided", async () => {
-      await captureIO(tmpDir, () => installCommand({ pattern: "ddd" }));
-      const config = readFileSync(path.join(tmpDir, ".ai-agents/config.yaml"), "utf-8");
-      expect(config).toContain('active: "ddd"');
+      const r = await captureIO(tmpDir, () => installCommand({ pattern: "ddd" }));
+      expect(r.stdout.join("\n")).toContain("Pattern set: ddd");
+      const manifestRaw = readFileSync(
+        path.join(tmpDir, ".ai-agents/.mvtt-manifest.json"),
+        "utf-8",
+      );
+      expect(JSON.parse(manifestRaw).pattern).toBe("ddd");
     });
 
     it("non-TTY install defaults language to en-US", async () => {
       await captureIO(tmpDir, () => installCommand());
       const config = readFileSync(path.join(tmpDir, ".ai-agents/config.yaml"), "utf-8");
-      expect(config).toMatch(/language:\s*en-US/);
+      expect(config).toMatch(/interaction_language:\s*en-US/);
+      expect(config).toMatch(/document_output_language:\s*en-US/);
     });
 
     it("refuses re-install when already installed", async () => {
