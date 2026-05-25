@@ -121,17 +121,12 @@ For each target file, check if it already exists:
    ```
    For multi-project repos, include one entry per detected project.
 
-2. Update `.ai-agents/workspace/session.yaml`:
-   - Set `session.initialized_at` to current timestamp (if empty)
-   - Set `session.last_command` to `/mvt-init`
-   - Append to `skill_history` and `recent_actions`
-
 #### 5.3 Post-write validation
 
 After writing all files, validate:
 - `project-context.yaml` is valid YAML with `projects[]` containing at least one entry
 - Each project entry has required fields: `name`, `path`, `type`, `tech_stack.primary_language`
-- `session.yaml` is structurally intact
+- `session.yaml` is structurally intact and contains: `session`, `active_change` (with `plan_path` / `has_plan`), `recent_changes` (array), `skill_history`, `recent_actions`
 
 If any validation fails → report the specific error and offer to retry or skip.
 

@@ -134,6 +134,48 @@ skills:
     next_suggestions:
       primary: mvt-implement
       primary_desc: "Implement features based on this design"
+      alternatives:
+        - skill: mvt-plan-dev
+          desc: "If the change is large, decompose it into a tracked plan first"
+
+  mvt-plan-dev:
+    agent: architect
+    description: "Generate a structured development plan (plan.yaml) for a large change so progress can be tracked across sessions. This skill should be used after /mvt-design when a change is too big to implement in one pass and needs task-level tracking."
+    path: .claude/skills/mvt-plan-dev/SKILL.md
+    template: .ai-agents/skills/_templates/plan-dev-output.md
+    category: workflow
+    depends_on: [mvt-analyze]
+    knowledge: []
+    next_suggestions:
+      primary: mvt-implement
+      primary_desc: "Start implementing the plan's current task"
+      alternatives:
+        - skill: mvt-update-plan
+          desc: "Mark task progress (done/blocked/skipped) and advance current_task"
+        - skill: mvt-resume
+          desc: "Pick this plan up later from a fresh conversation"
+
+  mvt-update-plan:
+    agent: architect
+    description: "Update a single task in the active change's plan.yaml: change status, attach artifacts, leave notes, and auto-advance current_task. This skill should be used after a workflow skill finishes work that maps to a plan task."
+    path: .claude/skills/mvt-update-plan/SKILL.md
+    template: null
+    category: project
+    depends_on: []
+    knowledge: []
+    next_suggestions:
+      conditional:
+        - condition: "plan_done"
+          primary: mvt-cleanup
+          primary_desc: "All tasks complete -- clean up artifacts and prepare to start the next change"
+        - condition: "default"
+          primary: mvt-implement
+          primary_desc: "Continue with the next current_task"
+      alternatives:
+        - skill: mvt-resume
+          desc: "Refresh context after task transitions"
+        - skill: mvt-status
+          desc: "Inspect overall progress across changes"
 
   # --- Developer Skills ---
   mvt-implement:

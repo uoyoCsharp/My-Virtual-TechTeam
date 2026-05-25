@@ -32,6 +32,9 @@ describe("install (via materialize + manifest)", () => {
     expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-analyze/SKILL.md"))).toBe(true);
     expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-init/SKILL.md"))).toBe(true);
     expect(existsSync(path.join(tmpDir, ".ai-agents/skills/_templates/analyze-output.md"))).toBe(true);
+    expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-plan-dev/SKILL.md"))).toBe(true);
+    expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-update-plan/SKILL.md"))).toBe(true);
+    expect(existsSync(path.join(tmpDir, ".ai-agents/skills/_templates/plan-dev-output.md"))).toBe(true);
   });
 
   it("creates CREATE_ONCE files", () => {

@@ -14,7 +14,8 @@ Determine where the user is in the workflow and what to recommend:
 | Initialized, no semantic context | `/mvt-analyze-code` -- Analyze existing code |
 | No requirements | `/mvt-analyze` -- Analyze requirements |
 | Requirements exist, no architecture | `/mvt-design` -- Design architecture |
-| Architecture exists, not implemented | `/mvt-implement` -- Implement the design |
+| Architecture exists, change is large | `/mvt-plan-dev` -- Decompose into tracked plan |
+| Architecture exists (or plan ready), not implemented | `/mvt-implement` -- Implement the design |
 | Implemented, not reviewed | `/mvt-review` -- Review the code |
 | Reviewed, not tested | `/mvt-test` -- Write tests |
 | All phases complete | `/mvt-cleanup` or start new feature |
@@ -28,6 +29,7 @@ Show all available skills grouped by category:
 | `/mvt-analyze` | Analyze requirements and extract domain concepts |
 | `/mvt-analyze-code` | Analyze existing code to generate project-context.md |
 | `/mvt-design` | Create architecture design based on requirements |
+| `/mvt-plan-dev` | Decompose a large change into a tracked plan.yaml (optional, for big features) |
 | `/mvt-implement` | Implement features based on architecture design |
 | `/mvt-review` | Code review for quality and standards compliance |
 | `/mvt-test` | Generate tests to validate implementations |
@@ -46,6 +48,7 @@ Show all available skills grouped by category:
 | `/mvt-config` | Manage framework configuration |
 | `/mvt-sync-context` | Synchronize context with code changes |
 | `/mvt-cleanup` | Clean up workspace artifacts |
+| `/mvt-update-plan` | Mark a plan task done/blocked/skipped and advance current_task |
 
 **Utility Skills**:
 | Skill | Description |
@@ -62,7 +65,10 @@ Display the standard workflow with current position highlighted:
 
 ```mermaid
 flowchart LR
-    A[init] --> B[analyze-code] --> C[analyze] --> D[design] --> E[implement] --> F[review] --> G[test]
+    A[init] --> B[analyze-code] --> C[analyze] --> D[design] --> D2[plan-dev]
+    D --> E[implement]
+    D2 --> E
+    E --> F[review] --> G[test]
 ```
 
 Color-code based on current progress: green (done), yellow (current/recommended), gray (pending).

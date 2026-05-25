@@ -24,6 +24,8 @@ sections:
         - rule: "If no active change -> Show project info only, suggest starting a workflow"
         - rule: "If workflow in progress -> Highlight recent skill history and next recommended step"
         - rule: "If project-context.md missing -> Suggest `/mvt-analyze-code` to generate semantic context"
+        - rule: "If one or more plans exist -> Show Changes Overview table with progress for all plans"
+        - rule: "If an in_progress plan has a current_task -> Suggest the matching skill_hint as next step"
       boundaries:
         - scope: "analyze requirements"
           skill: "/mvt-analyze"

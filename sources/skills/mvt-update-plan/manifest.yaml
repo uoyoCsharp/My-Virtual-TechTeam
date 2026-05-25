@@ -1,0 +1,119 @@
+name: mvt-update-plan
+output: .claude/skills/mvt-update-plan/SKILL.md
+
+frontmatter:
+  name: mvt-update-plan
+  description: "Update a single task in the active change's plan.yaml: change status, attach artifacts, leave notes, and auto-advance current_task. This skill should be used after a workflow skill finishes work that maps to a plan task, or whenever the user wants to mark a task as done, blocked, or skipped."
+
+sections:
+  - type: inline
+    content: |
+      # MVT Update Plan
+
+      ## Purpose
+
+      Apply incremental updates to the active plan.yaml: mark a task done/blocked/skipped, attach the artifacts produced, and let the skill auto-advance `current_task` to the next executable task. AI may invoke this skill on the user's behalf when the user replies to a soft-prompt with `done` / `blocked: <reason>`.
+
+  - type: shared
+    source: sections/role-header.md
+    params:
+      role: Architect
+      role_desc: "a Development Planner"
+      decision_rules:
+        - rule: "Task id provided AND target status valid -> Apply update, advance current_task, write back"
+        - rule: "Task id missing AND only one task is in_progress -> Default to that task"
+        - rule: "Target status would create an invalid current_task -> Recompute current_task automatically"
+        - rule: "All tasks become done -> Set plan.status = done, current_task = null"
+        - rule: "active_change.has_plan is false -> Stop and suggest /mvt-plan-dev"
+
+      boundaries:
+        - scope: "create new tasks or restructure the plan"
+          skill: "/mvt-plan-dev"
+        - scope: "create or modify the active change itself"
+          skill: "/mvt-analyze"
+        - scope: "implement code"
+          skill: "/mvt-implement"
+
+  - type: shared
+    source: sections/activation-load-context.md
+    params:
+      extended_context:
+        - "{active_change.plan_path} -- The plan to update (resolved from session.yaml)"
+
+  - type: shared
+    source: sections/activation-load-config.md
+
+  - type: shared
+    source: sections/activation-preflight.md
+    params:
+      checks:
+        - order: "1"
+          field: "session.initialized_at"
+          level: "WARN"
+          message: 'Session not initialized. Run `/mvt-init` first.'
+        - order: "2"
+          field: "active_change.has_plan"
+          level: "BLOCK"
+          message: 'No active plan. Run `/mvt-plan-dev` to create one before updating.'
+
+  - type: inline
+    content: |
+      ### Shortcut Operation Rules
+      - Can execute at any time when an active plan exists
+      - Performs surgical edits only -- never overwrites the whole plan structure
+      - Re-validates the resulting plan before writing; aborts on validation failure
+
+      ### Step 4: Execute
+      Proceed to Execution Flow below.
+
+  - type: file
+    source: ./business.md
+
+  - type: inline
+    content: |
+      ## Output Format
+
+      Render an inline summary (no external template). Structure:
+
+      ```markdown
+      ## Plan Update
+
+      ### Change Applied
+      - **Task**: {task_id} -- {task_title}
+      - **Status**: {old_status} -> {new_status}
+      - **Artifacts attached**: {comma_separated_list_or_"(none)"}
+      - **Notes**: {notes_or_"(unchanged)"}
+
+      ### Plan Progress
+      | # | id | title | status |
+      |---|----|----|--------|
+      | ... |
+
+      Progress: {done_count}/{total_count}
+      Current task: {new_current_task_id_or_"(plan complete)"}
+
+      ### Next
+      {one-line guidance: continue to next task, resolve blocker, or run /mvt-cleanup}
+      ```
+
+      Every response MUST end with a Suggested Next Steps section.
+
+  - type: shared
+    source: sections/session-update.md
+
+  - type: inline
+    content: |
+      ### Update-Plan Specific State Updates
+
+      In addition to the mandatory updates above, this skill MUST refresh `recent_changes` for the active change:
+
+      - Find the entry where `id == active_change.id`. If absent, append one (this should be rare; happens when the plan was created out-of-band).
+      - Set `last_updated` to the current ISO 8601 timestamp.
+      - Trim to max 5 entries (drop the oldest by `last_updated` ascending).
+
+      Do NOT modify `active_change.has_plan` or `active_change.plan_path` here -- those are owned by `/mvt-plan-dev`.
+
+  - type: shared
+    source: sections/footer-next-steps.md
+    params:
+      current_skill: mvt-update-plan

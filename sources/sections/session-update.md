@@ -10,8 +10,9 @@ After execution, update `.ai-agents/workspace/session.yaml` with the following f
   - command: "/{skill-name}"
     completed_at: "{current timestamp ISO 8601}"
     summary: "{one-line summary of what was accomplished}"
+    change_id: "{active_change.id if set, otherwise empty string}"
   ```
-  Keep max 10 entries. If exceeds, drop the oldest.
+  Keep max 10 entries. If exceeds, drop the oldest. The `change_id` field enables `/mvt-resume` to filter history per change when multiple changes are in flight.
 - `recent_actions`: Append one-line summary with format:
   `[{YYYY-MM-DD HH:MM}] /{command}: {one-line summary}`
   Keep max 5 entries. If exceeds, drop the oldest.
@@ -35,3 +36,5 @@ After execution, update `.ai-agents/workspace/session.yaml` with the following f
 - Do NOT update fields not listed above
 - Do NOT overwrite `active_change` unless this skill creates a new change
 - Do NOT modify `skill_history` entries other than appending a new one
+- Do NOT modify `recent_changes` -- it is owned by `/mvt-plan-dev` and `/mvt-update-plan`
+- Do NOT modify `active_change.plan_path` or `active_change.has_plan` -- these are owned by `/mvt-plan-dev`
