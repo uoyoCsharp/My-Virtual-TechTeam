@@ -1,53 +1,98 @@
 ## Execution Flow
 
-### Interactive Menu (Default)
-1. Read current settings from `config.yaml`
-2. Display configuration menu with categories and current values
-3. Wait for user to select a category (1-4)
-4. Show category detail view with editable settings
-5. Apply changes after user confirmation
+### Step 1: Load Inputs
+- **Required**:
+  - `.ai-agents/config.yaml` -- the configuration target.
+  - `.ai-agents/registry.yaml` -- to enumerate knowledge entries when the user inspects/modifies knowledge settings.
+- **Recommended**:
+  - `.ai-agents/knowledge/core/manifest.yaml` -- only when computing token estimates for shared knowledge view.
+- **Fallback**: if `config.yaml` is missing, surface the error and recommend `mvtt install` or `/mvt-init`. Do not silently create a fresh config from this skill.
 
-### Direct Set (`set {key} {value}`)
-1. Validate key exists -- if not, show available keys
-2. Validate value type -- if wrong, show expected type
-3. Preview the change (old -> new)
-4. Confirm the change with user
-5. Apply and write `config.yaml`
+### Step 2: Dispatch by Mode
+- **What**: pick the operating mode from the user's invocation.
+- **How**:
 
-### Guided Wizard (`wizard`)
-1. Step 1: Interaction Language (chat replies, prompts)
-2. Step 2: Document Output Language (artifacts, persisted markdown) -- defaults to interaction language; user can override
-3. Step 3: Output Style (emojis, data format)
-4. Step 4: Context Routing Threshold (`/mvt-manage-context add`)
-5. Summary Preview -> User confirms -> Apply all changes
+  | Invocation | Mode | Go to |
+  |------------|------|-------|
+  | `/mvt-config` (no args) | Interactive Menu | Step 3 |
+  | `/mvt-config show` | Show All | Step 4 |
+  | `/mvt-config set {key} {value}` | Direct Set | Step 5 |
+  | `/mvt-config wizard` | Guided Wizard | Step 6 |
+  | `/mvt-config reset` | Reset | Step 7 |
+  | Anything else | Refuse, print Variants table, stop | -- |
 
-### Reset (`reset`)
-1. Show all settings that will be reset
-2. Confirm with user
-3. Write default values to `config.yaml`
+### Step 3: Interactive Menu
+1. Read current `config.yaml` and render a numbered menu grouped by category (User Preferences, Knowledge Settings, etc.) with current values inline.
+2. Wait for user to select a category number (or `q` to quit).
+3. Show the category detail view: keys with current values, type, default, allowed values.
+4. Let user pick a key to edit; reuse Step 5 (Direct Set) sub-flow for validation, preview, confirmation, write.
+5. After write, return to the top-level menu until user quits.
+6. No write happens unless the Step 5 sub-flow confirms.
 
-## Configuration Keys
+### Step 4: Show All
+- Print every key with `current value | type | default`. Mark values that differ from default with a `*`.
+- Print the Configuration Keys reference table (provided in shared section above) below the values, for context.
+- No write.
 
-### User Preferences
+### Step 5: Direct Set (`set {key} {value}`)
+1. **Validate key exists**:
+   - The key must match one of the rows in the Configuration Keys table. If not, print "Unknown key: <name>", list available keys, exit without writing.
+2. **Validate value type and constraints**:
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `preferences.interaction_language` | enum | `en-US` | Language for interactive output: chat replies, prompts, tables (en-US, zh-CN) |
-| `preferences.document_output_language` | enum | `en-US` | Language for persisted documents: artifacts, project-context.md, reports (en-US, zh-CN). Falls back to `interaction_language` if missing. |
-| `preferences.output.no_emojis` | bool | `true` | Disable emojis in output |
-| `preferences.output.data_format` | enum | `yaml` | Data output format (yaml, json) |
-| `preferences.context_routing.relevance_threshold` | int | `70` | AI routing threshold for `/mvt-manage-context add` (0-100) |
+   | Type | Validation |
+   |------|------------|
+   | `enum` | Value MUST be in the allowed list. Reject with the allowed list shown. For `language` enums (`en-US`, `zh-CN`), reject other locale strings -- ask user to pick from the allowed list (do not fuzzy-match) |
+   | `bool` | Accept exactly `true` / `false` (case-insensitive). Reject `yes`/`1`/`y` |
+   | `int` | Parse as integer; check range when range is documented (e.g., `relevance_threshold` must be 0-100) |
+   | `list` | Parse as comma-separated tokens; for `knowledge.shared`, every token must be a registered knowledge id |
 
-**Legacy compatibility**: older installs may still have `preferences.language`. Run `mvtt update --migrate-config` to split it into the two fields above.
+3. **Preview**: render `key: <current> -> <new>` on a single line.
+4. **Confirm**: prompt `Apply this change? (y/n)`. Skip the prompt only if invocation included an explicit non-interactive flag (none currently exists, so always prompt).
+5. **Write atomically**:
+   - Read the current file, mutate only the targeted key, preserve all other content and formatting (do NOT rewrite the whole file from a template -- the user may have comments).
+   - Write to a temp file in the same directory, then rename. On any error, do not touch the original.
+6. Report the new value and a one-line "what this affects" hint (e.g., "applies to subsequent skill invocations").
 
-### Knowledge Management
+### Step 6: Guided Wizard
+- Walk the user through these stages in order. Each stage uses the Step 5 validation rules. Defer the actual write to the end.
 
-#### View Knowledge
-- List shared knowledge entries (from `registry.yaml` > `knowledge.shared`)
-- List per-skill knowledge entries (from `registry.yaml` > `skills.*.knowledge`, grouped by skill)
-- Show token estimates for each entry (read from knowledge manifest `token_estimate`)
+  | Stage | Key | Notes |
+  |-------|-----|-------|
+  | 1 | `preferences.interaction_language` | Default `en-US`. Show allowed list |
+  | 2 | `preferences.document_output_language` | Default = whatever was just set in stage 1; user may override. Reuse stage-1 value when user accepts default |
+  | 3 | `preferences.output.no_emojis` | Default `true` |
+  | 4 | `preferences.output.data_format` | Default `yaml`; allowed: `yaml`, `json` |
+  | 5 | `preferences.context_routing.relevance_threshold` | Default `70`; allowed: 0-100 |
 
-#### Modify Knowledge
-- Move knowledge between shared <-> per-skill
-- Remove knowledge from loading list (does not delete files)
-- Add existing knowledge files to shared or per-skill list
+- After all stages, render a Summary Preview table: `key | from | to`, then a single confirmation prompt to apply ALL changes atomically.
+- If the user aborts at the summary, discard all in-progress values; do not write anything.
+
+### Step 7: Reset
+1. Build the diff between current `config.yaml` and framework defaults: list every key that will revert.
+2. Render the diff as `key | current | will-become-default`.
+3. Require explicit confirmation: `Reset all settings to defaults? (y/n)`.
+4. Backup current `config.yaml` to `config.yaml.bak` before writing.
+5. Write defaults atomically.
+6. Report the keys that changed.
+- Do NOT reset `knowledge.shared` to defaults if the user has added entries via `/mvt-manage-context` -- preserve user-added knowledge ids; only reset preferences. Surface this exception in the diff.
+
+### Step 8: (session update handled by shared section)
+- This skill is configuration-only; do not update `progress` or `active_change`. Standard `skill_history` entry only.
+
+## Knowledge Inspection (sub-flow used by Interactive Menu and Show All)
+- **View**: list shared knowledge ids from `registry.yaml > knowledge.shared`, then per-skill knowledge ids grouped by skill (`registry.yaml > skills.*.knowledge`). Show token estimates from each entry's manifest if available.
+- **Modify**: this skill does NOT mutate knowledge settings; defer to `/mvt-manage-context`. Print the suggested command (`/mvt-manage-context move`, `/mvt-manage-context add`, etc.) instead of doing the work here.
+
+## Edge Cases & Errors
+
+| Case | Handling |
+|------|----------|
+| `config.yaml` missing | STOP; recommend `mvtt install` or `/mvt-init` |
+| `config.yaml` exists but unparseable YAML | Surface error with line number; refuse to write; recommend manual fix or `mvtt install --refresh` |
+| User runs `set` with a deprecated key (`preferences.language`) | Print migration hint: `Run mvtt update --migrate-config` to split into the two language fields. Do not mutate the deprecated key |
+| Wizard stage receives an empty value | Treat as "accept default for this stage", continue |
+| User aborts mid-wizard | No partial write; the temp values are discarded |
+| `.bak` from previous reset already exists | Overwrite (only the most recent backup is useful) |
+| Concurrent edit detected (mtime changed during preview->write) | Abort write, surface a message, ask user to re-run |
+| `set knowledge.shared <list>` includes unknown id | Reject with the list of valid ids from `registry.yaml` |
+| `reset` invoked but `config.yaml` already matches defaults | Report "nothing to reset", do not write |

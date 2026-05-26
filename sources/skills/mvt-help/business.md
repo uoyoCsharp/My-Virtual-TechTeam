@@ -1,32 +1,38 @@
 ## Execution Flow
 
-### Step 1: Load Current State
-- Read session.yaml: check initialization, active change, phase progress
-- Read project-context.yaml: check projects list and completeness
-- Check if project-context.md exists
+### Step 1: Load Inputs
+- **Required**:
+  - `.ai-agents/registry.yaml` -- single source of truth for skill catalog and metadata.
+- **Recommended**:
+  - `.ai-agents/workspace/session.yaml` -- to derive the user's current position in the workflow.
+  - `.ai-agents/workspace/project-context.yaml` -- to detect whether projects are registered.
+  - `.ai-agents/knowledge/project/_generated/project-context.md` -- existence check only, to detect whether semantic context has been generated.
+- **Fallback**: any missing optional file is treated as "feature absent" for assessment purposes; do not abort. If `registry.yaml` itself is missing, surface the error and recommend `mvtt install`.
 
 ### Step 2: Assess User Position
-Determine where the user is in the workflow and what to recommend:
+- **What**: pick exactly one recommended next skill based on the current workspace state.
+- **How**: walk the table top-to-bottom; the first row whose condition holds wins.
 
-| Condition | Recommendation |
-|-----------|---------------|
-| Not initialized | `/mvt-init` -- Initialize the project |
-| Initialized, no semantic context | `/mvt-analyze-code` -- Analyze existing code |
-| No requirements | `/mvt-analyze` -- Analyze requirements |
-| Requirements exist, no architecture | `/mvt-design` -- Design architecture |
-| Architecture exists, change is large | `/mvt-plan-dev` -- Decompose into tracked plan |
-| Architecture exists (or plan ready), not implemented | `/mvt-implement` -- Implement the design |
-| Implemented, not reviewed | `/mvt-review` -- Review the code |
-| Reviewed, not tested | `/mvt-test` -- Write tests |
-| All phases complete | `/mvt-cleanup` or start new feature |
+  | Condition | Recommendation |
+  |-----------|---------------|
+  | `session.yaml` missing or `initialized_at` empty | `/mvt-init` -- Initialize the project |
+  | Initialized AND `project-context.md` does not exist | `/mvt-analyze-code` -- Analyze existing code |
+  | No requirements (no `analysis.md` for active change AND no completed `/mvt-analyze` in `skill_history`) | `/mvt-analyze` -- Analyze requirements |
+  | Requirements present, no `design.md` | `/mvt-design` -- Design architecture |
+  | `design.md` exists, change is large (Change Tracking lists > 5 files OR ADR includes breaking change OR > 1 new module) | `/mvt-plan-dev` -- Decompose into tracked plan |
+  | `design.md` (or `plan.yaml`) ready, no `implementation.md` | `/mvt-implement` -- Implement the design |
+  | `implementation.md` exists, no `review.md` | `/mvt-review` -- Review the code |
+  | `review.md` exists with no Critical findings, no `test-design.md` | `/mvt-test` -- Write tests |
+  | `review.md` has Critical findings | `/mvt-fix` -- Fix critical issues before continuing |
+  | All of the above complete | `/mvt-cleanup` -- Tidy artifacts, OR start a new feature with `/mvt-analyze` |
 
 ### Step 3: Display Skills Catalog
 Read `registry.yaml` > `skills` section.
 Group skills by `category` field and display as tables:
-- `workflow` → "Workflow Skills (sequential phases)"
-- `shortcut` → "Shortcut Skills (anytime, no prerequisites)"
-- `project` → "Project Management Skills"
-- `utility` → "Utility Skills"
+- `workflow` -> "Workflow Skills (sequential phases)"
+- `shortcut` -> "Shortcut Skills (anytime, no prerequisites)"
+- `project` -> "Project Management Skills"
+- `utility` -> "Utility Skills"
 
 For each skill, show: `/{skill-name}` | `description` field from registry.
 Sort within each group by declaration order in registry.
@@ -42,8 +48,29 @@ flowchart LR
     E --> F[review] --> G[test]
 ```
 
-Color-code based on current progress: green (done), yellow (current/recommended), gray (pending).
+Color-code based on current progress: green (done), yellow (current/recommended), gray (pending). The "current" node is whichever skill the Step 2 table recommended; "done" is determined by the same evidence the Step 2 table consumed.
 
 ### Step 5: Respond to User Questions
-- If user asks about a specific skill -> Provide usage details for that skill
-- If user asks "what should I do next" -> Give contextual recommendation based on Step 2
+- **What**: handle the user's free-form question after the catalog is rendered.
+- **How**:
+
+  | Question pattern | Response |
+  |------------------|----------|
+  | "What should I do next?" / no specific question | Repeat the Step 2 recommendation in one line, followed by a one-clause reason citing the matched condition |
+  | "What does `/mvt-X` do?" / asks about a specific skill | Read the skill's metadata from `registry.yaml`, show: name, description, category, dependencies, knowledge entries (if any), template (if any). If the skill has a `path`, mention "see SKILL.md for the full procedure" -- do NOT inline the full SKILL.md content (too large) |
+  | "Compare `/mvt-X` and `/mvt-Y`" | Pull descriptions from registry; if both are workflow skills, mention their relative position in the diagram |
+  | Asks about something not in registry | Reply: "No skill matches that. Available skills: see catalog above." Do not invent skills |
+
+### Step 6: (session update handled by shared section)
+- This skill is read-only with respect to workflow state; do not update `progress` or `active_change`. Standard `skill_history` entry only.
+
+## Edge Cases & Errors
+
+| Case | Handling |
+|------|----------|
+| `registry.yaml` missing | STOP at Step 1; recommend `mvtt install`; show no catalog |
+| `session.yaml` missing | Render catalog (Step 3) and diagram (Step 4) without the "current position" highlight; Step 2 recommends `/mvt-init` |
+| `recent_changes[]` references a `plan_path` that no longer exists | Ignore for help purposes; do not warn -- `/mvt-status` is the right place for that |
+| User invokes `/mvt-help` while inside an active change with Critical review findings | Step 2's recommendation is `/mvt-fix`; surface this prominently above the catalog |
+| User asks about a custom skill (registry entry with `custom: true`) | Treat identically to built-ins; the only difference is showing `custom: true` in the metadata view |
+| Workflow diagram cannot be rendered (mermaid unsupported in environment) | Fall back to a textual flow: `init -> analyze-code -> analyze -> design -> [plan-dev] -> implement -> review -> test` |
