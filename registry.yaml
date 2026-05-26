@@ -31,35 +31,35 @@ skills:
     agent: conductor
     description: "Initialize or refresh a project by scanning its structure, detecting tech stack, and inferring project type. This skill should be used when starting a new project, re-initializing after structural changes, or setting up the MVTT workspace."
     path: .claude/skills/mvt-init/SKILL.md
-    template: .ai-agents/skills/_templates/init-output.md
+    template: null
     category: project
 
   mvt-status:
     agent: conductor
     description: "Display current project and workflow status including skill history, active changes, and session state. This skill should be used when user wants to check project status, review workflow progress, or see where they are in the development cycle."
     path: .claude/skills/mvt-status/SKILL.md
-    template: .ai-agents/skills/_templates/status-output.md
+    template: null
     category: project
 
   mvt-config:
     agent: conductor
     description: "Manage MVTT framework configuration interactively. This skill should be used when user wants to change language, output format, or other framework settings."
     path: .claude/skills/mvt-config/SKILL.md
-    template: .ai-agents/skills/_templates/config-output.md
+    template: null
     category: project
 
   mvt-sync-context:
     agent: conductor
     description: "Synchronize workspace context with code changes after manual modifications or git operations. This skill should be used when context appears out of sync with code, after manual edits outside the workflow, or after git merge/rebase."
     path: .claude/skills/mvt-sync-context/SKILL.md
-    template: .ai-agents/skills/_templates/sync-context-output.md
+    template: null
     category: project
 
   mvt-cleanup:
     agent: conductor
     description: "Clean up workspace artifacts, summarize completed changes, and maintain workspace health. This skill should be used when workspace has accumulated old artifacts, token footprint needs reduction, or to archive completed change records."
     path: .claude/skills/mvt-cleanup/SKILL.md
-    template: .ai-agents/skills/_templates/cleanup-output.md
+    template: null
     category: project
 
   # --- Analyst Skills ---
@@ -90,7 +90,7 @@ skills:
     agent: architect
     description: "Generate a structured development plan (plan.yaml) for a large change so progress can be tracked across sessions. This skill should be used after /mvt-design when a change is too big to implement in one pass and needs task-level tracking."
     path: .claude/skills/mvt-plan-dev/SKILL.md
-    template: .ai-agents/skills/_templates/plan-dev-output.md
+    template: null
     category: workflow
     depends_on: [mvt-analyze]
 
@@ -114,14 +114,14 @@ skills:
     agent: developer
     description: "Diagnose and fix bugs or issues in the codebase. This skill should be used when user reports a bug, encounters an error, or wants to diagnose and resolve an issue."
     path: .claude/skills/mvt-fix/SKILL.md
-    template: .ai-agents/skills/_templates/fix-output.md
+    template: null
     category: shortcut
 
   mvt-refactor:
     agent: developer
     description: "Refactor existing code while preserving behavior. This skill should be used when user wants to improve code structure, rename symbols, extract methods or classes, or reorganize code without changing functionality."
     path: .claude/skills/mvt-refactor/SKILL.md
-    template: .ai-agents/skills/_templates/refactor-output.md
+    template: null
     category: shortcut
 
   # --- Reviewer Skills ---
@@ -159,7 +159,7 @@ skills:
     agent: conductor
     description: "Resume an in-progress development task in a new conversation. Reads session.yaml (active_change, skill_history, recent_actions) and recent artifacts to reconstruct context. Does not read git state."
     path: .claude/skills/mvt-resume/SKILL.md
-    template: .ai-agents/skills/_templates/resume-output.md
+    template: null
     category: utility
 
   mvt-create-skill:
@@ -180,7 +180,7 @@ skills:
     agent: conductor
     description: "Analyze context token load and provide optimization recommendations. This skill should be used when user wants to check how much context MVTT loads, identify large files, or optimize workspace size for better performance."
     path: .claude/skills/mvt-check-context/SKILL.md
-    template: .ai-agents/skills/_templates/context-check-output.md
+    template: null
     category: utility
 
   mvt-template:

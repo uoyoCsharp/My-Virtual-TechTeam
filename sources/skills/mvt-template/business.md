@@ -11,12 +11,12 @@ Show all templates with their status:
 ```markdown
 ## Output Templates
 
-| # | Template | Skill | Type | Status |
-|---|---------|-------|------|--------|
-| 1 | analyze-output.md | mvt-analyze | Skill output | Default |
-| 2 | design-output.md | mvt-design | Skill output | Customized |
-| 3 | project-context.md | mvt-analyze-code | Semantic doc | Default |
-| ... | ... | ... | ... | ... |
+| # | Template | Skill | Status |
+|---|---------|-------|------|
+| 1 | analyze-output.md | mvt-analyze | Default |
+| 2 | design-output.md | mvt-design | Customized |
+| 3 | project-context.md | mvt-analyze-code | Default |
+| ... | ... | ... | ... |
 
 **Actions**: `view {#}`, `customize {#}`, `reset {#}`, `export {#}`
 ```

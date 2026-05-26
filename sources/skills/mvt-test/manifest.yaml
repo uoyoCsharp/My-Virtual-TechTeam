@@ -58,6 +58,9 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
+    source: sections/output-language-constraint.md
+
+  - type: shared
     source: sections/activation-preflight.md
     params:
       checks:
@@ -90,15 +93,11 @@ sections:
 
   - type: inline
     content: |
-      ## Output Format
-
-      Read and use the output template from: `.ai-agents/skills/_templates/test-output.md`
-
+      ## Artifact Structure
+      Read the document structure template from: `.ai-agents/skills/_templates/test-output.md`
       If a custom version exists at `.ai-agents/skills/_templates/custom/test-output.md`, use the custom version instead.
-
-      Fill the template placeholders with the test design results.
-
-      Every response MUST end with a Suggested Next Steps section.
+      The template defines section headings only. Generate content for each section based on test design results.
+      Write the artifact to: `.ai-agents/workspace/artifacts/{change-id}/tests/test-design.md`
 
   - type: shared
     source: sections/session-update.md

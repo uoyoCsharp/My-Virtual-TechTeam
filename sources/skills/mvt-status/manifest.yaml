@@ -41,6 +41,9 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
+    source: sections/output-language-constraint.md
+
+  - type: shared
     source: sections/activation-preflight.md
     params:
       checks:
@@ -56,16 +59,6 @@ sections:
 
   - type: file
     source: ./business.md
-
-  - type: inline
-    content: |
-      ## Output Format
-
-      Read and use the output template from: `.ai-agents/skills/_templates/status-output.md`
-
-      If a custom version exists at `.ai-agents/skills/_templates/custom/status-output.md`, use the custom version instead.
-
-      Fill the template placeholders with the current state data.
 
   - type: shared
     source: sections/session-update.md

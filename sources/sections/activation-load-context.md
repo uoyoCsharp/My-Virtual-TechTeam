@@ -5,8 +5,8 @@ Load the following files as foundational context:
 - `.ai-agents/workspace/session.yaml` -- Current workflow state
 - `.ai-agents/workspace/project-context.yaml` -- Project index (structural info)
 - `.ai-agents/registry.yaml` -- Available skills registry and knowledge declarations
-
 {{?extended_context}}
+
 Extended context for this skill:
 {{/extended_context}}
 {{#extended_context}}

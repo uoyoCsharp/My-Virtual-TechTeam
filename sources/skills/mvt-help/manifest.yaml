@@ -24,6 +24,9 @@ sections:
   - type: shared
     source: sections/activation-load-config.md
 
+  - type: shared
+    source: sections/output-language-constraint.md
+
   - type: inline
     content: |
       ### Step 3: Pre-flight Checks

@@ -56,6 +56,9 @@ sections:
   - type: shared
     source: sections/activation-load-config.md
 
+  - type: shared
+    source: sections/output-language-constraint.md
+
   - type: inline
     content: |
       ### Step 3: Pre-flight Checks
@@ -84,16 +87,6 @@ sections:
 
   - type: file
     source: ./business.md
-
-  - type: inline
-    content: |
-      ## Output Format
-
-      Read and use the output template from: `.ai-agents/skills/_templates/config-output.md`
-
-      If a custom version exists at `.ai-agents/skills/_templates/custom/config-output.md`, use the custom version instead.
-
-      Every response MUST end with a Suggested Next Steps section.
 
   - type: shared
     source: sections/session-update.md

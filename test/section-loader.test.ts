@@ -93,6 +93,49 @@ Content here: {{name}}
     expect(result).toContain("- b: y");
     expect(result).toContain("- b: z");
   });
+
+  it("renders inverted section when param is missing", () => {
+    const template = `{{#items}}
+- {{.}}
+{{/items}}
+{{^items}}
+No items found.
+{{/items}}`;
+    const result = applyParams(template, {});
+    expect(result).not.toContain("{{^items}}");
+    expect(result).toContain("No items found.");
+  });
+
+  it("removes inverted section when param is truthy", () => {
+    const template = `{{#items}}
+- {{.}}
+{{/items}}
+{{^items}}
+No items found.
+{{/items}}`;
+    const result = applyParams(template, { items: ["a", "b"] });
+    expect(result).toContain("- a");
+    expect(result).toContain("- b");
+    expect(result).not.toContain("No items found.");
+    expect(result).not.toContain("{{^items}}");
+  });
+
+  it("renders inverted section when param is false", () => {
+    const template = `{{^enabled}}
+Disabled content.
+{{/enabled}}`;
+    const result = applyParams(template, { enabled: false });
+    expect(result).toContain("Disabled content.");
+  });
+
+  it("removes inverted section when param is true", () => {
+    const template = `{{^enabled}}
+Disabled content.
+{{/enabled}}`;
+    const result = applyParams(template, { enabled: true });
+    expect(result).not.toContain("Disabled content.");
+    expect(result).not.toContain("{{^enabled}}");
+  });
 });
 
 describe("loadSection", () => {

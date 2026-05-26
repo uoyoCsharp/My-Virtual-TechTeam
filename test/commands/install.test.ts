@@ -28,13 +28,13 @@ describe("install (via materialize + manifest)", () => {
       projectRoot: tmpDir,
     });
 
-    expect(materialized.length).toBeGreaterThan(40);
+    expect(materialized.length).toBeGreaterThan(25);
     expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-analyze/SKILL.md"))).toBe(true);
     expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-init/SKILL.md"))).toBe(true);
     expect(existsSync(path.join(tmpDir, ".ai-agents/skills/_templates/analyze-output.md"))).toBe(true);
     expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-plan-dev/SKILL.md"))).toBe(true);
     expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-update-plan/SKILL.md"))).toBe(true);
-    expect(existsSync(path.join(tmpDir, ".ai-agents/skills/_templates/plan-dev-output.md"))).toBe(true);
+    expect(existsSync(path.join(tmpDir, ".ai-agents/skills/_templates/project-context.md"))).toBe(true);
   });
 
   it("creates CREATE_ONCE files", () => {
@@ -91,7 +91,7 @@ describe("install (via materialize + manifest)", () => {
     const manifest = readInstallationManifest(tmpDir);
     expect(manifest).not.toBeNull();
     expect(manifest!.mvtt_version).toBe("2.0.0");
-    expect(Object.keys(manifest!.files).length).toBeGreaterThan(40);
+    expect(Object.keys(manifest!.files).length).toBeGreaterThan(25);
   });
 
   it("installCommand writes language to config.yaml (non-TTY defaults to en-US)", async () => {

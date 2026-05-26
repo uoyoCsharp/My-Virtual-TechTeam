@@ -3,6 +3,7 @@ import path from "node:path";
 import type { Section } from "../types/manifest.js";
 
 const BLOCK_PATTERN = /\{\{#(\w+)\}\}([\s\S]*?)\{\{\/\1\}\}\n?/g;
+const INVERTED_PATTERN = /\{\{\^(\w+)\}\}([\s\S]*?)\{\{\/\1\}\}\n?/g;
 const COND_PATTERN = /\{\{\?(\w+)\}\}([\s\S]*?)\{\{\/\1\}\}\n?/g;
 const VAR_PATTERN = /\{\{(\w+|\.)?\}\}/g;
 
@@ -52,6 +53,17 @@ function expandBlocks(
   });
 }
 
+function expandInverted(
+  template: string,
+  params: Record<string, unknown>,
+): string {
+  return template.replace(INVERTED_PATTERN, (_match, key: string, rawBody: string) => {
+    if (isTruthyNonEmpty(params[key])) return "";
+    const body = rawBody.replace(/^\n/, "").replace(/\n$/, "");
+    return body + "\n";
+  });
+}
+
 function expandConditionals(
   template: string,
   params: Record<string, unknown>,
@@ -69,6 +81,7 @@ export function applyParams(
 ): string {
   let result = expandConditionals(template, params);
   result = expandBlocks(result, params);
+  result = expandInverted(result, params);
   result = replaceVars(result, params);
   return result;
 }

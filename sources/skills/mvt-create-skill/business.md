@@ -227,6 +227,9 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
+    source: sections/output-language-constraint.md
+
+  - type: shared
     source: sections/activation-preflight.md
     params:
       checks:

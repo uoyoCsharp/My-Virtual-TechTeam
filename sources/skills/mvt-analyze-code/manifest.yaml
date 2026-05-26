@@ -55,6 +55,9 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
+    source: sections/output-language-constraint.md
+
+  - type: shared
     source: sections/activation-preflight.md
     params:
       checks:
@@ -82,17 +85,11 @@ sections:
 
   - type: inline
     content: |
-      ## Output Format
-
-      Read the template from: `.ai-agents/skills/_templates/project-context.md`
-
+      ## Artifact Structure
+      Read the document structure template from: `.ai-agents/skills/_templates/project-context.md`
       If a custom version exists at `.ai-agents/skills/_templates/custom/project-context.md`, use the custom version instead.
-
       The template defines section headings only. Generate content for each section based on code analysis results.
-
-      Write the final output to: `.ai-agents/knowledge/project/_generated/project-context.md`
-
-      Every response MUST end with a Suggested Next Steps section.
+      Write the artifact to: `.ai-agents/knowledge/project/_generated/project-context.md`
 
   - type: shared
     source: sections/session-update.md

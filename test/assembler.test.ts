@@ -78,9 +78,9 @@ describe("assembler", () => {
       expect(output).toContain("### Step 5: Update Workspace");
     });
 
-    it("includes Output Format section", () => {
+    it("includes Artifact Structure section", () => {
       const output = buildSkill("mvt-analyze");
-      expect(output).toContain("## Output Format");
+      expect(output).toContain("## Artifact Structure");
       expect(output).toContain("analyze-output.md");
     });
 
@@ -174,9 +174,9 @@ describe("assembler", () => {
       );
     });
 
-    it("references the plan-dev output template", () => {
+    it("does not reference removed plan-dev output template", () => {
       const output = buildSkill("mvt-plan-dev");
-      expect(output).toContain(".ai-agents/skills/_templates/plan-dev-output.md");
+      expect(output).not.toContain(".ai-agents/skills/_templates/plan-dev-output.md");
     });
 
     it("declares plan-dev specific state updates for active_change and recent_changes", () => {
