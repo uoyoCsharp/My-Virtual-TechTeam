@@ -306,10 +306,10 @@ describe("assembler", () => {
       expect(output).toContain("D2[plan-dev]");
     });
 
-    it("skill catalog includes plan-dev and update-plan", () => {
+    it("references plan-dev in the static skill body (catalog itself is registry-driven at runtime)", () => {
       const output = buildSkill("mvt-help");
       expect(output).toContain("/mvt-plan-dev");
-      expect(output).toContain("/mvt-update-plan");
+      expect(output).toContain("registry.yaml");
     });
 
     it("user position table recommends plan-dev for large changes", () => {

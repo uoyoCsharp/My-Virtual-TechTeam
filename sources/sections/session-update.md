@@ -1,3 +1,9 @@
+{{?read_only}}
+## State Update
+
+This skill is read-only and does NOT modify `.ai-agents/workspace/session.yaml`. No state mutation, no `skill_history` append, no `recent_actions` append.
+{{/read_only}}
+{{^read_only}}
 ## State Update (Required)
 
 After execution, update `.ai-agents/workspace/session.yaml` with the following fields.
@@ -38,3 +44,4 @@ After execution, update `.ai-agents/workspace/session.yaml` with the following f
 - Do NOT modify `skill_history` entries other than appending a new one
 - Do NOT modify `recent_changes` -- it is owned by `/mvt-plan-dev` and `/mvt-update-plan`
 - Do NOT modify `active_change.plan_path` or `active_change.has_plan` -- these are owned by `/mvt-plan-dev`
+{{/read_only}}
