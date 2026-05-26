@@ -2,10 +2,6 @@
 
 ### Step 1: Load Inputs
 - **Required**:
-  - `.ai-agents/workspace/artifacts/{active_change.id}/analysis.md` -- output of `/mvt-analyze` for the current change.
-  - `.ai-agents/workspace/project-context.yaml` -- tech stack and project layout.
-- **Recommended**:
-  - `.ai-agents/knowledge/project/_generated/project-context.md` -- existing module map, layer rules, business rules.
   - Existing design artifacts of related prior changes (`artifacts/*/design.md`) -- to stay consistent.
 - **Fallback**:
   - If `analysis.md` is missing, surface a WARN and accept the user's free-text intent as the requirement input.

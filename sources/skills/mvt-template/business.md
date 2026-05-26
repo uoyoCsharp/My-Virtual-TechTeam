@@ -1,11 +1,8 @@
 ## Execution Flow
 
 ### Step 1: Load Inputs
-- **Required**:
-  - `.ai-agents/registry.yaml` -- to enumerate skills and their declared `template:` fields.
 - **Recommended**:
   - `.ai-agents/skills/_templates/` -- default templates (read-only from this skill).
-  - `.ai-agents/skills/_templates/custom/` -- user-customized overrides (read/write target).
 
 ### Step 2: Build Template Inventory
 - **What**: produce the canonical list of templates with their status.
@@ -86,7 +83,6 @@
   3. Never write outside the project root unless an absolute path was explicitly provided by the user.
 
 ### Step 5: (session update handled by shared section)
-- This skill is a utility; do not update `progress` or `active_change`. Standard session-update fields only.
 
 ## Edge Cases & Errors
 

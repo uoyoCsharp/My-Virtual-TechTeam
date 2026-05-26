@@ -1,9 +1,6 @@
 ## Execution Flow
 
 ### Step 1: Load Inputs
-- **Required**:
-  - `.ai-agents/config.yaml` -- the configuration target.
-  - `.ai-agents/registry.yaml` -- to enumerate knowledge entries when the user inspects/modifies knowledge settings.
 - **Recommended**:
   - `.ai-agents/knowledge/core/manifest.yaml` -- only when computing token estimates for shared knowledge view.
 - **Fallback**: if `config.yaml` is missing, surface the error and recommend `mvtt install` or `/mvt-init`. Do not silently create a fresh config from this skill.
@@ -77,7 +74,6 @@
 - Do NOT reset `knowledge.shared` to defaults if the user has added entries via `/mvt-manage-context` -- preserve user-added knowledge ids; only reset preferences. Surface this exception in the diff.
 
 ### Step 8: (session update handled by shared section)
-- This skill is configuration-only; do not update `progress` or `active_change`. Standard `skill_history` entry only.
 
 ## Knowledge Inspection (sub-flow used by Interactive Menu and Show All)
 - **View**: list shared knowledge ids from `registry.yaml > knowledge.shared`, then per-skill knowledge ids grouped by skill (`registry.yaml > skills.*.knowledge`). Show token estimates from each entry's manifest if available.

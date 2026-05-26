@@ -53,7 +53,6 @@ sections:
     params:
       extended_context:
         - ".ai-agents/knowledge/project/_generated/project-context.md -- Project semantic context (layers, modules, business rules)"
-        - ".ai-agents/knowledge/core/_framework/review-principles.md -- Universal review principles"
         - ".ai-agents/knowledge/principle/coding-standards.md -- Project coding standards"
 
   - type: shared

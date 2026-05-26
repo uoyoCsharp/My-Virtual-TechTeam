@@ -124,6 +124,13 @@ skills:
     template: null
     category: shortcut
 
+  mvt-quick-dev:
+    agent: developer
+    description: "Quickly implement simple, well-scoped changes without the full analyze-design-implement workflow. This skill should be used when the change is small (1-3 files), architecturally neutral, and clearly specified — such as adding a field, fixing a label, adjusting config, or making a targeted enhancement."
+    path: .claude/skills/mvt-quick-dev/SKILL.md
+    template: null
+    category: shortcut
+
   # --- Reviewer Skills ---
   mvt-review:
     agent: reviewer

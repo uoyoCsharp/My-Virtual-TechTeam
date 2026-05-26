@@ -1,11 +1,7 @@
 ## Execution Flow
 
 ### Step 1: Load Inputs
-- **Required**:
-  - `.ai-agents/registry.yaml` -- single source of truth for skill catalog and metadata.
 - **Recommended**:
-  - `.ai-agents/workspace/session.yaml` -- to derive the user's current position in the workflow.
-  - `.ai-agents/workspace/project-context.yaml` -- to detect whether projects are registered.
   - `.ai-agents/knowledge/project/_generated/project-context.md` -- existence check only, to detect whether semantic context has been generated.
 - **Fallback**: any missing optional file is treated as "feature absent" for assessment purposes; do not abort. If `registry.yaml` itself is missing, surface the error and recommend `mvtt install`.
 
@@ -18,6 +14,7 @@
   | `session.yaml` missing or `initialized_at` empty | `/mvt-init` -- Initialize the project |
   | Initialized AND `project-context.md` does not exist | `/mvt-analyze-code` -- Analyze existing code |
   | No requirements (no `analysis.md` for active change AND no completed `/mvt-analyze` in `skill_history`) | `/mvt-analyze` -- Analyze requirements |
+  | No requirements, but user describes a simple change directly | `/mvt-quick-dev` -- Implement a simple change quickly |
   | Requirements present, no `design.md` | `/mvt-design` -- Design architecture |
   | `design.md` exists, change is large (Change Tracking lists > 5 files OR ADR includes breaking change OR > 1 new module) | `/mvt-plan-dev` -- Decompose into tracked plan |
   | `design.md` (or `plan.yaml`) ready, no `implementation.md` | `/mvt-implement` -- Implement the design |
@@ -46,6 +43,8 @@ flowchart LR
     D --> E[implement]
     D2 --> E
     E --> F[review] --> G[test]
+
+    C -.->|simple change| Q[quick-dev]
 ```
 
 Color-code based on current progress: green (done), yellow (current/recommended), gray (pending). The "current" node is whichever skill the Step 2 table recommended; "done" is determined by the same evidence the Step 2 table consumed.
@@ -62,7 +61,6 @@ Color-code based on current progress: green (done), yellow (current/recommended)
   | Asks about something not in registry | Reply: "No skill matches that. Available skills: see catalog above." Do not invent skills |
 
 ### Step 6: (session update handled by shared section)
-- This skill is read-only with respect to workflow state; do not update `progress` or `active_change`. Standard `skill_history` entry only.
 
 ## Edge Cases & Errors
 

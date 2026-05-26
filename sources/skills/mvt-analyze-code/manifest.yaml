@@ -47,7 +47,6 @@ sections:
     params:
       extended_context:
         - "Scan project source directories for analysis"
-        - ".ai-agents/workspace/project-context.yaml -- Read project paths and names"
         - ".ai-agents/skills/_templates/project-context.md -- Default template for output structure"
         - ".ai-agents/skills/_templates/custom/project-context.md -- Custom template (if exists)"
 

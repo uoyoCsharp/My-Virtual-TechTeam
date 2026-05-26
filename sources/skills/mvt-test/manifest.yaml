@@ -50,7 +50,6 @@ sections:
     params:
       extended_context:
         - ".ai-agents/knowledge/project/_generated/project-context.md -- Project semantic context (business rules for test design)"
-        - ".ai-agents/knowledge/core/_framework/review-principles.md -- Code quality principles"
         - ".ai-agents/knowledge/principle/coding-standards.md -- Project coding standards"
         - "Implementation files to be tested"
 

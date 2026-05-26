@@ -1,13 +1,9 @@
 ## Execution Flow
 
 ### Step 1: Load Inputs
-- **Required**:
-  - `.ai-agents/registry.yaml` -- knowledge declarations (shared and per-skill).
-  - `.ai-agents/workspace/project-context.yaml` -- the index, always loaded by all skills.
 - **Recommended**:
   - `.ai-agents/knowledge/core/manifest.yaml` -- to filter `core/_framework/` (excluded) from `core/user/` (in-scope).
-  - `.ai-agents/config.yaml` -- optional thresholds (see Step 4).
-- **Fallback**: missing `registry.yaml` -> abort and recommend `mvtt install`. Missing `core/manifest.yaml` -> treat all `core/*` files as user-origin (over-counts; flag in report).
+- **Fallback**: missing `core/manifest.yaml` -> treat all `core/*` files as user-origin (over-counts; flag in report).
 
 ### Step 2: Determine In-Scope Files
 This skill measures only files the **user** can reduce or relocate. Framework-fixed overhead is excluded.
@@ -79,7 +75,6 @@ This skill measures only files the **user** can reduce or relocate. Framework-fi
 - The report is conversation output; this skill does NOT write any artifact.
 
 ### Step 7: (session update handled by shared section)
-- Read-only with respect to workflow state. Standard `skill_history` entry only.
 
 ## Edge Cases & Errors
 

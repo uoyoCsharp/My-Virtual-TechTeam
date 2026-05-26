@@ -43,14 +43,15 @@ sections:
 
       ## Refactoring Types
 
-      | Type | Description | Risk Level |
-      |------|-------------|------------|
-      | Extract Method/Class | Pull logic into new method or class | Low |
-      | Rename | Rename symbols for clarity | Low |
-      | Move | Relocate code to appropriate module/layer | Medium |
-      | Decompose Conditional | Simplify complex if/switch logic | Medium |
-      | Replace Inheritance with Composition | Change class hierarchy | High |
-      | Change Interface/API | Modify public contracts | High |
+      | Type | Risk Level | Examples |
+      |------|------------|----------|
+      | Rename | Low | Variable, function, file rename |
+      | Extract Method/Class | Low | Pull repeated logic into a helper |
+      | Inline | Low | Eliminate a thin wrapper |
+      | Move | Medium | Relocate code to appropriate module/layer |
+      | Decompose Conditional | Medium | Simplify complex if/switch logic |
+      | Replace Inheritance with Composition | High | Class-hierarchy redesign |
+      | Change Interface/API | High | Modify public contracts |
 
   - type: shared
     source: sections/activation-load-context.md

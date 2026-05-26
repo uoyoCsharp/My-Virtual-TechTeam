@@ -1,10 +1,6 @@
 ## Execution Flow
 
 ### Step 1: Load Inputs
-- **Required**:
-  - `.ai-agents/workspace/session.yaml` -- skill_history, active_change, recent_changes, recent_actions, last_synced_at.
-  - `.ai-agents/workspace/project-context.yaml` -- projects list and tech stacks.
-  - `.ai-agents/registry.yaml` -- skill catalog for next-step suggestions.
 - **Recommended**:
   - `.ai-agents/knowledge/project/_generated/project-context.md` -- semantic context (only checked for existence here, not parsed).
 - **Fallback / robustness**:
@@ -60,7 +56,6 @@
 - The suggestion must be a single line: skill command + one-clause reason.
 
 ### Step 6: (session update handled by shared section)
-- This skill is read-only with respect to workflow state; do not update `progress` or `active_change`. Standard `skill_history` entry only.
 
 ## Edge Cases & Errors
 

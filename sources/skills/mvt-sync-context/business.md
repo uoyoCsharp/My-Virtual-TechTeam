@@ -1,10 +1,7 @@
 ## Execution Flow
 
 ### Step 1: Load Inputs
-- **Required**:
-  - `.ai-agents/workspace/project-context.yaml` -- current registered projects and tech stacks.
 - **Recommended**:
-  - `.ai-agents/knowledge/project/_generated/project-context.md` -- semantic summary (only used to decide whether a regen suggestion is needed at the end; never modified here).
   - Working tree state: presence of `.git`, current branch, in-progress merge/rebase markers (`.git/MERGE_HEAD`, `.git/REBASE_HEAD`).
 
 ### Step 2: Detect Changes

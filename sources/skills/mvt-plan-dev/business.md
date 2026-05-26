@@ -4,12 +4,9 @@
 
 Collect everything that should inform the plan:
 
-1. `active_change.id` and `active_change.title` from `session.yaml`.
-2. The most recent analysis artifact at `.ai-agents/workspace/artifacts/{active_change.id}/analysis.md` (if present).
-3. The most recent design artifact at `.ai-agents/workspace/artifacts/{active_change.id}/design.md` (if present).
-4. Any extra context the user supplies in the current message.
+1. Any extra context the user supplies in the current message.
 
-If none of (2)/(3) exist and the user provides no description, prompt for a brief scope summary before proceeding.
+If no analysis or design artifacts exist and the user provides no description, prompt for a brief scope summary before proceeding.
 
 ### Step 2: Detect Regeneration
 

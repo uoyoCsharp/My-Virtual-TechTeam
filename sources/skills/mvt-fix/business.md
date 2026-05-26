@@ -4,8 +4,6 @@
 - **Required**:
   - User-provided bug description (free text, possibly with stack trace, error message, or reproduction steps).
 - **Recommended (read if available, do not block on absence)**:
-  - `.ai-agents/workspace/project-context.yaml` -- to locate relevant source roots.
-  - `.ai-agents/knowledge/project/_generated/project-context.md` -- module/layer map for traceability.
   - Recent git state: `git diff HEAD`, `git log -n 10 --oneline` -- to surface recent changes that may correlate with the regression.
 - **Fallback**: if none of the above exists, proceed using the bug description alone and note "context-light fix" in the final fix notes.
 

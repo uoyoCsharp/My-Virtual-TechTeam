@@ -1,11 +1,6 @@
 ## Execution Flow
 
 ### Step 1: Load Inputs
-- **Required**:
-  - `.ai-agents/workspace/session.yaml` -- to know `active_change`, `recent_changes`, `skill_history`.
-- **Recommended**:
-  - All files under `.ai-agents/workspace/artifacts/` (recursive).
-  - `.ai-agents/registry.yaml` -- to identify orphans (artifacts whose owning skill no longer exists).
 - **Fallback**: if `session.yaml` is missing, refuse to clean -- without state we can't tell what is in-progress vs completed; recommend `/mvt-init` and stop.
 
 ### Step 2: Inventory Artifacts

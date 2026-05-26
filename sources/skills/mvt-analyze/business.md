@@ -2,7 +2,6 @@
 
 ### Step 1: Load Requirements
 - If file path provided as argument -> Read that file
-- If requirements exist in `.ai-agents/workspace/requirements/` -> List files, prompt for selection
 - Otherwise -> Use requirements text from user message
 
 ### Step 2: Extract Information
@@ -10,6 +9,32 @@
 - Identify actors and stakeholders
 - Extract business rules and constraints
 - Note assumptions made
+
+### Step 2.5: Assess Complexity (Quick Path Detection)
+- **What**: evaluate whether this requirement qualifies as a simple change suitable for the quick development path via `/mvt-quick-dev`.
+- **How**: check each criterion in the table below. ALL criteria must pass for the quick path to be offered.
+
+  | Criterion | Pass condition |
+  |-----------|----------------|
+  | Scope | Affects ≤ 3 files (estimate from the requirement's mention of modules/features) |
+  | No new concepts | No new domain entities, no new API contracts, no new module boundaries |
+  | No architectural impact | No ADR needed; fits existing module/layer structure |
+  | Clear specification | No ambiguities detected in Step 2 (or all ambiguities resolved by user confirmation) |
+  | No integration concerns | No new external dependencies, no cross-service changes, no async/event flows |
+  | Single actor | Only one user role or system actor involved |
+
+- **Branches**:
+
+  | Condition | Action |
+  |-----------|--------|
+  | ALL criteria pass | Ask user: "This appears to be a simple change (1-3 files, no architectural impact). Use /mvt-quick-dev for faster execution? (y / n / show-criteria)" |
+  | ANY criterion fails | Proceed with standard analysis flow (Steps 3-5) |
+  | Ambiguous (2-3 criteria unclear) | Proceed with standard analysis; do NOT offer quick path |
+
+- **On user choice**:
+  - "y" -- Do NOT write an analysis artifact. Summarize the requirement understanding in conversation and recommend `/mvt-quick-dev` directly. Set `active_change` if one doesn't exist, so `/mvt-quick-dev` can reference the current work context.
+  - "n" -- Continue with full analysis flow (Steps 3-5).
+  - "show-criteria" -- Display the assessment results (pass/fail per criterion), then re-prompt with y/n.
 
 ### Step 3: Detect Ambiguities
 - Check for unclear requirements

@@ -2,12 +2,8 @@
 
 ### Step 1: Load Inputs
 - **Required**:
-  - `.ai-agents/workspace/project-context.yaml` -- tech stack, test framework, test command.
   - The implementation files to test (see Step 2 for resolution).
 - **Recommended**:
-  - `.ai-agents/workspace/artifacts/{active_change.id}/design.md` -- key interfaces and data flow.
-  - `.ai-agents/workspace/artifacts/{active_change.id}/implementation.md` -- declared scope and self-check status.
-  - `.ai-agents/knowledge/project/_generated/project-context.md` -- business rules to validate.
   - Existing tests near the target files -- to follow conventions and avoid duplication.
 - **Fallback**:
   - If test framework is unspecified in `project-context.yaml`, infer from package manifests (jest/vitest/pytest/junit/...) and ask user to confirm before generating tests.

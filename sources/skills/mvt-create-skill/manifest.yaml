@@ -43,8 +43,6 @@ sections:
     params:
       extended_context:
         - "Load one existing SKILL.md as structural reference (e.g., `.claude/skills/mvt-status/SKILL.md`)"
-        - ".ai-agents/registry.yaml -- Registered skills list"
-        - ".ai-agents/config.yaml -- Project configuration"
 
   - type: shared
     source: sections/activation-load-config.md

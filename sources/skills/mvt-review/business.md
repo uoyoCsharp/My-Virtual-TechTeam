@@ -3,12 +3,6 @@
 ### Step 1: Load Inputs
 - **Required**:
   - The set of files to review (see Step 2 for resolution).
-- **Recommended**:
-  - `.ai-agents/workspace/artifacts/{active_change.id}/design.md` -- to check design compliance.
-  - `.ai-agents/workspace/artifacts/{active_change.id}/implementation.md` -- to know declared scope and deviations.
-  - `.ai-agents/knowledge/project/_generated/project-context.md` -- module/layer rules.
-  - `.ai-agents/knowledge/principle/coding-standards/rules.md`
-  - `.ai-agents/knowledge/principle/coding-standards/naming-conventions.md`
 - **Fallback**:
   - If `design.md`/`implementation.md` are missing, downgrade to "code-only review": skip the design-compliance checks (Step 4 row group A) and note the limitation in the artifact.
   - If `project-context.md` is missing, skip layer-compliance checks and note the limitation.

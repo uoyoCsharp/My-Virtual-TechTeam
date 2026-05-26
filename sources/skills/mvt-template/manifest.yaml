@@ -36,7 +36,6 @@ sections:
     source: sections/activation-load-context.md
     params:
       extended_context:
-        - ".ai-agents/registry.yaml -- Template registry"
         - "Scan `.ai-agents/skills/_templates/custom/` for existing customizations"
 
   - type: shared

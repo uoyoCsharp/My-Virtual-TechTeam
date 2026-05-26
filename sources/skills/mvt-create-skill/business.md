@@ -25,9 +25,6 @@ The `name` and `description` in YAML frontmatter determine when Claude will use 
 ## Execution Flow
 
 ### Step 1: Load Inputs
-- **Required**:
-  - `.ai-agents/registry.yaml` -- to detect naming conflicts and to know which entries already exist.
-  - `.ai-agents/config.yaml` -- for project conventions (output language, etc.).
 - **Recommended**:
   - One existing skill manifest under `sources/skills/<existing>/manifest.yaml` (or `.ai-agents/skills/<existing>/`) as a structural reference.
   - `sources/sections/` -- the catalog of shared sections this new skill can reuse (role-header, activation-load-context, activation-load-config, output-language-constraint, activation-preflight, session-update, footer-next-steps).

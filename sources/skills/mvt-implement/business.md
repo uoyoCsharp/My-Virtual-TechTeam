@@ -2,11 +2,6 @@
 
 ### Step 1: Load Inputs
 - **Required**:
-  - `.ai-agents/workspace/artifacts/{active_change.id}/design.md` -- design from `/mvt-design`.
-- **Recommended**:
-  - `.ai-agents/workspace/artifacts/{active_change.id}/plan.yaml` -- if produced by `/mvt-plan-dev`, treat the `current_task` as the implementation scope.
-  - `.ai-agents/knowledge/project/_generated/project-context.md` -- module/layer constraints.
-  - `.ai-agents/knowledge/principle/coding-standards.md` (or any project-supplied coding standards).
   - The actual source files referenced in the design's `File Structure` and `Change Tracking` sections.
 - **Fallback**:
   - If `design.md` is missing, surface a WARN and ask the user whether to (a) run `/mvt-design` first or (b) proceed using their conversational description as the design (mark artifact with "Source: conversation only").

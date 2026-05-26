@@ -55,11 +55,6 @@ describe("install (via materialize + manifest)", () => {
   it("copies knowledge files", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     expect(
-      existsSync(
-        path.join(tmpDir, ".ai-agents/knowledge/core/_framework/review-principles.md"),
-      ),
-    ).toBe(true);
-    expect(
       existsSync(path.join(tmpDir, ".ai-agents/knowledge/core/manifest.yaml")),
     ).toBe(true);
     expect(

@@ -2,8 +2,5 @@ id: core
 type: shared
 
 files:
-  - path: _framework/review-principles.md
-    origin: framework
-    auto_load: true
   # User-added entries (origin: user) are appended by /mvt-manage-context.
   # `mvtt update` preserves them and only rewrites origin: framework entries.

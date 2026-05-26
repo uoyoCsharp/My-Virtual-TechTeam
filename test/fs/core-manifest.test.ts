@@ -42,15 +42,12 @@ describe("core manifest merge (Task A)", () => {
     );
   }
 
-  it("fresh install writes framework entries only", () => {
+  it("fresh install writes manifest with no framework entries", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const m = readUserManifest();
     expect(m.id).toBe("core");
     expect(m.type).toBe("shared");
-    expect(m.files.length).toBeGreaterThan(0);
-    for (const f of m.files) {
-      expect(f.origin).toBe("framework");
-    }
+    expect(m.files.length).toBe(0);
   });
 
   it("preserves user-origin entries on re-materialize (update)", () => {
@@ -68,11 +65,9 @@ describe("core manifest merge (Task A)", () => {
 
     const merged = readUserManifest();
     const userEntries = merged.files.filter((f) => f.origin === "user");
-    const frameworkEntries = merged.files.filter((f) => f.origin === "framework");
 
     expect(userEntries).toHaveLength(1);
     expect(userEntries[0].path).toBe("user/team-conventions.md");
-    expect(frameworkEntries.length).toBeGreaterThan(0);
   });
 
   it("drops malformed entries that lack a valid origin", () => {
@@ -132,19 +127,19 @@ describe("core manifest merge (Task A)", () => {
     expect(readFileSync(userFile, "utf-8")).toBe("# Team Conventions\nuser content");
   });
 
-  it("framework files in _framework/ are still overwritten by update", () => {
+  it("generated core manifest is still overwritten by update", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
 
-    const fwFile = path.join(
+    const manifestFile = path.join(
       tmpDir,
-      ".ai-agents/knowledge/core/_framework/review-principles.md",
+      ".ai-agents/knowledge/core/manifest.yaml",
     );
-    expect(existsSync(fwFile)).toBe(true);
+    expect(existsSync(manifestFile)).toBe(true);
 
-    writeFileSync(fwFile, "tampered", "utf-8");
+    writeFileSync(manifestFile, "tampered", "utf-8");
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
 
-    const after = readFileSync(fwFile, "utf-8");
+    const after = readFileSync(manifestFile, "utf-8");
     expect(after).not.toBe("tampered");
   });
 });

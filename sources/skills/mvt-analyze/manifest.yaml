@@ -25,6 +25,7 @@ sections:
         - rule: "Multiple interpretations -> List all, prompt for selection"
         - rule: "Conflicts detected -> Highlight explicitly, ask for resolution"
         - rule: "Vague requirements -> Request specific examples"
+        - rule: "Requirements qualify as simple change -> Offer /mvt-quick-dev path, respect user choice"
       boundaries:
         - scope: "make architecture decisions"
           skill: "/mvt-design"
@@ -32,6 +33,8 @@ sections:
           skill: "/mvt-design"
         - scope: "write implementation code"
           skill: "/mvt-implement"
+        - scope: "directly implement simple changes"
+          skill: "/mvt-quick-dev"
 
   - type: shared
     source: sections/activation-load-context.md
@@ -83,3 +86,14 @@ sections:
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-analyze
+      conditional_suggestions:
+        conditions:
+          - condition: "user chose quick path in Step 2.5"
+            primary: "mvt-quick-dev"
+            primary_desc: "Implement this simple change quickly"
+          - condition: "default"
+            primary: "mvt-design"
+            primary_desc: "Design architecture based on analysis"
+        alternatives:
+          - skill: "mvt-analyze-code"
+            desc: "Generate code context for better design"

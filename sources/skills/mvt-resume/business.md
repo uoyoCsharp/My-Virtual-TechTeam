@@ -2,7 +2,7 @@
 
 ### Step 1: Read Session State
 
-Load `.ai-agents/workspace/session.yaml` and extract:
+Extract from the already-loaded session context:
 - `active_change` -- the current change-id (if any), its phase, plan_path, has_plan
 - `recent_changes` -- list of changes with active plans
 - `skill_history` -- last 10 entries (skill name, timestamp, status, change_id)

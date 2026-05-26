@@ -4,8 +4,6 @@
 - **Required**:
   - User-specified target (file path, symbol name, module, or "the code I just wrote").
 - **Recommended**:
-  - `.ai-agents/knowledge/project/_generated/project-context.md` -- module/layer rules.
-  - `.ai-agents/knowledge/principle/coding-standards.md` -- naming and structure conventions.
   - Existing tests covering the target (search by file path, by symbol name, and by sibling test files).
   - `git status` / `git diff` -- to know what is already modified before refactoring.
 - **Fallback**: if no target was specified, ask the user. Do not refactor speculatively.
@@ -19,19 +17,8 @@
 - **Output of this step**: a target table (`file | range | role`) and a "current behavior" paragraph; both are shown to user before continuing.
 
 ### Step 3: Classify Refactoring Type
-- **What**: pick the smallest type that covers the requested change. The Refactoring Types table above (in the role-header section of this skill) defines risk levels.
+- **What**: pick the smallest type that covers the requested change. Use the Refactoring Types table above for risk levels.
 - **How**: assign one primary type per refactoring task. Multiple types in one run are allowed but each must be tracked separately in the artifact.
-
-  | Type | Risk | Examples |
-  |------|------|----------|
-  | Rename | Low | Variable, function, file rename |
-  | Extract Method/Class | Low | Pull repeated logic into a helper |
-  | Inline | Low | Eliminate a thin wrapper |
-  | Decompose Conditional | Medium | Replace nested if/switch with guard clauses or polymorphism |
-  | Move | Medium | Relocate to correct module/layer |
-  | Replace Inheritance with Composition | High | Class-hierarchy redesign |
-  | Change Interface/API | High | Modify exported symbols or HTTP/RPC contracts |
-
 - If the request requires `Change Interface/API` AND the symbol is exported beyond the project (public API, library entry point, IPC boundary): STOP -- this is no longer a refactoring task; recommend `/mvt-design`.
 
 ### Step 4: Risk Assessment
@@ -102,7 +89,6 @@
   - `Follow-ups` -- deferred behavior changes spotted during refactoring.
 
 ### Step 10: (session update handled by shared section)
-- Shortcut operation: do NOT update `progress`. Standard `skill_history` entry only.
 
 ## Edge Cases & Errors
 
