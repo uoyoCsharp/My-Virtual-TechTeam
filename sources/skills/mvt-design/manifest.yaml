@@ -76,8 +76,6 @@ sections:
           level: "WARN"
           message: "No requirements found. Run `/mvt-analyze` first. (allow user to proceed)"
 
-  - type: inline
-    content: |
   - type: file
     source: ./business.md
 

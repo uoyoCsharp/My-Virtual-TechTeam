@@ -60,8 +60,6 @@ sections:
           level: "WARN"
           message: "No architecture defined. Run `/mvt-design` first. (allow user to proceed)"
 
-  - type: inline
-    content: |
   - type: file
     source: ./business.md
 

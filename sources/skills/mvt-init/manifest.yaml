@@ -68,8 +68,6 @@ sections:
           level: "INFO"
           message: "This is a first-time init, proceed normally."
 
-  - type: inline
-    content: |
   - type: file
     source: ./business.md
 

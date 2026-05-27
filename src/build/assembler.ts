@@ -37,6 +37,7 @@ export function assembleFromManifest(
 
   for (const section of manifest.sections) {
     const content = loadSection(section, skillDir, options.sourcesDir);
+    if (content.trim() === "") continue;
     parts.push(content.trimEnd());
     parts.push("");
   }

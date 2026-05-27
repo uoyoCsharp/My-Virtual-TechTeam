@@ -59,8 +59,6 @@ sections:
           level: "WARN"
           message: "Session not initialized. Run `/mvt-init` first."
 
-  - type: inline
-    content: |
   - type: file
     source: ./business.md
 

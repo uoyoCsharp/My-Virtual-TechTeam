@@ -67,8 +67,6 @@ sections:
           level: "WARN"
           message: "No code to review. Run `/mvt-implement` first or specify files."
 
-  - type: inline
-    content: |
   - type: file
     source: ./business.md
 
