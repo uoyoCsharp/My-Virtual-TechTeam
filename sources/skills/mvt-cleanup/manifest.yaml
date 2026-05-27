@@ -3,7 +3,7 @@ output: .claude/skills/mvt-cleanup/SKILL.md
 
 frontmatter:
   name: mvt-cleanup
-  description: "Clean up workspace artifacts, summarize old changes, and maintain workspace health. Use when workspace has accumulated old artifacts or to reduce context token footprint."
+  description: "Clean up workspace artifacts, summarize completed changes, and maintain workspace health. This skill should be used when workspace has accumulated old artifacts, token footprint needs reduction, or to archive completed change records."
 
 sections:
   - type: inline
@@ -52,6 +52,9 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
+    source: sections/output-language-constraint.md
+
+  - type: shared
     source: sections/activation-preflight.md
     params:
       checks:
@@ -62,9 +65,6 @@ sections:
 
   - type: inline
     content: |
-      ### Step 4: Execute
-      Proceed to Execution Flow below.
-
       ## Cleanup Rules
 
       | Category | Rule | Action |
@@ -76,18 +76,10 @@ sections:
   - type: file
     source: ./business.md
 
-  - type: inline
-    content: |
-      ## Output Format
-
-      Read and use the output template from: `.ai-agents/skills/_templates/cleanup-output.md`
-
-      If a custom version exists at `.ai-agents/skills/_templates/custom/cleanup-output.md`, use the custom version instead.
-
-      Every response MUST end with a Suggested Next Steps section.
+  - type: shared
+    source: sections/session-update.md
 
   - type: shared
     source: sections/footer-next-steps.md
     params:
-      next_primary: mvt-status
-      next_primary_desc: "Verify workspace state"
+      current_skill: mvt-cleanup

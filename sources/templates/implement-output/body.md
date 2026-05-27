@@ -1,32 +1,11 @@
-## Implementation: {Feature Name}
+# Implementation: {Feature Name}
 
-### Implementation Plan
-| # | Step | Files | Status |
-|---|------|-------|--------|
-| 1 | {step} | `{files}` | {pending/done} |
+## Implementation Plan
 
-### Changes
-| File | Action | Description |
-|------|--------|-------------|
-| `{path}` | {Create/Modify/Delete} | {description} |
+## Changes
 
-### Implementation Code
+## Implementation Details
 
-#### {file_path}
-```{language}
-{code}
-```
+## Design Compliance
 
-### Design Compliance
-| Design Requirement | Status | Notes |
-|-------------------|--------|-------|
-| {requirement} | {Compliant/Deviation} | {notes} |
-
-### Change Tracking
-- **Change ID**: {change-id}
-- **Artifact**: `.ai-agents/workspace/artifacts/{change-id}/implementation.md`
-
----
-**Suggested Next Steps**:
-- `/mvt-review` to review the implementation
-- `/mvt-test` to write tests
+## Change Tracking

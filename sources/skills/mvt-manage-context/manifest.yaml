@@ -1,0 +1,123 @@
+name: mvt-manage-context
+output: .claude/skills/mvt-manage-context/SKILL.md
+
+frontmatter:
+  name: mvt-manage-context
+  description: "Unified entry point for managing knowledge and registry. Supports subcommands: add (with AI routing), remove, move, rename, list. Use this skill instead of mvt-add-context."
+
+sections:
+  - type: inline
+    content: |
+      # MVT Manage Context
+
+      ## Purpose
+
+      Unified CRUD entry point for project context and knowledge entries. Handles add (with AI-driven skill routing), remove, move, rename, and list operations across `project-context.yaml`, `project-context.md`, `knowledge/principle/`, `knowledge/project/`, `knowledge/core/user/`, and the corresponding `registry.yaml` / `core/manifest.yaml` references.
+
+  - type: shared
+    source: sections/role-header.md
+    params:
+      role: Conductor
+      role_desc: "a Knowledge Curator"
+      decision_rules:
+        - rule: "User invokes without subcommand -> Show interactive menu of operations"
+        - rule: "Add a knowledge file -> Run AI routing, suggest skill bindings, write file + update registry/manifest atomically"
+        - rule: "Remove a knowledge entry -> Drop both the file and every registry/manifest reference, show diff"
+        - rule: "Move binding (per-skill <-> shared <-> core) -> Update references and (if path changes) physically move the file"
+        - rule: "Rename a knowledge id -> Update file path + every registry/manifest reference in lockstep"
+        - rule: "List request -> Group entries by binding type and show which skills load each"
+        - rule: "AI routing produces no candidate above threshold -> Recommend `none` (file-only) or prompt user to broaden scope"
+      boundaries:
+        - scope: "analyze code automatically"
+          skill: "/mvt-sync-context or /mvt-analyze-code"
+        - scope: "make architecture decisions"
+          skill: "/mvt-design"
+        - scope: "write implementation code"
+          skill: "/mvt-implement"
+        - scope: "edit framework knowledge under core/_framework/"
+          skill: "(Read-only -- framework files are not user-editable)"
+
+  - type: shared
+    source: sections/activation-load-context.md
+
+  - type: shared
+    source: sections/activation-load-config.md
+
+  - type: shared
+    source: sections/output-language-constraint.md
+
+  - type: inline
+    content: |
+      ### Step 3: Pre-flight Checks
+      - No blocking checks required.
+
+  - type: file
+    source: ./business.md
+
+  - type: inline
+    content: |
+      ## Output Format
+
+      No external template -- output is inline. Format depends on subcommand:
+
+      ### add / move / rename
+      ```markdown
+      ## Knowledge Updated
+
+      ### Operation: {add | move | rename}
+
+      ### Routing Decision
+      | Skill | Score | Bound? |
+      |-------|-------|--------|
+      | mvt-review | 92 | Yes |
+      | mvt-test | 85 | Yes |
+      | mvt-implement | 60 | No (below threshold) |
+
+      ### Files Modified
+      - `.ai-agents/knowledge/{path}` -- {created | moved | renamed}
+      - `.ai-agents/registry.yaml` -- {entries added/removed}
+      - `.ai-agents/knowledge/core/manifest.yaml` -- {entry added/removed} (if applicable)
+      ```
+
+      ### remove
+      ```markdown
+      ## Knowledge Removed
+
+      ### Removed entry: `{id}`
+      - File: `.ai-agents/knowledge/{path}` (deleted)
+      - References dropped from:
+        - `registry.yaml > knowledge.shared` (if applicable)
+        - `registry.yaml > skills.{name}.knowledge` x N (if applicable)
+        - `core/manifest.yaml > files[]` (if applicable)
+      ```
+
+      ### list
+      ```markdown
+      ## Knowledge Inventory
+
+      ### Shared (all skills)
+      | id | path | type |
+      |----|------|------|
+
+      ### Per-Skill
+      | id | path | bound to |
+      |----|------|----------|
+
+      ### Core (user contributions)
+      | id | path | auto_load |
+      |----|------|-----------|
+
+      ### Unbound (file present but not auto-loaded)
+      | id | path |
+      |----|------|
+      ```
+
+  - type: shared
+    source: sections/session-update.md
+    params:
+      read_only: true
+
+  - type: shared
+    source: sections/footer-next-steps.md
+    params:
+      current_skill: mvt-manage-context

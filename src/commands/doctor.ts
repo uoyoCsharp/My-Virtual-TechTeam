@@ -67,7 +67,6 @@ export function doctorCommand(): void {
   report(checks);
 
   const errors = checks.filter((c) => c.status === "FAIL").length;
-  const warnings = checks.filter((c) => c.status === "WARN").length;
   if (errors > 0) process.exit(1);
 }
 

@@ -28,10 +28,13 @@ describe("install (via materialize + manifest)", () => {
       projectRoot: tmpDir,
     });
 
-    expect(materialized.length).toBeGreaterThan(40);
+    expect(materialized.length).toBeGreaterThan(25);
     expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-analyze/SKILL.md"))).toBe(true);
     expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-init/SKILL.md"))).toBe(true);
     expect(existsSync(path.join(tmpDir, ".ai-agents/skills/_templates/analyze-output.md"))).toBe(true);
+    expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-plan-dev/SKILL.md"))).toBe(true);
+    expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-update-plan/SKILL.md"))).toBe(true);
+    expect(existsSync(path.join(tmpDir, ".ai-agents/skills/_templates/project-context.md"))).toBe(true);
   });
 
   it("creates CREATE_ONCE files", () => {
@@ -51,8 +54,12 @@ describe("install (via materialize + manifest)", () => {
 
   it("copies knowledge files", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
-    expect(existsSync(path.join(tmpDir, ".ai-agents/knowledge/core/review-principles.md"))).toBe(true);
-    expect(existsSync(path.join(tmpDir, ".ai-agents/knowledge/patterns/ddd/review-checklist.md"))).toBe(true);
+    expect(
+      existsSync(path.join(tmpDir, ".ai-agents/knowledge/core/manifest.yaml")),
+    ).toBe(true);
+    expect(
+      existsSync(path.join(tmpDir, ".ai-agents/knowledge/core/user")),
+    ).toBe(true);
   });
 
   it("copies registry to runtime", () => {
@@ -75,21 +82,21 @@ describe("install (via materialize + manifest)", () => {
       packageRoot: PACKAGE_ROOT,
       projectRoot: tmpDir,
     });
-    writeInstallationManifest(tmpDir, "2.0.0", null, materialized, null);
+    writeInstallationManifest(tmpDir, "2.0.0", materialized, null);
     const manifest = readInstallationManifest(tmpDir);
     expect(manifest).not.toBeNull();
     expect(manifest!.mvtt_version).toBe("2.0.0");
-    expect(Object.keys(manifest!.files).length).toBeGreaterThan(40);
+    expect(Object.keys(manifest!.files).length).toBeGreaterThan(25);
   });
 
   it("installCommand writes language to config.yaml (non-TTY defaults to en-US)", async () => {
     const originalCwd = process.cwd();
     process.chdir(tmpDir);
     try {
-      await installCommand({ pattern: "ddd" });
+      await installCommand();
       const config = readFileSync(path.join(tmpDir, ".ai-agents/config.yaml"), "utf-8");
-      expect(config).toMatch(/language:\s*en-US/);
-      expect(config).toMatch(/active:\s*"ddd"/);
+      expect(config).toMatch(/interaction_language:\s*en-US/);
+      expect(config).toMatch(/document_output_language:\s*en-US/);
     } finally {
       process.chdir(originalCwd);
     }

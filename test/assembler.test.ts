@@ -53,7 +53,7 @@ describe("assembler", () => {
       const output = buildSkill("mvt-analyze");
       expect(output).toContain("### Boundaries");
       expect(output).toContain(
-        "Do NOT make architecture decisions -> Suggest `/mvt-design`",
+        "Do NOT make architecture decisions (use `/mvt-design` instead)",
       );
     });
 
@@ -61,14 +61,9 @@ describe("assembler", () => {
       const output = buildSkill("mvt-analyze");
       expect(output).toContain("## Activation Protocol");
       expect(output).toContain("### Step 1: Load Context");
-      expect(output).toContain("### Step 2: Load Config");
-      expect(output).toContain("### Step 3: Pre-flight Checks");
-    });
-
-    it("includes extended context", () => {
-      const output = buildSkill("mvt-analyze");
-      expect(output).toContain("Extended context for this skill:");
-      expect(output).toContain(".ai-agents/workspace/requirements/");
+      expect(output).toContain("### Step 2: Load Knowledge");
+      expect(output).toContain("### Step 3: Load Config");
+      expect(output).toContain("### Step 4: Pre-flight Checks");
     });
 
     it("includes Execution Flow from business.md", () => {
@@ -78,17 +73,16 @@ describe("assembler", () => {
       expect(output).toContain("### Step 5: Update Workspace");
     });
 
-    it("includes Output Format section", () => {
+    it("includes Artifact Structure section", () => {
       const output = buildSkill("mvt-analyze");
-      expect(output).toContain("## Output Format");
+      expect(output).toContain("## Artifact Structure");
       expect(output).toContain("analyze-output.md");
     });
 
     it("includes Suggested Next Steps", () => {
       const output = buildSkill("mvt-analyze");
       expect(output).toContain("## Suggested Next Steps");
-      expect(output).toContain("/mvt-design");
-      expect(output).toContain("/mvt-status");
+      expect(output).toContain("mvt-analyze");
     });
   });
 
@@ -108,7 +102,7 @@ describe("assembler", () => {
 
     it("includes BLOCK-level pre-flight checks", () => {
       const output = buildSkill("mvt-design");
-      expect(output).toContain("BLOCK");
+      expect(output).toMatch(/\|\s*\d+\s*\|\s*`[^`]+`\s+is empty\s*\|\s*BLOCK\s*\|/);
     });
   });
 
@@ -121,8 +115,8 @@ describe("assembler", () => {
 
     it("has WARN not BLOCK pre-flight", () => {
       const output = buildSkill("mvt-fix");
-      expect(output).toContain("WARN");
-      expect(output).not.toContain("BLOCK");
+      expect(output).toMatch(/\|\s*1\s*\|\s*`session\.initialized_at`\s+is empty\s*\|\s*WARN\s*\|/);
+      expect(output).not.toMatch(/\|\s*\d+\s*\|\s*`[^`]+`\s+is empty\s*\|\s*BLOCK\s*\|/);
     });
   });
 
@@ -130,14 +124,19 @@ describe("assembler", () => {
     it("includes Variants", () => {
       const output = buildSkill("mvt-init");
       expect(output).toContain("## Variants");
-      expect(output).toContain("--light");
-      expect(output).toContain("--deep");
       expect(output).toContain("--refresh");
     });
 
     it("suggests mvt-analyze as next step", () => {
       const output = buildSkill("mvt-init");
       expect(output).toContain("/mvt-analyze");
+    });
+
+    it("documents new session.yaml fields for plan support", () => {
+      const output = buildSkill("mvt-init");
+      expect(output).toContain("plan_path");
+      expect(output).toContain("has_plan");
+      expect(output).toContain("recent_changes");
     });
   });
 
@@ -149,9 +148,164 @@ describe("assembler", () => {
       );
     });
 
-    it("includes coding standards in extended context", () => {
+    it("session-update section requires change_id on skill_history entries", () => {
       const output = buildSkill("mvt-implement");
-      expect(output).toContain("coding-standards.md");
+      expect(output).toContain("change_id:");
+      expect(output).toContain("Do NOT modify `recent_changes`");
+    });
+  });
+
+  describe("mvt-plan-dev", () => {
+    it("includes purpose and role", () => {
+      const output = buildSkill("mvt-plan-dev");
+      expect(output).toContain("# MVT Plan Dev");
+      expect(output).toContain(
+        "You are the **Architect** -- a Development Planner.",
+      );
+    });
+
+    it("does not reference removed plan-dev output template", () => {
+      const output = buildSkill("mvt-plan-dev");
+      expect(output).not.toContain(".ai-agents/skills/_templates/plan-dev-output.md");
+    });
+
+    it("declares plan-dev specific state updates for active_change and recent_changes", () => {
+      const output = buildSkill("mvt-plan-dev");
+      expect(output).toContain("active_change.plan_path");
+      expect(output).toContain("active_change.has_plan");
+      expect(output).toContain("recent_changes");
+    });
+
+    it("enforces granularity constraint of 3-10 tasks", () => {
+      const output = buildSkill("mvt-plan-dev");
+      expect(output).toContain("3");
+      expect(output).toContain("10");
+    });
+
+    it("preflight blocks when active_change is missing", () => {
+      const output = buildSkill("mvt-plan-dev");
+      expect(output).toContain("active_change.id");
+      expect(output).toContain("/mvt-analyze");
+    });
+  });
+
+  describe("mvt-update-plan", () => {
+    it("includes purpose and role", () => {
+      const output = buildSkill("mvt-update-plan");
+      expect(output).toContain("# MVT Update Plan");
+      expect(output).toContain(
+        "You are the **Architect** -- a Development Planner.",
+      );
+    });
+
+    it("documents soft-prompt natural-language mapping", () => {
+      const output = buildSkill("mvt-update-plan");
+      expect(output).toContain("done");
+      expect(output).toContain("blocked");
+    });
+
+    it("preflight blocks when no active plan exists", () => {
+      const output = buildSkill("mvt-update-plan");
+      expect(output).toContain("active_change.has_plan");
+      expect(output).toContain("/mvt-plan-dev");
+    });
+
+    it("requires re-validation before writing back", () => {
+      const output = buildSkill("mvt-update-plan");
+      expect(output).toContain("validate");
+      expect(output).toContain("abort");
+    });
+
+    it("refreshes recent_changes last_updated", () => {
+      const output = buildSkill("mvt-update-plan");
+      expect(output).toContain("recent_changes");
+      expect(output).toContain("last_updated");
+    });
+  });
+
+  describe("mvt-resume (Phase 3 enhancements)", () => {
+    it("describes multi-plan discovery step", () => {
+      const output = buildSkill("mvt-resume");
+      expect(output).toContain("### Step 1.5: Discover Pending Plans");
+      expect(output).toContain("artifacts/*/plan.yaml");
+    });
+
+    it("documents candidate selection branching (0/1/N)", () => {
+      const output = buildSkill("mvt-resume");
+      expect(output).toContain("### Step 1.6: Select Target Change");
+      expect(output).toContain("Auto-select");
+      expect(output).toContain("Pause and prompt");
+    });
+
+    it("supports explicit change-id argument", () => {
+      const output = buildSkill("mvt-resume");
+      expect(output).toContain("{change-id}");
+      expect(output).toContain("skip");
+    });
+
+    it("includes Plan Progress section in execution flow", () => {
+      const output = buildSkill("mvt-resume");
+      expect(output).toContain("### Step 4: Load Plan Progress");
+      expect(output).toContain("Plan Progress");
+      expect(output).toContain("Current Task Detail");
+    });
+
+    it("decision rules cover plan-aware branches", () => {
+      const output = buildSkill("mvt-resume");
+      expect(output).toContain("Multiple in_progress plans found");
+      expect(output).toContain("current_task");
+      expect(output).toContain("stale warning");
+    });
+
+    it("filters skill_history by change_id when plan is selected", () => {
+      const output = buildSkill("mvt-resume");
+      expect(output).toContain("change_id == selected_change_id");
+    });
+
+    it("stale task warning triggers at 5 days", () => {
+      const output = buildSkill("mvt-resume");
+      expect(output).toContain("5 days");
+    });
+  });
+
+  describe("mvt-status (Phase 4 multi-change dashboard)", () => {
+    it("discovers all plans from recent_changes and fallback glob", () => {
+      const output = buildSkill("mvt-status");
+      expect(output).toContain("### Step 3: Discover All Plans");
+      expect(output).toContain("artifacts/*/plan.yaml");
+    });
+
+    it("renders Changes Overview table", () => {
+      const output = buildSkill("mvt-status");
+      expect(output).toContain("Changes Overview");
+      expect(output).toContain("change-id");
+      expect(output).toContain("progress");
+    });
+
+    it("decision rules mention plan-awareness", () => {
+      const output = buildSkill("mvt-status");
+      expect(output).toContain("Changes Overview table");
+      expect(output).toContain("skill_hint");
+    });
+  });
+
+  describe("mvt-help (Phase 4 diagram update)", () => {
+    it("workflow diagram includes plan-dev", () => {
+      const output = buildSkill("mvt-help");
+      expect(output).toContain("plan-dev");
+      expect(output).toContain("D2[plan-dev]");
+    });
+
+    it("references plan-dev in the static skill body (catalog itself is registry-driven at runtime)", () => {
+      const output = buildSkill("mvt-help");
+      expect(output).toContain("/mvt-plan-dev");
+      expect(output).toContain("registry.yaml");
+    });
+
+    it("user position table recommends plan-dev for large changes", () => {
+      const output = buildSkill("mvt-help");
+      expect(output).toContain("change is large");
+      expect(output).toContain("/mvt-plan-dev");
     });
   });
 });

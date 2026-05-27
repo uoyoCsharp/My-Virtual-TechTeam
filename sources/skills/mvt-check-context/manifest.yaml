@@ -3,7 +3,7 @@ output: .claude/skills/mvt-check-context/SKILL.md
 
 frontmatter:
   name: mvt-check-context
-  description: "Analyze context token load and give optimization recommendations. Use when user wants to check how much context MVTT loads, identify large files, or optimize workspace size for better performance."
+  description: "Analyze context token load and provide optimization recommendations. This skill should be used when user wants to check how much context MVTT loads, identify large files, or optimize workspace size for better performance."
 
 sections:
   - type: inline
@@ -30,7 +30,7 @@ sections:
         - scope: "clean up artifacts"
           skill: "/mvt-cleanup"
         - scope: "modify context"
-          skill: "/mvt-add-context"
+          skill: "/mvt-manage-context"
 
   - type: shared
     source: sections/activation-load-context.md
@@ -41,34 +41,23 @@ sections:
   - type: shared
     source: sections/activation-load-config.md
 
+  - type: shared
+    source: sections/output-language-constraint.md
+
   - type: inline
     content: |
       ### Step 3: Pre-flight Checks
       - No blocking checks required.
 
-      ### Step 4: Execute
-      Proceed to Execution Flow below.
-
   - type: file
     source: ./business.md
 
-  - type: inline
-    content: |
-      ## Output Format
-
-      Read and use the output template from: `.ai-agents/skills/_templates/context-check-output.md`
-
-      If a custom version exists at `.ai-agents/skills/_templates/custom/context-check-output.md`, use the custom version instead.
-
-      Fill the template with analysis results.
-
-      Every response MUST end with a Suggested Next Steps section.
+  - type: shared
+    source: sections/session-update.md
+    params:
+      read_only: true
 
   - type: shared
     source: sections/footer-next-steps.md
     params:
-      next_primary: mvt-cleanup
-      next_primary_desc: "Clean up old artifacts to reduce context size"
-      next_alternatives:
-        - skill: mvt-add-context
-          when: "Update project context if information is outdated"
+      current_skill: mvt-check-context

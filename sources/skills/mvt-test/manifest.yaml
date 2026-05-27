@@ -3,7 +3,7 @@ output: .claude/skills/mvt-test/SKILL.md
 
 frontmatter:
   name: mvt-test
-  description: "Generate and design tests to validate implementations. Creates test cases covering happy paths, edge cases, negative scenarios, and security. Use when user wants to write tests or validate code."
+  description: "Generate and design tests to validate implementations. This skill should be used when user wants to write tests, validate code, generate test cases, or analyze test coverage."
 
 sections:
   - type: inline
@@ -12,7 +12,7 @@ sections:
 
       ## Purpose
 
-      Design and write tests to validate implementations against requirements. Ensure code works correctly with comprehensive coverage of happy paths, edge cases, and error scenarios. This is the fifth phase in the full workflow: analyze -> design -> implement -> review -> test.
+      Design and write tests to validate implementations against requirements and business rules. Ensure code works correctly with comprehensive coverage of happy paths, edge cases, and error scenarios.
 
   - type: shared
     source: sections/role-header.md
@@ -49,13 +49,13 @@ sections:
     source: sections/activation-load-context.md
     params:
       extended_context:
-        - ".ai-agents/knowledge/core/review-principles.md -- Code quality principles"
-        - ".ai-agents/knowledge/patterns/{pattern.active}/ -- Active pattern knowledge"
-        - ".ai-agents/knowledge/principle/coding-standards.md -- Project coding standards"
         - "Implementation files to be tested"
 
   - type: shared
     source: sections/activation-load-config.md
+
+  - type: shared
+    source: sections/output-language-constraint.md
 
   - type: shared
     source: sections/activation-preflight.md
@@ -64,21 +64,14 @@ sections:
         - order: "1"
           field: "session.initialized_at"
           level: "WARN"
-          message: 'Session not initialized. Run `/mvt-init` first.'
+          message: "Session not initialized. Run `/mvt-init` first."
         - order: "2"
           field: "no implementation files"
           level: "WARN"
-          message: 'No implementation found. Run `/mvt-implement` first.'
-        - order: "3"
-          field: "pattern.active"
-          level: "WARN"
-          message: 'Architecture pattern not set. Suggest `/mvt-init`." (allow user to proceed)'
+          message: "No implementation found. Run `/mvt-implement` first."
 
   - type: inline
     content: |
-      ### Step 4: Execute
-      Proceed to Execution Flow below.
-
       ## Test Case Types
 
       | Type | Description | Priority |
@@ -94,18 +87,16 @@ sections:
 
   - type: inline
     content: |
-      ## Output Format
-
-      Read and use the output template from: `.ai-agents/skills/_templates/test-output.md`
-
+      ## Artifact Structure
+      Read the document structure template from: `.ai-agents/skills/_templates/test-output.md`
       If a custom version exists at `.ai-agents/skills/_templates/custom/test-output.md`, use the custom version instead.
+      The template defines section headings only. Generate content for each section based on test design results.
+      Write the artifact to: `.ai-agents/workspace/artifacts/{change-id}/tests/test-design.md`
 
-      Fill the template placeholders with the test design results.
-
-      Every response MUST end with a Suggested Next Steps section.
+  - type: shared
+    source: sections/session-update.md
 
   - type: shared
     source: sections/footer-next-steps.md
     params:
-      next_primary: mvt-fix
-      next_primary_desc: "Run tests with the appropriate command; if tests fail, use this"
+      current_skill: mvt-test

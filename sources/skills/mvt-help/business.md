@@ -1,70 +1,74 @@
 ## Execution Flow
 
-### Step 1: Load Current State
-- Read session.yaml: check initialization, active change, phase progress
-- Read project-context.yaml: check project info completeness
-- Read config.yaml: check pattern.active
+### Step 1: Load Inputs
+- **Recommended**:
+  - `.ai-agents/knowledge/project/_generated/project-context.md` -- existence check only, to detect whether semantic context has been generated.
+- **Fallback**: any missing optional file is treated as "feature absent" for assessment purposes; do not abort. If `registry.yaml` itself is missing, surface the error and recommend `mvtt install`.
 
 ### Step 2: Assess User Position
-Determine where the user is in the workflow and what to recommend:
+- **What**: pick exactly one recommended next skill based on the current workspace state.
+- **How**: walk the table top-to-bottom; the first row whose condition holds wins.
 
-| Condition | Recommendation |
-|-----------|---------------|
-| Not initialized | `/mvt-init` -- Initialize the project |
-| Initialized, no requirements | `/mvt-analyze` -- Analyze requirements |
-| Requirements exist, no architecture | `/mvt-design` -- Design architecture |
-| Architecture exists, not implemented | `/mvt-implement` -- Implement the design |
-| Implemented, not reviewed | `/mvt-review` -- Review the code |
-| Reviewed, not tested | `/mvt-test` -- Write tests |
-| All phases complete | `/mvt-cleanup` or start new feature |
+  | Condition | Recommendation |
+  |-----------|---------------|
+  | `session.yaml` missing or `initialized_at` empty | `/mvt-init` -- Initialize the project |
+  | Initialized AND `project-context.md` does not exist | `/mvt-analyze-code` -- Analyze existing code |
+  | No requirements (no `analysis.md` for active change AND no completed `/mvt-analyze` in `skill_history`) | `/mvt-analyze` -- Analyze requirements |
+  | No requirements, but user describes a simple change directly | `/mvt-quick-dev` -- Implement a simple change quickly |
+  | Requirements present, no `design.md` | `/mvt-design` -- Design architecture |
+  | `design.md` exists, change is large (Change Tracking lists > 5 files OR ADR includes breaking change OR > 1 new module) | `/mvt-plan-dev` -- Decompose into tracked plan |
+  | `design.md` (or `plan.yaml`) ready, no `implementation.md` | `/mvt-implement` -- Implement the design |
+  | `implementation.md` exists, no `review.md` | `/mvt-review` -- Review the code |
+  | `review.md` exists with no Critical findings, no `test-design.md` | `/mvt-test` -- Write tests |
+  | `review.md` has Critical findings | `/mvt-fix` -- Fix critical issues before continuing |
+  | All of the above complete | `/mvt-cleanup` -- Tidy artifacts, OR start a new feature with `/mvt-analyze` |
 
 ### Step 3: Display Skills Catalog
-Show all available skills grouped by category:
+Read `registry.yaml` > `skills` section.
+Group skills by `category` field and display as tables:
+- `workflow` -> "Workflow Skills (sequential phases)"
+- `shortcut` -> "Shortcut Skills (anytime, no prerequisites)"
+- `project` -> "Project Management Skills"
+- `utility` -> "Utility Skills"
 
-**Workflow Skills** (sequential phases):
-| Skill | Description |
-|-------|-------------|
-| `/mvt-analyze` | Analyze requirements and extract domain concepts |
-| `/mvt-analyze-code` | Reverse-analyze existing code to generate context |
-| `/mvt-design` | Create architecture design based on requirements |
-| `/mvt-implement` | Implement features based on architecture design |
-| `/mvt-review` | Code review for quality and standards compliance |
-| `/mvt-test` | Generate tests to validate implementations |
-
-**Shortcut Skills** (anytime, no prerequisites):
-| Skill | Description |
-|-------|-------------|
-| `/mvt-fix` | Diagnose and fix bugs or issues |
-| `/mvt-refactor` | Refactor code while preserving behavior |
-
-**Project Management Skills**:
-| Skill | Description |
-|-------|-------------|
-| `/mvt-init` | Initialize or refresh project setup |
-| `/mvt-status` | Show current project and workflow status |
-| `/mvt-config` | Manage framework configuration |
-| `/mvt-sync-context` | Synchronize context with code changes |
-| `/mvt-cleanup` | Clean up workspace artifacts |
-
-**Utility Skills**:
-| Skill | Description |
-|-------|-------------|
-| `/mvt-help` | Show this help information |
-| `/mvt-create-skill` | Create custom MVTT skills through guided workflow |
-| `/mvt-add-context` | Interactively add or update project context |
-| `/mvt-check-context` | Analyze context token load and optimization |
-| `/mvt-template` | View, customize, and manage output templates |
+For each skill, show: `/{skill-name}` | `description` field from registry.
+Sort within each group by declaration order in registry.
 
 ### Step 4: Show Workflow Diagram
 Display the standard workflow with current position highlighted:
 
 ```mermaid
 flowchart LR
-    A[analyze] --> B[design] --> C[implement] --> D[review] --> E[test]
+    A[init] --> B[analyze-code] --> C[analyze] --> D[design] --> D2[plan-dev]
+    D --> E[implement]
+    D2 --> E
+    E --> F[review] --> G[test]
+
+    C -.->|simple change| Q[quick-dev]
 ```
 
-Color-code based on current progress: green (done), yellow (current/recommended), gray (pending).
+Color-code based on current progress: green (done), yellow (current/recommended), gray (pending). The "current" node is whichever skill the Step 2 table recommended; "done" is determined by the same evidence the Step 2 table consumed.
 
 ### Step 5: Respond to User Questions
-- If user asks about a specific skill -> Provide usage details for that skill
-- If user asks "what should I do next" -> Give contextual recommendation based on Step 2
+- **What**: handle the user's free-form question after the catalog is rendered.
+- **How**:
+
+  | Question pattern | Response |
+  |------------------|----------|
+  | "What should I do next?" / no specific question | Repeat the Step 2 recommendation in one line, followed by a one-clause reason citing the matched condition |
+  | "What does `/mvt-X` do?" / asks about a specific skill | Read the skill's metadata from `registry.yaml`, show: name, description, category, dependencies, knowledge entries (if any), template (if any). If the skill has a `path`, mention "see SKILL.md for the full procedure" -- do NOT inline the full SKILL.md content (too large) |
+  | "Compare `/mvt-X` and `/mvt-Y`" | Pull descriptions from registry; if both are workflow skills, mention their relative position in the diagram |
+  | Asks about something not in registry | Reply: "No skill matches that. Available skills: see catalog above." Do not invent skills |
+
+### Step 6: (session update handled by shared section)
+
+## Edge Cases & Errors
+
+| Case | Handling |
+|------|----------|
+| `registry.yaml` missing | STOP at Step 1; recommend `mvtt install`; show no catalog |
+| `session.yaml` missing | Render catalog (Step 3) and diagram (Step 4) without the "current position" highlight; Step 2 recommends `/mvt-init` |
+| `recent_changes[]` references a `plan_path` that no longer exists | Ignore for help purposes; do not warn -- `/mvt-status` is the right place for that |
+| User invokes `/mvt-help` while inside an active change with Critical review findings | Step 2's recommendation is `/mvt-fix`; surface this prominently above the catalog |
+| User asks about a custom skill (registry entry with `custom: true`) | Treat identically to built-ins; the only difference is showing `custom: true` in the metadata view |
+| Workflow diagram cannot be rendered (mermaid unsupported in environment) | Fall back to a textual flow: `init -> analyze-code -> analyze -> design -> [plan-dev] -> implement -> review -> test` |

@@ -34,6 +34,20 @@ describe("validateManifest", () => {
     }
   });
 
+  it("validates Phase 2 plan skill manifests without errors", () => {
+    const skills = ["mvt-plan-dev", "mvt-update-plan"];
+    for (const skill of skills) {
+      const manifestPath = path.resolve(
+        SOURCES_DIR,
+        `skills/${skill}/manifest.yaml`,
+      );
+      const errors = validateManifest(manifestPath, SOURCES_DIR);
+      expect(errors, `${skill} should have no validation errors`).toHaveLength(
+        0,
+      );
+    }
+  });
+
   it("reports error for non-existent manifest", () => {
     const errors = validateManifest("/nonexistent/manifest.yaml", SOURCES_DIR);
     expect(errors.length).toBeGreaterThan(0);

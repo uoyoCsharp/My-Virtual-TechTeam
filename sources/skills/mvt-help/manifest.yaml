@@ -3,7 +3,7 @@ output: .claude/skills/mvt-help/SKILL.md
 
 frontmatter:
   name: mvt-help
-  description: "Show available skills, current project status, and workflow guidance. Use when user is new to MVTT, wants to know what commands are available, or needs guidance on what to do next."
+  description: "Show available skills, current project status, and workflow guidance. This skill should be used when user is new to MVTT, wants to discover available commands, or needs guidance on what to do next."
 
 sections:
   - type: inline
@@ -12,7 +12,7 @@ sections:
 
       ## Purpose
 
-      Help users navigate the MVTT framework by showing available skills, current project status, and contextual guidance on what to do next. This is the entry point for new users and a quick reference for experienced ones.
+      Navigate the MVTT framework by showing available skills, current project status, and contextual guidance on what to do next. Entry point for new users and quick reference for experienced ones.
 
       ## Role
 
@@ -24,13 +24,13 @@ sections:
   - type: shared
     source: sections/activation-load-config.md
 
+  - type: shared
+    source: sections/output-language-constraint.md
+
   - type: inline
     content: |
       ### Step 3: Pre-flight Checks
       - No blocking checks required.
-
-      ### Step 4: Execute
-      Proceed to Execution Flow below.
 
   - type: file
     source: ./business.md
@@ -46,7 +46,7 @@ sections:
 
       ### Current Status
       - **Project**: {name} ({initialized/not initialized})
-      - **Current Phase**: {phase}
+      - **Last Skill**: {last command from skill_history}
       - **Recommended Next**: `/mvt-{next}` -- {description}
 
       ### Workflow
@@ -54,8 +54,14 @@ sections:
 
       ### Available Skills
       {Skills tables grouped by category, as defined in Step 3}
-
-      ---
-      **Suggested Next Steps**:
-      - `/mvt-{recommended}` -- {description}
       ```
+
+  - type: shared
+    source: sections/session-update.md
+    params:
+      read_only: true
+
+  - type: shared
+    source: sections/footer-next-steps.md
+    params:
+      current_skill: mvt-help

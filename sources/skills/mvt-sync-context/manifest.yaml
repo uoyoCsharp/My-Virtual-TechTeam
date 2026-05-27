@@ -3,7 +3,7 @@ output: .claude/skills/mvt-sync-context/SKILL.md
 
 frontmatter:
   name: mvt-sync-context
-  description: "Synchronize workspace context with code changes after manual modifications or git operations. Use when context seems out of sync with code, after manual edits, or after git merge/rebase."
+  description: "Aggregate completed change artifacts (analysis/design/implementation) and merge new domain knowledge into project-context.md and project-context.yaml. This skill should be used after one or more changes are completed to keep long-term project knowledge in sync with delivered work."
 
 sections:
   - type: inline
@@ -12,7 +12,7 @@ sections:
 
       ## Purpose
 
-      Synchronize the MVTT workspace context with code changes made outside the workflow. This is a code-driven, automatic synchronization that scans git diffs and file changes to update project context.
+      Keep `project-context.md` (semantic) and `project-context.yaml` (structural index) in sync with completed work. This is an artifact-driven, incremental synchronization: it reads workspace artifacts of completed changes, classifies new domain knowledge, and merges it into the long-term context. It does NOT scan code for new content; an optional read-only code verification step can validate that artifact-claimed entities exist.
 
   - type: shared
     source: sections/role-header.md
@@ -20,65 +20,77 @@ sections:
       role: Conductor
       role_desc: "a Workflow Coordinator"
       decision_rules:
-        - rule: "Git available -> Use git diff to detect changes"
-        - rule: "Git not available -> Scan for recently modified files"
-        - rule: "Changes detected -> Analyze and update context"
-        - rule: "No changes detected -> Report context is already in sync"
+        - rule: "Completed changes found -> List for user confirmation, then aggregate"
+        - rule: "No completed changes since last sync -> Report nothing to do"
+        - rule: "Conflicts with existing project-context.md -> Render conflict table, require user resolution"
+        - rule: "User opts in to code verification -> Run read-only scan; flag artifact entries that cannot be located"
+        - rule: "Code-only entities discovered (in code, not in artifacts) -> Do NOT write; recommend /mvt-analyze-code"
+        - rule: "Artifact references modules/source_paths absent from project-context.yaml -> Propose yaml additions for user confirmation"
       boundaries:
-        - scope: "analyze requirements"
-          skill: "/mvt-analyze"
-        - scope: "design architecture"
-          skill: "/mvt-design"
-        - scope: "write implementation code"
-          skill: "/mvt-implement"
+        - scope: "regenerate project-context.md from full code scan"
+          skill: "/mvt-analyze-code"
+        - scope: "archive completed change artifacts"
+          skill: "/mvt-cleanup"
+        - scope: "manage shared / per-skill knowledge files"
+          skill: "/mvt-manage-context"
 
   - type: inline
     content: |
       ### When to Use
-      - After manual code changes outside the workflow
-      - When context seems out of sync with code
-      - After git operations (merge, rebase, etc.)
+      - After one or more changes are marked `completed` and you want to fold their knowledge into long-term context
+      - BEFORE running `/mvt-cleanup` (sync first, archive after)
+      - When `project-context.md` looks behind delivered work but you do not want to pay a full `/mvt-analyze-code` regeneration
+
+      ### When NOT to Use
+      - For deletions, renames, or module deprecations -> use `/mvt-analyze-code` (full ground-truth rebuild)
+      - To pick up code changes never recorded as MVTT changes -> use `/mvt-analyze-code`
+      - To clean / archive workspace -> use `/mvt-cleanup`
 
   - type: shared
     source: sections/activation-load-context.md
+    params:
+      extended_context:
+        - ".ai-agents/workspace/artifacts/{change-id}/ -- Source artifacts for completed changes"
+        - ".ai-agents/knowledge/project/_generated/project-context.md -- Current semantic context (merge target)"
+        - ".ai-agents/workspace/project-context.yaml -- Current structural index (merge target)"
 
   - type: shared
     source: sections/activation-load-config.md
+
+  - type: shared
+    source: sections/output-language-constraint.md
 
   - type: shared
     source: sections/activation-preflight.md
     params:
       checks:
         - order: "1"
-          field: "project-context is empty"
-          level: "WARN"
-          message: 'Project not initialized. Run `/mvt-init` first.'
-
-  - type: inline
-    content: |
-      ### Step 4: Execute
-      Proceed to Execution Flow below.
+          field: "session.initialized_at"
+          level: "BLOCK"
+          message: "Session not initialized. Run `/mvt-init` first."
+        - order: "2"
+          field: ".ai-agents/knowledge/project/_generated/project-context.md exists"
+          level: "BLOCK"
+          message: "project-context.md not found. Run `/mvt-analyze-code` to create the initial document; this skill only handles incremental updates."
 
   - type: file
     source: ./business.md
 
-  - type: inline
-    content: |
-      ## Output Format
-
-      Read and use the output template from: `.ai-agents/skills/_templates/sync-context-output.md`
-
-      If a custom version exists at `.ai-agents/skills/_templates/custom/sync-context-output.md`, use the custom version instead.
-
-      Fill the template placeholders with the sync results.
-
-      Every response MUST end with a Suggested Next Steps section.
+  - type: shared
+    source: sections/session-update.md
 
   - type: shared
     source: sections/footer-next-steps.md
     params:
-      next_primary: mvt-status
-      next_primary_desc: "Verify context state after sync"
-      next_alternatives:
-        - skill: "(continue)"
-          when: "Continue with your current task"
+      current_skill: mvt-sync-context
+      conditional_suggestions:
+        conditions:
+          - condition: "merge applied successfully"
+            primary: "mvt-cleanup"
+            primary_desc: "Archive aggregated change artifacts now that knowledge is sync'd"
+          - condition: "code verification flagged code-only entities"
+            primary: "mvt-analyze-code"
+            primary_desc: "Regenerate project-context.md from full code scan"
+          - condition: "default"
+            primary: "mvt-check-context"
+            primary_desc: "Audit token cost and overall context health"

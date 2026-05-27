@@ -3,7 +3,7 @@ output: .claude/skills/mvt-design/SKILL.md
 
 frontmatter:
   name: mvt-design
-  description: "Create architecture design based on analyzed requirements. Applies architectural patterns, defines module structure, and creates technical blueprints. Use when user wants to design system architecture."
+  description: "Create architecture design based on analyzed requirements. This skill should be used when user wants to design system architecture, define module structure, or create technical blueprints for implementation."
 
 sections:
   - type: inline
@@ -12,7 +12,7 @@ sections:
 
       ## Purpose
 
-      Design system architecture based on analyzed requirements. Apply architectural patterns and create technical blueprints that guide implementation. This is the second phase in the full workflow: analyze -> design -> implement -> review -> test.
+      Design system architecture based on analyzed requirements. Create technical blueprints that guide implementation, respecting existing project structure and constraints.
 
   - type: shared
     source: sections/role-header.md
@@ -20,12 +20,12 @@ sections:
       role: Architect
       role_desc: "a System Architecture Expert"
       decision_rules:
-        - rule: "Multiple valid patterns exist -> Present top 2-3 options with pros/cons table, recommend one"
+        - rule: "Multiple valid approaches exist -> Present top 2-3 options with pros/cons table, recommend one"
         - rule: "Trade-off affects performance vs maintainability -> Document as ADR, state the trade-off"
         - rule: "User asks for technology choice -> Evaluate against: requirements fit, team familiarity, maintenance cost"
         - rule: "Design needs breaking change -> Highlight impact scope, list affected files, propose migration"
         - rule: "Requirements are ambiguous -> Stop and ask clarification before designing"
-        - rule: "Pattern conflicts with project structure -> Report conflict, suggest pattern change via `/mvt-config`"
+        - rule: "Layer constraint violation in design -> Flag and suggest alternative that respects existing boundaries"
       boundaries:
         - scope: "write implementation code"
           skill: "/mvt-implement"
@@ -47,12 +47,13 @@ sections:
     source: sections/activation-load-context.md
     params:
       extended_context:
-        - ".ai-agents/knowledge/patterns/{pattern.active}/ -- Active architecture pattern knowledge"
-        - ".ai-agents/knowledge/core/ -- Core knowledge files"
         - ".ai-agents/workspace/artifacts/{active_change.id}/analysis.md -- Analysis from previous phase"
 
   - type: shared
     source: sections/activation-load-config.md
+
+  - type: shared
+    source: sections/output-language-constraint.md
 
   - type: shared
     source: sections/activation-preflight.md
@@ -61,45 +62,35 @@ sections:
         - order: "1"
           field: "session.initialized_at"
           level: "BLOCK"
-          message: 'Session not initialized. Run `/mvt-init` first.'
+          message: "Session not initialized. Run `/mvt-init` first."
         - order: "2"
-          field: "project.name"
+          field: "projects[] in project-context.yaml"
           level: "BLOCK"
-          message: 'Project not initialized. Run `/mvt-init` first.'
+          message: "Project not initialized. Run `/mvt-init` first."
         - order: "3"
-          field: "pattern.active"
-          level: "BLOCK"
-          message: 'Architecture pattern required. Run `/mvt-init` to detect and set the pattern.'
-        - order: "4"
-          field: "requirements in project-context"
+          field: "project-context.md"
           level: "WARN"
-          message: 'No requirements found. Run `/mvt-analyze` first." (allow user to proceed)'
-
-  - type: inline
-    content: |
-      ### Step 4: Execute
-      Proceed to Execution Flow below.
+          message: "No project-context.md found. Run `/mvt-analyze-code` for better design context. (allow user to proceed)"
+        - order: "4"
+          field: "requirements in project-context.md"
+          level: "WARN"
+          message: "No requirements found. Run `/mvt-analyze` first. (allow user to proceed)"
 
   - type: file
     source: ./business.md
 
   - type: inline
     content: |
-      ## Output Format
-
-      Read and use the output template from: `.ai-agents/skills/_templates/design-output.md`
-
+      ## Artifact Structure
+      Read the document structure template from: `.ai-agents/skills/_templates/design-output.md`
       If a custom version exists at `.ai-agents/skills/_templates/custom/design-output.md`, use the custom version instead.
+      The template defines section headings only. Generate content for each section based on design results.
+      Write the artifact to: `.ai-agents/workspace/artifacts/{change-id}/design.md`
 
-      Fill the template placeholders with the design results.
-
-      Every response MUST end with a Suggested Next Steps section.
+  - type: shared
+    source: sections/session-update.md
 
   - type: shared
     source: sections/footer-next-steps.md
     params:
-      next_primary: mvt-implement
-      next_primary_desc: "Start implementing this design"
-      always_show:
-        - skill: mvt-status
-          desc: "Check current workflow progress"
+      current_skill: mvt-design

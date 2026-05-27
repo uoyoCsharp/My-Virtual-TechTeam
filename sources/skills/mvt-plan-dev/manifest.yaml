@@ -1,0 +1,91 @@
+name: mvt-plan-dev
+output: .claude/skills/mvt-plan-dev/SKILL.md
+
+frontmatter:
+  name: mvt-plan-dev
+  description: "Generate a structured development plan (plan.yaml) for a large change. This skill should be used when a change is too big for a single implement pass and needs to be tracked across multiple sessions with task-level granularity."
+
+sections:
+  - type: inline
+    content: |
+      # MVT Plan Dev
+
+      ## Purpose
+
+      Decompose a large change into a structured `plan.yaml` so progress can survive across conversations. Each task carries status, dependencies, acceptance criteria, and a recommended skill, enabling `/mvt-resume` to land precisely on the next executable task in a future session.
+
+  - type: shared
+    source: sections/role-header.md
+    params:
+      role: Architect
+      role_desc: "a Development Planner"
+      decision_rules:
+        - rule: "active_change is set AND has_plan is false -> Generate a fresh plan.yaml"
+        - rule: "active_change is set AND has_plan is true -> Confirm before regenerating; default to /mvt-update-plan"
+        - rule: "Tasks would exceed 10 -> Stop, propose phasing the change into multiple plans"
+        - rule: "Dependencies form a cycle -> Reject and ask the user to resolve"
+        - rule: "active_change is empty -> Stop and request /mvt-analyze first"
+      boundaries:
+        - scope: "create or modify the active change itself"
+          skill: "/mvt-analyze"
+        - scope: "design architecture"
+          skill: "/mvt-design"
+        - scope: "advance task status after completion"
+          skill: "/mvt-update-plan"
+        - scope: "implement code"
+          skill: "/mvt-implement"
+
+  - type: shared
+    source: sections/activation-load-context.md
+    params:
+      extended_context:
+        - ".ai-agents/workspace/artifacts/{active_change.id}/ -- Existing analysis/design artifacts for this change"
+        - ".ai-agents/workspace/artifacts/{active_change.id}/plan.yaml -- Existing plan, if any (regeneration mode)"
+
+  - type: shared
+    source: sections/activation-load-config.md
+
+  - type: shared
+    source: sections/output-language-constraint.md
+
+  - type: shared
+    source: sections/activation-preflight.md
+    params:
+      checks:
+        - order: "1"
+          field: "session.initialized_at"
+          level: "WARN"
+          message: 'Session not initialized. Run `/mvt-init` first.'
+        - order: "2"
+          field: "active_change.id"
+          level: "BLOCK"
+          message: 'No active change. Run `/mvt-analyze` to create one before planning.'
+
+  - type: file
+    source: ./business.md
+
+
+  - type: shared
+    source: sections/session-update.md
+
+  - type: inline
+    content: |
+      ### Plan-Dev Specific State Updates
+
+      In addition to the mandatory updates above, this skill MUST update:
+
+      - `active_change.plan_path`: Set to `".ai-agents/workspace/artifacts/{active_change.id}/plan.yaml"`
+      - `active_change.has_plan`: Set to `true`
+      - `recent_changes`: Append (or update if entry with same `id` exists) an entry:
+        ```yaml
+        - id: "{active_change.id}"
+          title: "{active_change.title}"
+          plan_path: ".ai-agents/workspace/artifacts/{active_change.id}/plan.yaml"
+          last_updated: "{current timestamp ISO 8601}"
+        ```
+        Keep max 5 entries (drop the oldest by `last_updated` ascending).
+
+  - type: shared
+    source: sections/footer-next-steps.md
+    params:
+      current_skill: mvt-plan-dev

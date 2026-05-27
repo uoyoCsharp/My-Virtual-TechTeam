@@ -1,26 +1,15 @@
-# Unified Project Context
-# Merges: project.yaml + architecture.yaml + requirements.yaml + decisions.yaml
+# Project Context Index
+# Lean index: structural info only. Semantic data lives in project-context.md.
+# Single project: one entry with name="default", path="."
+# Multi-project: one entry per detected sub-project.
 
-project:
-  name: ""
-  type: ""
-  initialized_at: ""
-  tech_stack:
-    language: ""
-    framework: ""
-    build_tool: ""
-    test_framework: ""
-
-# Requirements summary (written by #analyze)
-requirements:
-  features: []
-  actors: []
-  business_rules: []
-  clarifications: []
-
-# Architecture design (written by #design)
-architecture:
-  overview: ""
-  modules: []
-  components: []
-  decisions: []    # ADR list (merged from former decisions.yaml)
+projects:
+  - name: "default"                 # Project identifier (unique within workspace)
+    path: "."                       # Relative path from repo root
+    type: ""                        # web-frontend | api-service | cli-tool | library | monorepo | data-pipeline | mobile-app | generic
+    tech_stack:
+      primary_language: ""
+      secondary_languages: []
+      framework: ""
+      build_tool: ""
+      test_framework: ""

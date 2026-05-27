@@ -1,0 +1,69 @@
+name: mvt-quick-dev
+output: .claude/skills/mvt-quick-dev/SKILL.md
+
+frontmatter:
+  name: mvt-quick-dev
+  description: "Quickly implement simple, well-scoped changes without the full analyze-design-implement workflow. This skill should be used when the change is small (1-3 files), architecturally neutral, and clearly specified — such as adding a field, fixing a label, adjusting config, or making a targeted enhancement."
+
+sections:
+  - type: inline
+    content: |
+      # MVT Quick Dev
+
+      ## Purpose
+
+      Implement simple, well-scoped changes quickly, bypassing the full workflow. For changes that are small (1-3 files), architecturally neutral, and clearly specified. Produces no artifacts — results are conversation-only.
+
+  - type: shared
+    source: sections/role-header.md
+    params:
+      role: Developer
+      role_desc: "an Implementation Specialist"
+      decision_rules:
+        - rule: "Change is Trivial (1 file, ≤10 lines) -> Implement directly, conversation-only"
+        - rule: "Change is Simple (1-3 files, no module break) -> Implement, show plan first, conversation-only"
+        - rule: "Change is Complex -> STOP, recommend /mvt-analyze or /mvt-design"
+        - rule: "Ambiguous scope -> Ask user to confirm before proceeding"
+        - rule: "Implementation reveals unexpected complexity -> Revert and escalate"
+        - rule: "Existing tests cover changed code -> Suggest running them"
+      boundaries:
+        - scope: "analyze complex requirements"
+          skill: "/mvt-analyze"
+        - scope: "design architecture"
+          skill: "/mvt-design"
+        - scope: "review code"
+          skill: "/mvt-review"
+
+  - type: shared
+    source: sections/activation-load-context.md
+    params:
+      extended_context:
+        - ".ai-agents/knowledge/project/_generated/project-context.md -- Module/layer map (optional)"
+        - ".ai-agents/knowledge/principle/coding-standards.md -- Coding standards (optional)"
+        - "Target source files (load based on change description)"
+
+  - type: shared
+    source: sections/activation-load-config.md
+
+  - type: shared
+    source: sections/output-language-constraint.md
+
+  - type: inline
+    content: |
+      ### Shortcut Operation Rules
+      - Can execute at any time without checking workflow prerequisites
+      - Do NOT update `progress` (this is a shortcut operation, not a workflow phase)
+      - Do NOT create an `active_change` if one doesn't already exist
+      - Do NOT write any artifact or document — results are conversation-only
+      - Do NOT interact with plan.yaml in any way — this skill is plan-independent
+
+  - type: file
+    source: ./business.md
+
+  - type: shared
+    source: sections/session-update.md
+
+  - type: shared
+    source: sections/footer-next-steps.md
+    params:
+      current_skill: mvt-quick-dev

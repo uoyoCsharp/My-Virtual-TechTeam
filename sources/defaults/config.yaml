@@ -8,23 +8,20 @@ version: "2.0"
 # User Preferences (enforced by Activation Protocol Step 2)
 # ============================================================
 preferences:
-  # Output language for all skill responses and document artifacts
+  # Language used for interactive responses (chat replies, prompts, tables shown to the user)
   # Options: en-US, zh-CN
-  language: en-US
+  interaction_language: en-US
+
+  # Language used for persistent document output (artifacts, project-context.md, generated reports)
+  # If absent, falls back to interaction_language.
+  # Options: en-US, zh-CN
+  document_output_language: en-US
 
   # Output style
   output:
     no_emojis: true          # Disable emojis in output
     data_format: yaml        # Data output format: yaml | json
 
-# ============================================================
-# Pattern Settings
-# ============================================================
-pattern:
-  # Active architecture pattern
-  # Use /mvt-init to auto-detect or /mvt-config to change
-  active: ""
-
-  selection:
-    auto_detect: true
-    confirm_with_user: true
+  # AI routing for /mvt-manage-context add
+  context_routing:
+    relevance_threshold: 70  # Skills scored >= this are pre-checked; below are folded

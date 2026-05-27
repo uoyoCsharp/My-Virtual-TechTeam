@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import {
   existsSync,
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   rmSync,
@@ -28,7 +29,7 @@ describe("doctor detection logic", () => {
 
   it("detects manually modified generated files via hash mismatch", () => {
     const materialized = materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
-    writeInstallationManifest(tmpDir, "2.0.0", null, materialized, null);
+    writeInstallationManifest(tmpDir, "2.0.0", materialized, null);
 
     const manifest = readInstallationManifest(tmpDir)!;
     const skillRel = ".claude/skills/mvt-analyze/SKILL.md";
@@ -44,7 +45,7 @@ describe("doctor detection logic", () => {
 
   it("detects missing tracked files", () => {
     const materialized = materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
-    writeInstallationManifest(tmpDir, "2.0.0", null, materialized, null);
+    writeInstallationManifest(tmpDir, "2.0.0", materialized, null);
 
     const skillAbs = path.join(tmpDir, ".claude/skills/mvt-analyze/SKILL.md");
     unlinkSync(skillAbs);

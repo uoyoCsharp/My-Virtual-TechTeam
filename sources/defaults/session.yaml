@@ -1,23 +1,31 @@
 # Workspace Session State
-# Simplified session state — only fields LLM actually needs
+# Supports flexible workflows -- no longer bound to a fixed pipeline
 
 session:
   initialized_at: ""
   last_command: ""
 
-# Current active change (created by #analyze)
+# Current active change (id/title/created_at set by /mvt-analyze;
+# plan_path/has_plan set by /mvt-plan-dev once a plan is generated)
 active_change:
   id: ""
   title: ""
   created_at: ""
+  plan_path: ""
+  has_plan: false
 
-# Workflow progress (simplified: pending | done)
-progress:
-  analyze: pending
-  design: pending
-  implement: pending
-  review: pending
-  test: pending
+# Recent changes with active plans (max 5, owned by /mvt-plan-dev and /mvt-update-plan)
+# Each entry: { id, title, plan_path, last_updated }
+# Status is the responsibility of plan.yaml (read on demand by /mvt-resume).
+recent_changes: []
 
-# Recent actions (append-only, keep max 3)
+# Skill execution history (append-only, max 10)
+# Records which skills have been executed, replacing the old progress field
+skill_history: []
+  # - command: "/mvt-analyze"
+  #   completed_at: "2026-05-23T14:30:00"
+  #   summary: "Analyzed user authentication requirements"
+  #   change_id: ""   # set when work belongs to an active change
+
+# Recent actions (append-only, max 5)
 recent_actions: []
