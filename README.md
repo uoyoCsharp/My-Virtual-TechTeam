@@ -19,7 +19,7 @@ MVTT turns Claude Code into a coordinated engineering team — Analyst, Architec
 │   ├── project-context.yaml      # Tech stack, domain model, conventions
 │   └── artifacts/                # Analysis docs, design specs, review logs
 └── knowledge/
-    ├── core/                     # Framework principles & architecture patterns
+    ├── core/                     # Framework principles
     ├── principle/                # Your team's coding standards
     └── project/                  # Domain-specific knowledge
 ```
@@ -146,16 +146,6 @@ mvtt update [--check]     # Upgrade to latest (user data preserved)
 mvtt doctor               # Check installation health
 mvtt uninstall            # Remove generated files (user data preserved)
 ```
-
-## Architecture Patterns
-
-MVTT ships knowledge for three patterns that workflow skills automatically consume:
-
-- **`ddd`** — Domain-Driven Design (bounded contexts, aggregates, domain events)
-- **`clean-architecture`** — Layered boundaries, dependency inversion
-- **`frontend-react`** — React-specific structural conventions
-
-Detected automatically by `/mvt-init` or configured via `/mvt-config`.
 
 ## Extending MVTT
 
