@@ -3,20 +3,19 @@
 Recommend 2-3 relevant next skills based on the skill just completed (`{{current_skill}}`) and the current project state.
 {{#conditional_suggestions}}
 
-### Conditional Recommendations (built into this skill)
+### Conditional Recommendations
 
-The skill's business flow determines which branch applies:
+Match the current state to one of the conditions below. If none match, use `default`.
 
 {{#conditions}}
-- **When `{{condition}}`**: Primary → `/{primary}` -- {primary_desc}
-{{/conditions}}
-
+- **`{{condition}}`** → `/{{primary}}` -- {{primary_desc}}
 {{#alternatives}}
-- `/{skill}` -- {desc}
+  - Or `/{{skill}}` -- {{desc}}
 {{/alternatives}}
-
-Find the entry whose `condition` matches the detected state. If none match, use the entry with `condition: "default"`.
-Render the matched `primary` as the primary recommendation, then render each `alternatives[]` entry.
+{{/conditions}}
+{{#alternatives}}
+- `/{{skill}}` -- {{desc}}
+{{/alternatives}}
 {{/conditional_suggestions}}
 {{^conditional_suggestions}}
 

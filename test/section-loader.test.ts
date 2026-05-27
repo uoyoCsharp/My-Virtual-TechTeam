@@ -136,6 +136,102 @@ Disabled content.
     expect(result).not.toContain("Disabled content.");
     expect(result).not.toContain("{{^enabled}}");
   });
+
+  it("recursively expands nested blocks when param is an object", () => {
+    const template = `Header
+{{#group}}
+{{#items}}
+- {{label}}: {{value}}
+{{/items}}
+{{#extras}}
+* {{.}}
+{{/extras}}
+{{/group}}
+Footer`;
+    const result = applyParams(template, {
+      group: {
+        items: [
+          { label: "A", value: "1" },
+          { label: "B", value: "2" },
+        ],
+        extras: ["x", "y"],
+      },
+    });
+    expect(result).not.toContain("{{#items}}");
+    expect(result).not.toContain("{{#extras}}");
+    expect(result).not.toContain("{{/group}}");
+    expect(result).toContain("- A: 1");
+    expect(result).toContain("- B: 2");
+    expect(result).toContain("* x");
+    expect(result).toContain("* y");
+    expect(result).toContain("Header");
+    expect(result).toContain("Footer");
+  });
+
+  it("recursively expands nested blocks inside array-of-objects", () => {
+    const template = `{{#groups}}
+Group {{name}}:
+{{#items}}
+- {{.}}
+{{/items}}
+{{/groups}}`;
+    const result = applyParams(template, {
+      groups: [
+        { name: "alpha", items: ["a1", "a2"] },
+        { name: "beta", items: ["b1"] },
+      ],
+    });
+    expect(result).not.toContain("{{#items}}");
+    expect(result).toContain("Group alpha:");
+    expect(result).toContain("- a1");
+    expect(result).toContain("- a2");
+    expect(result).toContain("Group beta:");
+    expect(result).toContain("- b1");
+  });
+
+  it("renders per-condition alternatives nested inside each condition", () => {
+    const template = `{{#conditions}}
+- **\`{{condition}}\`** -> /{{primary}}
+{{#alternatives}}
+  - Or /{{skill}}
+{{/alternatives}}
+{{/conditions}}`;
+    const result = applyParams(template, {
+      conditions: [
+        {
+          condition: "default",
+          primary: "mvt-design",
+          alternatives: [{ skill: "mvt-analyze-code" }],
+        },
+        {
+          condition: "quick",
+          primary: "mvt-quick-dev",
+        },
+      ],
+    });
+    expect(result).toContain("- **`default`** -> /mvt-design");
+    expect(result).toContain("  - Or /mvt-analyze-code");
+    expect(result).toContain("- **`quick`** -> /mvt-quick-dev");
+    expect(result).not.toContain("{{#alternatives}}");
+  });
+
+  it("preserves single-brace placeholders meant for runtime substitution", () => {
+    const template = `{{#conditions}}
+- When \`{{condition}}\`: Primary -> /{primary} -- {primary_desc}
+{{/conditions}}`;
+    const result = applyParams(template, {
+      conditions: [
+        {
+          condition: "default",
+          primary: "mvt-design",
+          primary_desc: "Design architecture",
+        },
+      ],
+    });
+    expect(result).toContain("- When `default`");
+    expect(result).toContain("/{primary}");
+    expect(result).toContain("{primary_desc}");
+  });
 });
 
 describe("loadSection", () => {

@@ -15,6 +15,7 @@ import {
   migrateConfig,
   migrateManifests,
   migratePaths,
+  migrateRegistry,
 } from "../../src/commands/migrate.js";
 
 describe("migrateManifests", () => {
@@ -252,6 +253,118 @@ describe("migrateConfig", () => {
   });
 });
 
+describe("migrateRegistry", () => {
+  let tmpDir: string;
+  let registryPath: string;
+
+  beforeEach(() => {
+    tmpDir = mkdtempSync(path.join(os.tmpdir(), "mvtt-migrate-r-"));
+    registryPath = path.join(tmpDir, ".ai-agents/registry.yaml");
+    mkdirSync(path.dirname(registryPath), { recursive: true });
+  });
+
+  afterEach(() => {
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  it("strips legacy `type` field from knowledge.shared entries", () => {
+    writeFileSync(
+      registryPath,
+      stringifyYaml({
+        version: "2.0",
+        knowledge: {
+          shared: [
+            { id: "core", type: "dynamic", source: "knowledge/core/", files_from_manifest: true },
+            { id: "project-context", type: "dynamic", source: "knowledge/project/_generated/", files: ["project-context.md"] },
+          ],
+        },
+        skills: {},
+      }),
+      "utf-8",
+    );
+
+    const result = migrateRegistry(tmpDir);
+    expect(result.skipped).toBe(false);
+    expect(result.changes?.[0]).toMatch(/2 legacy/);
+
+    const after = parseYaml(readFileSync(registryPath, "utf-8")) as {
+      knowledge: { shared: Array<Record<string, unknown>> };
+    };
+    for (const entry of after.knowledge.shared) {
+      expect(entry.type).toBeUndefined();
+      expect(entry.source).toBeDefined();
+    }
+  });
+
+  it("strips legacy `type` field from skills.<name>.knowledge entries", () => {
+    writeFileSync(
+      registryPath,
+      stringifyYaml({
+        version: "2.0",
+        knowledge: { shared: [] },
+        skills: {
+          "mvt-review": {
+            knowledge: [
+              { id: "coding-standards", type: "static", source: "knowledge/principle/coding-standards/", files: ["rules.md"] },
+            ],
+          },
+        },
+      }),
+      "utf-8",
+    );
+
+    const result = migrateRegistry(tmpDir);
+    expect(result.skipped).toBe(false);
+
+    const after = parseYaml(readFileSync(registryPath, "utf-8")) as {
+      skills: { "mvt-review": { knowledge: Array<Record<string, unknown>> } };
+    };
+    expect(after.skills["mvt-review"].knowledge[0].type).toBeUndefined();
+    expect(after.skills["mvt-review"].knowledge[0].source).toBe("knowledge/principle/coding-standards/");
+  });
+
+  it("is idempotent (second run is a no-op)", () => {
+    writeFileSync(
+      registryPath,
+      stringifyYaml({
+        version: "2.0",
+        knowledge: {
+          shared: [{ id: "core", source: "knowledge/core/", files_from_manifest: true }],
+        },
+        skills: {},
+      }),
+      "utf-8",
+    );
+
+    const first = migrateRegistry(tmpDir);
+    const second = migrateRegistry(tmpDir);
+    expect(first.skipped).toBe(true);
+    expect(second.skipped).toBe(true);
+  });
+
+  it("creates a backup before mutating", () => {
+    writeFileSync(
+      registryPath,
+      stringifyYaml({
+        version: "2.0",
+        knowledge: { shared: [{ id: "core", type: "dynamic", source: "knowledge/core/" }] },
+        skills: {},
+      }),
+      "utf-8",
+    );
+
+    const result = migrateRegistry(tmpDir);
+    expect(result.backup).toBeDefined();
+    expect(existsSync(result.backup!)).toBe(true);
+  });
+
+  it("skips when registry.yaml does not exist", () => {
+    const result = migrateRegistry(tmpDir);
+    expect(result.skipped).toBe(true);
+    expect(result.reason).toMatch(/no registry/);
+  });
+});
+
 describe("migrateAll", () => {
   let tmpDir: string;
 
@@ -263,10 +376,11 @@ describe("migrateAll", () => {
     rmSync(tmpDir, { recursive: true, force: true });
   });
 
-  it("runs all three migrations in one call", () => {
+  it("runs all four migrations in one call", () => {
     const manifestPath = path.join(tmpDir, ".ai-agents/knowledge/core/manifest.yaml");
     const oldPath = path.join(tmpDir, ".ai-agents/workspace/project-context.md");
     const configPath = path.join(tmpDir, ".ai-agents/config.yaml");
+    const registryPath = path.join(tmpDir, ".ai-agents/registry.yaml");
     mkdirSync(path.dirname(manifestPath), { recursive: true });
     mkdirSync(path.dirname(oldPath), { recursive: true });
     mkdirSync(path.dirname(configPath), { recursive: true });
@@ -281,16 +395,29 @@ describe("migrateAll", () => {
       stringifyYaml({ version: "2.0", preferences: { language: "en-US" } }),
       "utf-8",
     );
+    writeFileSync(
+      registryPath,
+      stringifyYaml({
+        version: "2.0",
+        knowledge: {
+          shared: [{ id: "core", type: "dynamic", source: "knowledge/core/", files_from_manifest: true }],
+        },
+        skills: {},
+      }),
+      "utf-8",
+    );
 
     const result = migrateAll(tmpDir);
     expect(result.manifests.skipped).toBe(false);
     expect(result.paths.skipped).toBe(false);
     expect(result.config.skipped).toBe(false);
+    expect(result.registry.skipped).toBe(false);
   });
 
   it("is idempotent on already-migrated projects", () => {
     const manifestPath = path.join(tmpDir, ".ai-agents/knowledge/core/manifest.yaml");
     const configPath = path.join(tmpDir, ".ai-agents/config.yaml");
+    const registryPath = path.join(tmpDir, ".ai-agents/registry.yaml");
     mkdirSync(path.dirname(manifestPath), { recursive: true });
     mkdirSync(path.dirname(configPath), { recursive: true });
     writeFileSync(
@@ -313,10 +440,22 @@ describe("migrateAll", () => {
       }),
       "utf-8",
     );
+    writeFileSync(
+      registryPath,
+      stringifyYaml({
+        version: "2.0",
+        knowledge: {
+          shared: [{ id: "core", source: "knowledge/core/", files_from_manifest: true }],
+        },
+        skills: {},
+      }),
+      "utf-8",
+    );
 
     const result = migrateAll(tmpDir);
     expect(result.manifests.skipped).toBe(true);
     expect(result.paths.skipped).toBe(true);
     expect(result.config.skipped).toBe(true);
+    expect(result.registry.skipped).toBe(true);
   });
 });

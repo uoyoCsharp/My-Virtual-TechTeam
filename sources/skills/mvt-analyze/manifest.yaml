@@ -25,7 +25,6 @@ sections:
         - rule: "Multiple interpretations -> List all, prompt for selection"
         - rule: "Conflicts detected -> Highlight explicitly, ask for resolution"
         - rule: "Vague requirements -> Request specific examples"
-        - rule: "Requirements qualify as simple change -> Offer /mvt-quick-dev path, respect user choice"
       boundaries:
         - scope: "make architecture decisions"
           skill: "/mvt-design"
@@ -61,11 +60,6 @@ sections:
           level: "WARN"
           message: 'Project not initialized. Run `/mvt-init` first.'
 
-  - type: inline
-    content: |
-      ### Step 4: Execute
-      Proceed to Execution Flow below.
-
   - type: file
     source: ./business.md
 
@@ -94,6 +88,6 @@ sections:
           - condition: "default"
             primary: "mvt-design"
             primary_desc: "Design architecture based on analysis"
-        alternatives:
-          - skill: "mvt-analyze-code"
-            desc: "Generate code context for better design"
+            alternatives:
+              - skill: "mvt-analyze-code"
+                desc: "Generate code context for better design"

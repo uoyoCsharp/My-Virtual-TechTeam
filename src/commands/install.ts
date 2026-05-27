@@ -8,6 +8,7 @@ import {
   writeInstallationManifest,
 } from "../fs/install-manifest.js";
 import { getPackageRoot, getVersion } from "./shared.js";
+import { detectLegacyArtifacts } from "./doctor.js";
 import { color } from "../util/color.js";
 
 export interface InstallOptions {
@@ -70,6 +71,14 @@ export async function installCommand(options: InstallOptions = {}): Promise<void
   console.log(`  Manifest: ${color.gray(path.relative(projectRoot, manifestPath(projectRoot)))}`);
   console.log(`\n${color.bold("Next steps:")}`);
   console.log(`  Run ${color.cyan("/mvt-init")} in Claude Code to initialize the project`);
+
+  const legacy = detectLegacyArtifacts(projectRoot);
+  if (legacy.length > 0) {
+    console.log(
+      `\n${color.yellow("Legacy artifacts detected:")} ${legacy.length} item(s).`,
+    );
+    console.log(`  Run ${color.cyan("mvtt doctor")} for details and migration commands.`);
+  }
 }
 
 async function selectLanguage(

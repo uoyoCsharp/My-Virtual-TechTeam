@@ -42,14 +42,17 @@ function expandBlocks(
       const items = val
         .map((item) => {
           if (typeof item === "object" && item !== null) {
-            return replaceVars(body, item as Record<string, unknown>).trimEnd();
+            return applyParams(body, item as Record<string, unknown>).trimEnd();
           }
-          return replaceVars(body, { ".": item }).trimEnd();
+          return applyParams(body, { ".": item }).trimEnd();
         })
         .join("\n");
       return items + "\n";
     }
-    return replaceVars(body, params) + "\n";
+    if (typeof val === "object") {
+      return applyParams(body, val as Record<string, unknown>) + "\n";
+    }
+    return applyParams(body, params) + "\n";
   });
 }
 

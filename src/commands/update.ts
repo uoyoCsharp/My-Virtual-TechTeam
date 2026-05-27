@@ -7,11 +7,14 @@ import {
 } from "../fs/install-manifest.js";
 import { hashFile } from "../fs/hash.js";
 import { getPackageRoot, getVersion } from "./shared.js";
+import { detectLegacyArtifacts } from "./doctor.js";
+import { color } from "../util/color.js";
 import {
   migrateAll,
   migrateConfig,
   migrateManifests,
   migratePaths,
+  migrateRegistry,
   type MigrationResult,
 } from "./migrate.js";
 
@@ -20,6 +23,7 @@ export interface UpdateOptions {
   migrateManifests?: boolean;
   migratePaths?: boolean;
   migrateConfig?: boolean;
+  migrateRegistry?: boolean;
   migrateAll?: boolean;
 }
 
@@ -33,7 +37,8 @@ export function updateCommand(options: UpdateOptions = {}): void {
     options.migrateAll ||
     options.migrateManifests ||
     options.migratePaths ||
-    options.migrateConfig
+    options.migrateConfig ||
+    options.migrateRegistry
   ) {
     runMigrations(projectRoot, options);
     return;
@@ -95,6 +100,17 @@ export function updateCommand(options: UpdateOptions = {}): void {
   writeInstallationManifest(projectRoot, version, existing.pattern, materialized, existing);
 
   console.log(`\nUpdate complete: ${materialized.length} files processed.`);
+
+  emitLegacyHint(projectRoot);
+}
+
+function emitLegacyHint(projectRoot: string): void {
+  const legacy = detectLegacyArtifacts(projectRoot);
+  if (legacy.length === 0) return;
+  console.log(
+    `\n${color.yellow("Legacy artifacts detected:")} ${legacy.length} item(s).`,
+  );
+  console.log(`  Run ${color.cyan("mvtt doctor")} for details and migration commands.`);
 }
 
 function runMigrations(projectRoot: string, options: UpdateOptions): void {
@@ -105,10 +121,12 @@ function runMigrations(projectRoot: string, options: UpdateOptions): void {
     ran.push(["manifests", result.manifests]);
     ran.push(["paths", result.paths]);
     ran.push(["config", result.config]);
+    ran.push(["registry", result.registry]);
   } else {
     if (options.migrateManifests) ran.push(["manifests", migrateManifests(projectRoot)]);
     if (options.migratePaths) ran.push(["paths", migratePaths(projectRoot)]);
     if (options.migrateConfig) ran.push(["config", migrateConfig(projectRoot)]);
+    if (options.migrateRegistry) ran.push(["registry", migrateRegistry(projectRoot)]);
   }
 
   let migrated = 0;

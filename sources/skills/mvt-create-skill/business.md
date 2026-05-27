@@ -209,11 +209,6 @@ sections:
       checks:
         {if needed, list preflight checks}
 
-  - type: inline
-    content: |
-      ### Step 4: Execute
-      Proceed to Execution Flow below.
-
   - type: file
     source: ./business.md
 

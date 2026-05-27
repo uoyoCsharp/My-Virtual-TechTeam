@@ -150,10 +150,61 @@ export function migrateConfig(projectRoot: string): MigrationResult {
   return { skipped: false, backup, changes };
 }
 
+export function migrateRegistry(projectRoot: string): MigrationResult {
+  const registryPath = path.join(projectRoot, ".ai-agents/registry.yaml");
+  if (!existsSync(registryPath)) {
+    return { skipped: true, reason: "no registry.yaml" };
+  }
+
+  const raw = readFileSync(registryPath, "utf-8");
+  const registry = parseYaml(raw) as Record<string, unknown>;
+
+  let stripped = 0;
+
+  const sharedKnowledge = (registry.knowledge as { shared?: unknown[] } | undefined)?.shared;
+  if (Array.isArray(sharedKnowledge)) {
+    for (const entry of sharedKnowledge) {
+      if (entry && typeof entry === "object" && "type" in entry) {
+        delete (entry as Record<string, unknown>).type;
+        stripped++;
+      }
+    }
+  }
+
+  const skills = registry.skills as Record<string, unknown> | undefined;
+  if (skills && typeof skills === "object") {
+    for (const skill of Object.values(skills)) {
+      if (!skill || typeof skill !== "object") continue;
+      const skillKnowledge = (skill as { knowledge?: unknown[] }).knowledge;
+      if (!Array.isArray(skillKnowledge)) continue;
+      for (const entry of skillKnowledge) {
+        if (entry && typeof entry === "object" && "type" in entry) {
+          delete (entry as Record<string, unknown>).type;
+          stripped++;
+        }
+      }
+    }
+  }
+
+  if (stripped === 0) {
+    return { skipped: true, reason: "no legacy `type` fields in knowledge entries" };
+  }
+
+  const backup = backupFile(projectRoot, registryPath, "registry");
+  writeFileSync(registryPath, stringifyYaml(registry), "utf-8");
+
+  return {
+    skipped: false,
+    backup,
+    changes: [`stripped ${stripped} legacy \`type\` field(s) from knowledge entries`],
+  };
+}
+
 export interface MigrateAllResult {
   manifests: MigrationResult;
   paths: MigrationResult;
   config: MigrationResult;
+  registry: MigrationResult;
 }
 
 export function migrateAll(projectRoot: string): MigrateAllResult {
@@ -161,5 +212,6 @@ export function migrateAll(projectRoot: string): MigrateAllResult {
     manifests: migrateManifests(projectRoot),
     paths: migratePaths(projectRoot),
     config: migrateConfig(projectRoot),
+    registry: migrateRegistry(projectRoot),
   };
 }

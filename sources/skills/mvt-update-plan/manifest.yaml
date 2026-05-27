@@ -66,9 +66,6 @@ sections:
       - Performs surgical edits only -- never overwrites the whole plan structure
       - Re-validates the resulting plan before writing; aborts on validation failure
 
-      ### Step 4: Execute
-      Proceed to Execution Flow below.
-
   - type: file
     source: ./business.md
 

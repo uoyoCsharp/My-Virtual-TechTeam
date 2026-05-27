@@ -14,11 +14,9 @@ last_updated: "2026-05-23"
 knowledge:
   shared:
     - id: "core"
-      type: "dynamic"
       source: "knowledge/core/"
       files_from_manifest: true
     - id: "project-context"
-      type: "dynamic"
       source: "knowledge/project/_generated/"
       files: ["project-context.md"]
 
@@ -139,11 +137,7 @@ skills:
     template: .ai-agents/skills/_templates/review-output.md
     category: workflow
     depends_on: [mvt-implement]
-    knowledge:
-      - id: "coding-standards"
-        type: "static"
-        source: "knowledge/principle/coding-standards/"
-        files: ["rules.md", "naming-conventions.md"]
+
 
   # --- Tester Skills ---
   mvt-test:

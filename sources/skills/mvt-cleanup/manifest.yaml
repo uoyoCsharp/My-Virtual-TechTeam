@@ -65,9 +65,6 @@ sections:
 
   - type: inline
     content: |
-      ### Step 4: Execute
-      Proceed to Execution Flow below.
-
       ## Cleanup Rules
 
       | Category | Rule | Action |

@@ -57,9 +57,6 @@ sections:
       - Do NOT write any artifact or document — results are conversation-only
       - Do NOT interact with plan.yaml in any way — this skill is plan-independent
 
-      ### Step 4: Execute
-      Proceed to Execution Flow below.
-
   - type: file
     source: ./business.md
 

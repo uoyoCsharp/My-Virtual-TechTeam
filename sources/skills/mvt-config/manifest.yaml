@@ -64,9 +64,6 @@ sections:
       ### Step 3: Pre-flight Checks
       - No blocking checks required (config is always accessible)
 
-      ### Step 4: Execute
-      Proceed to Execution Flow below.
-
       ## Configuration Keys
 
       ### User Preferences

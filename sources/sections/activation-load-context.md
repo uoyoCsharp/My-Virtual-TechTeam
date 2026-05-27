@@ -13,28 +13,14 @@ Extended context for this skill:
 - {{.}}
 {{/extended_context}}
 
-### Step 1.5: Load Knowledge
+### Step 2: Load Knowledge
 
-#### A. Shared Knowledge (all skills)
-Read `.ai-agents/registry.yaml` > `knowledge.shared`.
-For each entry:
+Read `.ai-agents/registry.yaml` and load every file referenced under:
+- `knowledge.shared` (loaded by all skills)
+- `skills.<current-skill>.knowledge` (this skill's specific knowledge, if present)
 
-- If `type` is absent or `"static"`: Load `.ai-agents/{source or path}{file}` for each file in `files`
-- If `type: "dynamic"`:
-  1. Resolve variables in `source` (e.g., variable references → read from corresponding config/session files)
-  2. If resolved path exists and `files_from_manifest: true`:
-     Read `.ai-agents/{resolved_source}manifest.yaml` and load all listed `files`
-  3. If resolved path exists and `files` is specified:
-     Load `.ai-agents/{resolved_source}/{file}` for each file in `files`
-     (Skip individual files that do not exist)
-  4. If resolved variable is empty or path does not exist → Skip this entry
+For each entry, resolve files relative to `.ai-agents/{source}`:
+- If the entry lists `files: [...]`, load those files.
+- If the entry lists `files_from_manifest: true`, read `{source}/manifest.yaml` and load every `files[]` entry where `auto_load: true`.
 
-Default shared entries (always present):
-- `core` → `knowledge/core/manifest.yaml` (resolved via `files_from_manifest: true`; loads every entry where `auto_load: true`, mixing framework + user origin)
-- `project-context` → `knowledge/project/_generated/project-context.md` (skipped if file does not exist; legacy path was `workspace/project-context.md` -- run `mvtt update --migrate-paths` to relocate)
-
-#### B. Per-Skill Knowledge (current skill only)
-Read `.ai-agents/registry.yaml` > `skills.<current-skill>.knowledge`.
-For each entry, apply the same `static` / `dynamic` resolution logic as above.
-
-If `knowledge` field is absent or empty → Skip this step (shared knowledge is sufficient).
+Skip any path that does not exist.

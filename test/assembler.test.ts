@@ -53,7 +53,7 @@ describe("assembler", () => {
       const output = buildSkill("mvt-analyze");
       expect(output).toContain("### Boundaries");
       expect(output).toContain(
-        "Do NOT make architecture decisions -> Suggest `/mvt-design`",
+        "Do NOT make architecture decisions (use `/mvt-design` instead)",
       );
     });
 
@@ -61,8 +61,9 @@ describe("assembler", () => {
       const output = buildSkill("mvt-analyze");
       expect(output).toContain("## Activation Protocol");
       expect(output).toContain("### Step 1: Load Context");
-      expect(output).toContain("### Step 2: Load Config");
-      expect(output).toContain("### Step 3: Pre-flight Checks");
+      expect(output).toContain("### Step 2: Load Knowledge");
+      expect(output).toContain("### Step 3: Load Config");
+      expect(output).toContain("### Step 4: Pre-flight Checks");
     });
 
     it("includes extended context", () => {
@@ -107,7 +108,7 @@ describe("assembler", () => {
 
     it("includes BLOCK-level pre-flight checks", () => {
       const output = buildSkill("mvt-design");
-      expect(output).toContain("BLOCK");
+      expect(output).toMatch(/\|\s*\d+\s*\|\s*`[^`]+`\s+is empty\s*\|\s*BLOCK\s*\|/);
     });
   });
 
@@ -120,8 +121,8 @@ describe("assembler", () => {
 
     it("has WARN not BLOCK pre-flight", () => {
       const output = buildSkill("mvt-fix");
-      expect(output).toContain("WARN");
-      expect(output).not.toContain("BLOCK");
+      expect(output).toMatch(/\|\s*1\s*\|\s*`session\.initialized_at`\s+is empty\s*\|\s*WARN\s*\|/);
+      expect(output).not.toMatch(/\|\s*\d+\s*\|\s*`[^`]+`\s+is empty\s*\|\s*BLOCK\s*\|/);
     });
   });
 

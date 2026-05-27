@@ -29,6 +29,7 @@ export async function run(argv: string[]): Promise<void> {
     .option("--migrate-manifests", "Clean up legacy core/manifest.yaml fields and add origin")
     .option("--migrate-paths", "Move workspace/project-context.md to knowledge/project/_generated/")
     .option("--migrate-config", "Split config.yaml language into interaction_language + document_output_language")
+    .option("--migrate-registry", "Strip deprecated `type` fields from registry.yaml knowledge entries")
     .option("--migrate-all", "Run every available migration")
     .action((opts) => {
       updateCommand(opts);

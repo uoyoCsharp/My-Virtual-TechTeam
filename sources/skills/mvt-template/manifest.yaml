@@ -49,9 +49,6 @@ sections:
       ### Step 3: Pre-flight Checks
       - No blocking checks required.
 
-      ### Step 4: Execute
-      Proceed to Execution Flow below.
-
   - type: file
     source: ./business.md
 

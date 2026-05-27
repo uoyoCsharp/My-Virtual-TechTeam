@@ -75,9 +75,6 @@ sections:
       ### Shortcut Operation Rules
       - Can execute at any time without checking workflow prerequisites
 
-      ### Step 4: Execute
-      Proceed to Execution Flow below.
-
   - type: file
     source: ./business.md
 

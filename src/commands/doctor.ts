@@ -68,6 +68,7 @@ export function doctorCommand(): void {
   checkLegacyCoreManifest(projectRoot, checks);
   checkLegacyProjectContextPath(projectRoot, checks);
   checkLegacyConfigLanguage(projectRoot, checks);
+  checkLegacyRegistryTypeField(projectRoot, checks);
 
   report(checks);
 
@@ -76,7 +77,7 @@ export function doctorCommand(): void {
   if (errors > 0) process.exit(1);
 }
 
-function checkLegacyCoreManifest(
+export function checkLegacyCoreManifest(
   projectRoot: string,
   checks: Array<{ status: "PASS" | "WARN" | "FAIL"; message: string }>,
 ): void {
@@ -113,7 +114,7 @@ function checkLegacyCoreManifest(
   }
 }
 
-function checkLegacyProjectContextPath(
+export function checkLegacyProjectContextPath(
   projectRoot: string,
   checks: Array<{ status: "PASS" | "WARN" | "FAIL"; message: string }>,
 ): void {
@@ -126,7 +127,7 @@ function checkLegacyProjectContextPath(
   });
 }
 
-function checkLegacyConfigLanguage(
+export function checkLegacyConfigLanguage(
   projectRoot: string,
   checks: Array<{ status: "PASS" | "WARN" | "FAIL"; message: string }>,
 ): void {
@@ -152,6 +153,60 @@ function checkLegacyConfigLanguage(
       status: "WARN",
       message:
         "config.yaml uses legacy `language` field. Run `mvtt update --migrate-config` to split into interaction_language + document_output_language.",
+    });
+  }
+}
+
+export type DoctorCheck = { status: "PASS" | "WARN" | "FAIL"; message: string };
+
+export function detectLegacyArtifacts(projectRoot: string): DoctorCheck[] {
+  const checks: DoctorCheck[] = [];
+  checkLegacyCoreManifest(projectRoot, checks);
+  checkLegacyProjectContextPath(projectRoot, checks);
+  checkLegacyConfigLanguage(projectRoot, checks);
+  checkLegacyRegistryTypeField(projectRoot, checks);
+  return checks.filter((c) => c.status !== "PASS");
+}
+
+export function checkLegacyRegistryTypeField(
+  projectRoot: string,
+  checks: Array<{ status: "PASS" | "WARN" | "FAIL"; message: string }>,
+): void {
+  const registryPath = path.join(projectRoot, ".ai-agents/registry.yaml");
+  if (!existsSync(registryPath)) return;
+
+  let parsed: Record<string, unknown>;
+  try {
+    parsed = parseYaml(readFileSync(registryPath, "utf-8")) as Record<string, unknown>;
+  } catch {
+    checks.push({ status: "FAIL", message: "registry.yaml is not valid YAML" });
+    return;
+  }
+
+  let count = 0;
+  const sharedKnowledge = (parsed.knowledge as { shared?: unknown[] } | undefined)?.shared;
+  if (Array.isArray(sharedKnowledge)) {
+    count += sharedKnowledge.filter(
+      (e) => e && typeof e === "object" && "type" in (e as Record<string, unknown>),
+    ).length;
+  }
+
+  const skills = parsed.skills as Record<string, unknown> | undefined;
+  if (skills && typeof skills === "object") {
+    for (const skill of Object.values(skills)) {
+      if (!skill || typeof skill !== "object") continue;
+      const skillKnowledge = (skill as { knowledge?: unknown[] }).knowledge;
+      if (!Array.isArray(skillKnowledge)) continue;
+      count += skillKnowledge.filter(
+        (e) => e && typeof e === "object" && "type" in (e as Record<string, unknown>),
+      ).length;
+    }
+  }
+
+  if (count > 0) {
+    checks.push({
+      status: "WARN",
+      message: `registry.yaml has ${count} legacy \`type\` field(s) on knowledge entries. Run \`mvtt update --migrate-registry\` to remove.`,
     });
   }
 }

@@ -23,6 +23,25 @@
   | No integration concerns | No new external dependencies, no cross-service changes, no async/event flows |
   | Single actor | Only one user role or system actor involved |
 
+- **Worked Examples**:
+
+  - **Example 1 (PASS — offer quick path)**
+    > "Increase the password reset email expiration from 30 minutes to 2 hours."
+    - Scope: 1 config file ✓
+    - No new concepts ✓ (existing flow)
+    - No architectural impact ✓
+    - Clear specification ✓
+    - No integration concerns ✓
+    - Single actor ✓
+    → Offer `/mvt-quick-dev`.
+
+  - **Example 2 (FAIL — proceed with standard analysis)**
+    > "Add SSO login via Google for our user portal."
+    - Scope: ✗ touches auth middleware, user model, login UI, OAuth callback handler, config (5+ files)
+    - No new concepts: ✗ introduces external IdP and OAuth callback contract
+    - No integration concerns: ✗ new external dependency (Google IdP)
+    → Proceed with standard analysis flow (Steps 3-5).
+
 - **Branches**:
 
   | Condition | Action |

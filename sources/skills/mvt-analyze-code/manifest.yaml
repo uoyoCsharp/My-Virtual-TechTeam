@@ -76,9 +76,6 @@ sections:
       - Does NOT create a change-id
       - Output is written to `.ai-agents/knowledge/project/_generated/project-context.md`
 
-      ### Step 4: Execute
-      Proceed to Execution Flow below.
-
   - type: file
     source: ./business.md
 
