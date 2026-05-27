@@ -10,7 +10,7 @@
 - Extract business rules and constraints
 - Note assumptions made
 
-### Step 2.5: Assess Complexity (Quick Path Detection)
+### Step 3: Assess Complexity (Quick Path Detection)
 - **What**: evaluate whether this requirement qualifies as a simple change suitable for the quick development path via `/mvt-quick-dev`.
 - **How**: check each criterion in the table below. ALL criteria must pass for the quick path to be offered.
 
@@ -40,30 +40,30 @@
     - Scope: ✗ touches auth middleware, user model, login UI, OAuth callback handler, config (5+ files)
     - No new concepts: ✗ introduces external IdP and OAuth callback contract
     - No integration concerns: ✗ new external dependency (Google IdP)
-    → Proceed with standard analysis flow (Steps 3-5).
+    → Proceed with standard analysis flow (Steps 4-6).
 
 - **Branches**:
 
   | Condition | Action |
   |-----------|--------|
   | ALL criteria pass | Ask user: "This appears to be a simple change (1-3 files, no architectural impact). Use /mvt-quick-dev for faster execution? (y / n / show-criteria)" |
-  | ANY criterion fails | Proceed with standard analysis flow (Steps 3-5) |
+  | ANY criterion fails | Proceed with standard analysis flow (Steps 4-6) |
   | Ambiguous (2-3 criteria unclear) | Proceed with standard analysis; do NOT offer quick path |
 
 - **On user choice**:
   - "y" -- Do NOT write an analysis artifact. Summarize the requirement understanding in conversation and recommend `/mvt-quick-dev` directly. Set `active_change` if one doesn't exist, so `/mvt-quick-dev` can reference the current work context.
-  - "n" -- Continue with full analysis flow (Steps 3-5).
+  - "n" -- Continue with full analysis flow (Steps 4-6).
   - "show-criteria" -- Display the assessment results (pass/fail per criterion), then re-prompt with y/n.
 
-### Step 3: Detect Ambiguities
+### Step 4: Detect Ambiguities
 - Check for unclear requirements
 - Check for missing information
 - Check for conflicting requirements
 
-### Step 4: Generate Clarification Questions
+### Step 5: Generate Clarification Questions
 - If ambiguities found -> List each with specific question, prioritized by impact
 - If no ambiguities -> Skip this step
 
-### Step 5: Update Workspace
+### Step 6: Update Workspace
 1. Generate change-id: `{YYYYMMDD}-{slug}` format (e.g., `20260425-user-authentication`)
 2. Write artifact: `.ai-agents/workspace/artifacts/{change-id}/analysis.md`
