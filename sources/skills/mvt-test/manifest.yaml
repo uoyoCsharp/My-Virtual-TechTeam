@@ -49,8 +49,6 @@ sections:
     source: sections/activation-load-context.md
     params:
       extended_context:
-        - ".ai-agents/knowledge/project/_generated/project-context.md -- Project semantic context (business rules for test design)"
-        - ".ai-agents/knowledge/principle/coding-standards.md -- Project coding standards"
         - "Implementation files to be tested"
 
   - type: shared

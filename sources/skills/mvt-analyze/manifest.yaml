@@ -37,9 +37,6 @@ sections:
 
   - type: shared
     source: sections/activation-load-context.md
-    params:
-      extended_context:
-        - ".ai-agents/workspace/requirements/ -- Existing requirements files (if exists)"
 
   - type: shared
     source: sections/activation-load-config.md

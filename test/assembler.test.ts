@@ -66,12 +66,6 @@ describe("assembler", () => {
       expect(output).toContain("### Step 4: Pre-flight Checks");
     });
 
-    it("includes extended context", () => {
-      const output = buildSkill("mvt-analyze");
-      expect(output).toContain("Extended context for this skill:");
-      expect(output).toContain(".ai-agents/workspace/requirements/");
-    });
-
     it("includes Execution Flow from business.md", () => {
       const output = buildSkill("mvt-analyze");
       expect(output).toContain("## Execution Flow");
@@ -152,11 +146,6 @@ describe("assembler", () => {
       expect(output).toContain(
         "You are the **Developer** -- an Implementation Specialist.",
       );
-    });
-
-    it("includes coding standards in extended context", () => {
-      const output = buildSkill("mvt-implement");
-      expect(output).toContain("coding-standards.md");
     });
 
     it("session-update section requires change_id on skill_history entries", () => {

@@ -49,13 +49,6 @@ sections:
       Usage: `/mvt-review` or `/mvt-review --aspect {type}`
 
   - type: shared
-    source: sections/activation-load-context.md
-    params:
-      extended_context:
-        - ".ai-agents/knowledge/project/_generated/project-context.md -- Project semantic context (layers, modules, business rules)"
-        - ".ai-agents/knowledge/principle/coding-standards.md -- Project coding standards"
-
-  - type: shared
     source: sections/activation-load-config.md
 
   - type: shared
