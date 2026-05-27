@@ -1,13 +1,35 @@
 ## Execution Flow
 
-### Step 1: Load Inputs
-- **Required**:
-  - User-provided bug description (free text, possibly with stack trace, error message, or reproduction steps).
+### Step 1: Resolve Input Source
+- Determine the diagnosis source by checking in priority order:
+
+  | Priority | Source | Condition | What to Load |
+  |----------|--------|-----------|--------------|
+  | 1 | Review artifact | `review.md` exists in active change artifacts | Critical + Warning findings as fix targets |
+  | 2 | Bug detection result | `/mvt-bug-detect` was executed in the current conversation | Root cause, affected files, severity, reproduction status from conversation history |
+  | 3 | Direct user input | User provided bug description in conversation | Bug description text |
+
+- **1a. Review artifact (mvt-review output)**
+  - Read `.ai-agents/workspace/artifacts/{active_change.id}/review.md`
+  - Extract Critical + Warning findings as fix targets. For each finding: file, line range, observation, recommendation serve as pre-verified diagnosis.
+  - If multiple Critical findings exist, ask user which to address first.
+  - Skip Steps 2-4, proceed directly to Step 5.
+
+- **1b. Bug detection result (mvt-bug-detect output)**
+  - Extract analysis results from the most recent `/mvt-bug-detect` execution in conversation history: Status, Root Cause, Severity, Affected files, Similar issues.
+  - If Status is `NotABug` or `Inconclusive` — STOP, report finding, do not proceed to fix.
+  - Skip Steps 2-4, proceed directly to Step 5 with extracted context.
+
+- **1c. Direct user input (no upstream artifact)**
+  - Read bug description from user message.
+  - Execute Steps 2-4 for self-contained diagnosis.
+
+- **Fallback**: If no source yields content, ask user to describe the bug or run `/mvt-bug-detect` first.
 - **Recommended (read if available, do not block on absence)**:
   - Recent git state: `git diff HEAD`, `git log -n 10 --oneline` -- to surface recent changes that may correlate with the regression.
-- **Fallback**: if none of the above exists, proceed using the bug description alone and note "context-light fix" in the final fix notes.
 
-### Step 2: Reproduce & Localize
+### Step 2: Reproduce & Localize (only for source 1c)
+**Skip this step if Step 1 resolved to source 1a (review artifact) or 1b (bug detection).**
 - **What**: confirm the bug is reproducible (or, if not reproducible, mark it explicitly as "report-only") and identify the smallest set of files that contain the suspected fault.
 - **How**:
   1. Extract concrete signals from the bug description: error message text, stack trace frames, file paths, function/class names, input data.
@@ -22,7 +44,8 @@
   | Not reproducible, signals are concrete (stack trace + paths) | Continue with static analysis only, mark "unverified repro" in fix notes |
   | Not reproducible, signals are vague | STOP -- ask user for: minimal repro, exact error, environment, last-known-good version |
 
-### Step 3: Generate Hypotheses
+### Step 3: Generate Hypotheses (only for source 1c)
+**Skip this step if Step 1 resolved to source 1a or 1b.**
 - **What**: produce 1-5 candidate root causes, each with a falsifiable check.
 - **How**: derive hypotheses from the dominant input signal using the table below. Combine sources when multiple are available.
 
@@ -35,7 +58,8 @@
 
 - Each hypothesis must be written as: `<claim> -- evidence: <pointer> -- check: <how to verify>`.
 
-### Step 4: Verify Root Cause
+### Step 4: Verify Root Cause (only for source 1c)
+**Skip this step if Step 1 resolved to source 1a or 1b.**
 - **What**: reduce the hypothesis set to one confirmed root cause.
 - **How**:
   1. For each hypothesis, run its check (read code, add tracing, run a focused script). Cheapest check first.
@@ -52,6 +76,9 @@
 ### Step 5: Plan the Fix
 - **What**: decide the change scope and minimum-risk patch shape.
 - **How**: classify the fix using the table below. Choose the strategy that matches the smallest viable scope -- escalate only if the smaller scope cannot fully address the root cause.
+- For source 1a (review.md): each Critical/Warning finding maps to a fix; classify individually.
+- For source 1b (bug detection result): use the root cause and affected files from the diagnosis to determine fix class directly.
+- For source 1c: classify based on self-contained diagnosis from Steps 2-4.
 
   | Fix class | Indicator | Strategy |
   |-----------|-----------|----------|
@@ -73,6 +100,7 @@
 - **Confirmation prompt format**: present `Root cause: ...`, `Proposed change: <files + summary>`, `Risk: <regression scope>`, then ask `Apply? (y / n / show-diff)`.
 
 ### Step 7: Apply the Fix
+- For source 1a (review.md): apply fixes per finding; re-run the review's relevant checks (not reproduction) to confirm each fix addresses its finding.
 - Make the targeted code change.
 - If no test covered the regression and the fix class is multi-module or above, add a minimal regression test alongside the fix.
 - Re-run the original repro (if any) to confirm resolution.
@@ -82,8 +110,9 @@
 - **Path**: `.ai-agents/workspace/artifacts/{change-id}/fix-notes.md` if an `active_change` exists; otherwise inline in the conversation only (no artifact -- shortcut operation).
 - **Structure** (each section is a single paragraph or list):
   - `Symptom` -- what the user saw / reported.
+  - `Input Source` -- "Review artifact" | "Bug detection result" | "Direct user input".
   - `Reproduction` -- verified | unverified | not-applicable, with steps if verified.
-  - `Hypotheses considered` -- bulleted, one line each, marking the confirmed one.
+  - `Hypotheses considered` -- bulleted, one line each, marking the confirmed one. (Skip if source 1a or 1b provided a pre-verified root cause.)
   - `Root cause` -- one paragraph.
   - `Patch summary` -- files touched + one-line per file.
   - `Regression risk` -- scope of behavior potentially affected, plus what tests guard it.

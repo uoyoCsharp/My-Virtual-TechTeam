@@ -32,6 +32,8 @@ sections:
           skill: "/mvt-design"
         - scope: "review own fix"
           skill: "/mvt-review"
+        - scope: "diagnose bugs without fixing"
+          skill: "/mvt-bug-detect"
 
   - type: shared
     source: sections/activation-load-context.md
@@ -70,3 +72,14 @@ sections:
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-fix
+      conditional_suggestions:
+        conditions:
+          - condition: "fix applied, root cause had wide impact"
+            primary: "mvt-review"
+            primary_desc: "Review the fix for side effects"
+          - condition: "fix applied, needs test coverage"
+            primary: "mvt-test"
+            primary_desc: "Add regression tests"
+          - condition: "bug too complex for targeted fix"
+            primary: "mvt-design"
+            primary_desc: "Design architectural solution"

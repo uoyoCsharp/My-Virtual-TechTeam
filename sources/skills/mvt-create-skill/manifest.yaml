@@ -70,7 +70,6 @@ sections:
       - **Skill**: `/{name}`
       - **Agent**: {agent role}
       - **Location**: `.claude/skills/{name}/SKILL.md`
-      - **Manifest**: Generated with shared sections
       - **Registry**: `registry.yaml` (custom: true)
       - **Template**: {created/none}
       - **Resources**: {scripts/references/assets listing, or none}
@@ -85,9 +84,6 @@ sections:
       3. Update SKILL.md or bundled resources as needed
       4. Use `/mvt-create-skill` to refine, or edit skill files directly
       ```
-
-  - type: shared
-    source: sections/session-update.md
 
   - type: shared
     source: sections/footer-next-steps.md

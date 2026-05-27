@@ -1,6 +1,6 @@
 # My Virtual Tech Team (MVTT)
 
-> A prompt orchestration framework for [Claude Code](https://claude.ai/claude-code) — 22 AI skills that share persistent context and cover the full development lifecycle from requirements to testing.
+> A prompt orchestration framework for [Claude Code](https://claude.ai/claude-code) — 23 AI skills that share persistent context and cover the full development lifecycle from requirements to testing.
 
 [![npm](https://img.shields.io/npm/v/@uoyo/mvtt)](https://www.npmjs.com/package/@uoyo/mvtt) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -82,7 +82,7 @@ npx @uoyo/mvtt install
 /mvt-analyze       # Start with requirements analysis
 ```
 
-## All Skills (22)
+## All Skills (23)
 
 ### Workflow — Full Development Lifecycle
 
@@ -101,6 +101,7 @@ npx @uoyo/mvtt install
 
 | Skill | Description |
 |-------|-------------|
+| `/mvt-bug-detect` | Analyze and detect bugs: investigate root cause, assess severity and impact without fixing |
 | `/mvt-fix` | Diagnose and fix bugs (reads context to understand the system) |
 | `/mvt-refactor` | Refactor with full awareness of architecture decisions |
 | `/mvt-quick-dev` | Fast implementation for simple, well-scoped changes |

@@ -100,6 +100,12 @@ skills:
     category: project
 
   # --- Developer Skills ---
+  mvt-bug-detect:
+    agent: analyst
+    description: "Analyze and detect bugs by investigating root cause, assessing severity and impact scope. Produces a structured diagnosis in conversation without applying fixes. This skill should be used when user suspects a bug, wants to understand a problem before fixing, or needs impact analysis."
+    path: .claude/skills/mvt-bug-detect/SKILL.md
+    template: null
+    category: shortcut
   mvt-implement:
     agent: developer
     description: "Implement features based on architecture design. This skill should be used when user wants to implement a feature, write production code, or translate design blueprints into working code."

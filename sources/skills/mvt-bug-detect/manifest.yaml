@@ -1,0 +1,84 @@
+name: mvt-bug-detect
+output: .claude/skills/mvt-bug-detect/SKILL.md
+
+frontmatter:
+  name: mvt-bug-detect
+  description: "Analyze and detect bugs by investigating root cause, assessing severity and impact scope. Produces a structured diagnosis in conversation without applying fixes. This skill should be used when user suspects a bug, wants to understand a problem before fixing, or needs impact analysis."
+
+sections:
+  - type: inline
+    content: |
+      # MVT Bug Detect
+
+      ## Purpose
+
+      Investigate suspected bugs: confirm whether the bug exists, identify root cause, assess severity and impact scope, and produce a structured diagnosis. This skill does NOT apply fixes — it provides analysis to help the user understand the problem and decide on next steps.
+
+  - type: shared
+    source: sections/role-header.md
+    params:
+      role: Analyst
+      role_desc: "a Bug Investigation Specialist"
+      decision_rules:
+        - rule: "Bug description provided -> Analyze and investigate"
+        - rule: "Input too vague -> Prompt for specific details with structured template"
+        - rule: "No input -> Provide input template and wait"
+        - rule: "Root cause confirmed -> Assess impact and produce diagnosis"
+        - rule: "Multiple possible causes -> List hypotheses with evidence, verify each"
+        - rule: "Bug does not exist (expected behavior) -> Report clearly, suggest /mvt-analyze if requirement gap"
+        - rule: "Evidence insufficient -> Report findings, request more info, do NOT fabricate hypotheses"
+      boundaries:
+        - scope: "apply fixes"
+          skill: "/mvt-fix"
+        - scope: "design architecture"
+          skill: "/mvt-design"
+        - scope: "review code quality"
+          skill: "/mvt-review"
+
+  - type: shared
+    source: sections/activation-load-context.md
+    params:
+      extended_context:
+        - "Related source files (load based on bug description signals)"
+
+  - type: shared
+    source: sections/activation-load-config.md
+
+  - type: shared
+    source: sections/output-language-constraint.md
+
+  - type: inline
+    content: |
+      ### Shortcut Operation Rules
+      - Can execute at any time without checking workflow prerequisites
+      - Do NOT update `progress` (this is a shortcut operation, not a workflow phase)
+      - Do NOT write any artifact — diagnosis is presented in conversation only
+      - Do NOT modify any source code — this skill is read-only analysis
+
+  - type: file
+    source: ./business.md
+
+  - type: shared
+    source: sections/session-update.md
+
+  - type: shared
+    source: sections/footer-next-steps.md
+    params:
+      current_skill: mvt-bug-detect
+      conditional_suggestions:
+        conditions:
+          - condition: "bug confirmed, fix is straightforward"
+            primary: "mvt-fix"
+            primary_desc: "Fix this bug"
+          - condition: "bug confirmed, fix requires architecture change"
+            primary: "mvt-design"
+            primary_desc: "Design architectural solution first"
+            alternatives:
+              - skill: "mvt-fix"
+                desc: "Apply a minimal workaround"
+          - condition: "not a bug (expected behavior)"
+            primary: "mvt-analyze"
+            primary_desc: "Re-analyze the underlying requirement"
+          - condition: "inconclusive, needs deeper code understanding"
+            primary: "mvt-analyze-code"
+            primary_desc: "Deep-dive into the codebase"
