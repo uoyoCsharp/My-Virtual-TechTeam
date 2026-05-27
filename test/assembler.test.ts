@@ -70,7 +70,7 @@ describe("assembler", () => {
       const output = buildSkill("mvt-analyze");
       expect(output).toContain("## Execution Flow");
       expect(output).toContain("### Step 1: Load Requirements");
-      expect(output).toContain("### Step 5: Update Workspace");
+      expect(output).toContain("### Step 6: Update Workspace");
     });
 
     it("includes Artifact Structure section", () => {
