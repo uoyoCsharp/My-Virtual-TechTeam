@@ -31,7 +31,7 @@ describe("update (via re-materialize)", () => {
 
   it("preserves user data across re-materialize", () => {
     const initial = materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
-    writeInstallationManifest(tmpDir, "2.0.0", null, initial, null);
+    writeInstallationManifest(tmpDir, "2.0.0", initial, null);
 
     const userFile = path.join(tmpDir, ".ai-agents/workspace/artifacts/user-data.md");
     writeFileSync(userFile, "user content", "utf-8");
@@ -48,7 +48,7 @@ describe("update (via re-materialize)", () => {
 
   it("overwrites manually-modified generated files", () => {
     const initial = materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
-    writeInstallationManifest(tmpDir, "2.0.0", null, initial, null);
+    writeInstallationManifest(tmpDir, "2.0.0", initial, null);
 
     const skillPath = path.join(tmpDir, ".claude/skills/mvt-analyze/SKILL.md");
     writeFileSync(skillPath, "tampered", "utf-8");
@@ -76,7 +76,7 @@ describe("update (via re-materialize)", () => {
         category: "generated" as const,
       },
     ];
-    writeInstallationManifest(tmpDir, "2.0.0", null, initialPlusStale, null);
+    writeInstallationManifest(tmpDir, "2.0.0", initialPlusStale, null);
 
     const originalCwd = process.cwd();
     process.chdir(tmpDir);
@@ -93,11 +93,11 @@ describe("update (via re-materialize)", () => {
 
   it("updates last_updated_at on re-install", () => {
     const initial = materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
-    const m1 = writeInstallationManifest(tmpDir, "2.0.0", null, initial, null);
+    const m1 = writeInstallationManifest(tmpDir, "2.0.0", initial, null);
     const firstUpdate = m1.last_updated_at;
 
     const second = materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
-    const m2 = writeInstallationManifest(tmpDir, "2.0.1", null, second, m1);
+    const m2 = writeInstallationManifest(tmpDir, "2.0.1", second, m1);
 
     expect(m2.installed_at).toBe(m1.installed_at);
     expect(m2.mvtt_version).toBe("2.0.1");

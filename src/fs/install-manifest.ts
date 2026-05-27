@@ -11,7 +11,6 @@ export interface InstallationManifest {
   mvtt_version: string;
   installed_at: string;
   last_updated_at: string;
-  pattern: string | null;
   files: Record<string, InstalledFileRecord>;
 }
 
@@ -30,7 +29,6 @@ export function readInstallationManifest(projectRoot: string): InstallationManif
 export function writeInstallationManifest(
   projectRoot: string,
   version: string,
-  pattern: string | null,
   files: MaterializedFile[],
   previous: InstallationManifest | null,
 ): InstallationManifest {
@@ -44,7 +42,6 @@ export function writeInstallationManifest(
     mvtt_version: version,
     installed_at: previous?.installed_at ?? now,
     last_updated_at: now,
-    pattern,
     files: fileMap,
   };
 

@@ -7,24 +7,9 @@ import {
 } from "../fs/install-manifest.js";
 import { hashFile } from "../fs/hash.js";
 import { getPackageRoot, getVersion } from "./shared.js";
-import { detectLegacyArtifacts } from "./doctor.js";
-import { color } from "../util/color.js";
-import {
-  migrateAll,
-  migrateConfig,
-  migrateManifests,
-  migratePaths,
-  migrateRegistry,
-  type MigrationResult,
-} from "./migrate.js";
 
 export interface UpdateOptions {
   check?: boolean;
-  migrateManifests?: boolean;
-  migratePaths?: boolean;
-  migrateConfig?: boolean;
-  migrateRegistry?: boolean;
-  migrateAll?: boolean;
 }
 
 export function updateCommand(options: UpdateOptions = {}): void {
@@ -32,17 +17,6 @@ export function updateCommand(options: UpdateOptions = {}): void {
   const packageRoot = getPackageRoot();
   const version = getVersion();
   const checkOnly = options.check === true;
-
-  if (
-    options.migrateAll ||
-    options.migrateManifests ||
-    options.migratePaths ||
-    options.migrateConfig ||
-    options.migrateRegistry
-  ) {
-    runMigrations(projectRoot, options);
-    return;
-  }
 
   const existing = readInstallationManifest(projectRoot);
   if (!existing) {
@@ -97,54 +71,9 @@ export function updateCommand(options: UpdateOptions = {}): void {
     for (const f of removed) console.log(`  - ${f}`);
   }
 
-  writeInstallationManifest(projectRoot, version, existing.pattern, materialized, existing);
+  writeInstallationManifest(projectRoot, version, materialized, existing);
 
   console.log(`\nUpdate complete: ${materialized.length} files processed.`);
-
-  emitLegacyHint(projectRoot);
-}
-
-function emitLegacyHint(projectRoot: string): void {
-  const legacy = detectLegacyArtifacts(projectRoot);
-  if (legacy.length === 0) return;
-  console.log(
-    `\n${color.yellow("Legacy artifacts detected:")} ${legacy.length} item(s).`,
-  );
-  console.log(`  Run ${color.cyan("mvtt doctor")} for details and migration commands.`);
-}
-
-function runMigrations(projectRoot: string, options: UpdateOptions): void {
-  const ran: Array<[string, MigrationResult]> = [];
-
-  if (options.migrateAll) {
-    const result = migrateAll(projectRoot);
-    ran.push(["manifests", result.manifests]);
-    ran.push(["paths", result.paths]);
-    ran.push(["config", result.config]);
-    ran.push(["registry", result.registry]);
-  } else {
-    if (options.migrateManifests) ran.push(["manifests", migrateManifests(projectRoot)]);
-    if (options.migratePaths) ran.push(["paths", migratePaths(projectRoot)]);
-    if (options.migrateConfig) ran.push(["config", migrateConfig(projectRoot)]);
-    if (options.migrateRegistry) ran.push(["registry", migrateRegistry(projectRoot)]);
-  }
-
-  let migrated = 0;
-  for (const [label, result] of ran) {
-    if (result.skipped) {
-      console.log(`[skip] ${label}: ${result.reason ?? "nothing to migrate"}`);
-      continue;
-    }
-    migrated++;
-    console.log(`[done] ${label}: ${result.changes?.join("; ") ?? "migrated"}`);
-    if (result.backup) {
-      console.log(`       backup -> ${path.relative(projectRoot, result.backup)}`);
-    }
-  }
-
-  console.log(
-    `\nMigration complete: ${migrated} migrated, ${ran.length - migrated} skipped.`,
-  );
 }
 
 function removeStaleGeneratedFiles(

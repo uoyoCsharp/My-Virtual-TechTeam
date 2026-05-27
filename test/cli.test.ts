@@ -13,7 +13,6 @@ import { installCommand } from "../src/commands/install.js";
 import { updateCommand } from "../src/commands/update.js";
 import { doctorCommand } from "../src/commands/doctor.js";
 import { uninstallCommand } from "../src/commands/uninstall.js";
-import { buildCommand } from "../src/commands/build.js";
 import { run } from "../src/cli.js";
 
 interface Captured {
@@ -86,16 +85,6 @@ describe("CLI commands (in-process)", () => {
       expect(r.stdout.join("\n")).toContain("Installation complete");
       expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-analyze/SKILL.md"))).toBe(true);
       expect(existsSync(path.join(tmpDir, ".ai-agents/.mvtt-manifest.json"))).toBe(true);
-    });
-
-    it("sets pattern when pattern provided", async () => {
-      const r = await captureIO(tmpDir, () => installCommand({ pattern: "ddd" }));
-      expect(r.stdout.join("\n")).toContain("Pattern set: ddd");
-      const manifestRaw = readFileSync(
-        path.join(tmpDir, ".ai-agents/.mvtt-manifest.json"),
-        "utf-8",
-      );
-      expect(JSON.parse(manifestRaw).pattern).toBe("ddd");
     });
 
     it("non-TTY install defaults language to en-US", async () => {
@@ -199,14 +188,6 @@ describe("CLI commands (in-process)", () => {
       expect(existsSync(path.join(tmpDir, ".ai-agents/.mvtt-manifest.json"))).toBe(false);
       expect(readFileSync(userFile, "utf-8")).toBe("my work");
       expect(existsSync(path.join(tmpDir, ".ai-agents/config.yaml"))).toBe(true);
-    });
-  });
-
-  describe("build", () => {
-    it("builds skills with out directory", async () => {
-      const r = await captureIO(process.cwd(), () => buildCommand({ out: tmpDir }));
-      expect(r.stdout.join("\n")).toContain("Build complete");
-      expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-analyze/SKILL.md"))).toBe(true);
     });
   });
 

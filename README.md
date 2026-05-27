@@ -1,208 +1,192 @@
-# My-Virtual-TechTeam (MVTT)
+# My Virtual Tech Team (MVTT)
 
-A virtual IT team made up of AI agents. Built for [Claude Code](https://claude.ai/claude-code), MVTT turns your IDE into a coordinated squad of Analyst, Architect, Developer, Reviewer, and Tester — each with a clear role, a shared workspace, and enforceable team conventions.
+> A prompt orchestration framework for [Claude Code](https://claude.ai/claude-code) — 22 AI skills that share persistent context and cover the full development lifecycle from requirements to testing.
 
-## Why MVTT
+[![npm](https://img.shields.io/npm/v/@uoyo/mvtt)](https://www.npmjs.com/package/@uoyo/mvtt) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-- **One-command install** — `npx @uoyo/mvtt install` drops a full skill suite into any project
-- **Claude Code native** — 18 skills auto-discovered from `.claude/skills/`
-- **Bilingual output** — choose `en-US` or `zh-CN` at install time; every skill honors the setting
-- **Shared workspace** — `.ai-agents/` centralizes session state, domain knowledge, config, and output templates
-- **Safe lifecycle** — `install` / `update` / `uninstall` / `doctor` with manifest-based file ownership, so user data is never overwritten
-- **Extensible** — `/mvt-create-skill` lets your team grow its own skills for project-specific workflows
+## What is MVTT
 
-## Installation
+MVTT turns Claude Code into a coordinated engineering team — Analyst, Architect, Developer, Reviewer, and Tester — each with a distinct role but sharing the same persistent workspace. Every skill reads from and writes to a file-based context layer that lives in your repository, so knowledge accumulates across conversations instead of being lost.
 
-```bash
-npx @uoyo/mvtt install
-```
+## Highlights
 
-The installer is interactive:
+### Persistent Context That Grows With Your Project
 
 ```
-? Select language / 选择语言
-❯ English (en-US)
-  中文 (zh-CN)
+.ai-agents/
+├── workspace/
+│   ├── session.yaml              # Who did what, what's in progress
+│   ├── project-context.yaml      # Tech stack, domain model, conventions
+│   └── artifacts/                # Analysis docs, design specs, review logs
+└── knowledge/
+    ├── core/                     # Framework principles & architecture patterns
+    ├── principle/                # Your team's coding standards
+    └── project/                  # Domain-specific knowledge
 ```
 
-Optional flags:
+Context is **never lost between conversations**. Start a new Claude Code session tomorrow and it picks up exactly where you left off — your domain model, architecture decisions, in-progress tasks, and team conventions are all there.
 
-```bash
-npx @uoyo/mvtt install --pattern ddd    # Preset architecture pattern (ddd | clean-architecture | frontend-react)
+### Save, Resume, and Sync
+
+| Capability | How |
+|---|---|
+| **Save progress** | Every skill automatically updates `session.yaml` with what was done |
+| **Resume anywhere** | `/mvt-resume` restores full context in a new conversation |
+| **Sync after changes** | `/mvt-sync-context` updates context when code evolves outside the workflow |
+| **Check context health** | `/mvt-check-context` analyzes token load and suggests optimizations |
+
+You can close your IDE, switch machines, or come back days later — the context persists in version-controlled files that travel with your repo.
+
+### One Shared Truth, Zero Drift
+
+Every skill operates against the **same context source**:
+
 ```
+┌─────────────────────────────────────────────────────┐
+│              Shared Context Layer                    │
+│  session.yaml + project-context.yaml + knowledge/   │
+└───────────┬───────────┬───────────┬─────────────────┘
+            │           │           │
+      ┌─────┴──┐  ┌────┴────┐  ┌──┴──────┐
+      │Analyst │  │Architect│  │Developer│  ...
+      └────────┘  └─────────┘  └─────────┘
+```
+
+When the Analyst discovers a new domain concept, the Architect sees it. When the Architect makes a design decision, the Developer follows it. No skill can "go rogue" because they all read the same ground truth before acting.
+
+### Complete Development Lifecycle
+
+MVTT covers the full engineering workflow — not just code generation:
+
+```
+ Analyze        Design        Plan         Implement      Review        Test
+┌────────┐   ┌────────┐   ┌────────┐   ┌──────────┐   ┌────────┐   ┌──────┐
+│Extract │   │Define  │   │Break   │   │Write code│   │Check   │   │Write │
+│domain  │──▶│arch &  │──▶│into    │──▶│following │──▶│quality │──▶│tests │
+│concepts│   │patterns│   │tasks   │   │the design│   │& style │   │      │
+└────────┘   └────────┘   └────────┘   └──────────┘   └────────┘   └──────┘
+     │                                                                  │
+     └──────────────── Context flows through every phase ───────────────┘
+```
+
+Each phase produces artifacts that become input for the next. The context accumulates — it doesn't reset.
 
 ## Quick Start
 
-1. Run `npx @uoyo/mvtt install` in your project root
-2. Open the project in Claude Code
-3. Run `/mvt-init` to initialize the workspace
-4. Run `/mvt-help` to see all available skills
-5. Follow the guided workflow through your development phases
+```bash
+# Install into any project
+npx @uoyo/mvtt install
+
+# Open in Claude Code, then:
+/mvt-init          # Detect tech stack, initialize context
+/mvt-analyze       # Start with requirements analysis
+```
+
+## All Skills (22)
+
+### Workflow — Full Development Lifecycle
+
+| Skill | Role | What It Does |
+|-------|------|--------------|
+| `/mvt-analyze` | Analyst | Extract requirements, domain concepts, acceptance criteria |
+| `/mvt-analyze-code` | Analyst | Reverse-analyze existing code into structured context |
+| `/mvt-design` | Architect | Define architecture, component boundaries, data flow |
+| `/mvt-plan-dev` | Architect | Break design into ordered implementation tasks |
+| `/mvt-update-plan` | Architect | Update plan as tasks complete or scope changes |
+| `/mvt-implement` | Developer | Write code following the design and plan |
+| `/mvt-review` | Reviewer | Check quality, standards compliance, potential issues |
+| `/mvt-test` | Tester | Generate tests that validate the implementation |
+
+### Shortcuts — Skip the Ceremony
+
+| Skill | Description |
+|-------|-------------|
+| `/mvt-fix` | Diagnose and fix bugs (reads context to understand the system) |
+| `/mvt-refactor` | Refactor with full awareness of architecture decisions |
+| `/mvt-quick-dev` | Fast implementation for simple, well-scoped changes |
+
+### Context Management
+
+| Skill | Description |
+|-------|-------------|
+| `/mvt-init` | Initialize project context, detect tech stack |
+| `/mvt-sync-context` | Update context after code changes made outside MVTT |
+| `/mvt-resume` | Restore full context in a new conversation |
+| `/mvt-status` | Show what's in progress, what context is loaded |
+| `/mvt-manage-context` | Add, remove, or reorganize knowledge entries |
+| `/mvt-check-context` | Analyze context token usage and optimize |
+| `/mvt-cleanup` | Archive stale artifacts, maintain context health |
+
+### Utility
+
+| Skill | Description |
+|-------|-------------|
+| `/mvt-help` | Overview of skills and workflow guidance |
+| `/mvt-config` | Change language, output format, and preferences |
+| `/mvt-create-skill` | Create custom skills for your team's workflows |
+| `/mvt-template` | View and customize output templates |
+
+## How Context Stays in Sync
+
+A common fear: "what if the context becomes outdated?" MVTT handles this at multiple levels:
+
+1. **Auto-update on skill execution** — Every skill writes its results back to session and artifacts
+2. **Explicit sync** — `/mvt-sync-context` reconciles context with actual code changes
+3. **Context health checks** — `/mvt-check-context` identifies stale or bloated entries
+4. **Artifact cleanup** — `/mvt-cleanup` archives old artifacts that no longer reflect reality
+
+The context is designed to be a **living document**, not a snapshot.
 
 ## CLI Commands
 
-| Command | Purpose |
-|---|---|
-| `npx @uoyo/mvtt install` | First-time install; interactive language selection |
-| `npx @uoyo/mvtt install --pattern <name>` | Install with a preset architecture pattern |
-| `npx @uoyo/mvtt update` | Upgrade to the latest version (user data preserved) |
-| `npx @uoyo/mvtt update --check` | Show version diff without modifying anything |
-| `npx @uoyo/mvtt doctor` | Check installation health and detect manual edits |
-| `npx @uoyo/mvtt uninstall` | Interactive confirmation, then remove generated files (user data preserved) |
-| `npx @uoyo/mvtt --help` | Full CLI help |
-| `npx @uoyo/mvtt --version` | Print version |
-
-## Skills (18 total)
-
-### Workflow Skills (Sequential Phases)
-
-| Skill | Description |
-|-------|-------------|
-| `/mvt-analyze` | Analyze requirements and extract domain concepts |
-| `/mvt-analyze-code` | Reverse-analyze existing code to generate context |
-| `/mvt-design` | Create architecture design based on requirements |
-| `/mvt-implement` | Implement features based on architecture design |
-| `/mvt-review` | Code review for quality and standards compliance |
-| `/mvt-test` | Generate tests to validate implementations |
-
-### Shortcut Skills (Anytime)
-
-| Skill | Description |
-|-------|-------------|
-| `/mvt-fix` | Diagnose and fix bugs or issues |
-| `/mvt-refactor` | Refactor code while preserving behavior |
-
-### Project Management Skills
-
-| Skill | Description |
-|-------|-------------|
-| `/mvt-init` | Initialize or refresh project setup |
-| `/mvt-status` | Show current project and workflow status |
-| `/mvt-config` | Manage framework configuration |
-| `/mvt-sync-context` | Synchronize context with code changes |
-| `/mvt-cleanup` | Clean up workspace artifacts |
-
-### Utility Skills
-
-| Skill | Description |
-|-------|-------------|
-| `/mvt-help` | Show available skills and workflow guidance |
-| `/mvt-create-skill` | Create custom MVTT skills |
-| `/mvt-manage-context` | Add, remove, move, rename, or list knowledge entries (with AI routing) |
-| `/mvt-check-context` | Analyze context token load and optimization |
-| `/mvt-template` | View and customize output templates |
-
-## Standard Workflow
-
+```bash
+mvtt install              # First-time install (interactive language selection)
+mvtt update [--check]     # Upgrade to latest (user data preserved)
+mvtt doctor               # Check installation health
+mvtt uninstall            # Remove generated files (user data preserved)
 ```
-/mvt-analyze → /mvt-design → /mvt-implement → /mvt-review → /mvt-test
-   Analyst       Architect      Developer       Reviewer       Tester
-```
-
-The Conductor (the underlying orchestration logic) keeps session state in `.ai-agents/workspace/session.yaml` so any skill can pick up where the previous one left off.
-
-## Configuration
-
-All preferences live in `.ai-agents/config.yaml`:
-
-```yaml
-version: "2.0"
-
-preferences:
-  language: en-US          # en-US | zh-CN — chosen during install, changeable anytime
-  output:
-    no_emojis: true        # Disable emojis in skill output
-    data_format: yaml      # yaml | json
-
-pattern:
-  active: ""               # Detected via /mvt-init or set via --pattern on install
-  selection:
-    auto_detect: true
-    confirm_with_user: true
-```
-
-Every skill reads this file on activation and enforces the settings through the shared Activation Protocol.
 
 ## Architecture Patterns
 
-MVTT ships with first-class knowledge for three patterns (`.ai-agents/knowledge/patterns/`):
+MVTT ships knowledge for three patterns that workflow skills automatically consume:
 
 - **`ddd`** — Domain-Driven Design (bounded contexts, aggregates, domain events)
 - **`clean-architecture`** — Layered boundaries, dependency inversion
 - **`frontend-react`** — React-specific structural conventions
 
-Each pattern contributes its own review checklist and design guidance that `/mvt-design`, `/mvt-review`, and `/mvt-refactor` automatically consume.
-
-## Runtime Layout
-
-After `install`, your project has:
-
-```
-.claude/skills/mvt-*/SKILL.md       # GENERATED (18 skills, Claude Code entry points)
-
-.ai-agents/
-├── config.yaml                      # CREATE_ONCE (user-editable)
-├── registry.yaml                    # GENERATED (skill metadata)
-├── .mvtt-manifest.json              # GENERATED (install metadata, hashes)
-├── workspace/
-│   ├── session.yaml                 # CREATE_ONCE
-│   ├── project-context.yaml         # CREATE_ONCE
-│   └── artifacts/                   # USER DATA (skill outputs)
-├── skills/_templates/
-│   ├── *-output.md                  # GENERATED (14 templates)
-│   └── custom/                      # USER DATA (your overrides)
-└── knowledge/
-    ├── core/                        # GENERATED (framework-wide principles)
-    ├── patterns/                    # GENERATED (ddd, clean-architecture, frontend-react)
-    ├── principle/                   # USER DATA (team conventions)
-    └── project/                     # USER DATA (domain-specific knowledge)
-```
-
-File classification:
-
-- **GENERATED** — owned by the CLI; overwritten on every `update`
-- **CREATE_ONCE** — created only on first install; never overwritten
-- **USER DATA** — CLI never touches these paths
-
-`doctor` hashes every GENERATED file against the manifest, so manual edits are detected immediately.
-
-## Activation Protocol (Runtime)
-
-Every skill shares a 4-step activation sequence, inlined into each `SKILL.md` at build time:
-
-1. **Load Context** — `session.yaml` + `project-context.yaml` + skill-specific extended context
-2. **Load Config & Apply Preferences** — read `config.yaml`, enforce language and output style
-3. **Pre-flight Checks** — validate prerequisites (workspace initialized, required artifacts exist, etc.)
-4. **Execute** — run skill-specific logic
-
-DRY at source (one shared section per step), flat at runtime (each `SKILL.md` is self-contained — no cross-file reads when Claude Code loads a skill).
+Detected automatically by `/mvt-init` or configured via `/mvt-config`.
 
 ## Extending MVTT
 
-Beyond the 18 built-in skills, run `/mvt-create-skill` to scaffold a project-specific skill interactively. Custom skills live under `.ai-agents/skills/` and can override or complement any default behavior (e.g. a `/mvt-test-gherkin` variant that emits Gherkin feature files in your team's house style).
+- **Add team knowledge** — Drop markdown files into `.ai-agents/knowledge/principle/` for coding standards, or `project/` for domain knowledge. All skills load them automatically.
+- **Create custom skills** — `/mvt-create-skill` scaffolds project-specific skills (e.g., `/mvt-test-e2e` for your E2E conventions).
+- **Customize templates** — Override output formats in `.ai-agents/skills/_templates/custom/`.
 
-## Development (Contributing to MVTT Itself)
+## Configuration
 
-Requirements: Node.js ≥ 18.
+Edit `.ai-agents/config.yaml` or use `/mvt-config`:
 
-```bash
-npm install
-npm run build                       # Compile TypeScript
-npm test                            # Run test suite (66 tests)
-npm test -- --coverage              # With coverage report
-
-# Rebuild skills / templates from sources into any output directory
-node dist/index.js build --out .test-output
+```yaml
+version: "2.0"
+preferences:
+  interaction_language: en-US       # en-US | zh-CN
+  document_output_language: en-US   # Language for generated artifacts
+  output:
+    no_emojis: true
+    data_format: yaml               # yaml | json
+  context_routing:
+    relevance_threshold: 70
 ```
 
-Source layout:
+## Development
 
-- `src/` — CLI TypeScript source (commander-based; uses `prompts` for interactive selection)
-- `sources/skills/<name>/manifest.yaml + business.md` — Skill source files
-- `sources/templates/<name>/manifest.yaml + body.md` — Template source files
-- `sources/sections/*.md` — Shared activation protocol sections (mustache-style blocks)
-- `registry.yaml` — Single source of truth for skill metadata
-- `install-manifest.yaml` — File classification (generated / create_once / user_data)
+```bash
+git clone https://github.com/uoyoCsharp/My-Virtual-TechTeam.git
+cd My-Virtual-TechTeam
+npm install
+npm run build        # Compile TypeScript
+npm test             # Run test suite
+```
 
 ## License
 

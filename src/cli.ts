@@ -1,5 +1,4 @@
 import { Command } from "commander";
-import { buildCommand } from "./commands/build.js";
 import { installCommand } from "./commands/install.js";
 import { updateCommand } from "./commands/update.js";
 import { doctorCommand } from "./commands/doctor.js";
@@ -17,20 +16,14 @@ export async function run(argv: string[]): Promise<void> {
   program
     .command("install")
     .description("Install MVTT into current project")
-    .option("--pattern <name>", "Set architecture pattern (ddd, clean-architecture, etc.)")
-    .action(async (opts) => {
-      await installCommand(opts);
+    .action(async () => {
+      await installCommand();
     });
 
   program
     .command("update")
     .description("Update MVTT to latest version")
     .option("--check", "Only report version diff, do not modify")
-    .option("--migrate-manifests", "Clean up legacy core/manifest.yaml fields and add origin")
-    .option("--migrate-paths", "Move workspace/project-context.md to knowledge/project/_generated/")
-    .option("--migrate-config", "Split config.yaml language into interaction_language + document_output_language")
-    .option("--migrate-registry", "Strip deprecated `type` fields from registry.yaml knowledge entries")
-    .option("--migrate-all", "Run every available migration")
     .action((opts) => {
       updateCommand(opts);
     });
@@ -47,14 +40,6 @@ export async function run(argv: string[]): Promise<void> {
     .description("Remove MVTT generated files")
     .action(async () => {
       await uninstallCommand();
-    });
-
-  program
-    .command("build")
-    .description("Build skills and templates from sources (dev)")
-    .option("--out <dir>", "Output directory (default: cwd)")
-    .action((opts) => {
-      buildCommand(opts);
     });
 
   await program.parseAsync(argv, { from: "user" });

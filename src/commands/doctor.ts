@@ -1,6 +1,5 @@
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync } from "node:fs";
 import path from "node:path";
-import { parse as parseYaml } from "yaml";
 import { readInstallationManifest } from "../fs/install-manifest.js";
 import { hashFile } from "../fs/hash.js";
 import { getVersion } from "./shared.js";
@@ -65,150 +64,10 @@ export function doctorCommand(): void {
     checks.push({ status: "PASS", message: "All user data directories present" });
   }
 
-  checkLegacyCoreManifest(projectRoot, checks);
-  checkLegacyProjectContextPath(projectRoot, checks);
-  checkLegacyConfigLanguage(projectRoot, checks);
-  checkLegacyRegistryTypeField(projectRoot, checks);
-
   report(checks);
 
   const errors = checks.filter((c) => c.status === "FAIL").length;
-  const warnings = checks.filter((c) => c.status === "WARN").length;
   if (errors > 0) process.exit(1);
-}
-
-export function checkLegacyCoreManifest(
-  projectRoot: string,
-  checks: Array<{ status: "PASS" | "WARN" | "FAIL"; message: string }>,
-): void {
-  const manifestPath = path.join(
-    projectRoot,
-    ".ai-agents/knowledge/core/manifest.yaml",
-  );
-  if (!existsSync(manifestPath)) return;
-
-  let parsed: Record<string, unknown>;
-  try {
-    parsed = parseYaml(readFileSync(manifestPath, "utf-8")) as Record<string, unknown>;
-  } catch {
-    checks.push({ status: "FAIL", message: "core/manifest.yaml is not valid YAML" });
-    return;
-  }
-
-  const issues: string[] = [];
-  if (parsed.type === "core") issues.push("type: core (should be 'shared')");
-  if ("token_estimate" in parsed) issues.push("legacy field token_estimate");
-  if ("loading_strategy" in parsed) issues.push("legacy field loading_strategy");
-
-  const filesArr = Array.isArray(parsed.files) ? parsed.files : [];
-  const missingOrigin = filesArr.some(
-    (f) => typeof f === "object" && f !== null && !("origin" in f),
-  );
-  if (missingOrigin) issues.push("files[] entries missing origin");
-
-  if (issues.length > 0) {
-    checks.push({
-      status: "WARN",
-      message: `Legacy core/manifest.yaml: ${issues.join("; ")}. Run \`mvtt update --migrate-manifests\`.`,
-    });
-  }
-}
-
-export function checkLegacyProjectContextPath(
-  projectRoot: string,
-  checks: Array<{ status: "PASS" | "WARN" | "FAIL"; message: string }>,
-): void {
-  const oldPath = path.join(projectRoot, ".ai-agents/workspace/project-context.md");
-  if (!existsSync(oldPath)) return;
-  checks.push({
-    status: "WARN",
-    message:
-      "workspace/project-context.md exists at legacy path. Run `mvtt update --migrate-paths` to relocate to knowledge/project/_generated/.",
-  });
-}
-
-export function checkLegacyConfigLanguage(
-  projectRoot: string,
-  checks: Array<{ status: "PASS" | "WARN" | "FAIL"; message: string }>,
-): void {
-  const configPath = path.join(projectRoot, ".ai-agents/config.yaml");
-  if (!existsSync(configPath)) return;
-
-  let parsed: { preferences?: Record<string, unknown> };
-  try {
-    parsed = parseYaml(readFileSync(configPath, "utf-8")) as {
-      preferences?: Record<string, unknown>;
-    };
-  } catch {
-    checks.push({ status: "FAIL", message: "config.yaml is not valid YAML" });
-    return;
-  }
-
-  const prefs = parsed.preferences ?? {};
-  const hasLegacy = typeof prefs.language === "string";
-  const hasInteraction = typeof prefs.interaction_language === "string";
-
-  if (hasLegacy && !hasInteraction) {
-    checks.push({
-      status: "WARN",
-      message:
-        "config.yaml uses legacy `language` field. Run `mvtt update --migrate-config` to split into interaction_language + document_output_language.",
-    });
-  }
-}
-
-export type DoctorCheck = { status: "PASS" | "WARN" | "FAIL"; message: string };
-
-export function detectLegacyArtifacts(projectRoot: string): DoctorCheck[] {
-  const checks: DoctorCheck[] = [];
-  checkLegacyCoreManifest(projectRoot, checks);
-  checkLegacyProjectContextPath(projectRoot, checks);
-  checkLegacyConfigLanguage(projectRoot, checks);
-  checkLegacyRegistryTypeField(projectRoot, checks);
-  return checks.filter((c) => c.status !== "PASS");
-}
-
-export function checkLegacyRegistryTypeField(
-  projectRoot: string,
-  checks: Array<{ status: "PASS" | "WARN" | "FAIL"; message: string }>,
-): void {
-  const registryPath = path.join(projectRoot, ".ai-agents/registry.yaml");
-  if (!existsSync(registryPath)) return;
-
-  let parsed: Record<string, unknown>;
-  try {
-    parsed = parseYaml(readFileSync(registryPath, "utf-8")) as Record<string, unknown>;
-  } catch {
-    checks.push({ status: "FAIL", message: "registry.yaml is not valid YAML" });
-    return;
-  }
-
-  let count = 0;
-  const sharedKnowledge = (parsed.knowledge as { shared?: unknown[] } | undefined)?.shared;
-  if (Array.isArray(sharedKnowledge)) {
-    count += sharedKnowledge.filter(
-      (e) => e && typeof e === "object" && "type" in (e as Record<string, unknown>),
-    ).length;
-  }
-
-  const skills = parsed.skills as Record<string, unknown> | undefined;
-  if (skills && typeof skills === "object") {
-    for (const skill of Object.values(skills)) {
-      if (!skill || typeof skill !== "object") continue;
-      const skillKnowledge = (skill as { knowledge?: unknown[] }).knowledge;
-      if (!Array.isArray(skillKnowledge)) continue;
-      count += skillKnowledge.filter(
-        (e) => e && typeof e === "object" && "type" in (e as Record<string, unknown>),
-      ).length;
-    }
-  }
-
-  if (count > 0) {
-    checks.push({
-      status: "WARN",
-      message: `registry.yaml has ${count} legacy \`type\` field(s) on knowledge entries. Run \`mvtt update --migrate-registry\` to remove.`,
-    });
-  }
 }
 
 function report(checks: Array<{ status: "PASS" | "WARN" | "FAIL"; message: string }>): void {

@@ -8,16 +8,11 @@ import {
   writeInstallationManifest,
 } from "../fs/install-manifest.js";
 import { getPackageRoot, getVersion } from "./shared.js";
-import { detectLegacyArtifacts } from "./doctor.js";
 import { color } from "../util/color.js";
-
-export interface InstallOptions {
-  pattern?: string;
-}
 
 type Language = "en-US" | "zh-CN";
 
-export async function installCommand(options: InstallOptions = {}): Promise<void> {
+export async function installCommand(): Promise<void> {
   const projectRoot = process.cwd();
   const packageRoot = getPackageRoot();
   const version = getVersion();
@@ -30,7 +25,6 @@ export async function installCommand(options: InstallOptions = {}): Promise<void
     process.exit(1);
   }
 
-  const pattern = options.pattern ?? null;
   const interactionLanguage = await selectLanguage("interaction");
   const documentLanguage = await selectLanguage("document", interactionLanguage);
 
@@ -44,10 +38,6 @@ export async function installCommand(options: InstallOptions = {}): Promise<void
 
   const configPath = path.resolve(projectRoot, ".ai-agents/config.yaml");
   let config = readFileSync(configPath, "utf-8");
-  if (pattern) {
-    config = config.replace(/active:\s*""/, `active: "${pattern}"`);
-    console.log(`Pattern set: ${pattern}`);
-  }
   config = config.replace(
     /interaction_language:\s*en-US/,
     `interaction_language: ${interactionLanguage}`,
@@ -58,7 +48,7 @@ export async function installCommand(options: InstallOptions = {}): Promise<void
   );
   writeFileSync(configPath, config, "utf-8");
 
-  writeInstallationManifest(projectRoot, version, pattern, materialized, null);
+  writeInstallationManifest(projectRoot, version, materialized, null);
 
   const generatedCount = materialized.filter((f) => f.category === "generated").length;
   const createOnceCount = materialized.filter((f) => f.category === "create_once").length;
@@ -71,14 +61,6 @@ export async function installCommand(options: InstallOptions = {}): Promise<void
   console.log(`  Manifest: ${color.gray(path.relative(projectRoot, manifestPath(projectRoot)))}`);
   console.log(`\n${color.bold("Next steps:")}`);
   console.log(`  Run ${color.cyan("/mvt-init")} in Claude Code to initialize the project`);
-
-  const legacy = detectLegacyArtifacts(projectRoot);
-  if (legacy.length > 0) {
-    console.log(
-      `\n${color.yellow("Legacy artifacts detected:")} ${legacy.length} item(s).`,
-    );
-    console.log(`  Run ${color.cyan("mvtt doctor")} for details and migration commands.`);
-  }
 }
 
 async function selectLanguage(

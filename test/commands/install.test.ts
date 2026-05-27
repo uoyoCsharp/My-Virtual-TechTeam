@@ -82,7 +82,7 @@ describe("install (via materialize + manifest)", () => {
       packageRoot: PACKAGE_ROOT,
       projectRoot: tmpDir,
     });
-    writeInstallationManifest(tmpDir, "2.0.0", null, materialized, null);
+    writeInstallationManifest(tmpDir, "2.0.0", materialized, null);
     const manifest = readInstallationManifest(tmpDir);
     expect(manifest).not.toBeNull();
     expect(manifest!.mvtt_version).toBe("2.0.0");
@@ -93,12 +93,10 @@ describe("install (via materialize + manifest)", () => {
     const originalCwd = process.cwd();
     process.chdir(tmpDir);
     try {
-      await installCommand({ pattern: "ddd" });
+      await installCommand();
       const config = readFileSync(path.join(tmpDir, ".ai-agents/config.yaml"), "utf-8");
       expect(config).toMatch(/interaction_language:\s*en-US/);
       expect(config).toMatch(/document_output_language:\s*en-US/);
-      const manifest = readInstallationManifest(tmpDir);
-      expect(manifest?.pattern).toBe("ddd");
     } finally {
       process.chdir(originalCwd);
     }
