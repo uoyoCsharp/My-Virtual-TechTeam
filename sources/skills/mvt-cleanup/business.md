@@ -23,7 +23,7 @@
   |--------|------|-----------------|
   | `recent_changes[]` entry with `status: completed` AND any task in plan is older than the active change's start | Summarize: collapse multi-file artifacts into a single `summary.md`, keep the plan.yaml verbatim, archive the rest under `artifacts/{id}/_archive/` |
   | Change-id directory marked `unindexed` | List for user review (do NOT auto-archive -- could be in-flight work the user just hasn't registered) |
-  | `skill_history` entries beyond the most recent 10 | Collapse into a single summary entry inside session.yaml (rule from Cleanup Rules table) |
+  | `skill_history` entries beyond the most recent N (from `config.yaml > preferences.history_limits.skill_history`, default 10) | Collapse into a single summary entry inside session.yaml (rule from Cleanup Rules table) |
   | Directory `knowledge/patterns/` exists | Flag for deletion (legacy pattern data; no replacement) |
   | Empty change-id directories (zero files inside) | Propose deletion of the directory itself |
 
@@ -54,7 +54,7 @@
   1. **Summarize action**: read the full set of files in the change-id directory; produce a `summary.md` with: title, change-id, status, key decisions (list each ADR/decision title), final outcomes, list of original files. Then move originals to `_archive/`.
   2. **Archive action**: move files into `_archive/` under the same change-id directory, preserving relative paths.
   3. **Delete action**: remove only the items explicitly marked for deletion in the confirmed plan; never recurse beyond what was listed.
-  4. **Stale skill_history collapse**: rewrite `session.yaml`'s `skill_history` keeping the most recent 10 detailed entries plus one rolled-up entry summarizing the older ones (count + earliest/latest date).
+  4. **Stale skill_history collapse**: rewrite `session.yaml`'s `skill_history` keeping the most recent N detailed entries (N from `config.yaml > preferences.history_limits.skill_history`, default 10) plus one rolled-up entry summarizing the older ones (count + earliest/latest date).
   5. All file mutations atomic where possible (write-temp + rename, copy-then-delete for moves).
   6. If any single action fails, STOP further actions; report what completed, what failed, and leave a recoverable state (do not partially overwrite a file with truncated content).
 

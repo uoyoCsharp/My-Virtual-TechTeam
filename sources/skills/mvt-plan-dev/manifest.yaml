@@ -72,18 +72,19 @@ sections:
     content: |
       ### Plan-Dev Specific State Updates
 
-      In addition to the mandatory updates above, this skill MUST update:
+      In addition to the mandatory session update above, this skill MUST also run:
 
-      - `active_change.plan_path`: Set to `".ai-agents/workspace/artifacts/{active_change.id}/plan.yaml"`
-      - `active_change.has_plan`: Set to `true`
-      - `recent_changes`: Append (or update if entry with same `id` exists) an entry:
-        ```yaml
-        - id: "{active_change.id}"
-          title: "{active_change.title}"
-          plan_path: ".ai-agents/workspace/artifacts/{active_change.id}/plan.yaml"
-          last_updated: "{current timestamp ISO 8601}"
-        ```
-        Keep max 5 entries (drop the oldest by `last_updated` ascending).
+      ```bash
+      node .ai-agents/scripts/session-update.js \
+        --skill mvt-plan-dev \
+        --summary "<one-line summary>" \
+        --new-change "{active_change.title}" \
+        --change-id {active_change.id} \
+        --update-recent-change \
+        --set-plan-path ".ai-agents/workspace/artifacts/{active_change.id}/plan.yaml"
+      ```
+
+      This sets `active_change.plan_path`, `active_change.has_plan`, and updates `recent_changes` — all handled by the script.
 
   - type: shared
     source: sections/footer-next-steps.md

@@ -148,10 +148,11 @@ describe("assembler", () => {
       );
     });
 
-    it("session-update section requires change_id on skill_history entries", () => {
+    it("session-update section uses script call", () => {
       const output = buildSkill("mvt-implement");
-      expect(output).toContain("change_id:");
-      expect(output).toContain("Do NOT modify `recent_changes`");
+      expect(output).toContain("session-update.js");
+      expect(output).toContain("--skill <skill_command_name>");
+      expect(output).toContain("Argument values");
     });
   });
 

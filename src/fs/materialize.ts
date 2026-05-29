@@ -136,6 +136,11 @@ export function materializeProject(options: MaterializeOptions): MaterializedFil
     category: "generated",
   });
 
+  // Copy bundled scripts from dist/scripts/ (bundled by esbuild, zero external deps)
+  const scriptsSrc = path.resolve(packageRoot, "dist/scripts");
+  const scriptsDest = path.resolve(projectRoot, ".ai-agents/scripts");
+  copyRecursive(scriptsSrc, scriptsDest, materialized, projectRoot);
+
   const defaults: Array<[string, string]> = [
     [
       path.resolve(sourcesDir, "defaults/config.yaml"),

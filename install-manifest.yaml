@@ -11,6 +11,8 @@ generated:
     source: "copy:sources/knowledge/core/_framework/"
   - pattern: ".ai-agents/registry.yaml"
     source: "copy:registry.yaml"
+  - pattern: ".ai-agents/scripts/session-update.js"
+    source: "bundle:sources/scripts/session-update.js"
 
 create_once:
   - path: ".ai-agents/config.yaml"

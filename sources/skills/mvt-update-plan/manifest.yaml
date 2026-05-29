@@ -105,13 +105,16 @@ sections:
     content: |
       ### Update-Plan Specific State Updates
 
-      In addition to the mandatory updates above, this skill MUST refresh `recent_changes` for the active change:
+      In addition to the mandatory session update above, this skill MUST also run:
 
-      - Find the entry where `id == active_change.id`. If absent, append one (this should be rare; happens when the plan was created out-of-band).
-      - Set `last_updated` to the current ISO 8601 timestamp.
-      - Trim to max 5 entries (drop the oldest by `last_updated` ascending).
+      ```bash
+      node .ai-agents/scripts/session-update.js \
+        --skill mvt-update-plan \
+        --summary "<one-line summary>" \
+        --update-recent-change
+      ```
 
-      Do NOT modify `active_change.has_plan` or `active_change.plan_path` here -- those are owned by `/mvt-plan-dev`.
+      This refreshes the `recent_changes` entry for the active change (upsert + truncate). The script handles the limit from config.yaml; do NOT hardcode a max value.
 
   - type: shared
     source: sections/footer-next-steps.md
