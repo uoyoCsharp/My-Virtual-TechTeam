@@ -9,7 +9,7 @@ This skill is read-only and does NOT modify `.ai-agents/workspace/session.yaml`.
 After completing the skill's main task, run the session update script **exactly once** with the following arguments:
 
 ```bash
-node .ai-agents/scripts/session-update.js --skill <skill_command_name> --summary "<concise one-line summary>"{{#update_active_change}} --new-change "<active_change.title>" --change-id <active_change.id>{{/update_active_change}}{{#set_plan_path}} --set-plan-path ".ai-agents/workspace/artifacts/{active_change.id}/plan.yaml"{{/set_plan_path}}{{#update_change}} --update-change{{/update_change}}{{#close_change}} --close-change{{/close_change}}{{#set_change_status}} --set-change-status <status>{{/set_change_status}}{{#no_change}} --no-change{{/no_change}}{{#set_synced}} --set-synced{{/set_synced}}{{#truncate_history}} --truncate-history <count>{{/truncate_history}}{{#update_initialized_at}} --set-initialized{{/update_initialized_at}}
+node .ai-agents/scripts/session-update.cjs --skill <skill_command_name> --summary "<concise one-line summary>"{{#update_active_change}} --new-change "<active_change.title>" --change-id <active_change.id>{{/update_active_change}}{{#set_plan_path}} --set-plan-path ".ai-agents/workspace/artifacts/{active_change.id}/plan.yaml"{{/set_plan_path}}{{#update_change}} --update-change{{/update_change}}{{#close_change}} --close-change{{/close_change}}{{#set_change_status}} --set-change-status <status>{{/set_change_status}}{{#no_change}} --no-change{{/no_change}}{{#set_synced}} --set-synced{{/set_synced}}{{#truncate_history}} --truncate-history <count>{{/truncate_history}}{{#update_initialized_at}} --set-initialized{{/update_initialized_at}}
 
 ```
 

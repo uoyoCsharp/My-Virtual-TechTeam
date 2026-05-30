@@ -8,10 +8,10 @@
  *
  * NOTE: This source file uses `import from "yaml"`. During the build
  * pipeline, esbuild bundles it into a zero-dependency single file that
- * gets deployed to .ai-agents/scripts/session-update.js.
+ * gets deployed to .ai-agents/scripts/session-update.cjs.
  *
  * Usage:
- *   node .ai-agents/scripts/session-update.js \
+ *   node .ai-agents/scripts/session-update.cjs \
  *     --skill <name> \
  *     --summary <text> \
  *     [--change-id <id>] \

@@ -64,6 +64,8 @@ sections:
 
   - type: shared
     source: sections/session-update.md
+    params:
+      read_only: true
 
   - type: shared
     source: sections/footer-next-steps.md

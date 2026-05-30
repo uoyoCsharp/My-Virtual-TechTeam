@@ -149,7 +149,7 @@ describe("assembler", () => {
 
     it("session-update section uses script call", () => {
       const output = buildSkill("mvt-implement");
-      expect(output).toContain("session-update.js");
+      expect(output).toContain("session-update.cjs");
       expect(output).toContain("--skill <skill_command_name>");
       expect(output).toContain("Argument values");
     });
