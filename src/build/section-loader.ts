@@ -89,6 +89,7 @@ export function applyParams(
   result = expandBlocks(result, params);
   result = expandInverted(result, params);
   result = replaceVars(result, params);
+  result = result.replace(/\n{3,}/g, "\n\n");
   return result;
 }
 

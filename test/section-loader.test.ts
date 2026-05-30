@@ -215,6 +215,28 @@ Group {{name}}:
     expect(result).not.toContain("{{#alternatives}}");
   });
 
+  it("collapses consecutive blank lines left by removed blocks", () => {
+    const template = `Table end
+| row |
+{{#optionA}}
+| optA |
+{{/optionA}}
+{{#optionB}}
+| optB |
+{{/optionB}}
+{{^optionA}}
+Inverted block
+{{/optionA}}
+{{#optionC}}
+| optC |
+{{/optionC}}
+
+### Next heading`;
+    const result = applyParams(template, {});
+    expect(result).not.toMatch(/\n{3,}/);
+    expect(result).toContain("| row |\nInverted block\n\n### Next heading");
+  });
+
   it("preserves single-brace placeholders meant for runtime substitution", () => {
     const template = `{{#conditions}}
 - When \`{{condition}}\`: Primary -> /{primary} -- {primary_desc}
