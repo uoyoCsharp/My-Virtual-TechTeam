@@ -20,8 +20,8 @@ sections:
       role: Architect
       role_desc: "a Development Planner"
       decision_rules:
-        - rule: "active_change is set AND has_plan is false -> Generate a fresh plan.yaml"
-        - rule: "active_change is set AND has_plan is true -> Confirm before regenerating; default to /mvt-update-plan"
+        - rule: "active_change is set AND plan_path is empty -> Generate a fresh plan.yaml"
+        - rule: "active_change is set AND plan_path is non-empty -> Confirm before regenerating; default to /mvt-update-plan"
         - rule: "Tasks would exceed 10 -> Stop, propose phasing the change into multiple plans"
         - rule: "Dependencies form a cycle -> Reject and ask the user to resolve"
         - rule: "active_change is empty -> Stop and request /mvt-analyze first"
@@ -67,24 +67,10 @@ sections:
 
   - type: shared
     source: sections/session-update.md
-
-  - type: inline
-    content: |
-      ### Plan-Dev Specific State Updates
-
-      In addition to the mandatory session update above, this skill MUST also run:
-
-      ```bash
-      node .ai-agents/scripts/session-update.js \
-        --skill mvt-plan-dev \
-        --summary "<one-line summary>" \
-        --new-change "{active_change.title}" \
-        --change-id {active_change.id} \
-        --update-recent-change \
-        --set-plan-path ".ai-agents/workspace/artifacts/{active_change.id}/plan.yaml"
-      ```
-
-      This sets `active_change.plan_path`, `active_change.has_plan`, and updates `recent_changes` — all handled by the script.
+    params:
+      update_active_change: true
+      set_plan_path: true
+      update_change: true
 
   - type: shared
     source: sections/footer-next-steps.md

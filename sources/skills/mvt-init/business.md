@@ -126,7 +126,7 @@ For each target file, check if it already exists:
 After writing all files, validate:
 - `project-context.yaml` is valid YAML with `projects[]` containing at least one entry
 - Each project entry has required fields: `name`, `path`, `type`, `tech_stack.primary_language`
-- `session.yaml` is structurally intact and contains: `session`, `active_change` (with `plan_path` / `has_plan`), `recent_changes` (array), `skill_history`, `recent_actions`
+- `session.yaml` is structurally intact and contains: `session` (with `initialized_at`, `last_synced_at`), `active_change` (with `plan_path`, no `has_plan`), `changes` (array), `history`
 
 If any validation fails → report the specific error and offer to retry or skip.
 
@@ -135,7 +135,7 @@ If any validation fails → report the specific error and offer to retry or skip
 When `--refresh` is specified:
 
 1. **Preserve** the following from existing files:
-   - `session.yaml` > `skill_history` and `recent_actions`
+   - `session.yaml` > `history`
    - `project-context.yaml` > any user-added custom fields (fields not in the standard schema)
    - `config.yaml` > `preferences` section
 

@@ -56,8 +56,8 @@ If the selected next task is currently `pending` -> promote it to `in_progress` 
 
 Apply the standard State Update rules (see shared section above) AND the update-plan-specific updates:
 
-- Refresh the matching entry in `recent_changes[]`: `last_updated` -> current ISO 8601 timestamp.
-- Do NOT touch `active_change.has_plan` / `active_change.plan_path`.
+- Refresh the matching entry in `changes[]`: `updated_at` -> current ISO 8601 timestamp.
+- Do NOT touch `active_change.plan_path`.
 
 ### Step 7: Output
 

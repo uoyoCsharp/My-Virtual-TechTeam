@@ -155,7 +155,7 @@ Tell the user the iteration loop:
 | Case | Handling |
 |------|----------|
 | Skill name collides with an existing registry entry | STOP at Step 3; ask user to rename; do not generate any file |
-| User wants the skill to mutate `session.yaml` fields beyond `skill_history` | Surface that ownership rules forbid this (e.g., `recent_changes` is owned by `/mvt-plan-dev`/`/mvt-update-plan`); recommend redesign |
+| User wants the skill to mutate `session.yaml` fields beyond `history` | Surface that ownership rules forbid this (e.g., `changes` is owned by `/mvt-plan-dev`/`/mvt-update-plan`); recommend redesign |
 | Output template is requested but the skill is conversation-only (no persisted file) | Refuse to create a template; explain that templates are for document structure, not conversation replies |
 | User asks to skip the registry registration step | Refuse; an unregistered skill is invisible to `/mvt-help`, `/mvt-status`, and `/mvt-resume`. Registration is non-negotiable |
 | Skill duplicates an existing skill's responsibility | Surface the overlap (cite the existing skill's description); propose merging or sub-classing as a variant rather than creating a duplicate |

@@ -17,8 +17,13 @@
  *     [--change-id <id>] \
  *     [--new-change <title>] \
  *     [--set-initialized] \
- *     [--update-recent-change] \
- *     [--set-plan-path <path>]
+ *     [--update-change] \
+ *     [--set-plan-path <path>] \
+ *     [--close-change] \
+ *     [--set-change-status <status>] \
+ *     [--no-change] \
+ *     [--set-synced] \
+ *     [--truncate-history <n>]
  *
  * Output:
  *   Success (exit 0): {"ok":true}
@@ -47,15 +52,13 @@ const ERRORS = {
 
 // ── Defaults ────────────────────────────────────────────────────────────────
 const DEFAULT_LIMITS = {
-  skill_history: 10,
-  recent_actions: 5,
-  recent_changes: 5,
+  history: 20,
+  changes: 20,
 };
 
 const LIMIT_RANGES = {
-  skill_history: { min: 1, max: 50 },
-  recent_actions: { min: 1, max: 100 },
-  recent_changes: { min: 1, max: 100 },
+  history: { min: 1, max: 100 },
+  changes: { min: 1, max: 100 },
 };
 
 // ── Project Root Resolution ─────────────────────────────────────────────────
@@ -162,42 +165,56 @@ function main() {
 
   // ── Mandatory updates ──────────────────────────────────────────────────
 
-  // last_command
-  session.session = session.session || {};
-  session.session.last_command = `/${args.skill}`;
-
-  // skill_history append + truncate
-  session.skill_history = session.skill_history || [];
-  // Use --change-id if provided, otherwise fall back to existing active_change.id
-  const activeChangeId = args["change-id"] || session.active_change?.id || "";
-  session.skill_history.push({
-    command: `/${args.skill}`,
+  // history append + truncate
+  session.history = session.history || [];
+  // Use --no-change to force empty change_id, otherwise fall back to active_change.id
+  const activeChangeId = args["no-change"] ? "" : (args["change-id"] || session.active_change?.id || "");
+  session.history.push({
+    skill: `/${args.skill}`,
     completed_at: now,
     summary: args.summary,
     change_id: activeChangeId,
   });
-  if (session.skill_history.length > limits.skill_history) {
-    session.skill_history = session.skill_history.slice(-limits.skill_history);
-  }
-
-  // recent_actions append + truncate
-  session.recent_actions = session.recent_actions || [];
-  const timestamp = now.replace("T", " ").slice(0, 16);
-  session.recent_actions.push(
-    `[${timestamp}] /${args.skill}: ${args.summary}`
-  );
-  if (session.recent_actions.length > limits.recent_actions) {
-    session.recent_actions = session.recent_actions.slice(-limits.recent_actions);
+  if (session.history.length > limits.history) {
+    session.history = session.history.slice(-limits.history);
   }
 
   // ── Conditional updates ────────────────────────────────────────────────
 
-  // --new-change: set active_change id/title/created_at
+  // --new-change: auto-snapshot old active_change, then set new one
   if (args["new-change"]) {
     session.active_change = session.active_change || {};
+
+    // Auto-snapshot: if there's an existing active_change with an id, upsert into changes[]
+    if (session.active_change.id) {
+      session.changes = session.changes || [];
+      const existingIdx = session.changes.findIndex(
+        (e) => e.id === session.active_change.id
+      );
+      const snapshotEntry = {
+        id: session.active_change.id,
+        title: session.active_change.title || "",
+        plan_path: session.active_change.plan_path || "",
+        status: "active",
+        updated_at: now,
+      };
+      if (existingIdx >= 0) {
+        session.changes[existingIdx] = snapshotEntry;
+      } else {
+        session.changes.push(snapshotEntry);
+      }
+      // Sort + truncate changes
+      session.changes.sort((a, b) => a.updated_at.localeCompare(b.updated_at));
+      if (session.changes.length > limits.changes) {
+        session.changes = session.changes.slice(-limits.changes);
+      }
+    }
+
+    // Now set new active_change
     session.active_change.id = args["change-id"];
     session.active_change.title = args["new-change"];
     session.active_change.created_at = now;
+    session.active_change.plan_path = "";
   }
 
   // --set-initialized
@@ -208,38 +225,108 @@ function main() {
     }
   }
 
-  // --update-recent-change: upsert active_change into recent_changes + truncate
-  if (args["update-recent-change"]) {
-    session.recent_changes = session.recent_changes || [];
+  // --set-synced: set session.last_synced_at to current time
+  if (args["set-synced"]) {
+    session.session = session.session || {};
+    session.session.last_synced_at = now;
+  }
+
+  // --set-plan-path: set active_change.plan_path
+  // NOTE: Must execute BEFORE --update-change so that
+  // the upserted changes entry contains the correct plan_path.
+  if (args["set-plan-path"]) {
+    session.active_change = session.active_change || {};
+    session.active_change.plan_path = args["set-plan-path"];
+  }
+
+  // --update-change: upsert active_change into changes[] + truncate
+  if (args["update-change"]) {
+    session.changes = session.changes || [];
     const ac = session.active_change || {};
-    const existingIdx = session.recent_changes.findIndex(
+    const existingIdx = session.changes.findIndex(
       (e) => e.id === ac.id
     );
     const entry = {
       id: ac.id || "",
       title: ac.title || "",
       plan_path: ac.plan_path || "",
-      last_updated: now,
+      status: "active",
+      updated_at: now,
     };
     if (existingIdx >= 0) {
-      session.recent_changes[existingIdx] = entry;
+      session.changes[existingIdx] = entry;
     } else {
-      session.recent_changes.push(entry);
+      session.changes.push(entry);
     }
-    // Sort by last_updated ascending, then truncate to limit
-    session.recent_changes.sort(
-      (a, b) => a.last_updated.localeCompare(b.last_updated)
+    // Sort by updated_at ascending, then truncate to limit
+    session.changes.sort(
+      (a, b) => a.updated_at.localeCompare(b.updated_at)
     );
-    if (session.recent_changes.length > limits.recent_changes) {
-      session.recent_changes = session.recent_changes.slice(-limits.recent_changes);
+    if (session.changes.length > limits.changes) {
+      session.changes = session.changes.slice(-limits.changes);
     }
   }
 
-  // --set-plan-path: set active_change.plan_path and has_plan
-  if (args["set-plan-path"]) {
-    session.active_change = session.active_change || {};
-    session.active_change.plan_path = args["set-plan-path"];
-    session.active_change.has_plan = true;
+  // --close-change: snapshot active_change to changes[] with status:done, clear active_change
+  if (args["close-change"]) {
+    session.changes = session.changes || [];
+    const ac = session.active_change || {};
+    if (ac.id) {
+      const existingIdx = session.changes.findIndex(
+        (e) => e.id === ac.id
+      );
+      const entry = {
+        id: ac.id,
+        title: ac.title || "",
+        plan_path: ac.plan_path || "",
+        status: "done",
+        updated_at: now,
+      };
+      if (existingIdx >= 0) {
+        session.changes[existingIdx] = entry;
+      } else {
+        session.changes.push(entry);
+      }
+      session.changes.sort(
+        (a, b) => a.updated_at.localeCompare(b.updated_at)
+      );
+      if (session.changes.length > limits.changes) {
+        session.changes = session.changes.slice(-limits.changes);
+      }
+    }
+    // Clear active_change
+    session.active_change = {
+      id: "",
+      title: "",
+      created_at: "",
+      plan_path: "",
+    };
+  }
+
+  // --set-change-status: set status on changes[] entry matching active_change.id
+  if (args["set-change-status"]) {
+    session.changes = session.changes || [];
+    const ac = session.active_change || {};
+    if (ac.id) {
+      const existingIdx = session.changes.findIndex(
+        (e) => e.id === ac.id
+      );
+      if (existingIdx >= 0) {
+        session.changes[existingIdx].status = args["set-change-status"];
+        session.changes[existingIdx].updated_at = now;
+      }
+    }
+  }
+
+  // --truncate-history: keep last N history entries, discard older
+  if (args["truncate-history"]) {
+    const n = Number(args["truncate-history"]);
+    if (Number.isInteger(n) && n > 0) {
+      session.history = session.history || [];
+      if (session.history.length > n) {
+        session.history = session.history.slice(-n);
+      }
+    }
   }
 
   // ── Write back atomically ─────────────────────────────────────────────

@@ -3,9 +3,9 @@
 ### Step 1: Identify Completed Changes
 - **What**: produce a candidate list of change-ids whose artifacts will be aggregated.
 - **How**:
-  1. Read `session.yaml`. Collect `recent_changes[]` entries with `status: completed`.
+  1. Read `session.yaml`. Collect `changes[]` entries with `status: done`.
   2. For each candidate, verify `.ai-agents/workspace/artifacts/{change-id}/` exists AND contains at least one of `analysis.md` or `design.md`. Drop entries with only `plan.yaml`.
-  3. (Fallback) If `recent_changes[]` is empty, scan `.ai-agents/workspace/artifacts/*/` directly; offer those with `analysis.md` or `design.md`, marked `unindexed`.
+  3. (Fallback) If `changes[]` is empty, scan `.ai-agents/workspace/artifacts/*/` directly; offer those with `analysis.md` or `design.md`, marked `unindexed`.
   4. Exclude any change-id whose directory contains an `_archive/` subfolder (already archived).
   5. Exclude `active_change.id` (work in flight).
 
@@ -133,7 +133,7 @@ If user skips verification: proceed directly to Step 7 with Step 5 selections.
    - Verification flagged code-only entities -> "Run `/mvt-analyze-code` to capture missing entities."
 
 ### Step 9: (session update handled by shared section)
-- Refresh `session.last_synced_at` to current ISO timestamp.
+- The shared State Update section handles `session.last_synced_at` via `--set-synced`.
 
 ## Edge Cases & Errors
 

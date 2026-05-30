@@ -83,7 +83,7 @@ This skill measures only files the **user** can reduce or relocate. Framework-fi
 | `registry.yaml` references a knowledge id whose source path is empty / missing | Include in Step 5 recommendations; do NOT count missing files toward token totals |
 | `core/manifest.yaml` cannot be parsed | Treat the whole `core/` tree as in-scope (over-counts); add a note in the report |
 | Workspace has zero artifacts | Skip the artifacts category in Step 6; do not error |
-| Workspace exceeds the artifacts threshold AND the user just ran `/mvt-cleanup` (within last hour per `skill_history`) | Surface but downgrade to a one-line note ("recently cleaned -- remaining {N} tokens are likely active work") |
+| Workspace exceeds the artifacts threshold AND the user just ran `/mvt-cleanup` (within last hour per `history`) | Surface but downgrade to a one-line note ("recently cleaned -- remaining {N} tokens are likely active work") |
 | User passes a path argument | This skill ignores arguments; print a one-line note and run as normal (do not narrow scope to a single file -- that is `/mvt-status` territory) |
 | Token estimate disagrees with model's actual consumption | This is expected; the `chars/4` heuristic is an approximation. State this caveat in the Summary line |
 | Two skills declare the same knowledge id | Count the file once for storage but report it under both skills in the Per-Skill table; flag the duplication in Step 5 |

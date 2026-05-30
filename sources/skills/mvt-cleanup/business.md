@@ -11,7 +11,7 @@
   3. For each change-id directory, sum tokens and file count.
   4. Mark each change-id as `active | in-recent-changes | unindexed | legacy-pattern`:
      - `active` if it matches `session.active_change.id`.
-     - `in-recent-changes` if it appears in `session.recent_changes[]` (any status).
+     - `in-recent-changes` if it appears in `session.changes[]` (any status).
      - `unindexed` if neither condition holds and it sits under `artifacts/`.
      - `legacy-pattern` if the directory is `knowledge/patterns/` or matches other legacy markers.
 
@@ -21,9 +21,9 @@
 
   | Source | Rule | Proposed action |
   |--------|------|-----------------|
-  | `recent_changes[]` entry with `status: completed` AND any task in plan is older than the active change's start | Summarize: collapse multi-file artifacts into a single `summary.md`, keep the plan.yaml verbatim, archive the rest under `artifacts/{id}/_archive/` |
+  | `changes[]` entry with `status: done` AND any task in plan is older than the active change's start | Summarize: collapse multi-file artifacts into a single `summary.md`, keep the plan.yaml verbatim, archive the rest under `artifacts/{id}/_archive/` |
   | Change-id directory marked `unindexed` | List for user review (do NOT auto-archive -- could be in-flight work the user just hasn't registered) |
-  | `skill_history` entries beyond the most recent N (from `config.yaml > preferences.history_limits.skill_history`, default 10) | Collapse into a single summary entry inside session.yaml (rule from Cleanup Rules table) |
+  | `history` entries beyond the most recent N (from `config.yaml > preferences.history_limits.history`, default 20) | Truncate via `session-update.js --truncate-history <N>` |
   | Directory `knowledge/patterns/` exists | Flag for deletion (legacy pattern data; no replacement) |
   | Empty change-id directories (zero files inside) | Propose deletion of the directory itself |
 
@@ -54,7 +54,7 @@
   1. **Summarize action**: read the full set of files in the change-id directory; produce a `summary.md` with: title, change-id, status, key decisions (list each ADR/decision title), final outcomes, list of original files. Then move originals to `_archive/`.
   2. **Archive action**: move files into `_archive/` under the same change-id directory, preserving relative paths.
   3. **Delete action**: remove only the items explicitly marked for deletion in the confirmed plan; never recurse beyond what was listed.
-  4. **Stale skill_history collapse**: rewrite `session.yaml`'s `skill_history` keeping the most recent N detailed entries (N from `config.yaml > preferences.history_limits.skill_history`, default 10) plus one rolled-up entry summarizing the older ones (count + earliest/latest date).
+  4. **Stale history truncation**: call `session-update.js --truncate-history <N>` where N is from `config.yaml > preferences.history_limits.history` (default 20).
   5. All file mutations atomic where possible (write-temp + rename, copy-then-delete for moves).
   6. If any single action fails, STOP further actions; report what completed, what failed, and leave a recoverable state (do not partially overwrite a file with truncated content).
 
@@ -64,7 +64,6 @@
 - Recommend `/mvt-check-context` to validate the post-cleanup state if savings exceed ~5k tokens.
 
 ### Step 8: (session update handled by shared section)
-- This skill mutates `session.skill_history` directly in Step 6 (collapse). The standard `skill_history` append from the shared section still applies; the collapse runs BEFORE the append so the new entry is preserved at full detail.
 
 ## Edge Cases & Errors
 

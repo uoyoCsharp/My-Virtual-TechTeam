@@ -75,9 +75,8 @@ sections:
       | `preferences.output.no_emojis` | bool | `true` | Disable emojis in output |
       | `preferences.output.data_format` | enum | `yaml` | Data output format (yaml, json) |
       | `preferences.context_routing.relevance_threshold` | int | `70` | AI routing threshold for `/mvt-manage-context add` (0-100) |
-      | `preferences.history_limits.skill_history` | int | `10` | Max skill_history entries (1-50) |
-      | `preferences.history_limits.recent_actions` | int | `20` | Max recent_actions entries (1-20) |
-      | `preferences.history_limits.recent_changes` | int | `20` | Max recent_changes entries (1-20) |
+      | `preferences.history_limits.history` | int | `20` | Max history entries (1-100) |
+      | `preferences.history_limits.changes` | int | `20` | Max changes entries (1-100) |
 
       ### Knowledge Settings
 

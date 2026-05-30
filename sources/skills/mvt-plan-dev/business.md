@@ -10,7 +10,7 @@ If no analysis or design artifacts exist and the user provides no description, p
 
 ### Step 2: Detect Regeneration
 
-If `active_change.has_plan == true` AND `.ai-agents/workspace/artifacts/{active_change.id}/plan.yaml` already exists:
+If `active_change.plan_path is non-empty` AND `.ai-agents/workspace/artifacts/{active_change.id}/plan.yaml` already exists:
 
 - Read the existing plan.
 - Show a summary (task count, status counts, current_task).
@@ -67,8 +67,7 @@ If a previous `plan.yaml` exists and the user chose regeneration in Step 2, over
 Apply the standard State Update rules (see shared section above) AND the plan-dev-specific updates:
 
 - `active_change.plan_path` -> the new file path
-- `active_change.has_plan` -> `true`
-- `recent_changes[]` -> upsert an entry for this change (refresh `last_updated`)
+- `changes[]` -> upsert an entry for this change (refresh `updated_at`)
 
 ### Step 8: Output
 

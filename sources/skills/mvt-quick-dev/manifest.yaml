@@ -62,6 +62,8 @@ sections:
 
   - type: shared
     source: sections/session-update.md
+    params:
+      no_change: true
 
   - type: shared
     source: sections/footer-next-steps.md

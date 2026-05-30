@@ -33,11 +33,12 @@ function expandBlocks(
   template: string,
   params: Record<string, unknown>,
 ): string {
-  return template.replace(BLOCK_PATTERN, (_match, key: string, rawBody: string) => {
+  return template.replace(BLOCK_PATTERN, (match, key: string, rawBody: string) => {
     const val = params[key];
     if (val === undefined || val === null || val === false) return "";
     if (Array.isArray(val) && val.length === 0) return "";
     const body = rawBody.replace(/^\n/, "").replace(/\n$/, "");
+    const suffix = match.endsWith("\n") ? "\n" : "";
     if (Array.isArray(val)) {
       const items = val
         .map((item) => {
@@ -47,12 +48,12 @@ function expandBlocks(
           return applyParams(body, { ".": item }).trimEnd();
         })
         .join("\n");
-      return items + "\n";
+      return items + suffix;
     }
     if (typeof val === "object") {
-      return applyParams(body, val as Record<string, unknown>) + "\n";
+      return applyParams(body, val as Record<string, unknown>) + suffix;
     }
-    return applyParams(body, params) + "\n";
+    return applyParams(body, params) + suffix;
   });
 }
 
@@ -60,10 +61,11 @@ function expandInverted(
   template: string,
   params: Record<string, unknown>,
 ): string {
-  return template.replace(INVERTED_PATTERN, (_match, key: string, rawBody: string) => {
+  return template.replace(INVERTED_PATTERN, (match, key: string, rawBody: string) => {
     if (isTruthyNonEmpty(params[key])) return "";
     const body = rawBody.replace(/^\n/, "").replace(/\n$/, "");
-    return body + "\n";
+    const suffix = match.endsWith("\n") ? "\n" : "";
+    return applyParams(body, params) + suffix;
   });
 }
 
@@ -71,10 +73,11 @@ function expandConditionals(
   template: string,
   params: Record<string, unknown>,
 ): string {
-  return template.replace(COND_PATTERN, (_match, key: string, rawBody: string) => {
+  return template.replace(COND_PATTERN, (match, key: string, rawBody: string) => {
     if (!isTruthyNonEmpty(params[key])) return "";
     const body = rawBody.replace(/^\n/, "").replace(/\n$/, "");
-    return body + "\n";
+    const suffix = match.endsWith("\n") ? "\n" : "";
+    return body + suffix;
   });
 }
 

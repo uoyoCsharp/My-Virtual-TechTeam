@@ -3,11 +3,9 @@
 ### Step 1: Read Session State
 
 Extract from the already-loaded session context:
-- `active_change` -- the current change-id (if any), its phase, plan_path, has_plan
-- `recent_changes` -- list of changes with active plans
-- `skill_history` -- last 10 entries (skill name, timestamp, status, change_id)
-- `recent_actions` -- last 5 entries (what was done, when, outcome)
-- `last_command` and `last_skill` -- most recent invocation
+- `active_change` -- the current change-id (if any), plan_path
+- `changes` -- list of changes with active plans
+- `history` -- last 20 entries (skill name, timestamp, change_id)
 
 If session.yaml is missing or empty, jump to Step 6 with the "no session" branch.
 
@@ -15,7 +13,7 @@ If session.yaml is missing or empty, jump to Step 6 with the "no session" branch
 
 Scan for in-progress plans using two sources:
 
-1. **Index path**: For each entry in `recent_changes[]`, read its `plan_path` if the file exists.
+1. **Index path**: For each entry in `changes[]`, read its `plan_path` if the file exists.
 2. **Fallback scan**: Glob `.ai-agents/workspace/artifacts/*/plan.yaml`, read any files not already covered by (1).
 
 For each found plan.yaml, read and filter:
@@ -27,7 +25,7 @@ For each found plan.yaml, read and filter:
 
 | Candidates | Behavior |
 |------------|----------|
-| 0          | Skip to Step 2 — use legacy `active_change` / `skill_history` flow (no plan context). |
+| 0          | Skip to Step 2 — use legacy `active_change` / `history` flow (no plan context). |
 | 1          | Auto-select. Print: "Found one active plan: **{title}** ({progress}). Resuming." |
 | ≥2         | **Pause and prompt**. Display candidate table and wait for user input. |
 
@@ -36,9 +34,9 @@ For each found plan.yaml, read and filter:
 ```
 Found {N} active plans. Select which to resume:
 
-| # | change-id | title | progress | last_updated |
-|---|-----------|-------|----------|--------------|
-| 1 | {id}      | {t}   | {d}/{n}  | {relative}   |
+| # | change-id | title | progress | updated_at |
+|---|-----------|-------|----------|------------|
+| 1 | {id}      | {t}   | {d}/{n}  | {relative} |
 | ...
 
 Enter a number, a change-id, or "none" to skip plan context:
@@ -71,7 +69,7 @@ For each artifact, capture: file path, mtime, size (in tokens estimate = chars /
 
 Read the plan's `current_task`. The resume point = that task. Next-step recommendation = the task's `skill_hint` (or infer from task title if skill_hint is absent).
 
-Also filter `skill_history` to entries matching `change_id == selected_change_id` (entries with empty change_id are excluded from this filtered view).
+Also filter `history` to entries matching `change_id == selected_change_id` (entries with empty change_id are excluded from this filtered view).
 
 **Legacy path** (no plan):
 
@@ -79,9 +77,8 @@ Pick the **resume point** by precedence:
 
 | Condition | Resume point | Phase label |
 |-----------|--------------|-------------|
-| `active_change` is set with non-empty `phase` | `{active_change.phase}` | from session |
-| `active_change` is set without phase | inferred from last skill in history | inferred |
-| `skill_history[0]` exists | last skill | last skill |
+| `active_change` is set | inferred from last skill in history | inferred |
+| `history[0]` exists | last skill | last skill |
 | Nothing | `none` | new project |
 
 Map skill -> next-step recommendation:
@@ -120,9 +117,9 @@ And the **Current Task Detail** section:
 
 Render via the `resume-output.md` template. Sections to fill:
 
-1. **Active Task** -- name, change-id, phase, started_at (from active_change or selected plan)
+1. **Active Task** -- name, change-id, started_at (from active_change or selected plan)
 2. **Plan Progress** -- (only when plan exists) task table + counts + current task detail
-3. **Recent Skill History** -- last 5 entries from skill_history (filtered to selected change if applicable)
+3. **Recent Skill History** -- last 5 entries from history (filtered to selected change if applicable)
 4. **Recent Artifacts** -- the top 5 artifacts collected in Step 2 (path, mtime, size)
 5. **Resume Point** -- a one-paragraph natural-language summary of "where we are"
 6. **Recommended Next Step** -- the mapped next skill from Step 3, with justification
@@ -132,6 +129,5 @@ Render via the `resume-output.md` template. Sections to fill:
 - **No session**: report "No session found. Run `/mvt-init` to start a project."
 - **No active_change AND no history AND no plans**: report "No active task. Suggested entry points: `/mvt-init`, `/mvt-analyze`, `/mvt-status`."
 - **active_change set but referenced artifacts missing**: warn "Artifact directory `{path}` not found -- task state may be stale. Verify with `/mvt-status` or run `/mvt-cleanup`."
-- **Last skill ended in failure** (skill_history entry status=failed): surface the failure summary first, suggest retry of that skill rather than advancing.
 - **Plan exists but plan.yaml is invalid** (parse error or schema violation): warn "plan.yaml is corrupted or invalid. Run `/mvt-plan-dev` to regenerate, or `/mvt-status` to inspect."
 - **Stale task warning**: If plan's `current_task` has status `in_progress` but the plan's `updated_at` is more than 5 days old, append a notice: "Current task has been in_progress for {N} days without updates. Consider running `/mvt-update-plan` to refresh status."

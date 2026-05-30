@@ -46,7 +46,7 @@ sections:
 
       ### Current Status
       - **Project**: {name} ({initialized/not initialized})
-      - **Last Skill**: {last command from skill_history}
+      - **Last Skill**: {last command from history}
       - **Recommended Next**: `/mvt-{next}` -- {description}
 
       ### Workflow

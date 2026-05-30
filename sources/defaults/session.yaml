@@ -2,21 +2,23 @@
 
 session:
   initialized_at: ""
-  last_command: ""
+  last_synced_at: ""
 
 active_change:
   id: ""
   title: ""
   created_at: ""
   plan_path: ""
-  has_plan: false
 
-recent_changes: []
+changes: []
+  # - id: "chg-001"
+  #   title: "User authentication"
+  #   plan_path: ".ai-agents/workspace/artifacts/chg-001/plan.yaml"
+  #   status: "active"           # active | done | abandoned
+  #   updated_at: "2026-05-23T14:30:00"
 
-skill_history: []
-  # - command: "/mvt-analyze"
+history: []
+  # - skill: "/mvt-analyze"
   #   completed_at: "2026-05-23T14:30:00"
   #   summary: "Analyzed user authentication requirements"
   #   change_id: ""   # set when work belongs to an active change
-
-recent_actions: []

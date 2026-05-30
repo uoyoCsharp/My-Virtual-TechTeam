@@ -69,15 +69,19 @@ sections:
 
       | Category | Rule | Action |
       |----------|------|--------|
-      | Completed changes | Change with `status: completed` older than current task | Summarize -> archive |
+      | Completed changes | Change with `status: done` older than current task | Summarize -> archive |
       | Orphaned artifacts | Files in `artifacts/` not referenced by any active change | List for user review |
-      | Stale session data | Session history entries older than 5 phases ago | Summarize into single entry |
+      | Stale session data | History entries beyond configured limit | Truncate via script |
 
   - type: file
     source: ./business.md
 
   - type: shared
     source: sections/session-update.md
+    params:
+      close_change: true
+      set_change_status: true
+      truncate_history: true
 
   - type: shared
     source: sections/footer-next-steps.md

@@ -24,7 +24,7 @@ sections:
         - rule: "Task id missing AND only one task is in_progress -> Default to that task"
         - rule: "Target status would create an invalid current_task -> Recompute current_task automatically"
         - rule: "All tasks become done -> Set plan.status = done, current_task = null"
-        - rule: "active_change.has_plan is false -> Stop and suggest /mvt-plan-dev"
+        - rule: "active_change.plan_path is empty -> Stop and suggest /mvt-plan-dev"
 
       boundaries:
         - scope: "create new tasks or restructure the plan"
@@ -55,9 +55,9 @@ sections:
           level: "WARN"
           message: 'Session not initialized. Run `/mvt-init` first.'
         - order: "2"
-          field: "active_change.has_plan"
+          field: "active_change.plan_path"
           level: "BLOCK"
-          message: 'No active plan. Run `/mvt-plan-dev` to create one before updating.'
+          message: 'No active plan. Run `/mvt-plan-dev` to create one.'
 
   - type: inline
     content: |
@@ -100,21 +100,8 @@ sections:
 
   - type: shared
     source: sections/session-update.md
-
-  - type: inline
-    content: |
-      ### Update-Plan Specific State Updates
-
-      In addition to the mandatory session update above, this skill MUST also run:
-
-      ```bash
-      node .ai-agents/scripts/session-update.js \
-        --skill mvt-update-plan \
-        --summary "<one-line summary>" \
-        --update-recent-change
-      ```
-
-      This refreshes the `recent_changes` entry for the active change (upsert + truncate). The script handles the limit from config.yaml; do NOT hardcode a max value.
+    params:
+      update_change: true
 
   - type: shared
     source: sections/footer-next-steps.md

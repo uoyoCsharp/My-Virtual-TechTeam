@@ -73,10 +73,10 @@
 ### Step 8: Plan-Aware Progress Hint (if applicable)
 - If `plan.yaml` exists and a single `current_task` covers this implementation, suggest the user run `/mvt-update-plan <task-id> done` (or `blocked` with reason).
 - Do NOT modify `plan.yaml` directly from this skill; it is owned by `/mvt-update-plan`.
-- Do NOT modify `recent_changes` directly; it is owned by `/mvt-plan-dev` / `/mvt-update-plan`.
+- Do NOT modify `changes` directly; it is owned by `/mvt-plan-dev` / `/mvt-update-plan`.
 
 ### Step 9: (session update handled by shared section)
-- Standard `skill_history` entry must include `change_id`. All other state mutations are delegated.
+- Standard `history` entry must include `change_id`. All other state mutations are delegated.
 
 ## Edge Cases & Errors
 

@@ -13,7 +13,7 @@
   |-----------|---------------|
   | `session.yaml` missing or `initialized_at` empty | `/mvt-init` -- Initialize the project |
   | Initialized AND `project-context.md` does not exist | `/mvt-analyze-code` -- Analyze existing code |
-  | No requirements (no `analysis.md` for active change AND no completed `/mvt-analyze` in `skill_history`) | `/mvt-analyze` -- Analyze requirements |
+  | No requirements (no `analysis.md` for active change AND no completed `/mvt-analyze` in `history`) | `/mvt-analyze` -- Analyze requirements |
   | No requirements, but user describes a simple change directly | `/mvt-quick-dev` -- Implement a simple change quickly |
   | Requirements present, no `design.md` | `/mvt-design` -- Design architecture |
   | `design.md` exists, change is large (Change Tracking lists > 5 files OR ADR includes breaking change OR > 1 new module) | `/mvt-plan-dev` -- Decompose into tracked plan |
@@ -68,7 +68,7 @@ Color-code based on current progress: green (done), yellow (current/recommended)
 |------|----------|
 | `registry.yaml` missing | STOP at Step 1; recommend `mvtt install`; show no catalog |
 | `session.yaml` missing | Render catalog (Step 3) and diagram (Step 4) without the "current position" highlight; Step 2 recommends `/mvt-init` |
-| `recent_changes[]` references a `plan_path` that no longer exists | Ignore for help purposes; do not warn -- `/mvt-status` is the right place for that |
+| `changes[]` references a `plan_path` that no longer exists | Ignore for help purposes; do not warn -- `/mvt-status` is the right place for that |
 | User invokes `/mvt-help` while inside an active change with Critical review findings | Step 2's recommendation is `/mvt-fix`; surface this prominently above the catalog |
 | User asks about a custom skill (registry entry with `custom: true`) | Treat identically to built-ins; the only difference is showing `custom: true` in the metadata view |
 | Workflow diagram cannot be rendered (mermaid unsupported in environment) | Fall back to a textual flow: `init -> analyze-code -> analyze -> design -> [plan-dev] -> implement -> review -> test` |

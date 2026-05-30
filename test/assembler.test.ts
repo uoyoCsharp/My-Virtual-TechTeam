@@ -135,8 +135,7 @@ describe("assembler", () => {
     it("documents new session.yaml fields for plan support", () => {
       const output = buildSkill("mvt-init");
       expect(output).toContain("plan_path");
-      expect(output).toContain("has_plan");
-      expect(output).toContain("recent_changes");
+      expect(output).toContain("changes");
     });
   });
 
@@ -170,11 +169,10 @@ describe("assembler", () => {
       expect(output).not.toContain(".ai-agents/skills/_templates/plan-dev-output.md");
     });
 
-    it("declares plan-dev specific state updates for active_change and recent_changes", () => {
+    it("declares plan-dev specific state updates for active_change and changes", () => {
       const output = buildSkill("mvt-plan-dev");
       expect(output).toContain("active_change.plan_path");
-      expect(output).toContain("active_change.has_plan");
-      expect(output).toContain("recent_changes");
+      expect(output).toContain("changes[]");
     });
 
     it("enforces granularity constraint of 3-10 tasks", () => {
@@ -207,7 +205,7 @@ describe("assembler", () => {
 
     it("preflight blocks when no active plan exists", () => {
       const output = buildSkill("mvt-update-plan");
-      expect(output).toContain("active_change.has_plan");
+      expect(output).toContain("active_change.plan_path");
       expect(output).toContain("/mvt-plan-dev");
     });
 
@@ -217,10 +215,10 @@ describe("assembler", () => {
       expect(output).toContain("abort");
     });
 
-    it("refreshes recent_changes last_updated", () => {
+    it("refreshes changes updated_at", () => {
       const output = buildSkill("mvt-update-plan");
-      expect(output).toContain("recent_changes");
-      expect(output).toContain("last_updated");
+      expect(output).toContain("changes[]");
+      expect(output).toContain("updated_at");
     });
   });
 
@@ -270,7 +268,7 @@ describe("assembler", () => {
   });
 
   describe("mvt-status (Phase 4 multi-change dashboard)", () => {
-    it("discovers all plans from recent_changes and fallback glob", () => {
+    it("discovers all plans from changes and fallback glob", () => {
       const output = buildSkill("mvt-status");
       expect(output).toContain("### Step 3: Discover All Plans");
       expect(output).toContain("artifacts/*/plan.yaml");

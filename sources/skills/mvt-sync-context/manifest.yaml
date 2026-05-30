@@ -78,6 +78,8 @@ sections:
 
   - type: shared
     source: sections/session-update.md
+    params:
+      set_synced: true
 
   - type: shared
     source: sections/footer-next-steps.md
