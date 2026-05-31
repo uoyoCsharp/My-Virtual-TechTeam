@@ -81,6 +81,15 @@ function expandConditionals(
   });
 }
 
+function stripEmptyTables(text: string): string {
+  // Remove Markdown tables that have a heading + header row + separator but no
+  // data rows (all conditional rows were removed during template expansion).
+  return text.replace(
+    /^#{1,6} [^\n]+\n\n\|[^\n]+\|\n\|[-| :]+\|\n(?=\n|$)/gm,
+    "",
+  );
+}
+
 export function applyParams(
   template: string,
   params: Record<string, unknown>,
@@ -89,6 +98,7 @@ export function applyParams(
   result = expandBlocks(result, params);
   result = expandInverted(result, params);
   result = replaceVars(result, params);
+  result = stripEmptyTables(result);
   result = result.replace(/\n{3,}/g, "\n\n");
   return result;
 }

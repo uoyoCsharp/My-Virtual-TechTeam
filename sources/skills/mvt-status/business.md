@@ -26,7 +26,7 @@
 
   | Condition | Action |
   |-----------|--------|
-  | No plans found anywhere | Skip the Changes Overview section entirely; render only legacy `active_change` summary |
+  | No plans found anywhere | Skip the Changes Overview section entirely; render "No active changes." |
   | One plan found | Render Changes Overview with one row |
   | Multiple plans found | Render Changes Overview sorted: `in_progress` desc by `updated_at` first, then `done` desc by `updated_at`, then `abandoned` last |
   | Any plan over the cap (more than ~12 rows) | Show top 10 rows; print a `+N older changes hidden -- see artifacts/` line |
@@ -49,9 +49,8 @@
 ### Step 5: Suggest Next Step
 - Resolution order (first match wins):
   1. `active_change` has a plan in `in_progress`, `current_task` is set -> suggest the task's `skill_hint` (or, if missing, recommend `/mvt-update-plan` to set `current_task`).
-  2. `active_change` exists but no plan -> infer next workflow phase from `history` (last completed phase determines next).
-  3. No `active_change`, but `project-context.md` is missing -> suggest `/mvt-analyze-code`.
-  4. No `active_change`, no missing context -> suggest `/mvt-analyze` to start a new feature OR `/mvt-help` to browse the catalog.
+  2. `project-context.md` is missing -> suggest `/mvt-analyze-code`.
+  3. No `active_change` or no active plan -> suggest `/mvt-analyze` to start a new feature OR `/mvt-help` to browse the catalog.
 - The suggestion must be a single line: skill command + one-clause reason.
 
 ### Step 6: (session update handled by shared section)

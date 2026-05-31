@@ -25,7 +25,7 @@ For each found plan.yaml, read and filter:
 
 | Candidates | Behavior |
 |------------|----------|
-| 0          | Skip to Step 2 — use legacy `active_change` / `history` flow (no plan context). |
+| 0          | Jump to Step 6 with the "no plans" edge case — report no active plans and suggest `/mvt-plan-dev` or `/mvt-analyze`. |
 | 1          | Auto-select. Print: "Found one active plan: **{title}** ({progress}). Resuming." |
 | ≥2         | **Pause and prompt**. Display candidate table and wait for user input. |
 
@@ -44,61 +44,25 @@ Enter a number, a change-id, or "none" to skip plan context:
 
 **Explicit argument override**: If the user invoked `/mvt-resume {change-id}`, use that change-id directly — skip the table, locate and load its plan.yaml (error if not found or not in_progress).
 
-After selection, set `selected_change_id` for use in subsequent steps. If "none" or 0 candidates, `selected_change_id = null`.
+After selection, set `selected_change_id` for use in subsequent steps.
 
 ### Step 2: Inspect Recent Artifacts
 
-If `selected_change_id` is set:
-- List files under `.ai-agents/workspace/artifacts/{selected_change_id}/`, sorted by mtime descending
+List files under `.ai-agents/workspace/artifacts/{selected_change_id}/`, sorted by mtime descending:
 - Exclude `plan.yaml` from the artifact list (it gets its own section)
-- Take the top 5
-
-Else if `active_change.id` is set (no-plan fallback):
-- List files under `.ai-agents/workspace/artifacts/{active_change.id}/`, sorted by mtime descending
-- Take the top 5
-
-Otherwise:
-- List all files under `.ai-agents/workspace/artifacts/` (recursive), sorted by mtime descending
 - Take the top 5
 
 For each artifact, capture: file path, mtime, size (in tokens estimate = chars / 4), and the change-id it belongs to.
 
 ### Step 3: Determine Resume Point
 
-**Plan-aware path** (when `selected_change_id` has a valid plan.yaml):
-
 Read the plan's `current_task`. The resume point = that task. Next-step recommendation = the task's `skill_hint` (or infer from task title if skill_hint is absent).
 
 Also filter `history` to entries matching `change_id == selected_change_id` (entries with empty change_id are excluded from this filtered view).
 
-**Legacy path** (no plan):
+### Step 4: Load Plan Progress
 
-Pick the **resume point** by precedence:
-
-| Condition | Resume point | Phase label |
-|-----------|--------------|-------------|
-| `active_change` is set | inferred from last skill in history | inferred |
-| `history[0]` exists | last skill | last skill |
-| Nothing | `none` | new project |
-
-Map skill -> next-step recommendation:
-
-| Last skill | Suggested next |
-|-----------|----------------|
-| mvt-init | mvt-analyze-code (if has code) or mvt-analyze (if requirements available) |
-| mvt-analyze | mvt-design |
-| mvt-analyze-code | mvt-analyze (if requirements pending) or mvt-design |
-| mvt-design | mvt-plan-dev (if change is large) or mvt-implement |
-| mvt-implement | mvt-review |
-| mvt-review | mvt-fix (if findings) or mvt-test |
-| mvt-fix | mvt-review (re-review) or mvt-test |
-| mvt-test | mvt-cleanup or next change |
-| mvt-cleanup | new change via mvt-analyze |
-| (other) | mvt-status |
-
-### Step 4: Load Plan Progress (plan-aware path only)
-
-If `selected_change_id` has a plan, generate the **Plan Progress** section:
+Generate the **Plan Progress** section:
 
 - Read all tasks from plan.yaml.
 - Build a compact status table: `| # | id | title | status | skill_hint |`
@@ -117,8 +81,8 @@ And the **Current Task Detail** section:
 
 Render via the `resume-output.md` template. Sections to fill:
 
-1. **Active Task** -- name, change-id, started_at (from active_change or selected plan)
-2. **Plan Progress** -- (only when plan exists) task table + counts + current task detail
+1. **Active Task** -- name, change-id, started_at (from selected plan)
+2. **Plan Progress** -- task table + counts + current task detail
 3. **Recent Skill History** -- last 5 entries from history (filtered to selected change if applicable)
 4. **Recent Artifacts** -- the top 5 artifacts collected in Step 2 (path, mtime, size)
 5. **Resume Point** -- a one-paragraph natural-language summary of "where we are"
@@ -127,7 +91,7 @@ Render via the `resume-output.md` template. Sections to fill:
 ### Step 6: Edge Cases
 
 - **No session**: report "No session found. Run `/mvt-init` to start a project."
-- **No active_change AND no history AND no plans**: report "No active task. Suggested entry points: `/mvt-init`, `/mvt-analyze`, `/mvt-status`."
-- **active_change set but referenced artifacts missing**: warn "Artifact directory `{path}` not found -- task state may be stale. Verify with `/mvt-status` or run `/mvt-cleanup`."
+- **No active plans**: report "No active plans found. Start a new change with `/mvt-analyze` or run `/mvt-status` to check project state."
+- **Selected change but referenced artifacts missing**: warn "Artifact directory `{path}` not found -- task state may be stale. Verify with `/mvt-status` or run `/mvt-cleanup`."
 - **Plan exists but plan.yaml is invalid** (parse error or schema violation): warn "plan.yaml is corrupted or invalid. Run `/mvt-plan-dev` to regenerate, or `/mvt-status` to inspect."
 - **Stale task warning**: If plan's `current_task` has status `in_progress` but the plan's `updated_at` is more than 5 days old, append a notice: "Current task has been in_progress for {N} days without updates. Consider running `/mvt-update-plan` to refresh status."
