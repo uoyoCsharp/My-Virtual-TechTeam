@@ -41,12 +41,9 @@ sections:
   - type: shared
     source: sections/activation-load-config.md
 
-  - type: shared
-    source: sections/output-language-constraint.md
-
   - type: inline
     content: |
-      ### Step 3: Pre-flight Checks
+      ### Step 4: Pre-flight Checks
       - No blocking checks required.
 
   - type: file
@@ -61,3 +58,11 @@ sections:
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-template
+      conditional_suggestions:
+        conditions:
+          - condition: "template customized"
+            primary: mvt-status
+            primary_desc: "Check project status"
+          - condition: "template reset to default"
+            primary: mvt-help
+            primary_desc: "Review available skills and templates"

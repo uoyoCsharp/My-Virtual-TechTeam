@@ -88,7 +88,8 @@
   - `Verification Result` -- tests run, pass/fail counts; or manual checks recommended.
   - `Follow-ups` -- deferred behavior changes spotted during refactoring.
 
-### Step 10: (session update handled by shared section)
+### Step 10: State Update
+Apply the State Update rules defined in the **State Update** section below.
 
 ## Edge Cases & Errors
 

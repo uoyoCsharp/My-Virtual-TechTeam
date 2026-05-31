@@ -81,8 +81,7 @@
 - Each finding must include: file, line range, severity, observation, recommendation.
 
 ### Step 6: Write Artifact
-- **Path**: `.ai-agents/workspace/artifacts/{active_change.id}/review.md` if `active_change` exists; else `.ai-agents/workspace/artifacts/_ad-hoc-review-{YYYY-MM-DD-HHMM}/review.md`.
-- **Template**: `.ai-agents/skills/_templates/review-output.md` (custom override at `_templates/custom/...` takes precedence).
+- **Path and template**: as defined in the **Artifact Structure** section below. If no `active_change` exists, use `.ai-agents/workspace/artifacts/_ad-hoc-review-{YYYY-MM-DD-HHMM}/review.md`.
 - **Required content** (mapped to template headings):
   - `Review Scope` -- file list, depth, aspect filter, fallbacks applied (e.g., "design.md missing -> Group A skipped").
   - `Summary` -- counts per severity + one-paragraph overall verdict (Approve / Approve with comments / Request changes / Block).
@@ -98,7 +97,8 @@
 - Critical = 0, Warnings <= 5, Suggestions only -> verdict is `Approve`.
 - Code-only review (design.md missing) -> verdict cannot be higher than `Approve with comments` (call it out explicitly).
 
-### Step 8: (session update handled by shared section)
+### Step 8: State Update
+Apply the State Update rules defined in the **State Update** section below.
 
 ## Edge Cases & Errors
 

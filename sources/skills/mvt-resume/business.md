@@ -7,9 +7,9 @@ Extract from the already-loaded session context:
 - `changes` -- list of changes with active plans
 - `history` -- last 20 entries (skill name, timestamp, change_id)
 
-If session.yaml is missing or empty, jump to Step 6 with the "no session" branch.
+If session.yaml is missing or empty, jump to Step 8 with the "no session" branch.
 
-### Step 1.5: Discover Pending Plans
+### Step 2: Discover Pending Plans
 
 Scan for in-progress plans using two sources:
 
@@ -21,11 +21,11 @@ For each found plan.yaml, read and filter:
 - Capture: `change_id`, `title`, task progress (`done_count / total_count`), `updated_at`.
 - Sort candidates by `updated_at` descending.
 
-### Step 1.6: Select Target Change
+### Step 3: Select Target Change
 
 | Candidates | Behavior |
 |------------|----------|
-| 0          | Jump to Step 6 with the "no plans" edge case — report no active plans and suggest `/mvt-plan-dev` or `/mvt-analyze`. |
+| 0          | Jump to Step 8 with the "no plans" edge case — report no active plans and suggest `/mvt-plan-dev` or `/mvt-analyze`. |
 | 1          | Auto-select. Print: "Found one active plan: **{title}** ({progress}). Resuming." |
 | ≥2         | **Pause and prompt**. Display candidate table and wait for user input. |
 
@@ -46,7 +46,7 @@ Enter a number, a change-id, or "none" to skip plan context:
 
 After selection, set `selected_change_id` for use in subsequent steps.
 
-### Step 2: Inspect Recent Artifacts
+### Step 4: Inspect Recent Artifacts
 
 List files under `.ai-agents/workspace/artifacts/{selected_change_id}/`, sorted by mtime descending:
 - Exclude `plan.yaml` from the artifact list (it gets its own section)
@@ -54,13 +54,13 @@ List files under `.ai-agents/workspace/artifacts/{selected_change_id}/`, sorted 
 
 For each artifact, capture: file path, mtime, size (in tokens estimate = chars / 4), and the change-id it belongs to.
 
-### Step 3: Determine Resume Point
+### Step 5: Determine Resume Point
 
 Read the plan's `current_task`. The resume point = that task. Next-step recommendation = the task's `skill_hint` (or infer from task title if skill_hint is absent).
 
 Also filter `history` to entries matching `change_id == selected_change_id` (entries with empty change_id are excluded from this filtered view).
 
-### Step 4: Load Plan Progress
+### Step 6: Load Plan Progress
 
 Generate the **Plan Progress** section:
 
@@ -77,18 +77,18 @@ And the **Current Task Detail** section:
 - `notes` (if non-empty)
 - `skill_hint` -> recommendation
 
-### Step 5: Generate Resume Report
+### Step 7: Generate Resume Report
 
 Render via the `resume-output.md` template. Sections to fill:
 
 1. **Active Task** -- name, change-id, started_at (from selected plan)
 2. **Plan Progress** -- task table + counts + current task detail
 3. **Recent Skill History** -- last 5 entries from history (filtered to selected change if applicable)
-4. **Recent Artifacts** -- the top 5 artifacts collected in Step 2 (path, mtime, size)
+4. **Recent Artifacts** -- the top 5 artifacts collected in Step 4 (path, mtime, size)
 5. **Resume Point** -- a one-paragraph natural-language summary of "where we are"
-6. **Recommended Next Step** -- the mapped next skill from Step 3, with justification
+6. **Recommended Next Step** -- the mapped next skill from Step 5, with justification
 
-### Step 6: Edge Cases
+### Step 8: Edge Cases
 
 - **No session**: report "No session found. Run `/mvt-init` to start a project."
 - **No active plans**: report "No active plans found. Start a new change with `/mvt-analyze` or run `/mvt-status` to check project state."

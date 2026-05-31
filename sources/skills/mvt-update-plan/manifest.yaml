@@ -61,10 +61,11 @@ sections:
 
   - type: inline
     content: |
-      ### Shortcut Operation Rules
-      - Can execute at any time when an active plan exists
-      - Performs surgical edits only -- never overwrites the whole plan structure
-      - Re-validates the resulting plan before writing; aborts on validation failure
+      ## Operation Mode: Shortcut
+
+      This skill operates as a shortcut — it can execute at any time when an active plan exists.
+      - Performs surgical edits only — never overwrites the whole plan structure.
+      - Re-validates the resulting plan before writing; aborts on validation failure.
 
   - type: file
     source: ./business.md
@@ -101,6 +102,7 @@ sections:
   - type: shared
     source: sections/session-update.md
     params:
+      current_skill: mvt-update-plan
       update_change: true
 
   - type: shared

@@ -24,12 +24,9 @@ sections:
   - type: shared
     source: sections/activation-load-config.md
 
-  - type: shared
-    source: sections/output-language-constraint.md
-
   - type: inline
     content: |
-      ### Step 3: Pre-flight Checks
+      ### Step 4: Pre-flight Checks
       - No blocking checks required.
 
   - type: file
@@ -65,3 +62,14 @@ sections:
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-help
+      conditional_suggestions:
+        conditions:
+          - condition: "project not initialized"
+            primary: mvt-init
+            primary_desc: "Initialize the project"
+          - condition: "project initialized, no active change"
+            primary: mvt-analyze
+            primary_desc: "Start analyzing requirements for a new feature"
+          - condition: "active change in progress"
+            primary: mvt-resume
+            primary_desc: "Resume work on the active change"

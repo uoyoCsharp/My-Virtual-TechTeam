@@ -48,7 +48,7 @@ sections:
 
   - type: inline
     content: |
-      ### Step 3: Pre-flight Checks
+      ### Step 4: Pre-flight Checks
       - No blocking checks required.
 
   - type: file
@@ -121,3 +121,14 @@ sections:
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-manage-context
+      conditional_suggestions:
+        conditions:
+          - condition: "knowledge added or moved"
+            primary: mvt-check-context
+            primary_desc: "Verify context health after the change"
+          - condition: "knowledge removed"
+            primary: mvt-check-context
+            primary_desc: "Confirm token savings"
+          - condition: "large knowledge files detected"
+            primary: mvt-cleanup
+            primary_desc: "Clean up workspace to reduce context load"

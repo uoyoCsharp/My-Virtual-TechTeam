@@ -74,8 +74,6 @@ This skill measures only files the **user** can reduce or relocate. Framework-fi
   6. **Excluded Scope Note** -- one paragraph reminding the user that framework files (`_framework/`, `mvt-*/SKILL.md`, `config.yaml`, `session.yaml`, `registry.yaml`) were not measured here.
 - The report is conversation output; this skill does NOT write any artifact.
 
-### Step 7: (session update handled by shared section)
-
 ## Edge Cases & Errors
 
 | Case | Handling |

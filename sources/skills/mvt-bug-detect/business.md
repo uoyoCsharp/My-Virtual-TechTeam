@@ -87,8 +87,6 @@
 - For `NotABug`: explain why the current behavior is expected, and suggest `/mvt-analyze` if the requirement itself needs revision.
 - For `Inconclusive`: summarize what was found and what remains unknown, so the user or `/mvt-fix` can act with full awareness.
 
-### Step 7: (session update handled by shared section)
-
 ## Edge Cases & Errors
 
 | Case | Handling |

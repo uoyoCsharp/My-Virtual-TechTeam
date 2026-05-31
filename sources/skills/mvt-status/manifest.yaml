@@ -41,9 +41,6 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/output-language-constraint.md
-
-  - type: shared
     source: sections/activation-preflight.md
     params:
       checks:
@@ -64,3 +61,14 @@ sections:
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-status
+      conditional_suggestions:
+        conditions:
+          - condition: "active change with current_task"
+            primary: mvt-resume
+            primary_desc: "Resume work on the current task"
+          - condition: "project-context.md missing"
+            primary: mvt-analyze-code
+            primary_desc: "Generate semantic project context"
+          - condition: "no active change"
+            primary: mvt-analyze
+            primary_desc: "Start analyzing a new feature"

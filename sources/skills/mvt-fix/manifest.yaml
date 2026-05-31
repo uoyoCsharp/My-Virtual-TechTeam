@@ -58,15 +58,18 @@ sections:
 
   - type: inline
     content: |
-      ### Shortcut Operation Rules
-      - Can execute at any time without checking workflow prerequisites
-      - Do NOT update `progress` (this is a shortcut operation, not a workflow phase)
+      ## Operation Mode: Shortcut
+
+      This skill operates as a shortcut — it can execute at any time without checking workflow prerequisites.
+      - Do NOT update `progress` (this is a shortcut operation, not a workflow phase).
 
   - type: file
     source: ./business.md
 
   - type: shared
     source: sections/session-update.md
+    params:
+      current_skill: mvt-fix
 
   - type: shared
     source: sections/footer-next-steps.md

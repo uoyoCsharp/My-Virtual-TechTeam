@@ -64,10 +64,7 @@ If a previous `plan.yaml` exists and the user chose regeneration in Step 2, over
 
 ### Step 7: Update Session State
 
-Apply the standard State Update rules (see shared section above) AND the plan-dev-specific updates:
-
-- `active_change.plan_path` -> the new file path
-- `changes[]` -> upsert an entry for this change (refresh `updated_at`)
+Apply the standard State Update rules (see State Update section below).
 
 ### Step 8: Output
 

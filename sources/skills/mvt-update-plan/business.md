@@ -70,3 +70,14 @@ Emit the Plan Update summary block defined in the Output Format section. Include
   - If a new `current_task` is set -> recommend the skill matching its `skill_hint`.
   - If plan complete -> recommend `/mvt-cleanup` or starting a new change via `/mvt-analyze`.
   - If all remaining tasks are blocked -> recommend resolving the blocker (point at the `notes` of the blocked task).
+
+## Edge Cases & Errors
+
+| Case | Handling |
+|------|----------|
+| `plan.yaml` not found at `active_change.plan_path` | Abort with error: "No plan found. Run `/mvt-plan-dev` to create one." |
+| Task id provided does not exist in `plan.yaml` | Abort with error listing valid task ids |
+| Transition to `done` but `depends_on` tasks are not all `done` | Warn but allow: "Task marked done despite unfinished dependencies — verify correctness" |
+| All tasks are `done` but user marks another as `in_progress` | Reject: plan is already complete; suggest creating a new change |
+| Circular dependency detected in `depends_on` | Report the cycle and refuse to auto-advance `current_task`; suggest manual fix |
+| `plan.yaml` write fails (permission denied, invalid YAML state) | Abort; do not update session; report the write error |

@@ -69,9 +69,22 @@ sections:
   - type: shared
     source: sections/session-update.md
     params:
+      current_skill: mvt-cleanup
       truncate_history: true
+      close_change: true
 
   - type: shared
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-cleanup
+      conditional_suggestions:
+        conditions:
+          - condition: "cleanup freed significant tokens"
+            primary: mvt-check-context
+            primary_desc: "Validate post-cleanup context health"
+          - condition: "active change still in progress"
+            primary: mvt-resume
+            primary_desc: "Resume work on the active change"
+          - condition: "no active changes remain"
+            primary: mvt-analyze
+            primary_desc: "Start a new feature"

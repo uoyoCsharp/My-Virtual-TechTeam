@@ -71,6 +71,7 @@ sections:
   - type: shared
     source: sections/session-update.md
     params:
+      current_skill: mvt-analyze
       update_active_change: true
 
   - type: shared

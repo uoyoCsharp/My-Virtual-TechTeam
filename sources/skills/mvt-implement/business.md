@@ -59,8 +59,7 @@
   3. UI/frontend changes: per project rules, ask user to verify in browser; do NOT claim "tested" if you only ran type-check.
 
 ### Step 7: Write Artifact
-- **Path**: `.ai-agents/workspace/artifacts/{active_change.id}/implementation.md`.
-- **Template**: `.ai-agents/skills/_templates/implement-output.md` (custom override at `_templates/custom/...` takes precedence).
+- **Path and template**: as defined in the **Artifact Structure** section below.
 - **Required content** (mapped to template headings):
   - `Implementation Summary` -- one paragraph: what was built, scope.
   - `Files Touched` -- table: path | create/modify/delete | one-line intent.
@@ -75,8 +74,8 @@
 - Do NOT modify `plan.yaml` directly from this skill; it is owned by `/mvt-update-plan`.
 - Do NOT modify `changes` directly; it is owned by `/mvt-plan-dev` / `/mvt-update-plan`.
 
-### Step 9: (session update handled by shared section)
-- Standard `history` entry must include `change_id`. All other state mutations are delegated.
+### Step 9: State Update
+Apply the State Update rules defined in the **State Update** section below.
 
 ## Edge Cases & Errors
 

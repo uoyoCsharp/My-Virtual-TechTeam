@@ -84,7 +84,8 @@
   - Verification status: type-check result, test suggestion
 - **No artifact is written. No document is generated.** This is a conversation-only skill.
 
-### Step 8: (session update handled by shared section)
+### Step 8: State Update
+Apply the State Update rules defined in the **State Update** section below.
 
 ## Edge Cases & Errors
 

@@ -107,9 +107,9 @@ describe("assembler", () => {
   });
 
   describe("mvt-fix (shortcut)", () => {
-    it("includes Shortcut Operation Rules", () => {
+    it("includes Operation Mode: Shortcut section", () => {
       const output = buildSkill("mvt-fix");
-      expect(output).toContain("### Shortcut Operation Rules");
+      expect(output).toContain("## Operation Mode: Shortcut");
       expect(output).toContain("Do NOT update `progress`");
     });
 
@@ -225,13 +225,13 @@ describe("assembler", () => {
   describe("mvt-resume (Phase 3 enhancements)", () => {
     it("describes multi-plan discovery step", () => {
       const output = buildSkill("mvt-resume");
-      expect(output).toContain("### Step 1.5: Discover Pending Plans");
+      expect(output).toContain("### Step 2: Discover Pending Plans");
       expect(output).toContain("artifacts/*/plan.yaml");
     });
 
     it("documents candidate selection branching (0/1/N)", () => {
       const output = buildSkill("mvt-resume");
-      expect(output).toContain("### Step 1.6: Select Target Change");
+      expect(output).toContain("### Step 3: Select Target Change");
       expect(output).toContain("Auto-select");
       expect(output).toContain("Pause and prompt");
     });
@@ -244,7 +244,7 @@ describe("assembler", () => {
 
     it("includes Plan Progress section in execution flow", () => {
       const output = buildSkill("mvt-resume");
-      expect(output).toContain("### Step 4: Load Plan Progress");
+      expect(output).toContain("### Step 6: Load Plan Progress");
       expect(output).toContain("Plan Progress");
       expect(output).toContain("Current Task Detail");
     });

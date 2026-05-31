@@ -44,22 +44,22 @@ sections:
   - type: shared
     source: sections/activation-load-config.md
 
-  - type: shared
-    source: sections/output-language-constraint.md
-
   - type: inline
     content: |
-      ### Shortcut Operation Rules
-      - Can execute at any time without checking workflow prerequisites
-      - Do NOT update `progress` (this is a shortcut operation, not a workflow phase)
-      - Do NOT write any artifact — diagnosis is presented in conversation only
-      - Do NOT modify any source code — this skill is read-only analysis
+      ## Operation Mode: Shortcut
+
+      This skill operates as a shortcut — it can execute at any time without checking workflow prerequisites.
+      - Do NOT update `progress` (this is a shortcut operation, not a workflow phase).
+      - Do NOT write any artifact — diagnosis is presented in conversation only.
+      - Do NOT modify any source code — this skill is read-only analysis.
 
   - type: file
     source: ./business.md
 
   - type: shared
     source: sections/session-update.md
+    params:
+      current_skill: mvt-bug-detect
 
   - type: shared
     source: sections/footer-next-steps.md

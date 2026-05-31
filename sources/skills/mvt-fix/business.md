@@ -118,7 +118,8 @@
   - `Regression risk` -- scope of behavior potentially affected, plus what tests guard it.
   - `Follow-ups` -- TODOs, deferred refactors, related issues.
 
-### Step 9: (session update handled by shared section)
+### Step 9: State Update
+Apply the State Update rules defined in the **State Update** section below.
 
 ## Edge Cases & Errors
 

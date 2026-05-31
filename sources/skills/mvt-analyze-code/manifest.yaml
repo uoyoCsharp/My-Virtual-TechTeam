@@ -71,10 +71,11 @@ sections:
 
   - type: inline
     content: |
-      ### Independent Operation Rules
-      - This is an independent operation -- no workflow prerequisites required
-      - Does NOT create a change-id
-      - Output is written to `.ai-agents/knowledge/project/_generated/project-context.md`
+      ## Operation Mode: Independent
+
+      This is an independent operation — no workflow prerequisites required.
+      - Does NOT create a change-id.
+      - Output is written to `.ai-agents/knowledge/project/_generated/project-context.md`.
 
   - type: file
     source: ./business.md
@@ -89,8 +90,21 @@ sections:
 
   - type: shared
     source: sections/session-update.md
+    params:
+      current_skill: mvt-analyze-code
 
   - type: shared
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-analyze-code
+      conditional_suggestions:
+        conditions:
+          - condition: "project-context.md generated, no active change"
+            primary: mvt-analyze
+            primary_desc: "Analyze requirements for a new feature"
+          - condition: "project-context.md generated, active change exists"
+            primary: mvt-design
+            primary_desc: "Design with the updated project context"
+          - condition: "analysis revealed outdated knowledge"
+            primary: mvt-manage-context
+            primary_desc: "Update knowledge entries"

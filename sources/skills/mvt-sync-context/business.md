@@ -137,8 +137,9 @@ If user skips verification: proceed directly to Step 7 with Step 5 selections.
    - Aggregated >= 1 change -> "Run `/mvt-cleanup` to archive these completed changes."
    - Verification flagged code-only entities -> "Run `/mvt-analyze-code` to capture missing entities."
 
-### Step 9: (session update handled by shared section)
-- The shared State Update section handles `session.last_synced_at` via `--set-synced`.
+### Step 9: State Update
+Apply the State Update rules defined in the **State Update** section below.
+- The `--set-synced` parameter updates `session.last_synced_at`.
 
 ## Edge Cases & Errors
 

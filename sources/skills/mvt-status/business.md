@@ -53,14 +53,12 @@
   3. No `active_change` or no active plan -> suggest `/mvt-analyze` to start a new feature OR `/mvt-help` to browse the catalog.
 - The suggestion must be a single line: skill command + one-clause reason.
 
-### Step 6: (session update handled by shared section)
-
 ## Edge Cases & Errors
 
 | Case | Handling |
 |------|----------|
 | `session.yaml` missing entirely | Render a minimal report (Projects section if available) and recommend `/mvt-init` |
-| `session.yaml` corrupt (parse error) | Surface error with file path, render Projects only, recommend `/mvt-sync-context` |
+| `session.yaml` corrupt (parse error) | Surface error with file path, render Projects only, recommend `/mvt-init` to reinitialize |
 | `changes[]` references a `plan_path` that no longer exists | Include in Changes Overview with `(missing)` marker; do not delete the index entry from this skill |
 | Plan file's `current_task` references a task id not in `tasks[]` | Render `current_task` as `(invalid: <id>)`; do not attempt to fix |
 | Plan file's `status` is not one of the known values | Render the raw value verbatim; flag in skip-checks of the report |

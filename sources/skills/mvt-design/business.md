@@ -82,8 +82,7 @@
 - **Confirmation format**: present a one-screen summary -- style chosen, modules added/changed, ADRs requiring review, a single yes/no prompt. Do not dump the full artifact.
 
 ### Step 8: Write Artifact
-- **Path**: `.ai-agents/workspace/artifacts/{active_change.id}/design.md`.
-- **Template**: `.ai-agents/skills/_templates/design-output.md`; if `_templates/custom/design-output.md` exists, use the custom version.
+- **Path and template**: as defined in the **Artifact Structure** section below.
 - **Required sections** (filled per template headings, but content must include):
   - `Overview` -- the problem statement (Step 2).
   - `Architecture Decision Records` -- every ADR from Step 6.
@@ -99,10 +98,8 @@
 - If `Change Tracking` lists more than ~5 files OR Module Design adds more than 1 new module OR ADRs include any breaking change, recommend `/mvt-plan-dev` as the next step.
 - Otherwise recommend `/mvt-implement` directly.
 
-### Step 10: (session update handled by shared section)
-
-## Variants
-- `/mvt-design --plan` flag: skip Step 5 (data flow detail) and Step 6 (full ADR fields). In `--plan` mode, ADRs collapse to a one-line `decision: <text>`. Step 8 still writes `design.md` but with the abbreviated content. The output is a high-level plan, not an implementation-ready blueprint -- mark the artifact with a top-line `Mode: plan` indicator.
+### Step 10: State Update
+Apply the State Update rules defined in the **State Update** section below.
 
 ## Edge Cases & Errors
 

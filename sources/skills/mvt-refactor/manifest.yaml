@@ -67,11 +67,16 @@ sections:
 
   - type: inline
     content: |
-      ### Step 3: Pre-flight Checks
+      ### Step 4: Pre-flight Checks
       - No blocking checks required (shortcut operation).
 
-      ### Shortcut Operation Rules
-      - Can execute at any time without checking workflow prerequisites
+  - type: inline
+    content: |
+      ## Operation Mode: Shortcut
+
+      This skill operates as a shortcut — it can execute at any time without checking workflow prerequisites.
+      - Do NOT update `active_change` fields.
+      - Write a `history` entry only (via State Update).
 
   - type: file
     source: ./business.md
@@ -79,8 +84,21 @@ sections:
 
   - type: shared
     source: sections/session-update.md
+    params:
+      current_skill: mvt-refactor
 
   - type: shared
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-refactor
+      conditional_suggestions:
+        conditions:
+          - condition: "refactoring complete, tests exist"
+            primary: mvt-test
+            primary_desc: "Run tests to verify behavior is preserved"
+          - condition: "refactoring complete, no tests exist"
+            primary: mvt-review
+            primary_desc: "Review the refactored code"
+          - condition: "refactoring revealed design issues"
+            primary: mvt-design
+            primary_desc: "Redesign the affected module"

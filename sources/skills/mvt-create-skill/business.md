@@ -148,7 +148,8 @@ Tell the user the iteration loop:
 3. Decide whether to update SKILL.md, add a `references/` file, add a knowledge entry, or split into a new skill.
 4. Re-run `/mvt-create-skill` to refine, or edit the source files directly and rebuild.
 
-### Step 10: (session update handled by shared section)
+### Step 10: State Update
+Apply the State Update rules defined in the **State Update** section below.
 
 ## Edge Cases & Errors
 

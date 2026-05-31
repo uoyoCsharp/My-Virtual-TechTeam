@@ -68,6 +68,7 @@ sections:
   - type: shared
     source: sections/session-update.md
     params:
+      current_skill: mvt-plan-dev
       update_active_change: true
       set_plan_path: true
       update_change: true
@@ -76,3 +77,14 @@ sections:
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-plan-dev
+      conditional_suggestions:
+        conditions:
+          - condition: "plan created, first task is implementation"
+            primary: mvt-implement
+            primary_desc: "Start implementing the first task"
+          - condition: "plan created, first task is design"
+            primary: mvt-design
+            primary_desc: "Design the architecture for the first task"
+          - condition: "plan created, first task is testing"
+            primary: mvt-test
+            primary_desc: "Write tests for the first task"

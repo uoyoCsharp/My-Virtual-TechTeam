@@ -82,8 +82,6 @@
 
   3. Never write outside the project root unless an absolute path was explicitly provided by the user.
 
-### Step 5: (session update handled by shared section)
-
 ## Edge Cases & Errors
 
 | Case | Handling |

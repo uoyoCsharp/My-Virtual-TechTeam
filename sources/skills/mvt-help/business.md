@@ -60,8 +60,6 @@ Color-code based on current progress: green (done), yellow (current/recommended)
   | "Compare `/mvt-X` and `/mvt-Y`" | Pull descriptions from registry; if both are workflow skills, mention their relative position in the diagram |
   | Asks about something not in registry | Reply: "No skill matches that. Available skills: see catalog above." Do not invent skills |
 
-### Step 6: (session update handled by shared section)
-
 ## Edge Cases & Errors
 
 | Case | Handling |

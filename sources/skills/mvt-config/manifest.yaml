@@ -56,12 +56,9 @@ sections:
   - type: shared
     source: sections/activation-load-config.md
 
-  - type: shared
-    source: sections/output-language-constraint.md
-
   - type: inline
     content: |
-      ### Step 3: Pre-flight Checks
+      ### Step 4: Pre-flight Checks
       - No blocking checks required (config is always accessible)
 
       ## Configuration Keys
@@ -96,3 +93,11 @@ sections:
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-config
+      conditional_suggestions:
+        conditions:
+          - condition: "configuration updated"
+            primary: mvt-status
+            primary_desc: "Check project status with new settings"
+          - condition: "language changed"
+            primary: mvt-help
+            primary_desc: "Verify output in the new language"

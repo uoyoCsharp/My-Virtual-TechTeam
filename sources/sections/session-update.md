@@ -19,7 +19,7 @@ If the script exits with code 0, the state update was applied successfully; ther
 
 | Argument | Value source | Example |
 |----------|-------------|---------|
-| `--skill` | The exact skill command name without the leading `/` | `mvt-analyze`, `mvt-plan-dev` |
+| `--skill` | The exact skill command name without the leading `/` | `{{current_skill}}` |
 | `--summary` | A concise one-line description of what this invocation accomplished, in the configured `interaction_language` | `"Identified auth requirements and created change chg-001"` |
 {{#update_active_change}}
 | `--new-change` | The title of the new change being created (same value written to `active_change.title`) | `"User authentication system"` |

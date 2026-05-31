@@ -76,8 +76,7 @@
 - Record each finding with: scenario id, expected vs observed, severity (Critical / Warning), and recommend `/mvt-fix`.
 
 ### Step 9: Write Artifact
-- **Path**: `.ai-agents/workspace/artifacts/{active_change.id}/tests/test-design.md`.
-- **Template**: `.ai-agents/skills/_templates/test-output.md` (custom override at `_templates/custom/...` takes precedence).
+- **Path and template**: as defined in the **Artifact Structure** section below.
 - **Required content** (mapped to template headings):
   - `Scope` -- target files, fallbacks applied.
   - `Test Framework & Layout` -- chosen framework, file layout convention.
@@ -89,7 +88,8 @@
   - `Suggested Run Commands` -- one or two commands the user can copy-paste.
 - The actual test files go to the project tree; the artifact is a record.
 
-### Step 10: (session update handled by shared section)
+### Step 10: State Update
+Apply the State Update rules defined in the **State Update** section below.
 
 ## Edge Cases & Errors
 

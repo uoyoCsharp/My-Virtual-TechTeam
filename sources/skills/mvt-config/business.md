@@ -74,8 +74,6 @@
 6. Report the keys that changed.
 - Do NOT reset `knowledge.shared` to defaults if the user has added entries via `/mvt-manage-context` -- preserve user-added knowledge ids; only reset preferences. Surface this exception in the diff.
 
-### Step 8: (session update handled by shared section)
-
 ## Knowledge Inspection (sub-flow used by Interactive Menu and Show All)
 - **View**: list shared knowledge ids from `registry.yaml > knowledge.shared`, then per-skill knowledge ids grouped by skill (`registry.yaml > skills.*.knowledge`). Show token estimates from each entry's manifest if available.
 - **Modify**: this skill does NOT mutate knowledge settings; defer to `/mvt-manage-context`. Print the suggested command (`/mvt-manage-context move`, `/mvt-manage-context add`, etc.) instead of doing the work here.

@@ -173,3 +173,14 @@ At the bottom of the list, optionally surface:
 - **No edits to framework files**: never write to `.ai-agents/knowledge/core/_framework/`. If user content would land there by accident, redirect to `core/user/`.
 - **Backups**: before mutating `registry.yaml` or `core/manifest.yaml`, copy them to `.ai-agents/.backup/{filename}-{timestamp}.yaml`.
 - **Idempotency**: re-running the same `add` (same content + same bindings) should detect the existing entry and offer "skip / overwrite / cancel" rather than silently duplicating.
+
+## Edge Cases & Errors
+
+| Case | Handling |
+|------|----------|
+| File path points outside `.ai-agents/knowledge/` | Reject with error: knowledge files must reside under the managed directory tree |
+| `registry.yaml` or `core/manifest.yaml` is malformed (parse error) | Abort the operation; print the parse error; suggest manual fix or restore from `.ai-agents/.backup/` |
+| User attempts to `remove` a core framework file (`core/_framework/*`) | Refuse: framework files are read-only and managed by the installer |
+| `add` target file already exists on disk but has no registry entry | Offer "register existing / overwrite / cancel" instead of blindly writing |
+| `move` destination binding already has an entry with the same id | Prompt for rename or cancel; do not silently overwrite |
+| Disk write fails mid-operation (permission denied, disk full) | Roll back all registry/manifest changes using the backup copies; report partial failure |
