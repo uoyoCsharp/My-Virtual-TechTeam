@@ -63,24 +63,12 @@ sections:
           level: "REQUIRED"
           message: "Project must be initialized (session.yaml exists)"
 
-  - type: inline
-    content: |
-      ## Cleanup Rules
-
-      | Category | Rule | Action |
-      |----------|------|--------|
-      | Completed changes | Change with `status: done` older than current task | Summarize -> archive |
-      | Orphaned artifacts | Files in `artifacts/` not referenced by any active change | List for user review |
-      | Stale session data | History entries beyond configured limit | Truncate via script |
-
   - type: file
     source: ./business.md
 
   - type: shared
     source: sections/session-update.md
     params:
-      close_change: true
-      set_change_status: true
       truncate_history: true
 
   - type: shared

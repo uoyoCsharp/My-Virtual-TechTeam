@@ -13,7 +13,7 @@ This skill measures only files the **user** can reduce or relocate. Framework-fi
 - Semantic context: `.ai-agents/knowledge/project/_generated/project-context.md`.
 - Shared knowledge: every entry in `registry.yaml > knowledge.shared`. For the `core` entry, scan only files marked as user-origin per `core/manifest.yaml` (or whose path begins with `user/`); skip files under `core/_framework/`.
 - Per-skill knowledge: every entry in `registry.yaml > skills.*.knowledge`, grouped by skill.
-- Artifacts: all files under `.ai-agents/workspace/artifacts/` recursively.
+- Artifacts: all files under `.ai-agents/workspace/artifacts/` recursively. **Exclude the `_archived/` subdirectory** — it contains completed changes archived by `/mvt-cleanup` and should not count toward the active workspace token budget.
 
 **Out of scope (do NOT scan):**
 - `.claude/skills/mvt-*/SKILL.md` -- framework-shipped, not user-editable.
@@ -51,7 +51,7 @@ This skill measures only files the **user** can reduce or relocate. Framework-fi
   |---------|------------------|-----------------|
   | `project-context.md` is `oversized` | "project-context.md is {N} tokens. Regenerate with leaner sections." | `/mvt-analyze-code` |
   | `project-context.md` is `borderline` AND last `/mvt-analyze-code` ran > 30 days ago | "project-context.md is {N} tokens and may be stale. Consider regenerating." | `/mvt-analyze-code` |
-  | Total artifacts tokens > artifacts threshold OR > 3 completed changes still in `artifacts/` | "Workspace has {N} tokens of historical artifacts. Archive completed changes." | `/mvt-cleanup` |
+  | Total artifacts tokens > artifacts threshold OR > 3 completed changes still in `artifacts/` (excluding `_archived/`) | "Workspace has {N} tokens of historical artifacts. Archive completed changes." | `/mvt-cleanup` |
   | A specific change-id directory is `oversized` | "artifacts/{id} alone is {N} tokens. Summarize this change." | `/mvt-cleanup` |
   | Shared Knowledge total is `oversized` | "Shared knowledge totals {N} tokens (loaded by every skill). Move skill-specific entries to per-skill." | `/mvt-manage-context move` |
   | A single Shared Knowledge file is `oversized` | "{path} is {N} tokens. Split or move to per-skill." | `/mvt-manage-context move` |

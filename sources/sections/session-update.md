@@ -44,7 +44,7 @@ If the script exits with code 0, the state update was applied successfully; ther
 | `--set-synced` | Flag only, no value. Sets `session.last_synced_at` to current time. | — |
 {{/set_synced}}
 {{#truncate_history}}
-| `--truncate-history` | Number of most recent history entries to keep; older entries are discarded. | `10` |
+| `--truncate-history` | Number of most recent history entries to keep (read from `config.yaml > preferences.history_limits.history`, default 20); older entries are discarded. | `20` |
 {{/truncate_history}}
 {{#update_initialized_at}}
 | `--set-initialized` | Flag only, no value. Set when this skill initializes the project for the first time. | — |
@@ -77,58 +77,37 @@ If the script exits with code 0, the state update was applied successfully; ther
 {{#truncate_history}}
 | `--truncate-history` | Maintenance: trim old history entries | Keeps the most recent N entries in `history[]`, discards older ones. |
 {{/truncate_history}}
+{{#update_initialized_at}}
+| `--set-initialized` | Skill initializes the project for the first time | Sets `session.initialized_at` (idempotent — only writes if empty). |
+{{/update_initialized_at}}
 {{/update_active_change}}
 {{^update_active_change}}
-{{#update_change}}
 ### Parameter semantics
 
 | Argument | When to use | Effect on `session.yaml` |
 |----------|-------------|--------------------------|
+{{#update_change}}
 | `--update-change` | Skill modifies a plan (i.e., after `plan.yaml` is updated) | Upserts current `active_change` into `changes[]` (with `status: active`), sets `updated_at`, sorts ascending, truncates to configured limit. |
 {{/update_change}}
 {{#close_change}}
-### Parameter semantics
-
-| Argument | When to use | Effect on `session.yaml` |
-|----------|-------------|--------------------------|
 | `--close-change` | All plan tasks are completed | Snapshots `active_change` into `changes[]` with `status: done`, then clears all `active_change` fields. |
 {{/close_change}}
 {{#set_change_status}}
-### Parameter semantics
-
-| Argument | When to use | Effect on `session.yaml` |
-|----------|-------------|--------------------------|
 | `--set-change-status` | Explicitly mark a change as `done` or `abandoned` | Sets `status` on the `changes[]` entry whose `id` matches `active_change.id`. |
 {{/set_change_status}}
 {{#no_change}}
-### Parameter semantics
-
-| Argument | When to use | Effect on `session.yaml` |
-|----------|-------------|--------------------------|
 | `--no-change` | Skill should not be associated with any change | Forces `history[].change_id` to empty string, skipping the `active_change.id` fallback. |
 {{/no_change}}
 {{#set_synced}}
-### Parameter semantics
-
-| Argument | When to use | Effect on `session.yaml` |
-|----------|-------------|--------------------------|
 | `--set-synced` | Skill synchronizes context files | Sets `session.last_synced_at` to the current time. |
 {{/set_synced}}
 {{#truncate_history}}
-### Parameter semantics
-
-| Argument | When to use | Effect on `session.yaml` |
-|----------|-------------|--------------------------|
 | `--truncate-history` | Maintenance: trim old history entries | Keeps the most recent N entries in `history[]`, discards older ones. |
 {{/truncate_history}}
-{{/update_active_change}}
 {{#update_initialized_at}}
-### Parameter semantics
-
-| Argument | When to use | Effect on `session.yaml` |
-|----------|-------------|--------------------------|
 | `--set-initialized` | Skill initializes the project for the first time | Sets `session.initialized_at` (idempotent — only writes if empty). |
 {{/update_initialized_at}}
+{{/update_active_change}}
 
 ### Failure handling
 

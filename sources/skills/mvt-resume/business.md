@@ -14,7 +14,7 @@ If session.yaml is missing or empty, jump to Step 6 with the "no session" branch
 Scan for in-progress plans using two sources:
 
 1. **Index path**: For each entry in `changes[]`, read its `plan_path` if the file exists.
-2. **Fallback scan**: Glob `.ai-agents/workspace/artifacts/*/plan.yaml`, read any files not already covered by (1).
+2. **Fallback scan**: Glob `.ai-agents/workspace/artifacts/*/plan.yaml`, read any files not already covered by (1). **Skip any paths under `artifacts/_archived/`** — those are completed changes archived by `/mvt-cleanup` and should not appear as resume candidates.
 
 For each found plan.yaml, read and filter:
 - Include only plans where `plan.status == "in_progress"`.

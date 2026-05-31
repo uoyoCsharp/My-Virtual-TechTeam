@@ -6,7 +6,9 @@
   1. Read `session.yaml`. Collect `changes[]` entries with `status: done`.
   2. For each candidate, verify `.ai-agents/workspace/artifacts/{change-id}/` exists AND contains at least one of `analysis.md` or `design.md`. Drop entries with only `plan.yaml`.
   3. (Fallback) If `changes[]` is empty, scan `.ai-agents/workspace/artifacts/*/` directly; offer those with `analysis.md` or `design.md`, marked `unindexed`.
-  4. Exclude any change-id whose directory contains an `_archive/` subfolder (already archived).
+  4. Exclude already-archived or irrelevant changes:
+     - **Indexed changes**: exclude any `changes[]` entry with `status: abandoned`. For `status: done` entries, Step 1.2's directory existence check already filters out those whose artifacts have been moved to `artifacts/_archived/` by `/mvt-cleanup`.
+     - **Fallback scan**: when scanning `artifacts/*/` directly, skip any path under `artifacts/_archived/` (the unified archive directory managed by `/mvt-cleanup`).
   5. Exclude `active_change.id` (work in flight).
 
 - **Present** the list:
@@ -126,9 +128,12 @@ If user skips verification: proceed directly to Step 7 with Step 5 selections.
 1. **Applied summary** -- counts: items added / modified / skipped / orphaned-into-new-section
 2. **Files changed** -- paths + byte deltas
 3. **Backup paths** -- so user can manually revert
-4. **Out-of-scope reminder** (always print):
+4. **Synced changes** -- list all change-ids whose knowledge was aggregated in this run:
+   > The following changes have been synced and can be safely archived: {change-id-1}, {change-id-2}, ...
+   > Last synced at: {last_synced_at} (updated by this run)
+5. **Out-of-scope reminder** (always print):
    > This skill processes additions and modifications only. Module deletions, renames, and large refactors are NOT detected here. Run `/mvt-analyze-code` periodically to rebuild from ground truth.
-5. **Suggested next**:
+6. **Suggested next**:
    - Aggregated >= 1 change -> "Run `/mvt-cleanup` to archive these completed changes."
    - Verification flagged code-only entities -> "Run `/mvt-analyze-code` to capture missing entities."
 
