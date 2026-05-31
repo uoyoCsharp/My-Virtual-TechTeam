@@ -137,9 +137,10 @@ export function materializeProject(options: MaterializeOptions): MaterializedFil
   });
 
   // Copy bundled scripts from dist/scripts/ (bundled by esbuild, zero external deps)
+  // Only copy .cjs files to avoid stale build artifacts leaking into user projects
   const scriptsSrc = path.resolve(packageRoot, "dist/scripts");
   const scriptsDest = path.resolve(projectRoot, ".ai-agents/scripts");
-  copyRecursive(scriptsSrc, scriptsDest, materialized, projectRoot);
+  copyRecursive(scriptsSrc, scriptsDest, materialized, projectRoot, (rel) => !rel.endsWith(".cjs"));
 
   const defaults: Array<[string, string]> = [
     [

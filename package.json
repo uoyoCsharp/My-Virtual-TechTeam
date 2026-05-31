@@ -1,6 +1,6 @@
 {
   "name": "@uoyo/mvtt",
-  "version": "2.0.0-beta.2",
+  "version": "2.0.0-beta.3",
   "description": "My Virtual Tech Team - AI-guided prompt orchestration framework",
   "type": "module",
   "bin": {
@@ -35,7 +35,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json && node build-scripts.js",
+    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.build.json && node build-scripts.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
