@@ -53,7 +53,7 @@ sections:
       ## Operation Mode: Shortcut
 
       This skill operates as a shortcut — it can execute at any time without checking workflow prerequisites.
-      - Do NOT update `progress` (this is a shortcut operation, not a workflow phase).
+      - Do NOT update `active_change` fields (this is a shortcut operation, not a workflow phase).
       - Do NOT create an `active_change` if one doesn't already exist.
       - Do NOT write any artifact or document — results are conversation-only.
       - Do NOT interact with plan.yaml in any way — this skill is plan-independent.

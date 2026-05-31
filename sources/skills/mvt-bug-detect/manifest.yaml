@@ -49,7 +49,7 @@ sections:
       ## Operation Mode: Shortcut
 
       This skill operates as a shortcut — it can execute at any time without checking workflow prerequisites.
-      - Do NOT update `progress` (this is a shortcut operation, not a workflow phase).
+      - Do NOT update `active_change` fields (this is a shortcut operation, not a workflow phase).
       - Do NOT write any artifact — diagnosis is presented in conversation only.
       - Do NOT modify any source code — this skill is read-only analysis.
 

@@ -54,7 +54,7 @@ If the selected next task is currently `pending` -> promote it to `in_progress` 
 
 ### Step 6: Update Session State
 
-Apply the standard State Update rules (see shared section above) AND the update-plan-specific updates:
+Apply the State Update rules defined in the **State Update** section below, AND the update-plan-specific updates:
 
 - Refresh the matching entry in `changes[]`: `updated_at` -> current ISO 8601 timestamp.
 - Do NOT touch `active_change.plan_path`.

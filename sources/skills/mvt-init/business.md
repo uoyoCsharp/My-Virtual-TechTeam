@@ -126,7 +126,7 @@ For each target file, check if it already exists:
 After writing all files, validate:
 - `project-context.yaml` is valid YAML with `projects[]` containing at least one entry
 - Each project entry has required fields: `name`, `path`, `type`, `tech_stack.primary_language`
-- `session.yaml` is structurally intact and contains: `session` (with `initialized_at`, `last_synced_at`), `active_change` (with `plan_path`, no `has_plan`), `changes` (array), `history`
+- `session.yaml` is structurally intact and contains: `session` (with `initialized_at`, `last_synced_at`), `active_change` (with `plan_path`), `changes` (array), `history`
 
 If any validation fails → report the specific error and offer to retry or skip.
 

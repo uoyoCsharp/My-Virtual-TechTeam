@@ -40,10 +40,9 @@ This step establishes the **target structure** that aggregated content must fit 
 
 - **What**: from each selected change-id, extract atomic knowledge items and classify them against the section map from Step 2.
 - **How**:
-  1. For each selected change-id, read available artifacts (`analysis.md`, `design.md`, `implementation.md`).
+  1. For each selected change-id, read available artifacts (`analysis.md`, `implementation.md`).
   2. Extract atomic items. Typical sources:
      - `analysis.md` -> domain terms, actors, business rules, constraints
-     - `design.md` -> modules, layers, dependency rules, key interfaces, ADRs
      - `implementation.md` -> files added/changed (informs `.yaml` source_paths), realized vs deviated design points
   3. For each item, match to a section from the Step 2 map:
      - Match by semantic similarity to **section title + 1-line summary**, not by exact string.
