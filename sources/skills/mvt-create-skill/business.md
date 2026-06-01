@@ -27,7 +27,7 @@ The `name` and `description` in YAML frontmatter determine when Claude will use 
 ### Step 1: Load Inputs
 - **Recommended**:
   - One existing skill's SKILL.md under `.claude/skills/<existing>/SKILL.md` as a structural reference (to extract shared section patterns like Activation Protocol, State Update, Next Steps).
-  - `registry.yaml` -- to check for name collisions and understand skill categories.
+  - `.ai-agents/registry.yaml` -- to check for name collisions and understand skill categories.
 
 ### Step 2: Understand Usage with Concrete Examples
 Skip only when usage patterns are already crystal clear.
@@ -136,7 +136,7 @@ Walk this checklist; any failed item must be fixed before declaring success.
 | Standard sections present | SKILL.md contains Role, Activation Protocol, Execution Flow, Edge Cases & Errors, State Update, Suggested Next Steps |
 | Knowledge files exist | Every file referenced in `knowledge:` resolves on disk |
 | Template path correct | If `template:` set, file exists at that path; the template is headings-only |
-| Word budget | SKILL.md body under ~5k words (run a quick `wc` if available) |
+| Word budget | SKILL.md body under ~5k words (use any available word-count method, e.g., editor statistics) |
 | Standard skeleton | Execution Flow contains Load Inputs, main steps with branches, Edge Cases & Errors |
 
 Show the user how to invoke: `/{name}`.
@@ -226,7 +226,7 @@ Copy the following sections verbatim from this document (the assembled SKILL.md 
 | Load Config | Load Config step within Activation Protocol | Copy as-is |
 | Output Language Constraint | Output Language Constraint step within Activation Protocol | Copy as-is |
 | Pre-flight Checks | Pre-flight Checks step within Activation Protocol | Replace `checks` table with skill-specific checks; if none required, use a single INFO row |
-| State Update | `## State Update (Required)` | Replace `/{name}` with the new skill's command; include `active_change` conditional block only if the skill creates changes; include `Shortcut Operation Rules` only if category is `shortcut` |
+| State Update | `## State Update` | Replace `/{name}` with the new skill's command; include `active_change` conditional block only if the skill creates changes; include `Shortcut Operation Rules` only if category is `shortcut` |
 | Suggested Next Steps | `## Suggested Next Steps` | Replace `current_skill` with the new skill name; replace conditional suggestions with skill-appropriate ones |
 
 **Important**: Do NOT paraphrase or rewrite the standard sections. Copy them character-for-character from this document and only substitute the skill-specific values. This ensures consistency across all MVTT skills.
