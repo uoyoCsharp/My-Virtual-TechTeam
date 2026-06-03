@@ -23,43 +23,45 @@ Resolution rules:
 2. Parse YAML; if parse fails or schema is invalid -> stop and report. Do not attempt to repair silently.
 3. Verify the target `task_id` exists in `tasks[]`. If not, list valid ids and stop.
 
-### Step 3: Apply the Update
+### Step 3: Apply the Update, Recompute, Validate, and Write (via script)
 
-Mutate the in-memory plan:
+The mechanical work — mutating the task, recomputing `current_task` via the DAG
+rules, validating the result, and writing back atomically — is performed by a
+deterministic script. Do NOT hand-edit `plan.yaml` or reason through the
+`current_task` selection yourself; call the script with the resolved arguments
+from Step 1–2:
 
-1. Find the target task; capture `old_status` for the report.
-2. Set `tasks[i].status = new_status`.
-3. If `artifacts` provided -> append to `tasks[i].artifacts` (de-duplicate).
-4. If `notes` provided -> overwrite `tasks[i].notes`.
-5. Update `plan.updated_at` to current ISO 8601 timestamp.
+```bash
+node .ai-agents/scripts/plan-update.cjs --plan "<active_change.plan_path>" --task <task_id> --status <new_status> [--artifacts "<comma,separated,paths>"] [--notes "<note text>"]
+```
 
-### Step 4: Recompute current_task
+Include `--artifacts` only if artifacts were provided, and `--notes` only if a note was provided; omit each flag otherwise.
 
-Selection logic, in order:
+| Argument | Value source |
+|----------|-------------|
+| `--plan` | `active_change.plan_path` resolved from session.yaml |
+| `--task` | the `task_id` resolved in Step 1 |
+| `--status` | the `new_status` resolved in Step 1 (`pending`/`in_progress`/`done`/`blocked`/`skipped`) |
+| `--artifacts` | optional; comma-separated paths to append (the script de-duplicates) |
+| `--notes` | optional; overwrites the task's `notes` |
 
-1. If any task has status `in_progress` AND it is **not** the task we just changed to a terminal status (done/blocked/skipped) -> `current_task` = that task's id.
-2. Otherwise pick the first task (by array order) where:
-   - `status == pending`
-   - All ids in `depends_on` reference tasks with status `done`
-3. If no such task exists AND every task is `done` -> set `plan.status = done`, `current_task = null`.
-4. If no such task exists but some tasks are still `pending` (because their dependencies are not done -- e.g., everything reachable is blocked) -> set `current_task = null`, leave `plan.status = in_progress`. Surface a warning in the output ("All remaining tasks are blocked by dependencies; resolve a blocker before continuing").
+The script performs, deterministically:
 
-If the selected next task is currently `pending` -> promote it to `in_progress` (so the plan accurately reflects the active focus). Skip this promotion if `plan.status` just transitioned to `done`.
+1. **Apply**: sets the task status; appends + de-duplicates `--artifacts` (handles `artifacts: null`); overwrites `--notes`; sets `completed_at` to now when status is `done`, else `null`; refreshes `plan.updated_at`.
+2. **Recompute `current_task`** (same rules as before): an `in_progress` task that is not the one just moved to terminal wins; else the first `pending` task whose `depends_on` are all `done` (promoted to `in_progress`); else if all tasks are `done` set `plan.status = done` and `current_task = null`; else `current_task = null` with a blocked-by-dependencies warning.
+3. **Validate** the mutated plan (unique ids, valid `depends_on` references, DAG/no-cycle, ≤1 `in_progress`, every task has acceptance, `completed_at` consistency, `current_task` validity).
+4. **Write atomically** (temp + rename) only if validation passes.
 
-### Step 5: Validate and Write
+**Interpreting the result:**
 
-1. Run the plan validator on the mutated structure.
-2. If validation fails -> abort the write, report the validation errors, leave the original file untouched.
-3. Otherwise, write back to `active_change.plan_path`.
+- **Exit 0**: success. stdout is a single-line JSON object:
+  ```json
+  {"ok":true,"task":{"id":"t1","title":"...","old_status":"in_progress","new_status":"done"},"current_task":"t2","plan_status":"in_progress","progress":{"done":1,"total":4},"warning":null}
+  ```
+  Use these fields directly to render the Output Format block. The file is already written — do NOT read it back to verify. If `warning` is non-null, surface it.
+- **Exit 1**: failure. stderr carries the error (invalid status, task not found, validation failure, parse/write error). The file was **not** modified. Report the error to the user and do not fabricate a success summary.
 
-### Step 6: Update Session State
-
-Apply the State Update rules defined in the **State Update** section below, AND the update-plan-specific updates:
-
-- Refresh the matching entry in `changes[]`: `updated_at` -> current ISO 8601 timestamp.
-- Do NOT touch `active_change.plan_path`.
-
-### Step 7: Output
+### Step 4: Output
 
 Emit the Plan Update summary block defined in the Output Format section. Include:
 
