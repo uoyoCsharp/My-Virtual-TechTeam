@@ -13,6 +13,7 @@ import type { Manifest } from "../types/manifest.js";
 import { assembleFromManifest } from "../build/assembler.js";
 import { hashString, hashFile } from "./hash.js";
 import { updateCoreManifest } from "./core-manifest.js";
+import { updateRegistry } from "./registry-merge.js";
 
 export interface MaterializedFile {
   absPath: string;
@@ -125,15 +126,17 @@ export function materializeProject(options: MaterializeOptions): MaterializedFil
     category: "create_once",
   });
 
-  const registrySrc = path.resolve(packageRoot, "registry.yaml");
+  // Reconcile registry.yaml instead of overwriting it: user-authored skills
+  // (custom: true) and knowledge bindings added via /mvt-create-skill and
+  // /mvt-manage-context must survive `mvtt update`. Treated as create_once
+  // (like core/manifest.yaml) so the modified-files guard does not flag it.
   const registryDest = path.resolve(projectRoot, ".ai-agents/registry.yaml");
-  mkdirSync(path.dirname(registryDest), { recursive: true });
-  copyFileSync(registrySrc, registryDest);
+  updateRegistry(projectRoot, packageRoot);
   materialized.push({
     absPath: registryDest,
     relPath: ".ai-agents/registry.yaml",
     hash: hashFile(registryDest),
-    category: "generated",
+    category: "create_once",
   });
 
   // Copy bundled scripts from dist/scripts/ (bundled by esbuild, zero external deps)

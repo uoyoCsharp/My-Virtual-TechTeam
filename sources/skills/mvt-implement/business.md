@@ -14,7 +14,7 @@
   2. Topologically order files by dependency: domain entities -> repositories/adapters -> use-case/services -> controllers/UI.
   3. Group consecutive files that share a single conceptual change into one commit boundary.
   4. For each file, decide: `create | modify | delete`, and write a one-line intent.
-- **Plan-aware behavior**: if `plan.yaml` is present, restrict scope to the files implied by `current_task` (cross-reference `plan.tasks[*].artifacts.files`); do NOT silently expand into other tasks.
+- **Plan-aware behavior**: if `plan.yaml` is present, treat `current_task`'s `artifacts.files` (cross-reference `plan.tasks[*].artifacts.files`) as a **starting-scope hint, not a hard ceiling**. The source of truth for scope remains `design.md`'s `Change Tracking` (per Step 2.1). When `artifacts.files` is `null` or empty, derive scope entirely from `Change Tracking`. If implementation reveals files beyond this hint are genuinely required, do NOT silently expand — surface them via Step 3 confirmation and never absorb files that clearly belong to a different task.
 - **Output of this step**: an in-conversation list shown to user as a preview, with no write yet.
 
 ### Step 3: Confirm Scope (when needed)
@@ -23,6 +23,7 @@
   - The plan introduces a new public API (exported symbol, HTTP endpoint, CLI flag).
   - The plan deletes existing code (delete count > 0).
   - The plan deviates from `design.md` (e.g., adds files not in `Change Tracking` or skips files listed there).
+  - The plan touches files beyond `current_task`'s `artifacts.files` hint (state which files are added and why, in one line each).
 - **Otherwise**: proceed silently.
 - **On deviation from design**: explain the deviation reason in one line; if the deviation is structural (new module, layer change, interface break), STOP and recommend re-running `/mvt-design`.
 
@@ -59,7 +60,12 @@
   3. UI/frontend changes: per project rules, ask user to verify in browser; do NOT claim "tested" if you only ran type-check.
 
 ### Step 7: Write Artifact
-- **Path and template**: as defined in the **Artifact Structure** section below.
+- **Path and template**: as defined in the **Artifact Structure** section below. The artifact filename is ALWAYS `implementation.md` — one file per change, never per task. Do NOT invent task-suffixed names like `implementation-t1.md`.
+- **Multi-task plans (single-file accumulation)**: when `plan.yaml` drives the change and you implement tasks across separate invocations, all task implementations accumulate into the **same** `implementation.md`:
+  1. If `implementation.md` does not yet exist -> create it from the template.
+  2. If it already exists -> read it, then **append** a new `## Task: {current_task_id} — {task_title}` section for this task. Do NOT overwrite prior tasks' sections.
+  3. Under that task section, place this invocation's required content (the headings below). Keep earlier tasks' sections intact.
+  4. For single-task or plan-less changes, write the content at the top level without a per-task wrapper (existing behavior).
 - **Required content** (mapped to template headings):
   - `Implementation Summary` -- one paragraph: what was built, scope.
   - `Files Touched` -- table: path | create/modify/delete | one-line intent.
@@ -71,11 +77,9 @@
 
 ### Step 8: Plan-Aware Progress Hint (if applicable)
 - If `plan.yaml` exists and a single `current_task` covers this implementation, suggest the user run `/mvt-update-plan <task-id> done` (or `blocked` with reason).
+- If the files actually touched differ from `current_task`'s `artifacts.files` (extra files added during Step 3, or planned files left untouched), explicitly remind the user to run `/mvt-update-plan` so the plan's `artifacts.files` reflects reality for `/mvt-resume` and future sessions.
 - Do NOT modify `plan.yaml` directly from this skill; it is owned by `/mvt-update-plan`.
 - Do NOT modify `changes` directly; it is owned by `/mvt-plan-dev` / `/mvt-update-plan`.
-
-### Step 9: State Update
-Apply the State Update rules defined in the **State Update** section below.
 
 ## Edge Cases & Errors
 

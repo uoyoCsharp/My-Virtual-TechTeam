@@ -9,7 +9,10 @@
 import { build } from "esbuild";
 
 await build({
-  entryPoints: ["sources/scripts/session-update.js"],
+  entryPoints: [
+    "sources/scripts/session-update.js",
+    "sources/scripts/plan-update.js",
+  ],
   outdir: "dist/scripts",
   outExtension: { ".js": ".cjs" },
   bundle: true,

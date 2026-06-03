@@ -9,10 +9,10 @@ generated:
     source: "build:templates"
   - pattern: ".ai-agents/knowledge/core/_framework/**"
     source: "copy:sources/knowledge/core/_framework/"
-  - pattern: ".ai-agents/registry.yaml"
-    source: "copy:registry.yaml"
   - pattern: ".ai-agents/scripts/session-update.cjs"
     source: "bundle:sources/scripts/session-update.js"
+  - pattern: ".ai-agents/scripts/plan-update.cjs"
+    source: "bundle:sources/scripts/plan-update.js"
 
 create_once:
   - path: ".ai-agents/config.yaml"
@@ -23,6 +23,10 @@ create_once:
     source: "sources/defaults/project-context.yaml"
   - path: ".ai-agents/knowledge/core/manifest.yaml"
     source: "sources/knowledge/core/manifest.yaml"
+  # Reconcile-merged on update (see src/fs/registry-merge.ts): framework skills
+  # are refreshed, user `custom: true` skills and added knowledge bindings kept.
+  - path: ".ai-agents/registry.yaml"
+    source: "registry.yaml"
 
 user_data_dirs:
   - ".ai-agents/workspace/artifacts/"
