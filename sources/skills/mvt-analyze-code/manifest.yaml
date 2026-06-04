@@ -15,6 +15,9 @@ sections:
       Analyze existing code to generate the project-context.md file, which describes the project's terms, modules, layer structure, business rules, and API overview. This is an independent operation that does not create a change-id.
 
   - type: shared
+    source: sections/project-context-profile.md
+
+  - type: shared
     source: sections/role-header.md
     params:
       role: Analyst
@@ -55,6 +58,9 @@ sections:
 
   - type: shared
     source: sections/output-language-constraint.md
+
+  - type: shared
+    source: sections/output-format-constraint.md
 
   - type: shared
     source: sections/activation-preflight.md

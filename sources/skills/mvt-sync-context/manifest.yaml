@@ -61,6 +61,9 @@ sections:
     source: sections/output-language-constraint.md
 
   - type: shared
+    source: sections/output-format-constraint.md
+
+  - type: shared
     source: sections/activation-preflight.md
     params:
       checks:
@@ -72,6 +75,9 @@ sections:
           field: ".ai-agents/knowledge/project/_generated/project-context.md exists"
           level: "BLOCK"
           message: "project-context.md not found. Run `/mvt-analyze-code` to create the initial document; this skill only handles incremental updates."
+
+  - type: shared
+    source: sections/project-context-profile.md
 
   - type: file
     source: ./business.md

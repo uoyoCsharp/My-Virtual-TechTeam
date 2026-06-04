@@ -65,6 +65,9 @@ sections:
   - type: shared
     source: sections/output-language-constraint.md
 
+  - type: shared
+    source: sections/output-format-constraint.md
+
   - type: inline
     content: |
       ### Step 4: Pre-flight Checks
