@@ -1,0 +1,16 @@
+# Project Context Index
+# Lean index: structural info only. Semantic data lives in project-context.md.
+# Single project: one entry with name="default", path="."
+# Multi-project: one entry per detected sub-project.
+
+projects:
+  - name: "mvtt"
+    path: "."
+    type: "cli-tool"
+    tech_stack:
+      primary_language: "TypeScript"
+      secondary_languages:
+        - "JavaScript"
+      framework: ""
+      build_tool: "tsc + esbuild"
+      test_framework: "vitest"

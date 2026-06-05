@@ -1,0 +1,27 @@
+# MVTT Framework - User Configuration
+
+version: "2.0"
+
+preferences:
+  # Language used for interactive responses
+  # Options: en-US, zh-CN
+  interaction_language: zh-CN
+
+  # Language used for persistent document output
+  # If absent, falls back to interaction_language.
+  # Options: en-US, zh-CN
+  document_output_language: en-US
+
+  # Output style
+  output:
+    no_emojis: true          # Disable emojis in output
+    data_format: yaml        # Data output format: yaml | json
+
+  # AI routing for /mvt-manage-context add
+  context_routing:
+    relevance_threshold: 70  # Skills scored >= this are pre-checked; below are folded
+
+  # Session history limits
+  history_limits:
+    history: 20             # Max history entries (1-100)
+    changes: 20             # Max changes entries (1-100)

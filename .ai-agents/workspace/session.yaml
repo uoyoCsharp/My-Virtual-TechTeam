@@ -1,0 +1,23 @@
+session:
+  initialized_at: 2026-06-05T08:12:06.624Z
+  last_synced_at: ""
+active_change:
+  id: 20260605-multi-project-workflow-support
+  title: 多项目工作流支持 (OPT-2026-002)
+  created_at: 2026-06-05T08:29:24.784Z
+  plan_path: ""
+changes: []
+history:
+  - skill: /mvt-init
+    completed_at: 2026-06-05T08:12:06.624Z
+    summary: 扫描项目结构，检测到 TypeScript CLI 工具 (@uoyo/mvtt)，写入 project-context.yaml
+    change_id: ""
+  - skill: /mvt-analyze-code
+    completed_at: 2026-06-05T08:16:12.771Z
+    summary: 逆向分析 mvtt 代码库，生成 project-context.md（模块结构、业务规则、API 概览）
+    change_id: ""
+  - skill: /mvt-analyze
+    completed_at: 2026-06-05T08:29:24.784Z
+    summary: 分析 OPT-2026-002 多项目工作流提案，提取三方案+前提需求，解决两处歧义（单项目折叠按 length==1、存量工作区
+      analyze-code 自动拆分）
+    change_id: 20260605-multi-project-workflow-support
