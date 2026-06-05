@@ -21,3 +21,8 @@ history:
     summary: 分析 OPT-2026-002 多项目工作流提案，提取三方案+前提需求，解决两处歧义（单项目折叠按 length==1、存量工作区
       analyze-code 自动拆分）
     change_id: 20260605-multi-project-workflow-support
+  - skill: /mvt-design
+    completed_at: 2026-06-05T08:51:51.084Z
+    summary: 设计多项目工作流架构：7 个 ADR（含覆盖提案 §8 的 registry-merge src/ 改动），2x2
+      知识矩阵、task.project 数组、deliverables 交付物，约 20 文件改动
+    change_id: 20260605-multi-project-workflow-support
