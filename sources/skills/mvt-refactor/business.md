@@ -16,12 +16,27 @@
   3. State the current behavior in plain language; include any non-obvious side effects or invariants you can see in the code.
 - **Output of this step**: a target table (`file | range | role`) and a "current behavior" paragraph; both are shown to user before continuing.
 
-### Step 3: Classify Refactoring Type
+### Step 3: Identify Project Scope and Load Project-Specific Knowledge
+
+This step applies only when the workspace has multiple projects (`projects.length > 1` in `project-context.yaml`). In single-project workspaces, all relevant knowledge was loaded at activation; skip this step entirely.
+
+- **Project identification**: match the file paths resolved in Step 2 against `projects[].path` and `projects[].source_paths`:
+  - A file whose path starts with a project's `path` prefix belongs to that project.
+  - A file under a project's `source_paths` entry also belongs to that project.
+  - Collect the set of unique project names from all matched files. This is the **active project scope** for this invocation.
+- **On-demand knowledge loading**: for each project P in the active project scope, read `.ai-agents/registry.yaml` and load:
+  1. Every entry under `knowledge.{P}` -- load each entry's referenced files (resolve relative to `.ai-agents/{source}`).
+  2. Every entry under `skills.mvt-refactor.knowledge.{P}` -- load each entry's referenced files.
+  3. Skip any key absent from the registry (no project-specific knowledge is valid; do not warn).
+- **Multi-project scenario**: if files span multiple projects, load each project's knowledge sequentially. The skill operates with the union of all loaded project-specific knowledge plus the `_all` knowledge already loaded at activation.
+- **Unmatched files**: if a file path does not match any project's `path` or `source_paths`, surface a note and treat it as belonging to the first project in `projects[]` (fallback). This may indicate a configuration gap in `project-context.yaml`.
+
+### Step 4: Classify Refactoring Type
 - **What**: pick the smallest type that covers the requested change. Use the Refactoring Types table above for risk levels.
 - **How**: assign one primary type per refactoring task. Multiple types in one run are allowed but each must be tracked separately in the artifact.
 - If the request requires `Change Interface/API` AND the symbol is exported beyond the project (public API, library entry point, IPC boundary): STOP -- this is no longer a refactoring task; recommend `/mvt-design`.
 
-### Step 4: Risk Assessment
+### Step 5: Risk Assessment
 - **What**: assign a final risk score and decide whether explicit confirmation is needed.
 - **How**: combine refactoring type and impact factors.
 
@@ -34,11 +49,11 @@
   | User has uncommitted changes overlapping the target | +1 |
 
 - Final risk = type's base level + factors:
-  - Low + 0..1 -> proceed silently in Step 7.
-  - Medium OR Low + 2 -> require explicit confirmation in Step 6.
-  - High OR (Medium + 2) -> require explicit confirmation AND a behavior-preservation strategy from Step 5.
+  - Low + 0..1 -> proceed silently in Step 8.
+  - Medium OR Low + 2 -> require explicit confirmation in Step 7.
+  - High OR (Medium + 2) -> require explicit confirmation AND a behavior-preservation strategy from Step 6.
 
-### Step 5: Choose Behavior-Preservation Strategy
+### Step 6: Choose Behavior-Preservation Strategy
 - **What**: pick a verification path BEFORE editing.
 - **How**: choose the row that matches your test reality.
 
@@ -50,34 +65,34 @@
 
 - Document the chosen strategy in the artifact regardless of risk level.
 
-### Step 6: Confirm with User (when required)
-- **Trigger**: per the Step 4 thresholds, or any High-risk type.
+### Step 7: Confirm with User (when required)
+- **Trigger**: per the Step 5 thresholds, or any High-risk type.
 - **Format**: present a single screen with:
   - Target summary (Step 2's table, condensed to file count + symbol).
   - Refactoring type and risk level.
   - Number of callers and a list of the top 5 affected files.
-  - Behavior-preservation strategy (Step 5).
+  - Behavior-preservation strategy (Step 6).
   - One yes/no prompt: `Proceed with this refactor? (y / n / show-plan)`.
 
-### Step 7: Plan and Execute Incrementally
+### Step 8: Plan and Execute Incrementally
 - **What**: apply the change in the smallest reversible steps.
 - **How**:
   1. Break the refactor into ordered sub-steps (e.g., Rename: 1) update declaration, 2) update callers, 3) update tests, 4) update docs).
   2. After each sub-step:
      - Compile / type-check the affected files.
-     - If a test command was identified in Step 5, run it (or surface it for user to run if running tests is not allowed in this environment).
+     - If a test command was identified in Step 6, run it (or surface it for user to run if running tests is not allowed in this environment).
      - On failure: revert the sub-step, surface the cause, do NOT continue.
   3. Do not interleave behavior changes (bug fixes, feature toggles) with the refactor. If you spot one, note it for follow-up; do not silently include it.
   4. Do not modify code outside the planned target unless required for compilation/type correctness; record any such "incidental" edits.
 
-### Step 8: Verify Behavior Preservation
+### Step 9: Verify Behavior Preservation
 - **What**: prove (within the chosen strategy) that observable behavior is unchanged.
 - **How**:
   - With tests: all pre-existing tests pass; new characterization tests pass; assert pass count is unchanged or increased.
   - Without tests: list the call sites you visually verified, plus the manual behavior checks you recommend the user run.
-- If anything regresses: revert the most recent sub-step, surface the regression, return to Step 7. Do not declare success.
+- If anything regresses: revert the most recent sub-step, surface the regression, return to Step 8. Do not declare success.
 
-### Step 9: Write Refactor Notes
+### Step 10: Write Refactor Notes
 - **Path**: `.ai-agents/workspace/artifacts/{change-id}/refactor-notes.md` if `active_change` exists; otherwise inline summary in conversation only (shortcut mode).
 - **Required content**:
   - `Target` -- file/symbol list, current-behavior paragraph.
@@ -88,7 +103,7 @@
   - `Verification Result` -- tests run, pass/fail counts; or manual checks recommended.
   - `Follow-ups` -- deferred behavior changes spotted during refactoring.
 
-### Step 10: State Update
+### Step 11: State Update
 Apply the State Update rules defined in the **State Update** section below.
 
 ## Edge Cases & Errors
@@ -98,8 +113,8 @@ Apply the State Update rules defined in the **State Update** section below.
 | Target spans multiple repos / submodules | STOP -- out of scope; recommend a coordinated change rather than a single refactor |
 | Refactor uncovers a real bug | Pause refactor, document the bug, recommend `/mvt-fix` -- do NOT fix during the refactor |
 | Refactor target is dead code | Confirm with user before deleting; offer alternative of marking deprecated first |
-| Symbol is referenced via reflection / dynamic dispatch / string lookup | Increase risk by +2; require strategy 5(a) (characterization test) before proceeding |
+| Symbol is referenced via reflection / dynamic dispatch / string lookup | Increase risk by +2; require strategy 6(a) (characterization test) before proceeding |
 | User has uncommitted changes overlapping the target | Show diff, recommend committing/stashing first, ask for explicit confirmation if user wants to proceed anyway |
 | Type/test failures persist after revert | Surface a clear summary; suggest user re-run the original test baseline to detect a pre-existing failure unrelated to the refactor |
-| User aborts at Step 6 | Do not modify any file; report "no changes" |
+| User aborts at Step 7 | Do not modify any file; report "no changes" |
 | Active change is mid-implementation (not yet `done`) | Warn that refactoring during implementation can confuse review/test phases; require explicit confirmation |

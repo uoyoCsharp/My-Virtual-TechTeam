@@ -1,6 +1,17 @@
 ## Execution Flow
 
-### Step 1: Identify Completed Changes
+### Step 1: Per-Project Routing (4-Level Fallback Chain)
+
+Before processing any change, determine which project(s) the sync targets. Use this 4-level fallback chain:
+
+1. **`task.project` exists** (when syncing within a plan-driven context): route to that project's `_generated/{name}/project-context.md`. If the task has multiple projects, route to each independently.
+2. **Artifact file paths match** a unique project's `source_paths` or `path` from `project-context.yaml`: route to that project.
+3. **Current operation's file path reverse-lookup**: match the file path against `projects[].path` and `projects[].source_paths` -> route to that project.
+4. **List candidate projects for user selection**: if none of the above resolved a unique project, list the project names and ask the user.
+
+**Cross-project changes** (task spanning multiple projects): split write per project -- each project's `project-context.md` receives only its relevant knowledge entries.
+
+### Step 2: Identify Completed Changes
 - **What**: produce a candidate list of change-ids whose artifacts will be aggregated.
 - **How**:
   1. Read `session.yaml`. Collect `changes[]` entries with `status: done`.
@@ -23,7 +34,7 @@
 
 - Cancel / empty selection -> stop with "no changes applied".
 
-### Step 2: Read Current Project Context (Adaptive Structure Discovery)
+### Step 3: Read Current Project Context (Adaptive Structure Discovery)
 
 This step establishes the **target structure** that aggregated content must fit into. The structure is NOT assumed -- it is derived from the current document.
 
@@ -36,7 +47,7 @@ This step establishes the **target structure** that aggregated content must fit 
 3. If the document has zero `##` sections (single block) -> STOP. Recommend `/mvt-analyze-code` to establish a sectioned baseline first.
 4. Read `.ai-agents/workspace/project-context.yaml`. Record current `projects[].source_paths`, `modules`, and `tech_stack` for diff comparison in Step 5d.
 
-### Step 3: Extract Artifact Content
+### Step 4: Extract Artifact Content
 
 - **What**: from each selected change-id, extract atomic knowledge items (do not classify yet).
 - **How**:
@@ -45,7 +56,7 @@ This step establishes the **target structure** that aggregated content must fit 
      - `analysis.md` -> domain terms, actors, business rules, constraints
      - `implementation.md` -> files added/changed (informs `.yaml` source_paths), realized vs deviated design points
 
-### Step 4: Normalize Extracted Content
+### Step 5: Normalize Extracted Content
 
 Before classifying extracted items against the section map, normalize each item per the **Document Profile: project-context.md** section loaded above. This step strips intra-artifact cross-references -- meaningful in their source document but noise in project-context.md -- before they enter the merge pipeline.
 
@@ -68,7 +79,7 @@ Before classifying extracted items against the section map, normalize each item 
    - Was entirely a cross-reference with no independent semantic value -> drop it (it is a pointer, not knowledge).
 3. Any normalization that removes content from a `modify` item (where the item modifies an existing entry) must be flagged in the update plan (Step 6, Table 6b) so the user can verify the substantive meaning was preserved.
 
-### Step 5: Classify Artifact Content
+### Step 6: Classify Artifact Content
 
 - **What**: classify each normalized item against the section map from Step 2.
 - **How**:
@@ -83,7 +94,7 @@ Before classifying extracted items against the section map, normalize each item 
      - `modify` -- target section mentions the entity but artifact provides a different value
      - `redundant` -- already present, no change (will be filtered out, not shown to user)
 
-### Step 6: Render the Update Plan (Four Tables)
+### Step 7: Render the Update Plan (Four Tables)
 
 #### 6a. Section-mapped items
 | # | change-id | item | type | target section | classification |
@@ -101,7 +112,7 @@ Before classifying extracted items against the section map, normalize each item 
 | # | yaml field | current | proposed |
 |---|------------|---------|----------|
 
-### Step 7: User Confirmation (Per-Table)
+### Step 8: User Confirmation (Per-Table)
 
 - **6a**: default = accept all. User input: indices to drop, or `e <n>` to edit a single item's target section.
 - **6b**: **explicit per-row decision required**. Format `<index>:<keep|replace|edit>`. Example: `1:replace,2:keep,3:edit`. No default.
@@ -110,7 +121,7 @@ Before classifying extracted items against the section map, normalize each item 
 
 Then ask: **"Run optional read-only code verification before applying? (y/n)"**
 
-### Step 8: (Optional) Read-only Code Verification
+### Step 9: (Optional) Read-only Code Verification
 
 This step catches artifacts claiming entities never actually delivered. It is **read-only** -- it never writes anything to `.md` or `.yaml`.
 
@@ -131,7 +142,7 @@ If user opts in:
 
 If user skips verification: proceed directly to Step 9 with Step 7 selections.
 
-### Step 9: Apply Updates (Merge Mode)
+### Step 10: Apply Updates (Merge Mode)
 
 - **Pre-write**:
   1. Backup: `project-context.md` -> `project-context.md.bak`; `project-context.yaml` -> `project-context.yaml.bak`. Overwrite any prior `.bak`.
@@ -151,7 +162,7 @@ If user skips verification: proceed directly to Step 9 with Step 7 selections.
 
 - **Atomicity**: temp + rename per file. If `.md` write succeeds but `.yaml` fails (or vice versa) -> restore the failed one from `.bak`, keep the other; report partial success.
 
-### Step 10: Report
+### Step 11: Report
 
 1. **Applied summary** -- counts: items added / modified / skipped / orphaned-into-new-section
 2. **Files changed** -- paths + byte deltas
@@ -165,9 +176,10 @@ If user skips verification: proceed directly to Step 9 with Step 7 selections.
    - Aggregated >= 1 change -> "Run `/mvt-cleanup` to archive these completed changes."
    - Verification flagged code-only entities -> "Run `/mvt-analyze-code` to capture missing entities."
 
-### Step 11: State Update
+### Step 12: State Update
 Apply the State Update rules defined in the **State Update** section below.
 - The `--set-synced` parameter updates `session.last_synced_at`.
+- Pass `--projects` to plan-update.cjs when updating a plan that has project attribution.
 
 ## Edge Cases & Errors
 

@@ -1,4 +1,4 @@
-### Step 3: Load Config & Apply Preferences (Config Foundation)
+### Step 4: Load Config & Apply Preferences (Config Foundation)
 Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:
 
 **Language**:

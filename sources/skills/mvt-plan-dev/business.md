@@ -15,7 +15,7 @@ If no analysis or design artifacts exist and the user provides no description, p
 If `active_change.plan_path is non-empty` AND `.ai-agents/workspace/artifacts/{active_change.id}/plan.yaml` already exists:
 
 - Read the existing plan.
-- Show a summary (task count, status counts, current_task).
+- Show a summary (task count, status counts, current_tasks).
 - Ask: "A plan already exists. Choose: (1) regenerate from scratch (existing tasks discarded), (2) cancel and use `/mvt-update-plan` to evolve it, (3) abort."
 - Only continue with generation on choice (1).
 
@@ -31,6 +31,7 @@ Decompose the change with the following constraints. These constraints are AI-fr
 | Explicit dependencies | If task B requires output from task A, list `A` in B's `depends_on`. Avoid hidden ordering. Tasks that can run in parallel should have no dependency between them. |
 | No cycles | Dependency graph must be a DAG. Validation will reject cycles. |
 | Skill hint | Set `skill_hint` to the skill best suited to execute the task (without `/` prefix): `mvt-implement`, `mvt-test`, `mvt-fix`, `mvt-design`, `mvt-review`, `mvt-refactor`, etc. |
+| Project attribution | Each task must have a `project` array listing which projects it belongs to. In a single-project workspace (`projects.length == 1`), set `project: ["default"]` (or the sole project's name). In a multi-project workspace, auto-infer from the task's file paths matching `projects[].path` and `projects[].source_paths`; if ambiguous, prompt the user. Cross-project tasks list multiple project names. |
 
 ### Step 4: Assemble plan.yaml
 
@@ -43,7 +44,8 @@ title: "Feature Name"
 created_at: "2026-05-31T11:30:00"
 updated_at: "2026-05-31T11:30:00"
 status: in_progress
-current_task: "t1-foundation-layer"
+current_tasks:
+  default: "t1-foundation-layer"
 
 tasks:
   - id: "t1-foundation-layer"
@@ -51,6 +53,8 @@ tasks:
     status: in_progress
     completed_at: null
     depends_on: []
+    project:
+      - default
     skill_hint: mvt-implement
     artifacts:
       files:
@@ -68,6 +72,8 @@ tasks:
     status: pending
     completed_at: null
     depends_on: ["t1-foundation-layer"]
+    project:
+      - default
     skill_hint: mvt-implement
     artifacts: null
     notes: >
@@ -87,7 +93,7 @@ tasks:
 - `created_at`: current ISO 8601 timestamp
 - `updated_at`: same as `created_at` initially
 - `status: in_progress`
-- `current_task`: the `id` of the first executable task (a task with `depends_on: []`), set to `in_progress`
+- `current_tasks`: a map of project name to task id. For single-project workspaces: `{ default: "<first_task_id>" }`. For multi-project: one key per project, each pointing to that project's first executable task.
 
 #### Task fields
 
@@ -98,6 +104,7 @@ For each task, populate:
 - **`status`**: first executable task → `in_progress`; all others → `pending`.
 - **`completed_at`**: `null` for all tasks on initial creation (set by `/mvt-update-plan` when marking `done`).
 - **`depends_on`**: array of task ids. Empty array `[]` means no dependencies.
+- **`project`**: array of project names this task belongs to. In single-project workspaces, use `["default"]` (or the sole project's name). Cross-project tasks list multiple names. Auto-infer from file paths matching `projects[].path` and `projects[].source_paths`; if ambiguous, prompt the user.
 - **`skill_hint`**: the skill name (without `/`) that will execute this task.
 - **`artifacts`**: structured object. On initial plan creation, set to `null` or pre-populate with planned target files if known:
   ```yaml
@@ -118,11 +125,12 @@ Before writing, validate the assembled YAML:
 
 1. **Unique IDs** — no two tasks share the same `id`
 2. **Valid references** — every `depends_on` entry references an existing task `id`
-3. **No cycles** — the dependency graph is a DAG
-4. **current_task validity** — references a task with status `pending` or `in_progress`
+3. **No cycles** — the dependency graph is a DAG (per-project subgraph when multi-project)
+4. **current_tasks validity** — each value references a task with status `pending` or `in_progress`
 5. **Acceptance required** — every task has at least one acceptance criterion
-6. **Single in_progress** — at most one task has status `in_progress`
+6. **Per-project in_progress** — at most one `in_progress` task per project (not globally)
 7. **completed_at consistency** — must be `null` for all non-done tasks
+8. **Project attribution** — every task has a `project` array with at least one valid project name
 
 If validation fails, revise the plan and re-validate (do NOT write a broken plan).
 
@@ -148,9 +156,9 @@ Render an inline summary (no external template). Structure:
 
 ### Task Breakdown
 
-| # | id | title | status | skill | depends_on |
-|---|----|----|--------|-------|------------|
-| 1 | {id} | {title} | {status} | {skill_hint} | {deps_or_"—"} |
+| # | id | title | status | skill | project | depends_on |
+|---|----|----|--------|-------|---------|------------|
+| 1 | {id} | {title} | {status} | {skill_hint} | {project_list} | {deps_or_"—"} |
 | ... |
 
 ```

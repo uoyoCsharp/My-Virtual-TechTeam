@@ -72,11 +72,14 @@ Identify public interfaces:
    - Fill each template section with analysis results
    - If a section has no relevant content, include the heading with "(No relevant content detected)"
 
-2. Write the output to `.ai-agents/knowledge/project/_generated/project-context.md`:
-   - If analyzing a single project, write that project's section
-   - If analyzing multiple projects (`--all`), write all sections separated by `---`
-   - If the file already exists, merge with existing content:
-     - Replace sections for re-analyzed projects
-     - Preserve sections for projects NOT in this analysis run
+2. Write the output using the project-aware path convention:
+   - **Single-project** (`projects.length == 1`): write to `.ai-agents/knowledge/project/_generated/project-context.md` (flat path, zero migration -- ADR-1).
+   - **Multi-project**: write to `.ai-agents/knowledge/project/_generated/{name}/project-context.md` per project. Each file is a whole-file write (not in-file section replacement).
 
-3. Do NOT update `project-context.yaml` -- it is the lean index, managed by `/mvt-init` and `/mvt-sync-context` only
+3. If the output file already exists:
+   - **Single-project**: replace the whole file.
+   - **Multi-project**: replace only the file(s) for re-analyzed projects; preserve files for projects NOT in this analysis run.
+
+4. **Populate `source_paths`** in `project-context.yaml`: after analyzing each project, update the matching project entry's `source_paths` array with the detected source directories (e.g., `["src/", "test/"]`). This overwrites the empty default set by `/mvt-init`.
+
+5. Do NOT update other fields in `project-context.yaml` -- only `source_paths` is touched by this skill.

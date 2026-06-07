@@ -61,9 +61,10 @@ describe("assembler", () => {
       const output = buildSkill("mvt-analyze");
       expect(output).toContain("## Activation Protocol");
       expect(output).toContain("### Step 1: Load Context");
-      expect(output).toContain("### Step 2: Load Knowledge");
-      expect(output).toContain("### Step 3: Load Config");
-      expect(output).toContain("### Step 4: Pre-flight Checks");
+      expect(output).toContain("### Step 2: Resolve Project Scope");
+      expect(output).toContain("### Step 3: Load Knowledge");
+      expect(output).toContain("### Step 4: Load Config");
+      expect(output).toContain("### Step 5: Pre-flight Checks");
     });
 
     it("includes Execution Flow from business.md", () => {

@@ -19,7 +19,7 @@ const BACKUP_DIR_REL = ".ai-agents/.backup";
 type Dict = Record<string, unknown>;
 
 interface RegistryDoc {
-  knowledge?: { shared?: unknown[] } & Dict;
+  knowledge?: Record<string, unknown[]>;
   skills?: Record<string, Dict>;
   [key: string]: unknown;
 }
@@ -84,7 +84,7 @@ function backupRegistry(projectRoot: string, sourcePath: string): string {
 
 /**
  * Merge a fresh framework registry with the user's existing registry,
- * preserving user-authored content (Plan A — diff-based, no markers required).
+ * preserving user-authored content (diff-based, no markers required).
  *
  * Rules:
  * - Framework skills (those present in the framework registry) take the NEW
@@ -95,9 +95,12 @@ function backupRegistry(projectRoot: string, sourcePath: string): string {
  *   registry, and flagged `custom: true`) are preserved as-is.
  * - User skills that are neither framework skills nor flagged `custom: true`
  *   are dropped (retired framework skills / legacy/malformed entries).
- * - `knowledge.shared[]` is the framework baseline plus any user shared entries
- *   not already present in the framework baseline (keyed by `id`, falling back
- *   to deep content equality).
+ * - `knowledge` is a project-keyed map (ADR-2/3). Each key (e.g. "_all",
+ *   "web", "api") is the framework baseline plus user additions not already
+ *   present (keyed by `id`, falling back to deep content equality). Both
+ *   top-level and per-skill knowledge maps are merged independently.
+ * - Old flat arrays (pre-migration: `knowledge.shared` or `skills.*.knowledge`
+ *   as arrays) are treated as the `_all` key during merge (ADR-3).
  */
 function mergeRegistry(
   framework: RegistryDoc,
@@ -109,21 +112,52 @@ function mergeRegistry(
   const mergedSkills: Record<string, Dict> = {};
   let preservedBindingCount = 0;
 
-  // Framework skills: refresh from framework, re-graft user-added knowledge.
+  // --- Per-skill knowledge merge (map-aware, ADR-6) ---
+  // For each framework skill: refresh from framework, re-graft user-added
+  // knowledge entries per project key.
   for (const [name, fwEntry] of Object.entries(fwSkills)) {
     const next = clone(fwEntry);
     const userEntry = userSkills[name];
 
     if (userEntry && userEntry.custom !== true) {
-      const fwKnow = Array.isArray(fwEntry.knowledge) ? (fwEntry.knowledge as unknown[]) : [];
-      const userKnow = Array.isArray(userEntry.knowledge)
-        ? (userEntry.knowledge as unknown[])
-        : [];
-      const fwKeys = new Set(fwKnow.map(stableKey));
-      const additions = userKnow.filter((k) => !fwKeys.has(stableKey(k)));
-      if (additions.length > 0) {
-        next.knowledge = [...clone(fwKnow), ...clone(additions)];
+      const fwKnowRaw = fwEntry.knowledge;
+      const userKnowRaw = userEntry.knowledge;
+
+      // Normalize: map or old array -> map with _all key
+      const fwKnowMap: Record<string, unknown[]> =
+        Array.isArray(fwKnowRaw)
+          ? { _all: fwKnowRaw as unknown[] }
+          : ((fwKnowRaw as Record<string, unknown[]>) ?? {});
+      const userKnowMap: Record<string, unknown[]> =
+        Array.isArray(userKnowRaw)
+          ? { _all: userKnowRaw as unknown[] }
+          : ((userKnowRaw as Record<string, unknown[]>) ?? {});
+      // ADR-3 migration: old per-skill "shared" key -> "_all"
+      if (Array.isArray(userKnowMap.shared)) {
+        userKnowMap._all = [...(userKnowMap._all ?? []), ...userKnowMap.shared];
+        delete userKnowMap.shared;
+      }
+
+      const allKeys = new Set([...Object.keys(fwKnowMap), ...Object.keys(userKnowMap)]);
+      const mergedSkillKnowledge: Record<string, unknown[]> = {};
+
+      for (const key of allKeys) {
+        const fwEntries = fwKnowMap[key] ?? [];
+        const userEntries = userKnowMap[key] ?? [];
+        const fwKeys = new Set(
+          fwEntries.map((e) =>
+            typeof (e as Dict)?.id === "string"
+              ? `id:${(e as Dict).id as string}`
+              : stableKey(e),
+          ),
+        );
+        const additions = userEntries.filter((e) => !fwKeys.has(stableKey(e)));
+        mergedSkillKnowledge[key] = [...clone(fwEntries), ...clone(additions)];
         preservedBindingCount += additions.length;
+      }
+
+      if (Object.keys(mergedSkillKnowledge).length > 0) {
+        next.knowledge = mergedSkillKnowledge;
       }
     }
 
@@ -141,23 +175,40 @@ function mergeRegistry(
     // Otherwise drop: a retired framework skill or a legacy/unmarked entry.
   }
 
-  // Shared knowledge: framework baseline + user additions.
-  const fwShared = Array.isArray(framework.knowledge?.shared)
-    ? (framework.knowledge!.shared as Dict[])
-    : [];
-  const userShared = Array.isArray(user.knowledge?.shared)
-    ? (user.knowledge!.shared as Dict[])
-    : [];
-  const sharedKeyOf = (e: Dict): string =>
-    typeof e?.id === "string" ? `id:${e.id}` : stableKey(e);
-  const fwSharedKeys = new Set(fwShared.map(sharedKeyOf));
-  const sharedAdditions = userShared.filter((e) => !fwSharedKeys.has(sharedKeyOf(e)));
-  preservedBindingCount += sharedAdditions.length;
+  // --- Top-level knowledge map merge (ADR-2/3) ---
+  // Normalize old flat format (knowledge.shared as array) -> _all key.
+  const fwKnowRaw = framework.knowledge;
+  const userKnowRaw = user.knowledge;
 
-  const mergedKnowledge: Dict = {
-    ...(framework.knowledge ?? {}),
-    shared: [...clone(fwShared), ...clone(sharedAdditions)],
-  };
+  const fwKnowMap: Record<string, unknown[]> =
+    Array.isArray(fwKnowRaw)
+      ? { _all: fwKnowRaw as unknown[] }
+      : (fwKnowRaw ?? {});
+  const userKnowMap: Record<string, unknown[]> =
+    Array.isArray(userKnowRaw)
+      ? { _all: userKnowRaw as unknown[] }
+      : (userKnowRaw ?? {});
+  // ADR-3 migration: old top-level "shared" key -> "_all"
+  if (Array.isArray(userKnowMap.shared)) {
+    userKnowMap._all = [...(userKnowMap._all ?? []), ...userKnowMap.shared];
+    delete userKnowMap.shared;
+  }
+
+  const allKeys = new Set([...Object.keys(fwKnowMap), ...Object.keys(userKnowMap)]);
+  const mergedKnowledge: Record<string, unknown[]> = {};
+
+  for (const key of allKeys) {
+    const fwEntries = fwKnowMap[key] ?? [];
+    const userEntries = userKnowMap[key] ?? [];
+    const keyOf = (e: unknown): string =>
+      typeof (e as Dict)?.id === "string"
+        ? `id:${(e as Dict).id as string}`
+        : stableKey(e);
+    const fwKeys = new Set(fwEntries.map(keyOf));
+    const additions = userEntries.filter((e) => !fwKeys.has(keyOf(e)));
+    mergedKnowledge[key] = [...clone(fwEntries), ...clone(additions)];
+    preservedBindingCount += additions.length;
+  }
 
   const merged: RegistryDoc = {
     ...framework,

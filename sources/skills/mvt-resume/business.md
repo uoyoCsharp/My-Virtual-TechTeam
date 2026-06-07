@@ -56,18 +56,23 @@ For each artifact, capture: file path, mtime, size (in tokens estimate = chars /
 
 ### Step 5: Determine Resume Point
 
-Read the plan's `current_task`. The resume point = that task. Next-step recommendation = the task's `skill_hint` (or infer from task title if skill_hint is absent).
+Read the plan's `current_tasks` map. The resume point = the task(s) referenced by `current_tasks`. Next-step recommendation = the relevant task's `skill_hint` (or infer from task title if skill_hint is absent).
+
+For multi-project workspaces, if `current_tasks` has entries for multiple projects, display each project's current task separately.
 
 Also filter `history` to entries matching `change_id == selected_change_id` (entries with empty change_id are excluded from this filtered view).
+
+If the plan-update script output from a previous session included a `project_switch` notification, surface it: "Last session crossed from {from} to {to} project."
 
 ### Step 6: Load Plan Progress
 
 Generate the **Plan Progress** section:
 
 - Read all tasks from plan.yaml.
-- Build a compact status table: `| # | id | title | status | skill_hint |`
-- Highlight `current_task` row (prefix with `>>` or bold).
+- Build a compact status table: `| # | id | title | status | project | skill_hint |`
+- Highlight `current_tasks` rows (prefix with `>>` or bold).
 - Count summary: `Done: {d}, In Progress: {ip}, Pending: {p}, Blocked: {b}, Skipped: {s}`
+- If any task has `deliverables.freshness == "stale"`, append a warning: "Stale deliverables: {task_ids} -- downstream tasks may be out of date. Run `/mvt-implement` to refresh."
 
 And the **Current Task Detail** section:
 
@@ -94,4 +99,5 @@ Render via the `resume-output.md` template. Sections to fill:
 - **No active plans**: report "No active plans found. Start a new change with `/mvt-analyze` or run `/mvt-status` to check project state."
 - **Selected change but referenced artifacts missing**: warn "Artifact directory `{path}` not found -- task state may be stale. Verify with `/mvt-status` or run `/mvt-cleanup`."
 - **Plan exists but plan.yaml is invalid** (parse error or schema violation): warn "plan.yaml is corrupted or invalid. Run `/mvt-plan-dev` to regenerate, or `/mvt-status` to inspect."
-- **Stale task warning**: If plan's `current_task` has status `in_progress` but the plan's `updated_at` is more than 5 days old, append a notice: "Current task has been in_progress for {N} days without updates. Consider running `/mvt-update-plan` to refresh status."
+- **Stale task warning**: If plan's `current_tasks` entries reference tasks with status `in_progress` but the plan's `updated_at` is more than 5 days old, append a notice: "Current task has been in_progress for {N} days without updates. Consider running `/mvt-update-plan` to refresh status."
+- **Stale deliverables warning**: If any task has `deliverables.freshness == "stale"`, warn: "Task(s) {ids} have stale deliverables. Downstream tasks may reference outdated contracts. Run `/mvt-implement` to refresh."

@@ -39,7 +39,6 @@ sections:
     params:
       extended_context:
         - ".ai-agents/knowledge/project/_generated/project-context.md -- Module/layer map (optional)"
-        - ".ai-agents/knowledge/principle/coding-standards.md -- Coding standards (optional)"
         - "Target source files (load based on change description)"
 
   - type: shared

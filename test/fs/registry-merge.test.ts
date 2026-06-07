@@ -16,12 +16,12 @@ const PACKAGE_ROOT = path.resolve(".");
 
 interface RegistryDoc {
   version?: string;
-  knowledge?: { shared?: Record<string, unknown>[] };
+  knowledge?: Record<string, Record<string, unknown>[]>;
   skills?: Record<string, Record<string, unknown>>;
   [key: string]: unknown;
 }
 
-describe("registry merge (Plan A — diff-based preservation)", () => {
+describe("registry merge (map-aware — ADR-2/3/6)", () => {
   let tmpDir: string;
 
   beforeEach(() => {
@@ -43,10 +43,11 @@ describe("registry merge (Plan A — diff-based preservation)", () => {
     writeFileSync(registryPath(), stringifyYaml(doc), "utf-8");
   }
 
+  // ── Existing tests (updated for map structure) ──
+
   it("fresh install writes the framework registry with header comment intact", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const raw = readFileSync(registryPath(), "utf-8");
-    // The leading comment header is preserved on the install/merge path.
     expect(raw).toContain("# MVTT Framework Registry");
     const doc = readRegistry();
     expect(doc.skills && doc.skills["mvt-init"]).toBeTruthy();
@@ -55,7 +56,6 @@ describe("registry merge (Plan A — diff-based preservation)", () => {
   it("install and update produce byte-identical registry output", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const afterInstall = readFileSync(registryPath(), "utf-8");
-    // Re-materialize (the update path) over an untouched install.
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const afterUpdate = readFileSync(registryPath(), "utf-8");
     expect(afterUpdate).toBe(afterInstall);
@@ -81,7 +81,6 @@ describe("registry merge (Plan A — diff-based preservation)", () => {
       custom: true,
       agent: "developer",
     });
-    // Framework skills are still present.
     expect(after.skills!["mvt-init"]).toBeTruthy();
   });
 
@@ -103,22 +102,26 @@ describe("registry merge (Plan A — diff-based preservation)", () => {
     expect(after.skills!["ghost-skill"]).toBeUndefined();
   });
 
-  it("re-grafts user-added knowledge bindings onto a framework skill", () => {
+  it("re-grafts user-added knowledge bindings onto a framework skill (map shape)", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const doc = readRegistry();
-    // User binds a knowledge entry to the framework skill mvt-review.
-    doc.skills!["mvt-review"].knowledge = [
-      { type: "static", source: "knowledge/principle/", files: ["team-rules.md"] },
-    ];
+    doc.skills!["mvt-review"].knowledge = {
+      _all: [
+        { type: "static", source: "knowledge/principle/", files: ["team-rules.md"] },
+      ],
+    };
     writeRegistry(doc);
 
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
 
     const after = readRegistry();
-    const know = after.skills!["mvt-review"].knowledge as Record<string, unknown>[];
-    expect(Array.isArray(know)).toBe(true);
-    expect(know.some((k) => Array.isArray(k.files) && (k.files as string[]).includes("team-rules.md"))).toBe(true);
-    // Framework description is refreshed (verbatim from framework registry).
+    const know = after.skills!["mvt-review"].knowledge as Record<string, unknown>;
+    expect(know).toBeTruthy();
+    expect(Array.isArray(know._all)).toBe(true);
+    const allEntries = know._all as Record<string, unknown>[];
+    expect(allEntries.some((k) =>
+      Array.isArray(k.files) && (k.files as string[]).includes("team-rules.md"),
+    )).toBe(true);
     expect(typeof after.skills!["mvt-review"].description).toBe("string");
   });
 
@@ -134,10 +137,10 @@ describe("registry merge (Plan A — diff-based preservation)", () => {
     expect(after.skills!["mvt-init"].description).not.toBe("TAMPERED");
   });
 
-  it("preserves user additions to knowledge.shared, keyed by id", () => {
+  it("preserves user additions to knowledge._all, keyed by id", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const doc = readRegistry();
-    doc.knowledge!.shared!.push({
+    doc.knowledge!._all!.push({
       id: "team-glossary",
       source: "knowledge/project/",
       files: ["glossary.md"],
@@ -147,23 +150,21 @@ describe("registry merge (Plan A — diff-based preservation)", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
 
     const after = readRegistry();
-    const ids = (after.knowledge!.shared ?? []).map((e) => e.id);
+    const ids = (after.knowledge!._all ?? []).map((e) => e.id);
     expect(ids).toContain("team-glossary");
-    // Framework baseline shared entries remain.
     expect(ids).toContain("core");
   });
 
-  it("does not duplicate a framework shared entry the user happens to repeat", () => {
+  it("does not duplicate a framework _all entry the user happens to repeat", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const doc = readRegistry();
-    // Re-add an existing framework shared id.
-    doc.knowledge!.shared!.push({ id: "core", source: "knowledge/core/", files_from_manifest: true });
+    doc.knowledge!._all!.push({ id: "core", source: "knowledge/core/", files_from_manifest: true });
     writeRegistry(doc);
 
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
 
     const after = readRegistry();
-    const coreCount = (after.knowledge!.shared ?? []).filter((e) => e.id === "core").length;
+    const coreCount = (after.knowledge!._all ?? []).filter((e) => e.id === "core").length;
     expect(coreCount).toBe(1);
   });
 
@@ -190,7 +191,6 @@ describe("registry merge (Plan A — diff-based preservation)", () => {
   it("does not line-fold long description strings on merge", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const doc = readRegistry();
-    // Force the merge path (not the verbatim fresh-install copy).
     doc.skills!["app-x"] = {
       agent: "developer",
       description: "x",
@@ -204,15 +204,12 @@ describe("registry merge (Plan A — diff-based preservation)", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
 
     const raw = readFileSync(registryPath(), "utf-8");
-    // No description value should be folded onto a continuation line: every
-    // `description:` key keeps its (long) value on the same physical line.
     for (const line of raw.split(/\r?\n/)) {
       const m = /^\s*description:\s*(\S.*)?$/.exec(line);
       if (m) {
         expect(m[1] && m[1].length > 0).toBe(true);
       }
     }
-    // The doc must still round-trip with full descriptions intact.
     const after = parseYaml(raw) as RegistryDoc;
     expect((after.skills!["mvt-init"].description as string).length).toBeGreaterThan(80);
   });
@@ -222,5 +219,230 @@ describe("registry merge (Plan A — diff-based preservation)", () => {
     const entry = materialized.find((f) => f.relPath === ".ai-agents/registry.yaml");
     expect(entry).toBeTruthy();
     expect(entry!.category).toBe("create_once");
+  });
+
+  // ── P1-10: New map-aware merge tests ──
+
+  it("(P1-10 #1) project isolation — entries under 'web' not merged into 'api'", () => {
+    materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
+    const doc = readRegistry();
+    doc.knowledge!.web = [
+      { id: "web-ctx", source: "knowledge/project/web/", files: ["project-context.md"] },
+    ];
+    doc.knowledge!.api = [
+      { id: "api-ctx", source: "knowledge/project/api/", files: ["project-context.md"] },
+    ];
+    writeRegistry(doc);
+
+    materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
+
+    const after = readRegistry();
+    const webIds = (after.knowledge!.web ?? []).map((e) => e.id);
+    const apiIds = (after.knowledge!.api ?? []).map((e) => e.id);
+    expect(webIds).toContain("web-ctx");
+    expect(webIds).not.toContain("api-ctx");
+    expect(apiIds).toContain("api-ctx");
+    expect(apiIds).not.toContain("web-ctx");
+  });
+
+  it("(P1-10 #2) _all binding preservation across install+update round-trip", () => {
+    materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
+    const doc = readRegistry();
+    doc.knowledge!._all!.push({
+      id: "user-global",
+      source: "knowledge/custom/",
+      files: ["global.md"],
+    });
+    writeRegistry(doc);
+
+    materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
+
+    const after = readRegistry();
+    const ids = (after.knowledge!._all ?? []).map((e) => e.id);
+    expect(ids).toContain("user-global");
+    expect(ids).toContain("core");
+    expect(ids).toContain("project-context");
+  });
+
+  it("(P1-10 #3) empty project key does not crash merge", () => {
+    materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
+    const doc = readRegistry();
+    doc.knowledge![""] = [
+      { id: "empty-key-entry", source: "knowledge/custom/", files: ["x.md"] },
+    ];
+    writeRegistry(doc);
+
+    materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
+
+    const after = readRegistry();
+    const emptyEntries = after.knowledge![""] ?? [];
+    expect(emptyEntries.some((e) => e.id === "empty-key-entry")).toBe(true);
+  });
+
+  it("(P1-10 #4) cross-project same-id collision handled (stableKey distinguishes)", () => {
+    materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
+    const doc = readRegistry();
+    doc.knowledge!.web = [
+      { id: "ctx", source: "knowledge/project/web/", files: ["project-context.md"] },
+    ];
+    doc.knowledge!.api = [
+      { id: "ctx", source: "knowledge/project/api/", files: ["project-context.md"] },
+    ];
+    writeRegistry(doc);
+
+    materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
+
+    const after = readRegistry();
+    const webEntries = after.knowledge!.web ?? [];
+    const apiEntries = after.knowledge!.api ?? [];
+    expect(webEntries.length).toBe(1);
+    expect(apiEntries.length).toBe(1);
+    expect((webEntries[0] as Record<string, unknown>).source).toBe("knowledge/project/web/");
+    expect((apiEntries[0] as Record<string, unknown>).source).toBe("knowledge/project/api/");
+  });
+
+  it("(P1-10 #5) install and update produce byte-identical results for map-shaped inputs", () => {
+    materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
+    const doc = readRegistry();
+    doc.knowledge!.web = [
+      { id: "web-ctx", source: "knowledge/project/web/", files: ["project-context.md"] },
+    ];
+    writeRegistry(doc);
+
+    materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
+    const afterFirst = readFileSync(registryPath(), "utf-8");
+
+    materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
+    const afterSecond = readFileSync(registryPath(), "utf-8");
+
+    expect(afterSecond).toBe(afterFirst);
+  });
+
+  it("(P1-10 #6) stableKey does not falsely deduplicate across project keys", () => {
+    materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
+    const doc = readRegistry();
+    const identicalEntry = {
+      id: "shared-config",
+      source: "knowledge/shared/",
+      files: ["config.md"],
+    };
+    doc.knowledge!.web = [identicalEntry];
+    doc.knowledge!.api = [identicalEntry];
+    writeRegistry(doc);
+
+    materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
+
+    const after = readRegistry();
+    expect((after.knowledge!.web ?? []).length).toBe(1);
+    expect((after.knowledge!.api ?? []).length).toBe(1);
+  });
+
+  // ── Per-skill knowledge merge tests (NEW-P1) ──
+
+  it("(NEW-P1 #1) per-skill: project isolation — entries under 'web' not merged into 'api'", () => {
+    materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
+    const doc = readRegistry();
+    doc.skills!["mvt-implement"].knowledge = {
+      web: [
+        { type: "static", source: "knowledge/principle/web/", files: ["standards.md"] },
+      ],
+      api: [
+        { type: "static", source: "knowledge/principle/api/", files: ["standards.md"] },
+      ],
+    };
+    writeRegistry(doc);
+
+    materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
+
+    const after = readRegistry();
+    const know = after.skills!["mvt-implement"].knowledge as Record<string, unknown>;
+    expect(know).toBeTruthy();
+    const webEntries = (know.web ?? []) as Record<string, unknown>[];
+    const apiEntries = (know.api ?? []) as Record<string, unknown>[];
+    expect(webEntries.some((e) =>
+      (e.source as string).includes("web"),
+    )).toBe(true);
+    expect(webEntries.every((e) =>
+      !(e.source as string).includes("api"),
+    )).toBe(true);
+    expect(apiEntries.some((e) =>
+      (e.source as string).includes("api"),
+    )).toBe(true);
+    expect(apiEntries.every((e) =>
+      !(e.source as string).includes("web"),
+    )).toBe(true);
+  });
+
+  it("(NEW-P1 #2) per-skill: _all binding preservation across install+update", () => {
+    materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
+    const doc = readRegistry();
+    doc.skills!["mvt-review"].knowledge = {
+      _all: [
+        { type: "static", source: "knowledge/principle/", files: ["review-rules.md"] },
+      ],
+    };
+    writeRegistry(doc);
+
+    materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
+
+    const after = readRegistry();
+    const know = after.skills!["mvt-review"].knowledge as Record<string, unknown>;
+    expect(know).toBeTruthy();
+    const allEntries = (know._all ?? []) as Record<string, unknown>[];
+    expect(allEntries.some((e) =>
+      Array.isArray(e.files) && (e.files as string[]).includes("review-rules.md"),
+    )).toBe(true);
+  });
+
+  // ── Migration tests (ADR-3) ──
+
+  it("(ADR-3) migrates old flat knowledge.shared array to _all key", () => {
+    materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
+    const doc = readRegistry();
+    // Simulate old format: knowledge.shared as array
+    const oldFormat = {
+      ...doc,
+      knowledge: {
+        shared: [
+          ...((doc.knowledge!._all ?? []) as Record<string, unknown>[]),
+          { id: "user-added", source: "knowledge/custom/", files: ["custom.md"] },
+        ],
+      },
+    };
+    // Remove _all to avoid having both keys
+    delete (oldFormat.knowledge as Record<string, unknown>)._all;
+    writeRegistry(oldFormat as unknown as RegistryDoc);
+
+    materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
+
+    const after = readRegistry();
+    // Old shared entries migrated to _all
+    const allIds = (after.knowledge!._all ?? []).map((e) => e.id);
+    expect(allIds).toContain("core");
+    expect(allIds).toContain("user-added");
+    // No 'shared' key in the output
+    expect(after.knowledge!.shared).toBeUndefined();
+  });
+
+  it("(ADR-3) migrates old flat per-skill knowledge array to _all key", () => {
+    materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
+    const doc = readRegistry();
+    // Simulate old format: skill knowledge as array
+    doc.skills!["mvt-review"].knowledge = [
+      { type: "static", source: "knowledge/principle/", files: ["team-rules.md"] },
+    ] as unknown as Record<string, Record<string, unknown>[]>;
+    writeRegistry(doc);
+
+    materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
+
+    const after = readRegistry();
+    const know = after.skills!["mvt-review"].knowledge as Record<string, unknown>;
+    expect(know).toBeTruthy();
+    // Old array migrated to _all key
+    const allEntries = (know._all ?? []) as Record<string, unknown>[];
+    expect(Array.isArray(allEntries)).toBe(true);
+    expect(allEntries.some((e) =>
+      Array.isArray(e.files) && (e.files as string[]).includes("team-rules.md"),
+    )).toBe(true);
   });
 });

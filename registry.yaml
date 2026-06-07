@@ -6,13 +6,14 @@ version: "2.0"
 last_updated: "2026-05-23"
 
 # ============================================================
-# Shared Knowledge
-# Loaded by ALL skills at execution time.
-# Managed by /mvt-manage-context (user selects "shared") and /mvt-init (project-context).
+# Knowledge
+# Project-keyed map (ADR-2/3). Each key is a project name; "_all" is
+# the reserved key for entries loaded by all projects and all skills.
+# Managed by /mvt-manage-context and /mvt-init.
 # Reviewed by /mvt-config and /mvt-check-context.
 # ============================================================
 knowledge:
-  shared:
+  _all:
     - id: "core"
       source: "knowledge/core/"
       files_from_manifest: true

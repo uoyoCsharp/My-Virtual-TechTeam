@@ -20,7 +20,7 @@
 - **How**:
   1. Iterate `changes[]` from `session.yaml`. For each entry with a `plan_path`, attempt to read the plan file.
   2. Glob `.ai-agents/workspace/artifacts/*/plan.yaml` to find any plans not registered in `changes` (mark them `unindexed`). **Exclude paths under `artifacts/_archived/`** — those are completed changes archived by `/mvt-cleanup`.
-  3. For each plan, extract: `change_id`, `title`, `status`, `current_task`, task progress (`done/total`), `updated_at`, `skill_hint` (from current task if present).
+  3. For each plan, extract: `change_id`, `title`, `status`, `current_tasks`, task progress (`done/total`), `updated_at`, `skill_hint` (from current task if present).
   4. If a plan file is present but malformed, include a row with `(corrupt)` in the status column and mark the file path; do not abort.
 - **Branches**:
 
@@ -40,15 +40,19 @@
   4. **Active Change** -- if `active_change` exists: id, title, start time. Else: `none`.
   5. **Changes Overview** -- table from Step 3 (skip if no plans). Render with these columns:
 
-     | change-id | title | status | progress | current_task | updated_at |
-     |-----------|-------|--------|----------|--------------|------------|
+     | change-id | title | status | progress | current_tasks | project | updated_at |
+     |-----------|-------|--------|----------|---------------|---------|------------|
+
+     For `current_tasks`, display as a compact representation: if single-project, show the task id only; if multi-project, show `web: t2, api: t1` format. The `project` column lists the distinct projects across all tasks in the plan.
+
+     If any task has `deliverables.freshness == "stale"`, append a warning row: "Stale deliverables: {task_ids} -- run `/mvt-implement` to refresh"
   6. **Skill History** -- last 5 rows of the timeline from Step 2.
 
 - Hard cap: total rendered output should not exceed ~120 lines. If it would, truncate Skill History first; never truncate the active change or Changes Overview header rows.
 
 ### Step 5: Suggest Next Step
 - Resolution order (first match wins):
-  1. `active_change` has a plan in `in_progress`, `current_task` is set -> suggest the task's `skill_hint` (or, if missing, recommend `/mvt-update-plan` to set `current_task`).
+  1. `active_change` has a plan in `in_progress`, `current_tasks` has entries -> suggest the relevant task's `skill_hint` (or, if missing, recommend `/mvt-update-plan` to set `current_tasks`).
   2. `project-context.md` is missing -> suggest `/mvt-analyze-code`.
   3. No `active_change` or no active plan -> suggest `/mvt-analyze` to start a new feature OR `/mvt-help` to browse the catalog.
 - The suggestion must be a single line: skill command + one-clause reason.
@@ -60,7 +64,7 @@
 | `session.yaml` missing entirely | Render a minimal report (Projects section if available) and recommend `/mvt-init` |
 | `session.yaml` corrupt (parse error) | Surface error with file path, render Projects only, recommend `/mvt-init` to reinitialize |
 | `changes[]` references a `plan_path` that no longer exists | Include in Changes Overview with `(missing)` marker; do not delete the index entry from this skill |
-| Plan file's `current_task` references a task id not in `tasks[]` | Render `current_task` as `(invalid: <id>)`; do not attempt to fix |
+| Plan file's `current_tasks` references a task id not in `tasks[]` | Render `current_tasks` entry as `(invalid: <id>)`; do not attempt to fix |
 | Plan file's `status` is not one of the known values | Render the raw value verbatim; flag in skip-checks of the report |
 | Both `changes[]` and the artifact glob find the same plan | Deduplicate by `change_id`; prefer the indexed entry's metadata |
 | Multiple `in_progress` plans | All rendered in Changes Overview; Step 5's suggestion picks the most recently updated; mention the count in the suggestion line |

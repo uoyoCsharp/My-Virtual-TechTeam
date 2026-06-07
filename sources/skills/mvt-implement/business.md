@@ -5,7 +5,7 @@
   - The actual source files referenced in the design's `File Structure` and `Change Tracking` sections.
 - **Fallback**:
   - If `design.md` is missing, surface a WARN and ask the user whether to (a) run `/mvt-design` first or (b) proceed using their conversational description as the design (mark artifact with "Source: conversation only").
-  - If `coding-standards.md` is missing, fall back to language/framework defaults inferred from `project-context.yaml`.
+  - If coding standards are not loaded by activation, fall back to language/framework defaults inferred from `project-context.yaml`.
 
 ### Step 2: Plan the Implementation
 - **What**: produce an ordered file list with the smallest possible commit boundary per group.
@@ -31,7 +31,7 @@
 - **What**: write/modify the planned files, one commit-group at a time.
 - **How**:
   1. For each commit-group: write all files, then move on. Do not interleave groups.
-  2. Follow `coding-standards.md`. Match the surrounding code style if standards are silent.
+  2. Follow the coding standards loaded by activation (if any). Match the surrounding code style if standards are silent.
   3. Respect module/layer rules from `project-context.md`. Forbidden imports must NOT appear; use the abstractions defined in `design.md`'s `Key Interfaces`.
   4. Add error handling at system boundaries only (HTTP, DB, external API, file IO, message bus). Do NOT add try/catch around internal calls "just in case".
   5. Inline comments only for: non-obvious algorithmic choices, deliberate workarounds with a reason, interface contracts not expressible in code. Never narrate WHAT the code does.
@@ -75,7 +75,43 @@
   - `Open TODOs` -- anything deferred for `/mvt-review`, `/mvt-test`, or follow-up changes.
 - The actual source code goes to the project tree; the artifact is a record, not the code itself.
 
-### Step 8: Plan-Aware Progress Hint (if applicable)
+### Step 8: Deliverables Handoff (if applicable)
+
+This step applies only when `plan.yaml` exists and the current task has downstream dependents (other tasks whose `depends_on` includes the current task).
+
+- **Check for downstream dependents**: scan `plan.tasks[]` for any task whose `depends_on` array includes the current task id. If none exist, skip this step silently.
+- **Prompt the user**:
+  - If `task.deliverables` already exists (re-implementation / rescope): "Implementation changed, and downstream task(s) {ids} depend on it. Update deliverables? (y/n)"
+  - If this is the first time (no `deliverables` field on the task): "Downstream task(s) {ids} will consume this task's output. Generate deliverables? (default y)"
+- **On confirmation**, append a deliverables subsection under the task's existing `## Task: {id}` section in `implementation.md` (if multi-task plan) or as a dedicated section (if single-task). Use this soft skeleton:
+
+  ```markdown
+  ### Deliverables
+
+  #### Public Interface
+  {Describe exported symbols, function signatures, endpoint contracts that downstream tasks rely on.}
+
+  #### Data Shapes
+  {Describe data structures, types, schemas that flow between this task and downstream consumers.}
+
+  #### Usage Constraints
+  {Document invariants, preconditions, or side effects that downstream tasks must respect.}
+  ```
+
+- **After writing deliverables**, call `plan-update.cjs` with both flags in a single invocation:
+  ```bash
+  node .ai-agents/scripts/plan-update.cjs \
+    --plan "<active_change.plan_path>" \
+    --task <current_task_id> \
+    --status <current_status> \
+    --deliverables-pointer current \
+    --mark-deliverable-stale <each_downstream_task_id>
+  ```
+  The `--status` must be the task's current status (typically `in_progress` at this point, since Step 9 has not yet run). Each downstream dependent gets `--mark-deliverable-stale` so that `/mvt-resume` and `/mvt-status` can surface the stale warning.
+- **On user decline**: do not write deliverables and do not call `plan-update.cjs` with the deliverables flags. The downstream tasks will not receive stale warnings, which is acceptable if the user considers the contract unchanged.
+- **Error handling**: if `plan-update.cjs` rejects (e.g., malformed freshness), surface stderr and leave `implementation.md` as written. The deliverables content is the source of truth; the pointer can be retried via `/mvt-update-plan`.
+
+### Step 9: Plan-Aware Progress Hint (if applicable)
 - If `plan.yaml` exists and a single `current_task` covers this implementation, suggest the user run `/mvt-update-plan <task-id> done` (or `blocked` with reason).
 - If the files actually touched differ from `current_task`'s `artifacts.files` (extra files added during Step 3, or planned files left untouched), explicitly remind the user to run `/mvt-update-plan` so the plan's `artifacts.files` reflects reality for `/mvt-resume` and future sessions.
 - Do NOT modify `plan.yaml` directly from this skill; it is owned by `/mvt-update-plan`.
@@ -92,3 +128,5 @@
 | File listed in `Change Tracking` no longer exists in the working tree | Surface, ask user whether design is stale or file was deleted in a parallel change |
 | Implementation must touch a file outside the active project (other repo / submodule) | STOP -- this is out of scope for `/mvt-implement`; surface and ask user to plan it as a separate change |
 | Plan task is `blocked` or `done` already | Refuse to implement that task; ask user to pick another `current_task` or run `/mvt-update-plan` |
+| Deliverables already exist and user declines to update | Leave existing deliverables in place; do not call `plan-update.cjs` with deliverables flags |
+| `plan-update.cjs` rejects deliverables pointer | Surface error; leave `implementation.md` as written (content is source of truth, pointer can be retried) |

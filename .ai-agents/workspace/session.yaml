@@ -4,9 +4,14 @@ session:
 active_change:
   id: 20260605-multi-project-workflow-support
   title: 多项目工作流支持 (OPT-2026-002)
-  created_at: 2026-06-05T08:29:24.784Z
-  plan_path: ""
-changes: []
+  created_at: 2026-06-06T13:09:44.156Z
+  plan_path: .ai-agents/workspace/artifacts/20260605-multi-project-workflow-support/plan.yaml
+changes:
+  - id: 20260605-multi-project-workflow-support
+    title: 多项目工作流支持 (OPT-2026-002)
+    plan_path: .ai-agents/workspace/artifacts/20260605-multi-project-workflow-support/plan.yaml
+    status: active
+    updated_at: 2026-06-06T15:04:34.440Z
 history:
   - skill: /mvt-init
     completed_at: 2026-06-05T08:12:06.624Z
@@ -25,4 +30,73 @@ history:
     completed_at: 2026-06-05T08:51:51.084Z
     summary: 设计多项目工作流架构：7 个 ADR（含覆盖提案 §8 的 registry-merge src/ 改动），2x2
       知识矩阵、task.project 数组、deliverables 交付物，约 20 文件改动
+    change_id: 20260605-multi-project-workflow-support
+  - skill: /mvt-plan-dev
+    completed_at: 2026-06-06T13:09:44.156Z
+    summary: Decomposed multi-project workflow change into 8 tasks covering
+      ADR-2/3/4/5/6/7/8, 2x2 knowledge model, per-project DAG, and deliverables
+      handoff
+    change_id: 20260605-multi-project-workflow-support
+  - skill: /mvt-implement
+    completed_at: 2026-06-06T13:26:41.698Z
+    summary: "Implemented t1: registry knowledge restructured to project-keyed maps
+      (ADR-2/3), mergeRegistry rewritten map-aware (ADR-6), 21 tests passing"
+    change_id: 20260605-multi-project-workflow-support
+  - skill: /mvt-update-plan
+    completed_at: 2026-06-06T13:29:47.257Z
+    summary: Marked t1-registry-restructure as done; plan advanced to
+      t2-plan-attribution (1/8 complete)
+    change_id: 20260605-multi-project-workflow-support
+  - skill: /mvt-implement
+    completed_at: 2026-06-06T13:49:55.692Z
+    summary: "t2 实现完成: plan-update.js ADR-4/8 (current_tasks, --projects,
+      per-project in_progress, resolvedIds, project_switch, findCycle
+      per-project), project-context.yaml source_paths, 27 测试全通过, plan.yaml 已迁移"
+    change_id: 20260605-multi-project-workflow-support
+  - skill: /mvt-update-plan
+    completed_at: 2026-06-06T13:50:34.044Z
+    summary: 标记 t2 完成，计划推进到 t3-activation-section (2/8)
+    change_id: 20260605-multi-project-workflow-support
+  - skill: /mvt-implement
+    completed_at: 2026-06-06T13:57:44.192Z
+    summary: "t3 实现完成: activation-load-context.md 完全重写 (PS 解析 3-优先级, Mode A/B 知识加载,
+      ADR-1 单项目折叠), 步骤重编号, 155 测试全通过"
+    change_id: 20260605-multi-project-workflow-support
+  - skill: /mvt-update-plan
+    completed_at: 2026-06-06T14:02:09.732Z
+    summary: 标记 t3 完成，计划推进到 t4-plan-skills (3/8)
+    change_id: 20260605-multi-project-workflow-support
+  - skill: /mvt-implement
+    completed_at: 2026-06-06T14:09:35.091Z
+    summary: "t4 实现完成: 4 个计划相关技能 business.md 更新 (current_tasks, --projects,
+      project_switch, stale deliverables), 155 测试全通过"
+    change_id: 20260605-multi-project-workflow-support
+  - skill: /mvt-update-plan
+    completed_at: 2026-06-06T14:10:47.656Z
+    summary: 标记 t4 完成，计划推进到 t5-context-and-routing (4/8)
+    change_id: 20260605-multi-project-workflow-support
+  - skill: /mvt-implement
+    completed_at: 2026-06-06T14:20:11.553Z
+    summary: "t5 实现完成: mvt-manage-context 4象限路由, mvt-sync-context 4级回退链,
+      硬编码知识路径全部移除, 155 测试全通过"
+    change_id: 20260605-multi-project-workflow-support
+  - skill: /mvt-update-plan
+    completed_at: 2026-06-06T14:21:00.155Z
+    summary: 标记 t5 完成，计划推进到 t6-init-and-awareness (5/8)
+    change_id: 20260605-multi-project-workflow-support
+  - skill: /mvt-implement
+    completed_at: 2026-06-06T14:29:05.366Z
+    summary: "Implemented t6-init-and-awareness: updated mvt-init, mvt-analyze-code,
+      mvt-check-context for project-awareness"
+    change_id: 20260605-multi-project-workflow-support
+  - skill: /mvt-implement
+    completed_at: 2026-06-06T14:56:28.692Z
+    summary: "Implemented t7-mode-b-skills: added Mode B on-demand project
+      identification + knowledge loading to all 5 non-plan skills"
+    change_id: 20260605-multi-project-workflow-support
+  - skill: /mvt-implement
+    completed_at: 2026-06-06T15:04:34.440Z
+    summary: "Implemented t8-deliverables: ADR-5 deliverables handoff
+      (plan-update.js args + mvt-implement interaction). All 8 tasks complete,
+      plan done."
     change_id: 20260605-multi-project-workflow-support
