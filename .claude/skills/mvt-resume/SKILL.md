@@ -24,8 +24,8 @@ You are the **Conductor** -- a Workflow Coordinator.
 - Exactly one in_progress plan found -> Auto-select it and proceed
 - No plans found -> Report no active plans, suggest `/mvt-analyze` or `/mvt-plan-dev`
 - active_change is empty AND history is empty AND no plans -> Recommend `/mvt-init` or `/mvt-status`
-- Plan exists and has current_task -> Use current_task's skill_hint as next-step recommendation
-- Plan's current_task has been in_progress for >5 days -> Surface stale warning
+- Plan exists and has current_tasks -> Use current_tasks entry's skill_hint as next-step recommendation
+- Plan's current_tasks entry has been in_progress for >5 days -> Surface stale warning
 - Last skill was interrupted -> Surface the context, suggest retry
 
 ### Boundaries
@@ -35,29 +35,45 @@ You are the **Conductor** -- a Workflow Coordinator.
 
 ## Activation Protocol
 
-### Step 1: Load Context (Context Foundation)
-Load the following files as foundational context:
-- `.ai-agents/workspace/session.yaml` -- Current workflow state
+### Step 1: Load Context
+Load these files as foundational context:
 - `.ai-agents/workspace/project-context.yaml` -- Project index (structural info)
 - `.ai-agents/registry.yaml` -- Available skills registry and knowledge declarations
 
-### Step 2: Load Knowledge
+### Step 2: Resolve Project Scope (PS)
 
-Read `.ai-agents/registry.yaml` and load every file referenced under:
-- `knowledge.shared` (loaded by all skills)
-- `skills.<current-skill>.knowledge` (this skill's specific knowledge, if present)
+Read `project-context.yaml > projects[]`.
 
-For each entry, resolve files relative to `.ai-agents/{source}`:
-- If the entry lists `files: [...]`, load those files.
-- If the entry lists `files_from_manifest: true`, read `{source}/manifest.yaml` and load every `files[]` entry where `auto_load: true`.
+**Single project** (`projects.length == 1`): Set PS = [sole project name]. Skip remaining PS steps.
 
-Skip any path that does not exist.
+**Multi-project** (`projects.length > 1`):
 
-### Archived Artifacts Convention
+**Mode A -- Plan-driven** (active plan exists and skill operates on plan tasks):
 
-The directory `.ai-agents/workspace/artifacts/_archived/` contains change-id directories that have been archived by `/mvt-cleanup`. All skills that scan `artifacts/` MUST exclude `_archived/` from their scan scope unless explicitly inspecting archived content.
+1. **Plan signal**: PS = current task's `project` array from plan's `current_tasks`. Drop stale project names (not in `projects[]`), fall through.
+2. **Path match**: Match current working paths against `projects[].path` and `source_paths`.
+3. **Prompt**: If still unresolved, list candidates and ask user. Never silently load all projects.
 
-### Step 3: Load Config & Apply Preferences (Config Foundation)
+**Mode B -- Non-plan** (no active plan or ad-hoc changes):
+
+Defer PS to execution: identify change target, match against `projects[].path` and `source_paths`, load project-specific knowledge on demand (Step 3).
+
+### Step 3: Load Knowledge
+
+Registry uses project-keyed maps; `_all` is a reserved key (all projects). Applies to both top-level `knowledge` and `skills.<name>.knowledge`.
+
+**Entry resolution** (relative to `.ai-agents/{source}`):
+- `files: [...]` -- load listed files.
+- `files_from_manifest: true` -- read `{source}/manifest.yaml`, load entries with `auto_load: true`.
+- Skip non-existent paths.
+
+**At activation** (both modes): load `knowledge._all` + `skills.<current-skill>.knowledge._all`.
+
+**Mode A** (additionally): for each P in PS, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]`.
+
+**Mode B** (during execution): on demand, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for identified project(s).
+
+### Step 4: Load Config & Apply Preferences (Config Foundation)
 Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:
 
 **Language**:
@@ -69,7 +85,7 @@ Read `.ai-agents/config.yaml` and enforce the following throughout this entire s
 - `preferences.output.data_format` → Use this format for data sections in artifacts
 - `preferences.context_routing.relevance_threshold` → Used by `/mvt-manage-context add` for AI routing (default 70 if missing)
 
-### Step 4: Pre-flight Checks
+### Step 5: Pre-flight Checks
 
 For each check below, if the condition holds, perform the action implied by its **Level**:
 
@@ -86,12 +102,12 @@ For each check below, if the condition holds, perform the action implied by its 
 
 ### Step 1: Read Session State
 
-Extract from the already-loaded session context:
+Read `.ai-agents/workspace/session.yaml`. If the file is missing or empty, jump to Step 8 with the "no session" branch.
+
+Extract:
 - `active_change` -- the current change-id (if any), plan_path
 - `changes` -- list of changes with active plans
 - `history` -- last 20 entries (skill name, timestamp, change_id)
-
-If session.yaml is missing or empty, jump to Step 8 with the "no session" branch.
 
 ### Step 2: Discover Pending Plans
 
@@ -140,18 +156,23 @@ For each artifact, capture: file path, mtime, size (in tokens estimate = chars /
 
 ### Step 5: Determine Resume Point
 
-Read the plan's `current_task`. The resume point = that task. Next-step recommendation = the task's `skill_hint` (or infer from task title if skill_hint is absent).
+Read the plan's `current_tasks` map. The resume point = the task(s) referenced by `current_tasks`. Next-step recommendation = the relevant task's `skill_hint` (or infer from task title if skill_hint is absent).
+
+For multi-project workspaces, if `current_tasks` has entries for multiple projects, display each project's current task separately.
 
 Also filter `history` to entries matching `change_id == selected_change_id` (entries with empty change_id are excluded from this filtered view).
+
+If the plan-update script output from a previous session included a `project_switch` notification, surface it: "Last session crossed from {from} to {to} project."
 
 ### Step 6: Load Plan Progress
 
 Generate the **Plan Progress** section:
 
 - Read all tasks from plan.yaml.
-- Build a compact status table: `| # | id | title | status | skill_hint |`
-- Highlight `current_task` row (prefix with `>>` or bold).
+- Build a compact status table: `| # | id | title | status | project | skill_hint |`
+- Highlight `current_tasks` rows (prefix with `>>` or bold).
 - Count summary: `Done: {d}, In Progress: {ip}, Pending: {p}, Blocked: {b}, Skipped: {s}`
+- If any task has `deliverables.freshness == "stale"`, append a warning: "Stale deliverables: {task_ids} -- downstream tasks may be out of date. Run `/mvt-implement` to refresh."
 
 And the **Current Task Detail** section:
 
@@ -178,7 +199,8 @@ Render via the `resume-output.md` template. Sections to fill:
 - **No active plans**: report "No active plans found. Start a new change with `/mvt-analyze` or run `/mvt-status` to check project state."
 - **Selected change but referenced artifacts missing**: warn "Artifact directory `{path}` not found -- task state may be stale. Verify with `/mvt-status` or run `/mvt-cleanup`."
 - **Plan exists but plan.yaml is invalid** (parse error or schema violation): warn "plan.yaml is corrupted or invalid. Run `/mvt-plan-dev` to regenerate, or `/mvt-status` to inspect."
-- **Stale task warning**: If plan's `current_task` has status `in_progress` but the plan's `updated_at` is more than 5 days old, append a notice: "Current task has been in_progress for {N} days without updates. Consider running `/mvt-update-plan` to refresh status."
+- **Stale task warning**: If plan's `current_tasks` entries reference tasks with status `in_progress` but the plan's `updated_at` is more than 5 days old, append a notice: "Current task has been in_progress for {N} days without updates. Consider running `/mvt-update-plan` to refresh status."
+- **Stale deliverables warning**: If any task has `deliverables.freshness == "stale"`, warn: "Task(s) {ids} have stale deliverables. Downstream tasks may reference outdated contracts. Run `/mvt-implement` to refresh."
 
 ## State Update
 
@@ -192,7 +214,7 @@ Recommend 2-3 relevant next skills based on the skill just completed (`mvt-resum
 
 Match the current state to one of the conditions below. If none match, use `default`.
 
-- **`plan has current_task with skill_hint`** → `/mvt-implement` -- Continue with the next planned task (use skill_hint)
+- **`plan has current_tasks entry with skill_hint`** → `/mvt-implement` -- Continue with the next planned task (use skill_hint)
 - **`no active plans found`** → `/mvt-analyze` -- Start a new feature
 - **`plan stale (>5 days without updates)`** → `/mvt-update-plan` -- Refresh plan status before continuing
 

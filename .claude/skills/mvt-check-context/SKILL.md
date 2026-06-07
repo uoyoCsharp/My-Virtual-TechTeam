@@ -25,32 +25,48 @@ You are the **Conductor** -- a Workflow Coordinator.
 
 ## Activation Protocol
 
-### Step 1: Load Context (Context Foundation)
-Load the following files as foundational context:
-- `.ai-agents/workspace/session.yaml` -- Current workflow state
+### Step 1: Load Context
+Load these files as foundational context:
 - `.ai-agents/workspace/project-context.yaml` -- Project index (structural info)
 - `.ai-agents/registry.yaml` -- Available skills registry and knowledge declarations
 
 Extended context for this skill:
 - .ai-agents/config.yaml -- Framework configuration (to be scanned for size)
 
-### Step 2: Load Knowledge
+### Step 2: Resolve Project Scope (PS)
 
-Read `.ai-agents/registry.yaml` and load every file referenced under:
-- `knowledge.shared` (loaded by all skills)
-- `skills.<current-skill>.knowledge` (this skill's specific knowledge, if present)
+Read `project-context.yaml > projects[]`.
 
-For each entry, resolve files relative to `.ai-agents/{source}`:
-- If the entry lists `files: [...]`, load those files.
-- If the entry lists `files_from_manifest: true`, read `{source}/manifest.yaml` and load every `files[]` entry where `auto_load: true`.
+**Single project** (`projects.length == 1`): Set PS = [sole project name]. Skip remaining PS steps.
 
-Skip any path that does not exist.
+**Multi-project** (`projects.length > 1`):
 
-### Archived Artifacts Convention
+**Mode A -- Plan-driven** (active plan exists and skill operates on plan tasks):
 
-The directory `.ai-agents/workspace/artifacts/_archived/` contains change-id directories that have been archived by `/mvt-cleanup`. All skills that scan `artifacts/` MUST exclude `_archived/` from their scan scope unless explicitly inspecting archived content.
+1. **Plan signal**: PS = current task's `project` array from plan's `current_tasks`. Drop stale project names (not in `projects[]`), fall through.
+2. **Path match**: Match current working paths against `projects[].path` and `source_paths`.
+3. **Prompt**: If still unresolved, list candidates and ask user. Never silently load all projects.
 
-### Step 3: Load Config & Apply Preferences (Config Foundation)
+**Mode B -- Non-plan** (no active plan or ad-hoc changes):
+
+Defer PS to execution: identify change target, match against `projects[].path` and `source_paths`, load project-specific knowledge on demand (Step 3).
+
+### Step 3: Load Knowledge
+
+Registry uses project-keyed maps; `_all` is a reserved key (all projects). Applies to both top-level `knowledge` and `skills.<name>.knowledge`.
+
+**Entry resolution** (relative to `.ai-agents/{source}`):
+- `files: [...]` -- load listed files.
+- `files_from_manifest: true` -- read `{source}/manifest.yaml`, load entries with `auto_load: true`.
+- Skip non-existent paths.
+
+**At activation** (both modes): load `knowledge._all` + `skills.<current-skill>.knowledge._all`.
+
+**Mode A** (additionally): for each P in PS, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]`.
+
+**Mode B** (during execution): on demand, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for identified project(s).
+
+### Step 4: Load Config & Apply Preferences (Config Foundation)
 Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:
 
 **Language**:
@@ -77,9 +93,9 @@ This skill measures only files the **user** can reduce or relocate. Framework-fi
 
 **In scope (user-actionable):**
 - Index: `.ai-agents/workspace/project-context.yaml`.
-- Semantic context: `.ai-agents/knowledge/project/_generated/project-context.md`.
-- Shared knowledge: every entry in `registry.yaml > knowledge.shared`. For the `core` entry, scan only files marked as user-origin per `core/manifest.yaml` (or whose path begins with `user/`); skip files under `core/_framework/`.
-- Per-skill knowledge: every entry in `registry.yaml > skills.*.knowledge`, grouped by skill.
+- Semantic context: `.ai-agents/knowledge/project/_generated/project-context.md` (always the flat path, regardless of project count).
+- Shared knowledge: every entry in `registry.yaml > knowledge._all` and `knowledge.{projectName}` (map-aware -- traverse ALL project keys in the knowledge map). For the `core` entry, scan only files marked as user-origin per `core/manifest.yaml` (or whose path begins with `user/`); skip files under `core/_framework/`.
+- Per-skill knowledge: every entry in `registry.yaml > skills.*.knowledge._all` and `skills.*.knowledge.{projectName}` (map-aware -- traverse ALL project keys for each skill), grouped by skill.
 - Artifacts: all files under `.ai-agents/workspace/artifacts/` recursively. **Exclude the `_archived/` subdirectory** — it contains completed changes archived by `/mvt-cleanup` and should not count toward the active workspace token budget.
 
 **Out of scope (do NOT scan):**
@@ -88,13 +104,19 @@ This skill measures only files the **user** can reduce or relocate. Framework-fi
 - `.ai-agents/config.yaml`, `.ai-agents/workspace/session.yaml`, `.ai-agents/registry.yaml` -- small, required, and addressed via `/mvt-config` or `/mvt-manage-context`, not here.
 
 ### Step 3: Estimate Token Consumption
-- **What**: produce a per-file tokens estimate and per-category subtotals.
+- **What**: produce a per-file tokens estimate and per-category subtotals, with **per-project breakdown**.
 - **How**:
   1. For each in-scope file: tokens ~= `characters / 4`.
   2. Group by category: `Index`, `Semantic Context`, `Shared Knowledge`, `Per-Skill Knowledge`, `Artifacts`.
   3. For Shared Knowledge, compute total once -- this is per-skill overhead (loaded by every skill invocation).
   4. For Per-Skill Knowledge, compute totals per skill so users can see which skill is heaviest.
   5. Identify the Top 5 largest single files across the whole in-scope set.
+  6. **Per-project breakdown**: for multi-project workspaces, also compute token costs per project:
+     - `knowledge._all` = shared across all projects
+     - `knowledge.{projectName}` = project-specific overhead
+     - `skills.*.knowledge.{projectName}` = per-skill per-project overhead
+     Display as a separate table: `project | knowledge tokens | per-skill tokens | total`.
+  7. **Global summary**: total tokens across all projects + `_all` overhead loaded every time.
 
 ### Step 4: Apply Thresholds and Health Status
 - **What**: assign each file/category a status of `healthy | borderline | oversized`.
@@ -137,8 +159,9 @@ This skill measures only files the **user** can reduce or relocate. Framework-fi
   2. **Per-Category Breakdown** -- table: `category | files | tokens | status`.
   3. **Top 5 Largest Files** -- table: `path | tokens | category | status`.
   4. **Per-Skill Knowledge Cost** -- table: `skill | tokens` (sorted desc); include shared knowledge as a separate row labeled `(shared, loaded every time)`.
-  5. **Recommendations** -- numbered list from Step 5; if empty, render the healthy line.
-  6. **Excluded Scope Note** -- one paragraph reminding the user that framework files (`_framework/`, `mvt-*/SKILL.md`, `config.yaml`, `session.yaml`, `registry.yaml`) were not measured here.
+  5. **Per-Project Token Accounting** -- table: `project | knowledge tokens | per-skill tokens | total` (only for multi-project workspaces; for single-project, omit this section).
+  6. **Recommendations** -- numbered list from Step 5; if empty, render the healthy line.
+  7. **Excluded Scope Note** -- one paragraph reminding the user that framework files (`_framework/`, `mvt-*/SKILL.md`, `config.yaml`, `session.yaml`, `registry.yaml`) were not measured here.
 - The report is conversation output; this skill does NOT write any artifact.
 
 ## Edge Cases & Errors

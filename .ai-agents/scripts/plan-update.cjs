@@ -30,13 +30,13 @@ var __toESM = (mod, isNodeMode, target) => (target = mod != null ? __create(__ge
 var require_identity = __commonJS({
   "node_modules/yaml/dist/nodes/identity.js"(exports2) {
     "use strict";
-    var ALIAS = Symbol.for("yaml.alias");
-    var DOC = Symbol.for("yaml.document");
-    var MAP = Symbol.for("yaml.map");
-    var PAIR = Symbol.for("yaml.pair");
-    var SCALAR = Symbol.for("yaml.scalar");
-    var SEQ = Symbol.for("yaml.seq");
-    var NODE_TYPE = Symbol.for("yaml.node.type");
+    var ALIAS = /* @__PURE__ */ Symbol.for("yaml.alias");
+    var DOC = /* @__PURE__ */ Symbol.for("yaml.document");
+    var MAP = /* @__PURE__ */ Symbol.for("yaml.map");
+    var PAIR = /* @__PURE__ */ Symbol.for("yaml.pair");
+    var SCALAR = /* @__PURE__ */ Symbol.for("yaml.scalar");
+    var SEQ = /* @__PURE__ */ Symbol.for("yaml.seq");
+    var NODE_TYPE = /* @__PURE__ */ Symbol.for("yaml.node.type");
     var isAlias = (node) => !!node && typeof node === "object" && node[NODE_TYPE] === ALIAS;
     var isDocument = (node) => !!node && typeof node === "object" && node[NODE_TYPE] === DOC;
     var isMap = (node) => !!node && typeof node === "object" && node[NODE_TYPE] === MAP;
@@ -88,9 +88,9 @@ var require_visit = __commonJS({
   "node_modules/yaml/dist/visit.js"(exports2) {
     "use strict";
     var identity = require_identity();
-    var BREAK = Symbol("break visit");
-    var SKIP = Symbol("skip children");
-    var REMOVE = Symbol("remove node");
+    var BREAK = /* @__PURE__ */ Symbol("break visit");
+    var SKIP = /* @__PURE__ */ Symbol("skip children");
+    var REMOVE = /* @__PURE__ */ Symbol("remove node");
     function visit(node, visitor) {
       const visitor_ = initVisitor(visitor);
       if (identity.isDocument(node)) {
@@ -3856,6 +3856,7 @@ var require_resolve_props = __commonJS({
               hasSpace = false;
               break;
             }
+          // else fallthrough
           default:
             onError(token, "UNEXPECTED_TOKEN", `Unexpected ${token.type} token`);
             atNewline = false;
@@ -4564,6 +4565,7 @@ var require_resolve_block_scalar = __commonJS({
         switch (token.type) {
           case "space":
             hasSpace = true;
+          // fallthrough
           case "newline":
             length += token.source.length;
             break;
@@ -4579,6 +4581,7 @@ var require_resolve_block_scalar = __commonJS({
             onError(token, "UNEXPECTED_TOKEN", token.message);
             length += token.source.length;
             break;
+          /* istanbul ignore next should not happen */
           default: {
             const message = `Unexpected token in block scalar header: ${token.type}`;
             onError(token, "UNEXPECTED_TOKEN", message);
@@ -4628,6 +4631,7 @@ var require_resolve_flow_scalar = __commonJS({
           _type = Scalar.Scalar.QUOTE_DOUBLE;
           value = doubleQuotedValue(source, _onError);
           break;
+        /* istanbul ignore next should not happen */
         default:
           onError(scalar, "UNEXPECTED_TOKEN", `Expected a flow scalar value, but found: ${type}`);
           return {
@@ -4649,6 +4653,7 @@ var require_resolve_flow_scalar = __commonJS({
     function plainValue(source, onError) {
       let badChar = "";
       switch (source[0]) {
+        /* istanbul ignore next should not happen */
         case "	":
           badChar = "a tab character";
           break;
@@ -5537,9 +5542,9 @@ var require_cst_stringify = __commonJS({
 var require_cst_visit = __commonJS({
   "node_modules/yaml/dist/parse/cst-visit.js"(exports2) {
     "use strict";
-    var BREAK = Symbol("break visit");
-    var SKIP = Symbol("skip children");
-    var REMOVE = Symbol("remove item");
+    var BREAK = /* @__PURE__ */ Symbol("break visit");
+    var SKIP = /* @__PURE__ */ Symbol("skip children");
+    var REMOVE = /* @__PURE__ */ Symbol("remove item");
     function visit(cst, visitor) {
       if ("type" in cst && cst.type === "document")
         cst = { start: cst.start, value: cst.value };
@@ -5912,6 +5917,7 @@ var require_lexer = __commonJS({
         switch (line[n]) {
           case "#":
             yield* this.pushCount(line.length - n);
+          // fallthrough
           case void 0:
             yield* this.pushNewline();
             return yield* this.parseLineStart();
@@ -6007,6 +6013,7 @@ var require_lexer = __commonJS({
               return "flow";
             }
           }
+          // fallthrough
           default:
             this.flowKey = false;
             return yield* this.parsePlainScalar();
@@ -6084,6 +6091,7 @@ var require_lexer = __commonJS({
               if (next === "\n")
                 break;
             }
+            // fallthrough
             default:
               break loop;
           }
@@ -6201,7 +6209,9 @@ var require_lexer = __commonJS({
           case "&":
             return (yield* this.pushUntil(isNotAnchorChar)) + (yield* this.pushSpaces(true)) + (yield* this.pushIndicators());
           case "-":
+          // this is an error
           case "?":
+          // this is an error outside flow collections
           case ":": {
             const inFlow = this.flowLevel > 0;
             const ch1 = this.charAt(1);
@@ -6350,6 +6360,7 @@ var require_parser = __commonJS({
         }
         case "block-seq":
           return parent.items[parent.items.length - 1].start;
+        /* istanbul ignore next should not happen */
         default:
           return [];
       }
@@ -6583,6 +6594,7 @@ var require_parser = __commonJS({
                 Object.assign(it, { key: token, sep: [] });
               return;
             }
+            /* istanbul ignore next should not happen */
             default:
               yield* this.pop();
               yield* this.pop(token);
@@ -6704,6 +6716,7 @@ var require_parser = __commonJS({
             }
             yield* this.pop();
             break;
+          /* istanbul ignore next should not happen */
           default:
             yield* this.pop();
             yield* this.step();
@@ -7149,6 +7162,7 @@ var require_parser = __commonJS({
             break;
           case "newline":
             this.onKeyLine = false;
+          // fallthrough
           case "space":
           case "comment":
           default:
@@ -7319,6 +7333,8 @@ var import_node_fs = require("node:fs");
 var import_yaml = __toESM(require_dist(), 1);
 var VALID_STATUSES = ["pending", "in_progress", "done", "blocked", "skipped"];
 var TERMINAL_STATUSES = ["done", "blocked", "skipped"];
+var PROJECT_NAME_RE = /^[a-zA-Z0-9][a-zA-Z0-9_-]*$/;
+var VALID_FRESHNESS = ["current", "stale"];
 var ERRORS = {
   MISSING_PLAN: () => "Missing required argument: --plan",
   MISSING_TASK: () => "Missing required argument: --task",
@@ -7329,7 +7345,12 @@ var ERRORS = {
   TASK_NOT_FOUND: (id, valid) => `Task "${id}" not found. Valid task ids: ${valid.length ? valid.join(", ") : "(none)"}.`,
   VALIDATION_FAILED: (errs) => `Plan validation failed; file not written:
   - ${errs.join("\n  - ")}`,
-  PLAN_WRITE_FAILED: (detail) => `Failed to write plan.yaml: ${detail}`
+  PLAN_WRITE_FAILED: (detail) => `Failed to write plan.yaml: ${detail}`,
+  INVALID_PROJECT_NAME: (name) => `Invalid project name "${name}". Must match ${PROJECT_NAME_RE.source} (no leading underscore).`,
+  INVALID_TASK_PROJECT: (taskId, proj, valid) => `Task "${taskId}" has project "${proj}" not in --projects list: ${valid.join(", ")}.`,
+  INVALID_FRESHNESS: (taskId, val) => `Task "${taskId}" has invalid deliverables.freshness "${val}". Must be one of: ${VALID_FRESHNESS.join(", ")}.`,
+  STALE_TASK_NOT_FOUND: (id, valid) => `--mark-deliverable-stale task "${id}" not found. Valid task ids: ${valid.length ? valid.join(", ") : "(none)"}.`,
+  INVALID_DELIVERABLES_POINTER: (val) => `Invalid --deliverables-pointer "${val}". Only "current" is supported.`
 };
 function parseArgs(argv) {
   const args = {};
@@ -7379,45 +7400,107 @@ function applyUpdate(plan, args, now) {
   if (args.notes && args.notes !== true) {
     task.notes = args.notes;
   }
-  task.completed_at = args.status === "done" ? now : null;
+  if (args.status === "done" && !task.completed_at) {
+    task.completed_at = now;
+  } else if (args.status !== "done") {
+    task.completed_at = null;
+  }
+  if (args["deliverables-pointer"] && args["deliverables-pointer"] !== true) {
+    if (args["deliverables-pointer"] !== "current") {
+      return { error: ERRORS.INVALID_DELIVERABLES_POINTER(args["deliverables-pointer"]) };
+    }
+    task.deliverables = { freshness: "current" };
+  }
+  if (args["mark-deliverable-stale"] && args["mark-deliverable-stale"] !== true) {
+    const staleIds = args["mark-deliverable-stale"].split(",").map((s) => s.trim()).filter(Boolean);
+    for (const staleTaskId of staleIds) {
+      const staleTask = plan.tasks.find((t) => t.id === staleTaskId);
+      if (staleTask) {
+        if (!staleTask.deliverables || typeof staleTask.deliverables !== "object") {
+          staleTask.deliverables = { freshness: "stale" };
+        } else {
+          staleTask.deliverables.freshness = "stale";
+        }
+      }
+    }
+  }
   plan.updated_at = now;
   return { id: task.id, title: task.title || "", old_status: oldStatus, new_status: args.status };
 }
-function recomputeCurrentTask(plan, changedTaskId) {
+function recomputeCurrentTasks(plan, changedTaskId, projectList) {
   let warning = null;
   const changedTask = plan.tasks.find((t) => t.id === changedTaskId);
   const changedToTerminal = changedTask && TERMINAL_STATUSES.includes(changedTask.status);
-  const activeInProgress = plan.tasks.find(
-    (t) => t.status === "in_progress" && !(t.id === changedTaskId && changedToTerminal)
+  const priorActiveProjects = new Set(
+    Object.keys(plan.current_tasks || {})
   );
-  if (activeInProgress) {
-    plan.current_task = activeInProgress.id;
-    plan.status = "in_progress";
-    return { warning };
+  const resolvedIds = new Set(
+    plan.tasks.filter((t) => t.status === "done" || t.status === "skipped").map((t) => t.id)
+  );
+  const projects = projectList && projectList.length > 0 ? projectList : ["default"];
+  const currentTasks = {};
+  for (const proj of projects) {
+    const inProgressForProject = plan.tasks.filter(
+      (t) => t.status === "in_progress" && getTaskProjects(t).includes(proj)
+    );
+    if (inProgressForProject.length > 0) {
+      currentTasks[proj] = inProgressForProject[0].id;
+      continue;
+    }
+    const nextPending = plan.tasks.find(
+      (t) => t.status === "pending" && getTaskProjects(t).includes(proj) && (t.depends_on || []).every((d) => resolvedIds.has(d))
+    );
+    if (nextPending) {
+      nextPending.status = "in_progress";
+      currentTasks[proj] = nextPending.id;
+    }
   }
-  const doneIds = new Set(
-    plan.tasks.filter((t) => t.status === "done").map((t) => t.id)
-  );
-  const nextPending = plan.tasks.find(
-    (t) => t.status === "pending" && (t.depends_on || []).every((d) => doneIds.has(d))
-  );
-  if (nextPending) {
-    nextPending.status = "in_progress";
-    plan.current_task = nextPending.id;
-    plan.status = "in_progress";
-    return { warning };
+  let switchNotification = null;
+  if (changedToTerminal && changedTask) {
+    const newActiveProjects = new Set(Object.keys(currentTasks));
+    const newlyActive = [...newActiveProjects].filter((p) => !priorActiveProjects.has(p));
+    if (newlyActive.length > 0) {
+      switchNotification = {
+        project_switch: {
+          from: [...priorActiveProjects].filter((p) => !newActiveProjects.has(p)),
+          to: newlyActive
+        }
+      };
+    }
   }
-  if (plan.tasks.every((t) => t.status === "done")) {
+  const allDone = plan.tasks.every((t) => t.status === "done");
+  const anyInProgress = plan.tasks.some((t) => t.status === "in_progress");
+  const anyPending = plan.tasks.some((t) => t.status === "pending");
+  if (allDone) {
     plan.status = "done";
-    plan.current_task = null;
-    return { warning };
+    plan.current_tasks = {};
+  } else {
+    plan.current_tasks = currentTasks;
+    if (anyInProgress || Object.keys(currentTasks).length > 0) {
+      plan.status = "in_progress";
+    } else if (anyPending) {
+      plan.status = "in_progress";
+      warning = "All remaining tasks are blocked by dependencies; resolve a blocker before continuing.";
+    }
   }
-  plan.current_task = null;
-  plan.status = "in_progress";
-  warning = "All remaining tasks are blocked by dependencies; resolve a blocker before continuing.";
-  return { warning };
+  return { warning, project_switch: switchNotification };
 }
-function validatePlan(plan) {
+function getTaskProjects(task) {
+  if (Array.isArray(task.project) && task.project.length > 0) {
+    return task.project;
+  }
+  return ["default"];
+}
+function deriveProjectList(tasks) {
+  const projects = /* @__PURE__ */ new Set();
+  for (const t of tasks) {
+    for (const p of getTaskProjects(t)) {
+      projects.add(p);
+    }
+  }
+  return [...projects];
+}
+function validatePlan(plan, projectList) {
   const errors = [];
   const tasks = Array.isArray(plan.tasks) ? plan.tasks : [];
   const ids = tasks.map((t) => t.id);
@@ -7433,15 +7516,38 @@ function validatePlan(plan) {
       }
     }
   }
-  const cycle = findCycle(tasks);
+  const cycle = findCycle(tasks, projectList);
   if (cycle) {
     errors.push(`Dependency cycle detected: ${cycle.join(" -> ")}`);
   }
-  const inProgress = tasks.filter((t) => t.status === "in_progress");
-  if (inProgress.length > 1) {
-    errors.push(
-      `More than one task is in_progress: ${inProgress.map((t) => t.id).join(", ")}`
+  const projects = projectList && projectList.length > 0 ? projectList : ["default"];
+  for (const proj of projects) {
+    const inProgressForProject = tasks.filter(
+      (t) => t.status === "in_progress" && getTaskProjects(t).includes(proj)
     );
+    if (inProgressForProject.length > 1) {
+      errors.push(
+        `More than one task is in_progress for project "${proj}": ${inProgressForProject.map((t) => t.id).join(", ")}`
+      );
+    }
+  }
+  if (projectList && projectList.length > 0) {
+    for (const t of tasks) {
+      if (Array.isArray(t.project)) {
+        for (const p of t.project) {
+          if (!projectList.includes(p)) {
+            errors.push(ERRORS.INVALID_TASK_PROJECT(t.id, p, projectList));
+          }
+        }
+      }
+    }
+  }
+  if (projectList && projectList.length > 0) {
+    for (const p of projectList) {
+      if (!PROJECT_NAME_RE.test(p)) {
+        errors.push(ERRORS.INVALID_PROJECT_NAME(p));
+      }
+    }
   }
   for (const t of tasks) {
     if (!Array.isArray(t.acceptance) || t.acceptance.length === 0) {
@@ -7453,27 +7559,63 @@ function validatePlan(plan) {
       errors.push(`Task "${t.id}" is not done but has completed_at set`);
     }
   }
-  if (plan.status === "done") {
-    if (plan.current_task != null) {
-      errors.push("plan.status is done but current_task is not null");
+  for (const t of tasks) {
+    if (t.deliverables && typeof t.deliverables === "object") {
+      if (!VALID_FRESHNESS.includes(t.deliverables.freshness)) {
+        errors.push(ERRORS.INVALID_FRESHNESS(t.id, t.deliverables.freshness));
+      }
     }
-  } else if (plan.current_task != null) {
-    const ct = tasks.find((t) => t.id === plan.current_task);
-    if (!ct) {
-      errors.push(`current_task "${plan.current_task}" does not reference a task`);
-    } else if (ct.status !== "pending" && ct.status !== "in_progress") {
-      errors.push(
-        `current_task "${plan.current_task}" has status "${ct.status}" (must be pending or in_progress)`
-      );
+  }
+  if (plan.status === "done") {
+    if (plan.current_tasks && Object.keys(plan.current_tasks).length > 0) {
+      errors.push("plan.status is done but current_tasks is not empty");
+    }
+  } else if (plan.current_tasks && typeof plan.current_tasks === "object") {
+    for (const [proj, taskId] of Object.entries(plan.current_tasks)) {
+      const ct = tasks.find((t) => t.id === taskId);
+      if (!ct) {
+        errors.push(`current_tasks["${proj}"] = "${taskId}" does not reference a task`);
+      } else if (ct.status !== "pending" && ct.status !== "in_progress") {
+        errors.push(
+          `current_tasks["${proj}"] = "${taskId}" has status "${ct.status}" (must be pending or in_progress)`
+        );
+      }
     }
   }
   return errors;
 }
-function findCycle(tasks) {
+function findCycle(tasks, projectList) {
+  if (!projectList || projectList.length <= 1) {
+    return findCycleInSubgraph(tasks, tasks.map((t) => t.id));
+  }
+  const taskMap = new Map(tasks.map((t) => [t.id, t]));
+  for (const proj of projectList) {
+    const idSet = new Set(
+      tasks.filter((t) => getTaskProjects(t).includes(proj)).map((t) => t.id)
+    );
+    const queue = [...idSet];
+    for (const id of queue) {
+      for (const dep of taskMap.get(id)?.depends_on || []) {
+        if (!idSet.has(dep)) {
+          idSet.add(dep);
+          queue.push(dep);
+        }
+      }
+    }
+    const cycle = findCycleInSubgraph(tasks, [...idSet]);
+    if (cycle) return cycle;
+  }
+  return null;
+}
+function findCycleInSubgraph(tasks, taskIds) {
+  const idSet = new Set(taskIds);
   const adj = /* @__PURE__ */ new Map();
-  for (const t of tasks) adj.set(t.id, t.depends_on || []);
+  for (const t of tasks) {
+    if (!idSet.has(t.id)) continue;
+    adj.set(t.id, (t.depends_on || []).filter((d) => idSet.has(d)));
+  }
   const WHITE = 0, GRAY = 1, BLACK = 2;
-  const color = new Map(tasks.map((t) => [t.id, WHITE]));
+  const color = new Map(taskIds.map((id) => [id, WHITE]));
   const stack = [];
   function dfs(node) {
     color.set(node, GRAY);
@@ -7493,9 +7635,9 @@ function findCycle(tasks) {
     color.set(node, BLACK);
     return null;
   }
-  for (const t of tasks) {
-    if (color.get(t.id) === WHITE) {
-      const found = dfs(t.id);
+  for (const id of taskIds) {
+    if (color.get(id) === WHITE) {
+      const found = dfs(id);
       if (found) return found;
     }
   }
@@ -7529,10 +7671,29 @@ function main() {
     );
     process.exit(1);
   }
+  let projectList = null;
+  if (args.projects && args.projects !== true) {
+    projectList = args.projects.split(",").map((s) => s.trim()).filter(Boolean);
+  } else {
+    projectList = deriveProjectList(plan.tasks);
+  }
+  if (plan.current_task != null && (!plan.current_tasks || typeof plan.current_tasks !== "object")) {
+    plan.current_tasks = { default: plan.current_task };
+  }
+  if ("current_task" in plan) {
+    delete plan.current_task;
+  }
+  if (!plan.current_tasks) {
+    plan.current_tasks = {};
+  }
   const now = (/* @__PURE__ */ new Date()).toISOString();
   const taskChange = applyUpdate(plan, args, now);
-  const { warning } = recomputeCurrentTask(plan, args.task);
-  const validationErrors = validatePlan(plan);
+  if (taskChange.error) {
+    process.stderr.write(taskChange.error + "\n");
+    process.exit(1);
+  }
+  const { warning, project_switch: switchNotif } = recomputeCurrentTasks(plan, args.task, projectList);
+  const validationErrors = validatePlan(plan, projectList);
   if (validationErrors.length) {
     process.stderr.write(ERRORS.VALIDATION_FAILED(validationErrors) + "\n");
     process.exit(1);
@@ -7553,10 +7714,11 @@ function main() {
   const result = {
     ok: true,
     task: taskChange,
-    current_task: plan.current_task ?? null,
+    current_tasks: plan.current_tasks,
     plan_status: plan.status,
     progress: { done: doneCount, total: plan.tasks.length },
-    warning
+    ...warning ? { warning } : {},
+    ...switchNotif ? switchNotif : {}
   };
   process.stdout.write(JSON.stringify(result) + "\n");
 }

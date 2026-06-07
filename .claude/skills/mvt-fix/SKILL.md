@@ -28,32 +28,48 @@ You are the **Developer** -- an Implementation Specialist.
 
 ## Activation Protocol
 
-### Step 1: Load Context (Context Foundation)
-Load the following files as foundational context:
-- `.ai-agents/workspace/session.yaml` -- Current workflow state
+### Step 1: Load Context
+Load these files as foundational context:
 - `.ai-agents/workspace/project-context.yaml` -- Project index (structural info)
 - `.ai-agents/registry.yaml` -- Available skills registry and knowledge declarations
 
 Extended context for this skill:
 - Related source files only (load based on bug description)
 
-### Step 2: Load Knowledge
+### Step 2: Resolve Project Scope (PS)
 
-Read `.ai-agents/registry.yaml` and load every file referenced under:
-- `knowledge.shared` (loaded by all skills)
-- `skills.<current-skill>.knowledge` (this skill's specific knowledge, if present)
+Read `project-context.yaml > projects[]`.
 
-For each entry, resolve files relative to `.ai-agents/{source}`:
-- If the entry lists `files: [...]`, load those files.
-- If the entry lists `files_from_manifest: true`, read `{source}/manifest.yaml` and load every `files[]` entry where `auto_load: true`.
+**Single project** (`projects.length == 1`): Set PS = [sole project name]. Skip remaining PS steps.
 
-Skip any path that does not exist.
+**Multi-project** (`projects.length > 1`):
 
-### Archived Artifacts Convention
+**Mode A -- Plan-driven** (active plan exists and skill operates on plan tasks):
 
-The directory `.ai-agents/workspace/artifacts/_archived/` contains change-id directories that have been archived by `/mvt-cleanup`. All skills that scan `artifacts/` MUST exclude `_archived/` from their scan scope unless explicitly inspecting archived content.
+1. **Plan signal**: PS = current task's `project` array from plan's `current_tasks`. Drop stale project names (not in `projects[]`), fall through.
+2. **Path match**: Match current working paths against `projects[].path` and `source_paths`.
+3. **Prompt**: If still unresolved, list candidates and ask user. Never silently load all projects.
 
-### Step 3: Load Config & Apply Preferences (Config Foundation)
+**Mode B -- Non-plan** (no active plan or ad-hoc changes):
+
+Defer PS to execution: identify change target, match against `projects[].path` and `source_paths`, load project-specific knowledge on demand (Step 3).
+
+### Step 3: Load Knowledge
+
+Registry uses project-keyed maps; `_all` is a reserved key (all projects). Applies to both top-level `knowledge` and `skills.<name>.knowledge`.
+
+**Entry resolution** (relative to `.ai-agents/{source}`):
+- `files: [...]` -- load listed files.
+- `files_from_manifest: true` -- read `{source}/manifest.yaml`, load entries with `auto_load: true`.
+- Skip non-existent paths.
+
+**At activation** (both modes): load `knowledge._all` + `skills.<current-skill>.knowledge._all`.
+
+**Mode A** (additionally): for each P in PS, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]`.
+
+**Mode B** (during execution): on demand, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for identified project(s).
+
+### Step 4: Load Config & Apply Preferences (Config Foundation)
 Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:
 
 **Language**:
@@ -92,7 +108,7 @@ All persisted document output (markdown written to disk) MUST follow the formatt
 - If a diagram genuinely cannot be expressed in mermaid (e.g. a precise spatial/pixel layout), state that explicitly and prefer a Markdown table or prose description over ASCII art.
 - This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from templates or source material.
 
-### Step 4: Pre-flight Checks
+### Step 5: Pre-flight Checks
 
 For each check below, if the condition holds, perform the action implied by its **Level**:
 
@@ -108,7 +124,7 @@ For each check below, if the condition holds, perform the action implied by its 
 ## Operation Mode: Shortcut
 
 This skill operates as a shortcut — it can execute at any time without checking workflow prerequisites.
-- Do NOT update `progress` (this is a shortcut operation, not a workflow phase).
+- Do NOT update `active_change` (this is a shortcut operation, not a workflow phase).
 
 ## Execution Flow
 
@@ -199,9 +215,24 @@ This skill operates as a shortcut — it can execute at any time without checkin
   | Multi-module | Touches >1 module or shared utility | List impacted modules, read each call site before editing, group by commit if possible |
   | Cross-architecture | Requires layering change, new dependency, or interface redesign | STOP -- recommend `/mvt-design` (or `/mvt-refactor` if behavior is preserved); do NOT implement here |
 
-- Identify regression risk: which existing tests cover this code? If none, decide whether to add a regression test in Step 7.
+- Identify regression risk: which existing tests cover this code? If none, decide whether to add a regression test in Step 8.
 
-### Step 6: User Confirmation
+### Step 6: Identify Project Scope and Load Project-Specific Knowledge
+
+This step applies only when the workspace has multiple projects (`projects.length > 1` in `project-context.yaml`). In single-project workspaces, all relevant knowledge was loaded at activation; skip this step entirely.
+
+- **Project identification**: match the file paths resolved in prior steps (from review findings, bug detection, or self-contained diagnosis) against `projects[].path` and `projects[].source_paths`:
+  - A file whose path starts with a project's `path` prefix belongs to that project.
+  - A file under a project's `source_paths` entry also belongs to that project.
+  - Collect the set of unique project names from all matched files. This is the **active project scope** for this invocation.
+- **On-demand knowledge loading**: for each project P in the active project scope, read `.ai-agents/registry.yaml` and load:
+  1. Every entry under `knowledge.{P}` -- load each entry's referenced files (resolve relative to `.ai-agents/{source}`).
+  2. Every entry under `skills.mvt-fix.knowledge.{P}` -- load each entry's referenced files.
+  3. Skip any key absent from the registry (no project-specific knowledge is valid; do not warn).
+- **Multi-project scenario**: if affected files span multiple projects, load each project's knowledge sequentially. The skill operates with the union of all loaded project-specific knowledge plus the `_all` knowledge already loaded at activation.
+- **Unmatched files**: if a file path does not match any project's `path` or `source_paths`, surface a note and treat it as belonging to the first project in `projects[]` (fallback). This may indicate a configuration gap in `project-context.yaml`.
+
+### Step 7: User Confirmation
 - **When to confirm before applying**:
   - Multi-module class or above.
   - The fix changes a public/exported symbol or a configuration default.
@@ -211,14 +242,14 @@ This skill operates as a shortcut — it can execute at any time without checkin
   - One-liner / single-file class AND fix is purely additive or correctional AND reproduction was verified.
 - **Confirmation prompt format**: present `Root cause: ...`, `Proposed change: <files + summary>`, `Risk: <regression scope>`, then ask `Apply? (y / n / show-diff)`.
 
-### Step 7: Apply the Fix
+### Step 8: Apply the Fix
 - For source 1a (review.md): apply fixes per finding; re-run the review's relevant checks (not reproduction) to confirm each fix addresses its finding.
 - Make the targeted code change.
 - If no test covered the regression and the fix class is multi-module or above, add a minimal regression test alongside the fix.
 - Re-run the original repro (if any) to confirm resolution.
 - If repro still fails -> revert, return to Step 3 with the new evidence.
 
-### Step 8: Write Fix Notes
+### Step 9: Write Fix Notes
 - **Path**: `.ai-agents/workspace/artifacts/{change-id}/fix-notes.md` if an `active_change` exists; otherwise inline in the conversation only (no artifact -- shortcut operation).
 - **Structure** (each section is a single paragraph or list):
   - `Symptom` -- what the user saw / reported.
@@ -230,7 +261,7 @@ This skill operates as a shortcut — it can execute at any time without checkin
   - `Regression risk` -- scope of behavior potentially affected, plus what tests guard it.
   - `Follow-ups` -- TODOs, deferred refactors, related issues.
 
-### Step 9: State Update
+### Step 10: State Update
 Apply the State Update rules defined in the **State Update** section below.
 
 ## Edge Cases & Errors
@@ -240,7 +271,7 @@ Apply the State Update rules defined in the **State Update** section below.
 | Bug is intermittent / racy | Mark reproduction as "flaky", state confidence level explicitly, prefer adding instrumentation over speculative fix |
 | Fix would require breaking a downstream API | STOP -- escalate to `/mvt-design` or `/mvt-refactor`; do not silently break contracts |
 | Root cause is in a third-party dependency | Document the upstream issue, apply a minimal local workaround clearly labeled as temporary |
-| User aborts at Step 6 | Do not write fix notes; record the diagnosis as a comment in the conversation only |
+| User aborts at Step 7 | Do not write fix notes; record the diagnosis as a comment in the conversation only |
 | Fix relies on changes the user has uncommitted in another branch | Surface the conflict before editing; do not overwrite |
 | `active_change` is missing entirely | Apply fix without writing artifact (shortcut mode), summarize result in conversation |
 

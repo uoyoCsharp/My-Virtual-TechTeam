@@ -1,23 +1,23 @@
 ---
 name: 'mvt-update-plan'
-description: "Update a single task in the active change's plan.yaml: change status, attach artifacts, leave notes, and auto-advance current_task. This skill should be used after a workflow skill finishes work that maps to a plan task, or whenever the user wants to mark a task as done, blocked, or skipped."
+description: "Update a single task in the active change's plan.yaml: change status, attach artifacts, leave notes, and auto-advance current_tasks. This skill should be used after a workflow skill finishes work that maps to a plan task, or whenever the user wants to mark a task as done, blocked, or skipped."
 ---
 
 # MVT Update Plan
 
 ## Purpose
 
-Apply incremental updates to the active plan.yaml: mark a task done/blocked/skipped, attach the artifacts produced, and let the skill auto-advance `current_task` to the next executable task. AI may invoke this skill on the user's behalf when the user replies to a soft-prompt with `done` / `blocked: <reason>`.
+Apply incremental updates to the active plan.yaml: mark a task done/blocked/skipped, attach the artifacts produced, and let the skill auto-advance `current_tasks` to the next executable task. AI may invoke this skill on the user's behalf when the user replies to a soft-prompt with `done` / `blocked: <reason>`.
 
 ## Role
 
 You are the **Architect** -- a Development Planner.
 
 ### Decision Rules
-- Task id provided AND target status valid -> Apply update, advance current_task, write back
+- Task id provided AND target status valid -> Apply update, advance current_tasks, write back
 - Task id missing AND only one task is in_progress -> Default to that task
-- Target status would create an invalid current_task -> Recompute current_task automatically
-- All tasks become done -> Set plan.status = done, current_task = null
+- Target status would create an invalid current_tasks -> Recompute current_tasks automatically
+- All tasks become done -> Set plan.status = done, current_tasks = {}
 - active_change.plan_path is empty -> Stop and suggest /mvt-plan-dev
 
 ### Boundaries
@@ -27,32 +27,48 @@ You are the **Architect** -- a Development Planner.
 
 ## Activation Protocol
 
-### Step 1: Load Context (Context Foundation)
-Load the following files as foundational context:
-- `.ai-agents/workspace/session.yaml` -- Current workflow state
+### Step 1: Load Context
+Load these files as foundational context:
 - `.ai-agents/workspace/project-context.yaml` -- Project index (structural info)
 - `.ai-agents/registry.yaml` -- Available skills registry and knowledge declarations
 
 Extended context for this skill:
 - {active_change.plan_path} -- The plan to update (resolved from session.yaml)
 
-### Step 2: Load Knowledge
+### Step 2: Resolve Project Scope (PS)
 
-Read `.ai-agents/registry.yaml` and load every file referenced under:
-- `knowledge.shared` (loaded by all skills)
-- `skills.<current-skill>.knowledge` (this skill's specific knowledge, if present)
+Read `project-context.yaml > projects[]`.
 
-For each entry, resolve files relative to `.ai-agents/{source}`:
-- If the entry lists `files: [...]`, load those files.
-- If the entry lists `files_from_manifest: true`, read `{source}/manifest.yaml` and load every `files[]` entry where `auto_load: true`.
+**Single project** (`projects.length == 1`): Set PS = [sole project name]. Skip remaining PS steps.
 
-Skip any path that does not exist.
+**Multi-project** (`projects.length > 1`):
 
-### Archived Artifacts Convention
+**Mode A -- Plan-driven** (active plan exists and skill operates on plan tasks):
 
-The directory `.ai-agents/workspace/artifacts/_archived/` contains change-id directories that have been archived by `/mvt-cleanup`. All skills that scan `artifacts/` MUST exclude `_archived/` from their scan scope unless explicitly inspecting archived content.
+1. **Plan signal**: PS = current task's `project` array from plan's `current_tasks`. Drop stale project names (not in `projects[]`), fall through.
+2. **Path match**: Match current working paths against `projects[].path` and `source_paths`.
+3. **Prompt**: If still unresolved, list candidates and ask user. Never silently load all projects.
 
-### Step 3: Load Config & Apply Preferences (Config Foundation)
+**Mode B -- Non-plan** (no active plan or ad-hoc changes):
+
+Defer PS to execution: identify change target, match against `projects[].path` and `source_paths`, load project-specific knowledge on demand (Step 3).
+
+### Step 3: Load Knowledge
+
+Registry uses project-keyed maps; `_all` is a reserved key (all projects). Applies to both top-level `knowledge` and `skills.<name>.knowledge`.
+
+**Entry resolution** (relative to `.ai-agents/{source}`):
+- `files: [...]` -- load listed files.
+- `files_from_manifest: true` -- read `{source}/manifest.yaml`, load entries with `auto_load: true`.
+- Skip non-existent paths.
+
+**At activation** (both modes): load `knowledge._all` + `skills.<current-skill>.knowledge._all`.
+
+**Mode A** (additionally): for each P in PS, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]`.
+
+**Mode B** (during execution): on demand, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for identified project(s).
+
+### Step 4: Load Config & Apply Preferences (Config Foundation)
 Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:
 
 **Language**:
@@ -91,7 +107,7 @@ All persisted document output (markdown written to disk) MUST follow the formatt
 - If a diagram genuinely cannot be expressed in mermaid (e.g. a precise spatial/pixel layout), state that explicitly and prefer a Markdown table or prose description over ASCII art.
 - This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from templates or source material.
 
-### Step 4: Pre-flight Checks
+### Step 5: Pre-flight Checks
 
 For each check below, if the condition holds, perform the action implied by its **Level**:
 
@@ -127,8 +143,8 @@ Resolution rules:
 - If `task_id` is omitted AND exactly one task currently has status `in_progress` -> default to that task.
 - If `task_id` is omitted AND zero or multiple tasks are in_progress -> ask the user to specify.
 - If the user reply is the natural-language form `done` / `blocked: <reason>` (from a workflow skill's soft-prompt) -> map to:
-  - `done` -> task = plan.current_task, new_status = done
-  - `blocked: <reason>` -> task = plan.current_task, new_status = blocked, notes = `<reason>`
+  - `done` -> task = the entry in `plan.current_tasks` matching the current project (or the sole entry if single-project), new_status = done
+  - `blocked: <reason>` -> task = the entry in `plan.current_tasks` matching the current project (or the sole entry if single-project), new_status = blocked, notes = `<reason>`
 
 ### Step 2: Load and Validate Existing Plan
 
@@ -138,14 +154,14 @@ Resolution rules:
 
 ### Step 3: Apply the Update, Recompute, Validate, and Write (via script)
 
-The mechanical work — mutating the task, recomputing `current_task` via the DAG
+The mechanical work — mutating the task, recomputing `current_tasks` via the per-project DAG
 rules, validating the result, and writing back atomically — is performed by a
 deterministic script. Do NOT hand-edit `plan.yaml` or reason through the
-`current_task` selection yourself; call the script with the resolved arguments
+`current_tasks` selection yourself; call the script with the resolved arguments
 from Step 1–2:
 
 ```bash
-node .ai-agents/scripts/plan-update.cjs --plan "<active_change.plan_path>" --task <task_id> --status <new_status> [--artifacts "<comma,separated,paths>"] [--notes "<note text>"]
+node .ai-agents/scripts/plan-update.cjs --plan "<active_change.plan_path>" --task <task_id> --status <new_status> --projects "<comma,separated,project,names>" [--artifacts "<comma,separated,paths>"] [--notes "<note text>"]
 ```
 
 Include `--artifacts` only if artifacts were provided, and `--notes` only if a note was provided; omit each flag otherwise.
@@ -155,23 +171,24 @@ Include `--artifacts` only if artifacts were provided, and `--notes` only if a n
 | `--plan` | `active_change.plan_path` resolved from session.yaml |
 | `--task` | the `task_id` resolved in Step 1 |
 | `--status` | the `new_status` resolved in Step 1 (`pending`/`in_progress`/`done`/`blocked`/`skipped`) |
+| `--projects` | comma-separated project names read from `project-context.yaml > projects[].name` |
 | `--artifacts` | optional; comma-separated paths to append (the script de-duplicates) |
 | `--notes` | optional; overwrites the task's `notes` |
 
 The script performs, deterministically:
 
 1. **Apply**: sets the task status; appends + de-duplicates `--artifacts` (handles `artifacts: null`); overwrites `--notes`; sets `completed_at` to now when status is `done`, else `null`; refreshes `plan.updated_at`.
-2. **Recompute `current_task`** (same rules as before): an `in_progress` task that is not the one just moved to terminal wins; else the first `pending` task whose `depends_on` are all `done` (promoted to `in_progress`); else if all tasks are `done` set `plan.status = done` and `current_task = null`; else `current_task = null` with a blocked-by-dependencies warning.
-3. **Validate** the mutated plan (unique ids, valid `depends_on` references, DAG/no-cycle, ≤1 `in_progress`, every task has acceptance, `completed_at` consistency, `current_task` validity).
+2. **Recompute `current_tasks`** (per-project independent advancement): for each project, finds the `in_progress` task or advances the first `pending` task whose `depends_on` are all in `resolvedIds` (done + skipped; blocked does NOT satisfy). Detects `project_switch` when advancement crosses a project boundary. Plan done -> `current_tasks = {}`.
+3. **Validate** the mutated plan (unique ids, valid `depends_on` references, DAG/no-cycle per project, one `in_progress` per project, every task has acceptance, `completed_at` consistency, `current_tasks` validity, project naming constraint, task project membership).
 4. **Write atomically** (temp + rename) only if validation passes.
 
 **Interpreting the result:**
 
 - **Exit 0**: success. stdout is a single-line JSON object:
   ```json
-  {"ok":true,"task":{"id":"t1","title":"...","old_status":"in_progress","new_status":"done"},"current_task":"t2","plan_status":"in_progress","progress":{"done":1,"total":4},"warning":null}
+  {"ok":true,"task":{"id":"t1","title":"...","old_status":"in_progress","new_status":"done"},"current_tasks":{"default":"t2"},"plan_status":"in_progress","progress":{"done":1,"total":4},"warning":null,"project_switch":null}
   ```
-  Use these fields directly to render the Output Format block. The file is already written — do NOT read it back to verify. If `warning` is non-null, surface it.
+  Use these fields directly to render the Output Format block. The file is already written — do NOT read it back to verify. If `warning` is non-null, surface it. If `project_switch` is non-null, note the project boundary crossing.
 - **Exit 1**: failure. stderr carries the error (invalid status, task not found, validation failure, parse/write error). The file was **not** modified. Report the error to the user and do not fabricate a success summary.
 
 ### Step 4: Output
@@ -180,9 +197,10 @@ Emit the Plan Update summary block defined in the Output Format section. Include
 
 - The task that changed (id, title, old -> new status).
 - A compact table of all tasks with their current status.
-- The new `current_task` (or "(plan complete)" if `plan.status == done`).
+- The new `current_tasks` map (or "(plan complete)" if `plan.status == done`).
+- If `project_switch` was emitted in the script output, note: "Project switch: {from} -> {to}".
 - A one-line "Next" hint:
-  - If a new `current_task` is set -> recommend the skill matching its `skill_hint`.
+  - If `current_tasks` has entries -> recommend the skill matching the relevant task's `skill_hint`.
   - If plan complete -> recommend `/mvt-cleanup` or starting a new change via `/mvt-analyze`.
   - If all remaining tasks are blocked -> recommend resolving the blocker (point at the `notes` of the blocked task).
 
@@ -194,7 +212,7 @@ Emit the Plan Update summary block defined in the Output Format section. Include
 | Task id provided does not exist in `plan.yaml` | Abort with error listing valid task ids |
 | Transition to `done` but `depends_on` tasks are not all `done` | Warn but allow: "Task marked done despite unfinished dependencies — verify correctness" |
 | All tasks are `done` but user marks another as `in_progress` | Reject: plan is already complete; suggest creating a new change |
-| Circular dependency detected in `depends_on` | Report the cycle and refuse to auto-advance `current_task`; suggest manual fix |
+| Circular dependency detected in `depends_on` | Report the cycle and refuse to auto-advance `current_tasks`; suggest manual fix |
 | `plan.yaml` write fails (permission denied, invalid YAML state) | Abort; do not update session; report the write error |
 
 ## Output Format
@@ -216,7 +234,7 @@ Render an inline summary (no external template). Structure:
 | ... |
 
 Progress: {done_count}/{total_count}
-Current task: {new_current_task_id_or_"(plan complete)"}
+Current tasks: {new_current_tasks_map_or_"(plan complete)"}
 
 ### Next
 {one-line guidance: continue to next task, resolve blocker, or run /mvt-cleanup}
@@ -261,7 +279,7 @@ Recommend 2-3 relevant next skills based on the skill just completed (`mvt-updat
 Match the current state to one of the conditions below. If none match, use `default`.
 
 - **`plan_done`** → `/mvt-cleanup` -- All tasks complete -- clean up artifacts and prepare to start the next change
-- **`default`** → `/mvt-implement` -- Continue with the next current_task
+- **`default`** → `/mvt-implement` -- Continue with the next task from current_tasks
 - `/mvt-resume` -- Refresh context after task transitions
 - `/mvt-status` -- Inspect overall progress across changes
 

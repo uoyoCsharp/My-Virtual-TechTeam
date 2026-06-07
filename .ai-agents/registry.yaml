@@ -1,11 +1,10 @@
 # MVTT Framework Registry (v2)
 # Single source of truth for skill metadata and knowledge declarations.
-# Consumed at build-time by mvtt CLI and at runtime by /mvt-status and /mvt-help.
 
 version: "2.0"
 last_updated: 2026-05-23
 knowledge:
-  shared:
+  _all:
     - id: core
       source: knowledge/core/
       files_from_manifest: true

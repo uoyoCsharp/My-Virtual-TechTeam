@@ -40,9 +40,8 @@ Usage: `/mvt-review` or `/mvt-review --aspect {type}`
 
 ## Activation Protocol
 
-### Step 1: Load Context (Context Foundation)
-Load the following files as foundational context:
-- `.ai-agents/workspace/session.yaml` -- Current workflow state
+### Step 1: Load Context
+Load these files as foundational context:
 - `.ai-agents/workspace/project-context.yaml` -- Project index (structural info)
 - `.ai-agents/registry.yaml` -- Available skills registry and knowledge declarations
 
@@ -51,23 +50,40 @@ Extended context for this skill:
 - .ai-agents/workspace/artifacts/{active_change.id}/design.md -- Architecture design
 - .ai-agents/workspace/artifacts/{active_change.id}/implementation.md -- Implementation record
 
-### Step 2: Load Knowledge
+### Step 2: Resolve Project Scope (PS)
 
-Read `.ai-agents/registry.yaml` and load every file referenced under:
-- `knowledge.shared` (loaded by all skills)
-- `skills.<current-skill>.knowledge` (this skill's specific knowledge, if present)
+Read `project-context.yaml > projects[]`.
 
-For each entry, resolve files relative to `.ai-agents/{source}`:
-- If the entry lists `files: [...]`, load those files.
-- If the entry lists `files_from_manifest: true`, read `{source}/manifest.yaml` and load every `files[]` entry where `auto_load: true`.
+**Single project** (`projects.length == 1`): Set PS = [sole project name]. Skip remaining PS steps.
 
-Skip any path that does not exist.
+**Multi-project** (`projects.length > 1`):
 
-### Archived Artifacts Convention
+**Mode A -- Plan-driven** (active plan exists and skill operates on plan tasks):
 
-The directory `.ai-agents/workspace/artifacts/_archived/` contains change-id directories that have been archived by `/mvt-cleanup`. All skills that scan `artifacts/` MUST exclude `_archived/` from their scan scope unless explicitly inspecting archived content.
+1. **Plan signal**: PS = current task's `project` array from plan's `current_tasks`. Drop stale project names (not in `projects[]`), fall through.
+2. **Path match**: Match current working paths against `projects[].path` and `source_paths`.
+3. **Prompt**: If still unresolved, list candidates and ask user. Never silently load all projects.
 
-### Step 3: Load Config & Apply Preferences (Config Foundation)
+**Mode B -- Non-plan** (no active plan or ad-hoc changes):
+
+Defer PS to execution: identify change target, match against `projects[].path` and `source_paths`, load project-specific knowledge on demand (Step 3).
+
+### Step 3: Load Knowledge
+
+Registry uses project-keyed maps; `_all` is a reserved key (all projects). Applies to both top-level `knowledge` and `skills.<name>.knowledge`.
+
+**Entry resolution** (relative to `.ai-agents/{source}`):
+- `files: [...]` -- load listed files.
+- `files_from_manifest: true` -- read `{source}/manifest.yaml`, load entries with `auto_load: true`.
+- Skip non-existent paths.
+
+**At activation** (both modes): load `knowledge._all` + `skills.<current-skill>.knowledge._all`.
+
+**Mode A** (additionally): for each P in PS, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]`.
+
+**Mode B** (during execution): on demand, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for identified project(s).
+
+### Step 4: Load Config & Apply Preferences (Config Foundation)
 Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:
 
 **Language**:
@@ -106,7 +122,7 @@ All persisted document output (markdown written to disk) MUST follow the formatt
 - If a diagram genuinely cannot be expressed in mermaid (e.g. a precise spatial/pixel layout), state that explicitly and prefer a Markdown table or prose description over ASCII art.
 - This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from templates or source material.
 
-### Step 4: Pre-flight Checks
+### Step 5: Pre-flight Checks
 
 For each check below, if the condition holds, perform the action implied by its **Level**:
 
@@ -126,7 +142,7 @@ For each check below, if the condition holds, perform the action implied by its 
 - **Required**:
   - The set of files to review (see Step 2 for resolution).
 - **Fallback**:
-  - If `design.md`/`implementation.md` are missing, downgrade to "code-only review": skip the design-compliance checks (Step 4 row group A) and note the limitation in the artifact.
+  - If `design.md`/`implementation.md` are missing, downgrade to "code-only review": skip the design-compliance checks (Step 5 row group A) and note the limitation in the artifact.
   - If `project-context.md` is missing, skip layer-compliance checks and note the limitation.
 
 ### Step 2: Resolve Review Target
@@ -144,12 +160,27 @@ For each check below, if the condition holds, perform the action implied by its 
 - If the resolved list is empty, STOP and ask the user to specify the target.
 - If the list exceeds ~30 files, ask the user to scope down OR confirm a high-level (per-module) review depth.
 
-### Step 3: Determine Review Depth
-- **Default**: full review across all axes (Step 4).
+### Step 3: Identify Project Scope and Load Project-Specific Knowledge
+
+This step applies only when the workspace has multiple projects (`projects.length > 1` in `project-context.yaml`). In single-project workspaces, all relevant knowledge was loaded at activation; skip this step entirely.
+
+- **Project identification**: match the file paths resolved in Step 2 against `projects[].path` and `projects[].source_paths`:
+  - A file whose path starts with a project's `path` prefix belongs to that project.
+  - A file under a project's `source_paths` entry also belongs to that project.
+  - Collect the set of unique project names from all matched files. This is the **active project scope** for this invocation.
+- **On-demand knowledge loading**: for each project P in the active project scope, read `.ai-agents/registry.yaml` and load:
+  1. Every entry under `knowledge.{P}` -- load each entry's referenced files (resolve relative to `.ai-agents/{source}`).
+  2. Every entry under `skills.mvt-review.knowledge.{P}` -- load each entry's referenced files.
+  3. Skip any key absent from the registry (no project-specific knowledge is valid; do not warn).
+- **Multi-project scenario**: if files span multiple projects, load each project's knowledge sequentially. The skill operates with the union of all loaded project-specific knowledge plus the `_all` knowledge already loaded at activation.
+- **Unmatched files**: if a file path does not match any project's `path` or `source_paths`, surface a note and treat it as belonging to the first project in `projects[]` (fallback). This may indicate a configuration gap in `project-context.yaml`.
+
+### Step 4: Determine Review Depth
+- **Default**: full review across all axes (Step 5).
 - `--aspect <name>`: narrow to a single axis. Supported aspects: `architecture`, `quality`, `errors`, `edge-cases`, `security`, `naming`, `tests`. Other aspects -> ask user to clarify.
 - For files >300 lines, do a structural pass first (interfaces, exports, key paths) before line-level review; do not attempt line-by-line on huge files.
 
-### Step 4: Run Review Checks
+### Step 5: Run Review Checks
 - **What**: produce findings, each tagged with severity, location, and a concrete remedy.
 - **How**: walk the checklist below. Skip any group whose inputs were missing per Step 1 fallback notes.
 
@@ -161,7 +192,7 @@ For each check below, if the condition holds, perform the action implied by its 
 
   **Group B -- Code Quality**
   - Functions are small and focused; flag functions > ~50 lines or with > ~3 nested control levels.
-  - Naming is clear, consistent with `naming-conventions.md`, and matches surrounding code.
+  - Naming is clear, consistent with the naming conventions loaded by activation (if any), and matches surrounding code.
   - No duplication: same logic appearing >= 3 times warrants extraction.
   - No premature abstraction: a single-use helper / interface / wrapper is a finding.
   - No dead code, unused imports, commented-out blocks left behind.
@@ -190,7 +221,7 @@ For each check below, if the condition holds, perform the action implied by its 
   - Auth/authz checks present on every protected endpoint or operation.
   - SQL/NoSQL/HTML rendered through parameterized / escaped APIs.
 
-### Step 5: Categorize and De-duplicate Findings
+### Step 6: Categorize and De-duplicate Findings
 - **Severity**: assign each finding using the table below.
 
   | Level | Definition | Examples |
@@ -202,7 +233,7 @@ For each check below, if the condition holds, perform the action implied by its 
 - Merge duplicate findings (same root cause appearing in multiple files) into one entry with a list of locations.
 - Each finding must include: file, line range, severity, observation, recommendation.
 
-### Step 6: Write Artifact
+### Step 7: Write Artifact
 - **Path and template**: as defined in the **Artifact Structure** section below. If no `active_change` exists, use `.ai-agents/workspace/artifacts/_ad-hoc-review-{YYYY-MM-DD-HHMM}/review.md`.
 - **Required content** (mapped to template headings):
   - `Review Scope` -- file list, depth, aspect filter, fallbacks applied (e.g., "design.md missing -> Group A skipped").
@@ -213,13 +244,13 @@ For each check below, if the condition holds, perform the action implied by its 
   - `Skipped Checks` -- groups skipped because inputs were missing, with reason.
   - `Recommended Next Skill` -- e.g., `/mvt-fix` for Critical, `/mvt-test` if Group E gaps, `/mvt-refactor` if Group B is dominant.
 
-### Step 7: Verdict Rule
+### Step 8: Verdict Rule
 - Critical > 0 -> verdict is `Request changes`. Suggest `/mvt-fix`.
 - Critical = 0, Warnings > 5 -> verdict is `Approve with comments`.
 - Critical = 0, Warnings <= 5, Suggestions only -> verdict is `Approve`.
 - Code-only review (design.md missing) -> verdict cannot be higher than `Approve with comments` (call it out explicitly).
 
-### Step 8: State Update
+### Step 9: State Update
 Apply the State Update rules defined in the **State Update** section below.
 
 ## Edge Cases & Errors

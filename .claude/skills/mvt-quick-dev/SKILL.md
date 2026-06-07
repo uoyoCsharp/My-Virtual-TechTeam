@@ -28,34 +28,49 @@ You are the **Developer** -- an Implementation Specialist.
 
 ## Activation Protocol
 
-### Step 1: Load Context (Context Foundation)
-Load the following files as foundational context:
-- `.ai-agents/workspace/session.yaml` -- Current workflow state
+### Step 1: Load Context
+Load these files as foundational context:
 - `.ai-agents/workspace/project-context.yaml` -- Project index (structural info)
 - `.ai-agents/registry.yaml` -- Available skills registry and knowledge declarations
 
 Extended context for this skill:
 - .ai-agents/knowledge/project/_generated/project-context.md -- Module/layer map (optional)
-- .ai-agents/knowledge/principle/coding-standards.md -- Coding standards (optional)
 - Target source files (load based on change description)
 
-### Step 2: Load Knowledge
+### Step 2: Resolve Project Scope (PS)
 
-Read `.ai-agents/registry.yaml` and load every file referenced under:
-- `knowledge.shared` (loaded by all skills)
-- `skills.<current-skill>.knowledge` (this skill's specific knowledge, if present)
+Read `project-context.yaml > projects[]`.
 
-For each entry, resolve files relative to `.ai-agents/{source}`:
-- If the entry lists `files: [...]`, load those files.
-- If the entry lists `files_from_manifest: true`, read `{source}/manifest.yaml` and load every `files[]` entry where `auto_load: true`.
+**Single project** (`projects.length == 1`): Set PS = [sole project name]. Skip remaining PS steps.
 
-Skip any path that does not exist.
+**Multi-project** (`projects.length > 1`):
 
-### Archived Artifacts Convention
+**Mode A -- Plan-driven** (active plan exists and skill operates on plan tasks):
 
-The directory `.ai-agents/workspace/artifacts/_archived/` contains change-id directories that have been archived by `/mvt-cleanup`. All skills that scan `artifacts/` MUST exclude `_archived/` from their scan scope unless explicitly inspecting archived content.
+1. **Plan signal**: PS = current task's `project` array from plan's `current_tasks`. Drop stale project names (not in `projects[]`), fall through.
+2. **Path match**: Match current working paths against `projects[].path` and `source_paths`.
+3. **Prompt**: If still unresolved, list candidates and ask user. Never silently load all projects.
 
-### Step 3: Load Config & Apply Preferences (Config Foundation)
+**Mode B -- Non-plan** (no active plan or ad-hoc changes):
+
+Defer PS to execution: identify change target, match against `projects[].path` and `source_paths`, load project-specific knowledge on demand (Step 3).
+
+### Step 3: Load Knowledge
+
+Registry uses project-keyed maps; `_all` is a reserved key (all projects). Applies to both top-level `knowledge` and `skills.<name>.knowledge`.
+
+**Entry resolution** (relative to `.ai-agents/{source}`):
+- `files: [...]` -- load listed files.
+- `files_from_manifest: true` -- read `{source}/manifest.yaml`, load entries with `auto_load: true`.
+- Skip non-existent paths.
+
+**At activation** (both modes): load `knowledge._all` + `skills.<current-skill>.knowledge._all`.
+
+**Mode A** (additionally): for each P in PS, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]`.
+
+**Mode B** (during execution): on demand, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for identified project(s).
+
+### Step 4: Load Config & Apply Preferences (Config Foundation)
 Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:
 
 **Language**:
@@ -150,7 +165,22 @@ This skill operates as a shortcut — it can execute at any time without checkin
   5. Cross-reference `project-context.md` layer rules (if available) -- flag any change that would violate layer constraints.
 - **Output of this step**: a target list (`path | action | one-line intent`).
 
-### Step 4: Plan the Change
+### Step 4: Identify Project Scope and Load Project-Specific Knowledge
+
+This step applies only when the workspace has multiple projects (`projects.length > 1` in `project-context.yaml`). In single-project workspaces, all relevant knowledge was loaded at activation; skip this step entirely.
+
+- **Project identification**: match the file paths resolved in Step 3 against `projects[].path` and `projects[].source_paths`:
+  - A file whose path starts with a project's `path` prefix belongs to that project.
+  - A file under a project's `source_paths` entry also belongs to that project.
+  - Collect the set of unique project names from all matched files. This is the **active project scope** for this invocation.
+- **On-demand knowledge loading**: for each project P in the active project scope, read `.ai-agents/registry.yaml` and load:
+  1. Every entry under `knowledge.{P}` -- load each entry's referenced files (resolve relative to `.ai-agents/{source}`).
+  2. Every entry under `skills.mvt-quick-dev.knowledge.{P}` -- load each entry's referenced files.
+  3. Skip any key absent from the registry (no project-specific knowledge is valid; do not warn).
+- **Multi-project scenario**: if files span multiple projects, load each project's knowledge sequentially. The skill operates with the union of all loaded project-specific knowledge plus the `_all` knowledge already loaded at activation.
+- **Unmatched files**: if a file path does not match any project's `path` or `source_paths`, surface a note and treat it as belonging to the first project in `projects[]` (fallback). This may indicate a configuration gap in `project-context.yaml`.
+
+### Step 5: Plan the Change
 - **What**: produce an ordered file list before writing any code.
 - **How**:
   1. For each target from Step 3, decide: `create | modify | delete`, and write a one-line intent.
@@ -164,31 +194,31 @@ This skill operates as a shortcut — it can execute at any time without checkin
   | Plan exceeds 3 files | Escalate to Complex -- STOP, recommend standard workflow |
   | Plan introduces an unplanned module | Escalate to Complex -- STOP, recommend standard workflow |
 
-### Step 5: Implement
+### Step 6: Implement
 - **What**: write/modify the planned files.
 - **How**:
-  1. Apply changes one file at a time, in the order determined by Step 4.
-  2. Follow `coding-standards.md` if available; match surrounding code style otherwise.
+  1. Apply changes one file at a time, in the order determined by Step 5.
+  2. Follow the coding standards loaded by activation (if any); match surrounding code style otherwise.
   3. Respect module/layer rules from `project-context.md`. Forbidden imports must NOT appear.
   4. Add error handling at system boundaries only (HTTP, DB, external API, file IO, message bus). Do NOT add try/catch around internal calls.
   5. Inline comments only for non-obvious algorithmic choices or deliberate workarounds with a reason.
   6. Do NOT introduce abstractions, helpers, or feature flags beyond what the task requires.
 
-### Step 6: Quick Verify
+### Step 7: Quick Verify
 - **What**: light-weight verification before reporting completion.
 - **How**:
   1. If a type-checker is configured for the project (`tsc`, `mypy`, `cargo check`, etc.), run it on changed files only. Surface failures.
   2. If existing tests cover the changed code, suggest the test command but do not auto-run unless user explicitly approved.
   3. For frontend/UI changes, note that user should verify in browser; do NOT claim "tested" based on type-check alone.
 
-### Step 7: Summarize in Conversation
+### Step 8: Summarize in Conversation
 - **What**: present the result without writing any artifact file.
 - **How**: output a brief summary containing:
   - Files touched: `path | action`
   - Verification status: type-check result, test suggestion
 - **No artifact is written. No document is generated.** This is a conversation-only skill.
 
-### Step 8: State Update
+### Step 9: State Update
 Apply the State Update rules defined in the **State Update** section below.
 
 ## Edge Cases & Errors

@@ -60,29 +60,45 @@ You are the **Conductor** -- a Knowledge Curator.
 
 ## Activation Protocol
 
-### Step 1: Load Context (Context Foundation)
-Load the following files as foundational context:
-- `.ai-agents/workspace/session.yaml` -- Current workflow state
+### Step 1: Load Context
+Load these files as foundational context:
 - `.ai-agents/workspace/project-context.yaml` -- Project index (structural info)
 - `.ai-agents/registry.yaml` -- Available skills registry and knowledge declarations
 
-### Step 2: Load Knowledge
+### Step 2: Resolve Project Scope (PS)
 
-Read `.ai-agents/registry.yaml` and load every file referenced under:
-- `knowledge.shared` (loaded by all skills)
-- `skills.<current-skill>.knowledge` (this skill's specific knowledge, if present)
+Read `project-context.yaml > projects[]`.
 
-For each entry, resolve files relative to `.ai-agents/{source}`:
-- If the entry lists `files: [...]`, load those files.
-- If the entry lists `files_from_manifest: true`, read `{source}/manifest.yaml` and load every `files[]` entry where `auto_load: true`.
+**Single project** (`projects.length == 1`): Set PS = [sole project name]. Skip remaining PS steps.
 
-Skip any path that does not exist.
+**Multi-project** (`projects.length > 1`):
 
-### Archived Artifacts Convention
+**Mode A -- Plan-driven** (active plan exists and skill operates on plan tasks):
 
-The directory `.ai-agents/workspace/artifacts/_archived/` contains change-id directories that have been archived by `/mvt-cleanup`. All skills that scan `artifacts/` MUST exclude `_archived/` from their scan scope unless explicitly inspecting archived content.
+1. **Plan signal**: PS = current task's `project` array from plan's `current_tasks`. Drop stale project names (not in `projects[]`), fall through.
+2. **Path match**: Match current working paths against `projects[].path` and `source_paths`.
+3. **Prompt**: If still unresolved, list candidates and ask user. Never silently load all projects.
 
-### Step 3: Load Config & Apply Preferences (Config Foundation)
+**Mode B -- Non-plan** (no active plan or ad-hoc changes):
+
+Defer PS to execution: identify change target, match against `projects[].path` and `source_paths`, load project-specific knowledge on demand (Step 3).
+
+### Step 3: Load Knowledge
+
+Registry uses project-keyed maps; `_all` is a reserved key (all projects). Applies to both top-level `knowledge` and `skills.<name>.knowledge`.
+
+**Entry resolution** (relative to `.ai-agents/{source}`):
+- `files: [...]` -- load listed files.
+- `files_from_manifest: true` -- read `{source}/manifest.yaml`, load entries with `auto_load: true`.
+- Skip non-existent paths.
+
+**At activation** (both modes): load `knowledge._all` + `skills.<current-skill>.knowledge._all`.
+
+**Mode A** (additionally): for each P in PS, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]`.
+
+**Mode B** (during execution): on demand, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for identified project(s).
+
+### Step 4: Load Config & Apply Preferences (Config Foundation)
 Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:
 
 **Language**:
@@ -145,6 +161,21 @@ For interactive menu, present the five options and wait for user choice, then en
 
 Switch to the matching section below.
 
+### Map-Aware Knowledge Structure
+
+The registry uses project-keyed knowledge maps. Every knowledge block (top-level `knowledge` and each `skills.<name>.knowledge`) is a map where keys are project names or the reserved `_all` key (all projects). All subcommands must operate on this map structure.
+
+**Two-question routing table (add subcommand)**:
+
+| Question 1: Scope | Question 2: Breadth | Registry key path |
+|--------------------|---------------------|-------------------|
+| global | all skills | `knowledge._all` |
+| project-specific | all skills | `knowledge.{projectName}` |
+| global | specific skill | `skills.{name}.knowledge._all` |
+| project-specific | specific skill | `skills.{name}.knowledge.{projectName}` |
+
+**`_all` promotion confirmation**: routing to `knowledge._all` or `skills.{name}.knowledge._all` means the entry will be loaded by every skill across every project (or every project for that skill). When the add flow routes to `_all`, prompt: "This knowledge will be loaded by ALL skills across ALL projects. Confirm? (y/n)" -- default to **n** for project-specific entries, default to **y** only when the user explicitly chose scope=global.
+
 ---
 
 ## Subcommand: add
@@ -162,24 +193,31 @@ Classify the content into one of:
 
 The skill should suggest a type based on content keywords; the user confirms or overrides.
 
-### 2.3 AI Routing -- Score every skill
+### 2.3 AI Routing -- Two-question routing + skill scoring
 
-1. Read `.ai-agents/registry.yaml` > `skills.*` -- collect every skill's `name` and `description`.
-2. For each skill, score relevance to the content on a 0-100 scale:
+1. **Question 1: Scope** -- Ask: "Is this knowledge global (applies to all projects) or project-specific?"
+   - `global` -> keys under `_all`
+   - `project-specific` -> ask which project (list from `project-context.yaml > projects[].name`); key under `{projectName}`
+2. **Question 2: Breadth** -- Ask: "Should this knowledge be loaded by all skills or a specific skill?"
+   - `all skills` -> top-level `knowledge` map
+   - `specific skill` -> AI-score each skill for relevance (see below)
+3. Read `.ai-agents/registry.yaml` > `skills.*` -- collect every skill's `name` and `description`.
+4. For each skill, score relevance to the content on a 0-100 scale:
    - 90-100: directly aligned (e.g., review rules + `mvt-review`)
    - 70-89: strongly relevant
    - 50-69: tangentially relevant
    - 0-49: weak match
-3. Read `.ai-agents/config.yaml` > `preferences.context_routing.relevance_threshold` (default 70 if missing).
-4. Display **all** skills sorted by score descending. Do not truncate -- the user sees the full list with scores.
+5. Read `.ai-agents/config.yaml` > `preferences.context_routing.relevance_threshold` (default 70 if missing).
+6. Display **all** skills sorted by score descending. Do not truncate -- the user sees the full list with scores.
    - Skills at or above threshold: pre-checked, shown with `[High]` / `[Med]` markers (or stars in emoji mode).
    - Skills below threshold: collapsed under an "expand" prompt; not pre-checked.
+7. Combine the two questions with the scoring to determine the registry key path per the routing table above.
 
 ### 2.4 Accept user input
 Accept any of:
 - `Enter` (empty input) -- confirm pre-checked selection
 - Comma-separated indices (e.g. `1,3,5`) -- custom skill selection
-- `s` -- promote to **shared** (write to `registry.yaml > knowledge.shared`)
+- `s` -- promote to **global** (write to `registry.yaml > knowledge._all`)
 - `c` -- promote to **core** (write to `.ai-agents/knowledge/core/user/{filename}` + append entry to `core/manifest.yaml` with `origin: user`)
 - `n` -- **none** (file-only; not auto-loaded)
 - `m` -- **manual** mode (display the full skill list including below-threshold for direct picking)
@@ -189,8 +227,8 @@ Accept any of:
 
 | User choice | File destination | Registry / manifest update |
 |------------|-----------------|----------------------------|
-| Per-skill (any subset) | `.ai-agents/knowledge/{type}/{filename}` (`type` = `principle` or `project`) | For each chosen skill: append entry to `registry.yaml > skills.{name}.knowledge[]` with `type: static`, `source: knowledge/{type}/`, `files: [{filename}]` |
-| `s` (shared) | `.ai-agents/knowledge/{type}/{filename}` | Append to `registry.yaml > knowledge.shared[]` with the same `type: static` shape |
+| Per-skill (any subset) | `.ai-agents/knowledge/{type}/{filename}` (`type` = `principle` or `project`) | For each chosen skill: append entry to `registry.yaml > skills.{name}.knowledge.{projectKey}[]` with `type: static`, `source: knowledge/{type}/`, `files: [{filename}]`. `projectKey` = `_all` if scope=global, or `{projectName}` if project-specific. |
+| `s` (shared / global + all skills) | `.ai-agents/knowledge/{type}/{filename}` | Append to `registry.yaml > knowledge._all[]` with the same `type: static` shape |
 | `c` (core) | `.ai-agents/knowledge/core/user/{filename}` | Append to `core/manifest.yaml > files[]` with `path: user/{filename}`, `origin: user`, `auto_load: true` |
 | `n` (none) | `.ai-agents/knowledge/{type}/{filename}` | No registry/manifest change |
 
@@ -219,8 +257,10 @@ Use the `add / move / rename` output format from the manifest. Show:
 Show the entry's file path, all binding references (shared / per-skill / core), and ask user to confirm.
 
 ### 3.3 Drop references
-- `registry.yaml > knowledge.shared[]` -- remove entries whose path matches
-- `registry.yaml > skills.*.knowledge[]` -- remove every per-skill entry whose path matches
+- `registry.yaml > knowledge._all[]` -- remove entries whose path matches
+- `registry.yaml > knowledge.{projectName}[]` -- traverse ALL project keys, remove entries whose path matches
+- `registry.yaml > skills.*.knowledge._all[]` -- remove every per-skill _all entry whose path matches
+- `registry.yaml > skills.*.knowledge.{projectName}[]` -- traverse ALL project keys for each skill, remove entries whose path matches
 - `core/manifest.yaml > files[]` -- if the file lives under `core/user/`, remove the matching entry
 
 ### 3.4 Delete file
@@ -241,7 +281,10 @@ Use the `remove` output format. Show every reference dropped.
 Display where the entry is currently bound (shared / per-skill / core / none).
 
 ### 4.3 Prompt for new binding
-Use the same UI as `add` step 2.4 (Enter / indices / `s` / `c` / `n`).
+Use the same two-question routing as `add` step 2.3 (Scope + Breadth -> registry key path). Support cross-key movement:
+- `_all` -> `{projectName}` (narrow from global to project-specific)
+- `{projectName}` -> `_all` (promote to global; apply `_all` promotion confirmation)
+- `{projectName1}` -> `{projectName2}` (move between projects)
 
 ### 4.4 Apply changes
 - Update registry / manifest references atomically:
@@ -277,14 +320,14 @@ Use the `add / move / rename` output format.
 ## Subcommand: list
 
 ### 6.1 Read sources
-- `.ai-agents/registry.yaml` > `knowledge.shared[]` and `skills.*.knowledge[]`
+- `.ai-agents/registry.yaml` > `knowledge._all[]`, `knowledge.{projectName}[]`, `skills.*.knowledge._all[]`, `skills.*.knowledge.{projectName}[]` -- traverse ALL project keys
 - `.ai-agents/knowledge/core/manifest.yaml` > `files[]`
 - Walk `.ai-agents/knowledge/{principle,project}/` for files not referenced anywhere (Unbound)
 
 ### 6.2 Group and render
-Use the `list` output format. Each row should answer: where is the file, and which skills load it?
+Use the `list` output format. Group by **project x skill** (3D table). Each row should answer: where is the file, which project(s) does it serve, and which skills load it?
 
-For Per-Skill rows, list every skill that binds to the file (a single file can be bound to multiple skills).
+Flag **orphan entries** -- entries under a project key not in `projects[].name` from `project-context.yaml`.
 
 ### 6.3 Health hints
 At the bottom of the list, optionally surface:
@@ -341,7 +384,8 @@ No external template -- output is inline. Format depends on subcommand:
 ### Removed entry: `{id}`
 - File: `.ai-agents/knowledge/{path}` (deleted)
 - References dropped from:
-  - `registry.yaml > knowledge.shared` (if applicable)
+  - `registry.yaml > knowledge._all` (if applicable)
+  - `registry.yaml > knowledge.{projectName}` (if applicable)
   - `registry.yaml > skills.{name}.knowledge` x N (if applicable)
   - `core/manifest.yaml > files[]` (if applicable)
 ```

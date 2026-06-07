@@ -38,9 +38,8 @@ You are the **Conductor** -- a Workflow Coordinator.
 
 ## Activation Protocol
 
-### Step 1: Load Context (Context Foundation)
-Load the following files as foundational context:
-- `.ai-agents/workspace/session.yaml` -- Current workflow state
+### Step 1: Load Context
+Load these files as foundational context:
 - `.ai-agents/workspace/project-context.yaml` -- Project index (structural info)
 - `.ai-agents/registry.yaml` -- Available skills registry and knowledge declarations
 
@@ -49,23 +48,40 @@ Extended context for this skill:
 - .ai-agents/knowledge/project/_generated/project-context.md -- Current semantic context (merge target)
 - .ai-agents/workspace/project-context.yaml -- Current structural index (merge target)
 
-### Step 2: Load Knowledge
+### Step 2: Resolve Project Scope (PS)
 
-Read `.ai-agents/registry.yaml` and load every file referenced under:
-- `knowledge.shared` (loaded by all skills)
-- `skills.<current-skill>.knowledge` (this skill's specific knowledge, if present)
+Read `project-context.yaml > projects[]`.
 
-For each entry, resolve files relative to `.ai-agents/{source}`:
-- If the entry lists `files: [...]`, load those files.
-- If the entry lists `files_from_manifest: true`, read `{source}/manifest.yaml` and load every `files[]` entry where `auto_load: true`.
+**Single project** (`projects.length == 1`): Set PS = [sole project name]. Skip remaining PS steps.
 
-Skip any path that does not exist.
+**Multi-project** (`projects.length > 1`):
 
-### Archived Artifacts Convention
+**Mode A -- Plan-driven** (active plan exists and skill operates on plan tasks):
 
-The directory `.ai-agents/workspace/artifacts/_archived/` contains change-id directories that have been archived by `/mvt-cleanup`. All skills that scan `artifacts/` MUST exclude `_archived/` from their scan scope unless explicitly inspecting archived content.
+1. **Plan signal**: PS = current task's `project` array from plan's `current_tasks`. Drop stale project names (not in `projects[]`), fall through.
+2. **Path match**: Match current working paths against `projects[].path` and `source_paths`.
+3. **Prompt**: If still unresolved, list candidates and ask user. Never silently load all projects.
 
-### Step 3: Load Config & Apply Preferences (Config Foundation)
+**Mode B -- Non-plan** (no active plan or ad-hoc changes):
+
+Defer PS to execution: identify change target, match against `projects[].path` and `source_paths`, load project-specific knowledge on demand (Step 3).
+
+### Step 3: Load Knowledge
+
+Registry uses project-keyed maps; `_all` is a reserved key (all projects). Applies to both top-level `knowledge` and `skills.<name>.knowledge`.
+
+**Entry resolution** (relative to `.ai-agents/{source}`):
+- `files: [...]` -- load listed files.
+- `files_from_manifest: true` -- read `{source}/manifest.yaml`, load entries with `auto_load: true`.
+- Skip non-existent paths.
+
+**At activation** (both modes): load `knowledge._all` + `skills.<current-skill>.knowledge._all`.
+
+**Mode A** (additionally): for each P in PS, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]`.
+
+**Mode B** (during execution): on demand, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for identified project(s).
+
+### Step 4: Load Config & Apply Preferences (Config Foundation)
 Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:
 
 **Language**:
@@ -104,7 +120,7 @@ All persisted document output (markdown written to disk) MUST follow the formatt
 - If a diagram genuinely cannot be expressed in mermaid (e.g. a precise spatial/pixel layout), state that explicitly and prefer a Markdown table or prose description over ASCII art.
 - This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from templates or source material.
 
-### Step 4: Pre-flight Checks
+### Step 5: Pre-flight Checks
 
 For each check below, if the condition holds, perform the action implied by its **Level**:
 
@@ -150,10 +166,21 @@ Strip any cross-reference marker (pointers to ADRs, design-document section numb
 
 ## Execution Flow
 
-### Step 1: Identify Completed Changes
+### Step 1: Per-Project Routing (4-Level Fallback Chain)
+
+Before processing any change, determine which project(s) the sync targets. Use this 4-level fallback chain:
+
+1. **`task.project` exists** (when syncing within a plan-driven context): route to that project for per-project technical knowledge lookups (project-context.md always uses the flat path). If the task has multiple projects, route to each independently.
+2. **Artifact file paths match** a unique project's `source_paths` or `path` from `project-context.yaml`: route to that project.
+3. **Current operation's file path reverse-lookup**: match the file path against `projects[].path` and `projects[].source_paths` -> route to that project.
+4. **List candidate projects for user selection**: if none of the above resolved a unique project, list the project names and ask the user.
+
+**Cross-project changes** (task spanning multiple projects): route to each project for per-project technical knowledge lookups. The merge target for `project-context.md` is always the single flat file; per-project knowledge (quadrant 3/4) is routed per project.
+
+### Step 2: Identify Completed Changes
 - **What**: produce a candidate list of change-ids whose artifacts will be aggregated.
 - **How**:
-  1. Read `session.yaml`. Collect `changes[]` entries with `status: done`.
+  1. Read `.ai-agents/workspace/session.yaml`. Collect `changes[]` entries with `status: done`.
   2. For each candidate, verify `.ai-agents/workspace/artifacts/{change-id}/` exists AND contains at least one of `analysis.md` or `implementation.md`. Drop entries with only `plan.yaml`, or with only `design.md` (design artifacts are not aggregated -- see Step 3).
   3. (Fallback) If `changes[]` is empty, scan `.ai-agents/workspace/artifacts/*/` directly; offer those with `analysis.md` or `implementation.md`, marked `unindexed`.
   4. Exclude already-archived or irrelevant changes:
@@ -173,12 +200,13 @@ Strip any cross-reference marker (pointers to ADRs, design-document section numb
 
 - Cancel / empty selection -> stop with "no changes applied".
 
-### Step 2: Read Current Project Context (Adaptive Structure Discovery)
+### Step 3: Read Current Project Context (Adaptive Structure Discovery)
 
 This step establishes the **target structure** that aggregated content must fit into. The structure is NOT assumed -- it is derived from the current document.
 
-1. Read `.ai-agents/knowledge/project/_generated/project-context.md`.
-   - Already required by preflight; if discovered missing here, STOP and recommend `/mvt-analyze-code`.
+1. Read the project-context file: always read `.ai-agents/knowledge/project/_generated/project-context.md` (flat path, regardless of project count).
+   - **Multi-project**: the file contains `# Project: {name}` sections; use the routing result from Step 1 to identify which project section(s) are relevant for the current sync operation.
+   - If the file does not exist, STOP and recommend `/mvt-analyze-code`.
 2. Parse the current `.md` into a section map:
    - Each top-level `##` heading -> one section anchor.
    - Record: section title (verbatim), byte range, and a 1-line semantic summary derived from the section's content (e.g., "lists domain terms with definitions" or "describes module dependencies").
@@ -186,7 +214,7 @@ This step establishes the **target structure** that aggregated content must fit 
 3. If the document has zero `##` sections (single block) -> STOP. Recommend `/mvt-analyze-code` to establish a sectioned baseline first.
 4. Read `.ai-agents/workspace/project-context.yaml`. Record current `projects[].source_paths`, `modules`, and `tech_stack` for diff comparison in Step 5d.
 
-### Step 3: Extract Artifact Content
+### Step 4: Extract Artifact Content
 
 - **What**: from each selected change-id, extract atomic knowledge items (do not classify yet).
 - **How**:
@@ -195,7 +223,7 @@ This step establishes the **target structure** that aggregated content must fit 
      - `analysis.md` -> domain terms, actors, business rules, constraints
      - `implementation.md` -> files added/changed (informs `.yaml` source_paths), realized vs deviated design points
 
-### Step 4: Normalize Extracted Content
+### Step 5: Normalize Extracted Content
 
 Before classifying extracted items against the section map, normalize each item per the **Document Profile: project-context.md** section loaded above. This step strips intra-artifact cross-references -- meaningful in their source document but noise in project-context.md -- before they enter the merge pipeline.
 
@@ -218,7 +246,7 @@ Before classifying extracted items against the section map, normalize each item 
    - Was entirely a cross-reference with no independent semantic value -> drop it (it is a pointer, not knowledge).
 3. Any normalization that removes content from a `modify` item (where the item modifies an existing entry) must be flagged in the update plan (Step 6, Table 6b) so the user can verify the substantive meaning was preserved.
 
-### Step 5: Classify Artifact Content
+### Step 6: Classify Artifact Content
 
 - **What**: classify each normalized item against the section map from Step 2.
 - **How**:
@@ -233,7 +261,7 @@ Before classifying extracted items against the section map, normalize each item 
      - `modify` -- target section mentions the entity but artifact provides a different value
      - `redundant` -- already present, no change (will be filtered out, not shown to user)
 
-### Step 6: Render the Update Plan (Four Tables)
+### Step 7: Render the Update Plan (Four Tables)
 
 #### 6a. Section-mapped items
 | # | change-id | item | type | target section | classification |
@@ -251,7 +279,7 @@ Before classifying extracted items against the section map, normalize each item 
 | # | yaml field | current | proposed |
 |---|------------|---------|----------|
 
-### Step 7: User Confirmation (Per-Table)
+### Step 8: User Confirmation (Per-Table)
 
 - **6a**: default = accept all. User input: indices to drop, or `e <n>` to edit a single item's target section.
 - **6b**: **explicit per-row decision required**. Format `<index>:<keep|replace|edit>`. Example: `1:replace,2:keep,3:edit`. No default.
@@ -260,7 +288,7 @@ Before classifying extracted items against the section map, normalize each item 
 
 Then ask: **"Run optional read-only code verification before applying? (y/n)"**
 
-### Step 8: (Optional) Read-only Code Verification
+### Step 9: (Optional) Read-only Code Verification
 
 This step catches artifacts claiming entities never actually delivered. It is **read-only** -- it never writes anything to `.md` or `.yaml`.
 
@@ -279,9 +307,9 @@ If user opts in:
 
 3. Re-render the apply list with `verified` / `unverified` markers; final confirmation.
 
-If user skips verification: proceed directly to Step 9 with Step 7 selections.
+If user skips verification: proceed directly to Step 10 with Step 7 selections.
 
-### Step 9: Apply Updates (Merge Mode)
+### Step 10: Apply Updates (Merge Mode)
 
 - **Pre-write**:
   1. Backup: `project-context.md` -> `project-context.md.bak`; `project-context.yaml` -> `project-context.yaml.bak`. Overwrite any prior `.bak`.
@@ -292,7 +320,8 @@ If user skips verification: proceed directly to Step 9 with Step 7 selections.
   2. Each `modify` item with `replace`: replace the matching line in place. Smallest possible diff.
   3. Each `orphan` item with new-section choice: append a new `##` section at end of file.
   4. **Never delete** any existing line. **Never reorder** existing sections.
-  5. All merged content must already be normalized per Step 4 rules. Do not re-introduce stripped references during inline replacement or append operations.
+  5. **Multi-project files**: use `# Project: {name}` headings to scope merges to the correct project section. New items for project X go into its `# Project: X` section; do not mix cross-project content.
+  6. All merged content must already be normalized per Step 4 rules. Do not re-introduce stripped references during inline replacement or append operations.
 
 - **Update `project-context.yaml`** (structured merge):
   1. Apply accepted entries from Table 6d.
@@ -301,7 +330,7 @@ If user skips verification: proceed directly to Step 9 with Step 7 selections.
 
 - **Atomicity**: temp + rename per file. If `.md` write succeeds but `.yaml` fails (or vice versa) -> restore the failed one from `.bak`, keep the other; report partial success.
 
-### Step 10: Report
+### Step 11: Report
 
 1. **Applied summary** -- counts: items added / modified / skipped / orphaned-into-new-section
 2. **Files changed** -- paths + byte deltas
@@ -315,9 +344,10 @@ If user skips verification: proceed directly to Step 9 with Step 7 selections.
    - Aggregated >= 1 change -> "Run `/mvt-cleanup` to archive these completed changes."
    - Verification flagged code-only entities -> "Run `/mvt-analyze-code` to capture missing entities."
 
-### Step 11: State Update
+### Step 12: State Update
 Apply the State Update rules defined in the **State Update** section below.
 - The `--set-synced` parameter updates `session.last_synced_at`.
+- Pass `--projects` to plan-update.cjs when updating a plan that has project attribution.
 
 ## Edge Cases & Errors
 

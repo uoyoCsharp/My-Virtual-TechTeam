@@ -28,29 +28,45 @@ You are the **Developer** -- an Implementation Specialist.
 
 ## Activation Protocol
 
-### Step 1: Load Context (Context Foundation)
-Load the following files as foundational context:
-- `.ai-agents/workspace/session.yaml` -- Current workflow state
+### Step 1: Load Context
+Load these files as foundational context:
 - `.ai-agents/workspace/project-context.yaml` -- Project index (structural info)
 - `.ai-agents/registry.yaml` -- Available skills registry and knowledge declarations
 
-### Step 2: Load Knowledge
+### Step 2: Resolve Project Scope (PS)
 
-Read `.ai-agents/registry.yaml` and load every file referenced under:
-- `knowledge.shared` (loaded by all skills)
-- `skills.<current-skill>.knowledge` (this skill's specific knowledge, if present)
+Read `project-context.yaml > projects[]`.
 
-For each entry, resolve files relative to `.ai-agents/{source}`:
-- If the entry lists `files: [...]`, load those files.
-- If the entry lists `files_from_manifest: true`, read `{source}/manifest.yaml` and load every `files[]` entry where `auto_load: true`.
+**Single project** (`projects.length == 1`): Set PS = [sole project name]. Skip remaining PS steps.
 
-Skip any path that does not exist.
+**Multi-project** (`projects.length > 1`):
 
-### Archived Artifacts Convention
+**Mode A -- Plan-driven** (active plan exists and skill operates on plan tasks):
 
-The directory `.ai-agents/workspace/artifacts/_archived/` contains change-id directories that have been archived by `/mvt-cleanup`. All skills that scan `artifacts/` MUST exclude `_archived/` from their scan scope unless explicitly inspecting archived content.
+1. **Plan signal**: PS = current task's `project` array from plan's `current_tasks`. Drop stale project names (not in `projects[]`), fall through.
+2. **Path match**: Match current working paths against `projects[].path` and `source_paths`.
+3. **Prompt**: If still unresolved, list candidates and ask user. Never silently load all projects.
 
-### Step 3: Load Config & Apply Preferences (Config Foundation)
+**Mode B -- Non-plan** (no active plan or ad-hoc changes):
+
+Defer PS to execution: identify change target, match against `projects[].path` and `source_paths`, load project-specific knowledge on demand (Step 3).
+
+### Step 3: Load Knowledge
+
+Registry uses project-keyed maps; `_all` is a reserved key (all projects). Applies to both top-level `knowledge` and `skills.<name>.knowledge`.
+
+**Entry resolution** (relative to `.ai-agents/{source}`):
+- `files: [...]` -- load listed files.
+- `files_from_manifest: true` -- read `{source}/manifest.yaml`, load entries with `auto_load: true`.
+- Skip non-existent paths.
+
+**At activation** (both modes): load `knowledge._all` + `skills.<current-skill>.knowledge._all`.
+
+**Mode A** (additionally): for each P in PS, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]`.
+
+**Mode B** (during execution): on demand, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for identified project(s).
+
+### Step 4: Load Config & Apply Preferences (Config Foundation)
 Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:
 
 **Language**:
@@ -89,7 +105,7 @@ All persisted document output (markdown written to disk) MUST follow the formatt
 - If a diagram genuinely cannot be expressed in mermaid (e.g. a precise spatial/pixel layout), state that explicitly and prefer a Markdown table or prose description over ASCII art.
 - This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from templates or source material.
 
-### Step 4: Pre-flight Checks
+### Step 5: Pre-flight Checks
 
 For each check below, if the condition holds, perform the action implied by its **Level**:
 
@@ -111,7 +127,7 @@ For each check below, if the condition holds, perform the action implied by its 
   - The actual source files referenced in the design's `File Structure` and `Change Tracking` sections.
 - **Fallback**:
   - If `design.md` is missing, surface a WARN and ask the user whether to (a) run `/mvt-design` first or (b) proceed using their conversational description as the design (mark artifact with "Source: conversation only").
-  - If `coding-standards.md` is missing, fall back to language/framework defaults inferred from `project-context.yaml`.
+  - If coding standards are not loaded by activation, fall back to language/framework defaults inferred from `project-context.yaml`.
 
 ### Step 2: Plan the Implementation
 - **What**: produce an ordered file list with the smallest possible commit boundary per group.
@@ -120,7 +136,7 @@ For each check below, if the condition holds, perform the action implied by its 
   2. Topologically order files by dependency: domain entities -> repositories/adapters -> use-case/services -> controllers/UI.
   3. Group consecutive files that share a single conceptual change into one commit boundary.
   4. For each file, decide: `create | modify | delete`, and write a one-line intent.
-- **Plan-aware behavior**: if `plan.yaml` is present, treat `current_task`'s `artifacts.files` (cross-reference `plan.tasks[*].artifacts.files`) as a **starting-scope hint, not a hard ceiling**. The source of truth for scope remains `design.md`'s `Change Tracking` (per Step 2.1). When `artifacts.files` is `null` or empty, derive scope entirely from `Change Tracking`. If implementation reveals files beyond this hint are genuinely required, do NOT silently expand — surface them via Step 3 confirmation and never absorb files that clearly belong to a different task.
+- **Plan-aware behavior**: if `plan.yaml` is present, identify the active task from `current_tasks` (the entry matching the current project, or the sole entry in single-project mode), then treat that task's `artifacts.files` (cross-reference `plan.tasks[*].artifacts.files`) as a **starting-scope hint, not a hard ceiling**. The source of truth for scope remains `design.md`'s `Change Tracking` (per Step 2.1). When `artifacts.files` is `null` or empty, derive scope entirely from `Change Tracking`. If implementation reveals files beyond this hint are genuinely required, do NOT silently expand — surface them via Step 3 confirmation and never absorb files that clearly belong to a different task.
 - **Output of this step**: an in-conversation list shown to user as a preview, with no write yet.
 
 ### Step 3: Confirm Scope (when needed)
@@ -129,7 +145,7 @@ For each check below, if the condition holds, perform the action implied by its 
   - The plan introduces a new public API (exported symbol, HTTP endpoint, CLI flag).
   - The plan deletes existing code (delete count > 0).
   - The plan deviates from `design.md` (e.g., adds files not in `Change Tracking` or skips files listed there).
-  - The plan touches files beyond `current_task`'s `artifacts.files` hint (state which files are added and why, in one line each).
+  - The plan touches files beyond the active task's `artifacts.files` hint (state which files are added and why, in one line each).
 - **Otherwise**: proceed silently.
 - **On deviation from design**: explain the deviation reason in one line; if the deviation is structural (new module, layer change, interface break), STOP and recommend re-running `/mvt-design`.
 
@@ -137,7 +153,7 @@ For each check below, if the condition holds, perform the action implied by its 
 - **What**: write/modify the planned files, one commit-group at a time.
 - **How**:
   1. For each commit-group: write all files, then move on. Do not interleave groups.
-  2. Follow `coding-standards.md`. Match the surrounding code style if standards are silent.
+  2. Follow the coding standards loaded by activation (if any). Match the surrounding code style if standards are silent.
   3. Respect module/layer rules from `project-context.md`. Forbidden imports must NOT appear; use the abstractions defined in `design.md`'s `Key Interfaces`.
   4. Add error handling at system boundaries only (HTTP, DB, external API, file IO, message bus). Do NOT add try/catch around internal calls "just in case".
   5. Inline comments only for: non-obvious algorithmic choices, deliberate workarounds with a reason, interface contracts not expressible in code. Never narrate WHAT the code does.
@@ -181,9 +197,47 @@ For each check below, if the condition holds, perform the action implied by its 
   - `Open TODOs` -- anything deferred for `/mvt-review`, `/mvt-test`, or follow-up changes.
 - The actual source code goes to the project tree; the artifact is a record, not the code itself.
 
-### Step 8: Plan-Aware Progress Hint (if applicable)
-- If `plan.yaml` exists and a single `current_task` covers this implementation, suggest the user run `/mvt-update-plan <task-id> done` (or `blocked` with reason).
-- If the files actually touched differ from `current_task`'s `artifacts.files` (extra files added during Step 3, or planned files left untouched), explicitly remind the user to run `/mvt-update-plan` so the plan's `artifacts.files` reflects reality for `/mvt-resume` and future sessions.
+### Step 8: Deliverables Handoff (if applicable)
+
+This step applies only when `plan.yaml` exists and the current task has downstream dependents (other tasks whose `depends_on` includes the current task).
+
+- **Check for downstream dependents**: scan `plan.tasks[]` for any task whose `depends_on` array includes the current task id. If none exist, skip this step silently.
+- **Prompt the user**:
+  - If `task.deliverables` already exists (re-implementation / rescope): "Implementation changed, and downstream task(s) {ids} depend on it. Update deliverables? (y/n)"
+  - If this is the first time (no `deliverables` field on the task): "Downstream task(s) {ids} will consume this task's output. Generate deliverables? (default y)"
+- **On confirmation**, append a deliverables subsection under the task's existing `## Task: {id}` section in `implementation.md` (if multi-task plan) or as a dedicated section (if single-task). Use this soft skeleton:
+
+  ```markdown
+  ### Deliverables
+
+  #### Public Interface
+  {Describe exported symbols, function signatures, endpoint contracts that downstream tasks rely on.}
+
+  #### Data Shapes
+  {Describe data structures, types, schemas that flow between this task and downstream consumers.}
+
+  #### Usage Constraints
+  {Document invariants, preconditions, or side effects that downstream tasks must respect.}
+  ```
+
+- **After writing deliverables**, call `plan-update.cjs` with both flags in a single invocation:
+  ```bash
+  node .ai-agents/scripts/plan-update.cjs \
+    --plan "<active_change.plan_path>" \
+    --task <current_task_id> \
+    --status <current_status> \
+    --deliverables-pointer current \
+    --mark-deliverable-stale <downstream_task_id1>[,<downstream_task_id2>,...] \
+    --projects <project_list>
+  ```
+  `<project_list>` is the comma-separated project names from `plan.yaml > current_tasks` keys. In a single-project workspace this is `default`. The `--projects` flag ensures per-project validation runs correctly in multi-project plans.
+  The `--status` must be the task's current status (typically `in_progress` at this point, since Step 9 has not yet run). Pass ALL downstream dependent task ids as a comma-separated list to `--mark-deliverable-stale` so that `/mvt-resume` and `/mvt-status` can surface the stale warning.
+- **On user decline**: do not write deliverables and do not call `plan-update.cjs` with the deliverables flags. The downstream tasks will not receive stale warnings, which is acceptable if the user considers the contract unchanged.
+- **Error handling**: if `plan-update.cjs` rejects (e.g., malformed freshness), surface stderr and leave `implementation.md` as written. The deliverables content is the source of truth; the pointer can be retried via `/mvt-update-plan`.
+
+### Step 9: Plan-Aware Progress Hint (if applicable)
+- If `plan.yaml` exists and `current_tasks` identifies the active task for this implementation, suggest the user run `/mvt-update-plan <task-id> done` (or `blocked` with reason).
+- If the files actually touched differ from the active task's `artifacts.files` (extra files added during Step 3, or planned files left untouched), explicitly remind the user to run `/mvt-update-plan` so the plan's `artifacts.files` reflects reality for `/mvt-resume` and future sessions.
 - Do NOT modify `plan.yaml` directly from this skill; it is owned by `/mvt-update-plan`.
 - Do NOT modify `changes` directly; it is owned by `/mvt-plan-dev` / `/mvt-update-plan`.
 
@@ -197,7 +251,9 @@ For each check below, if the condition holds, perform the action implied by its 
 | User aborts at Step 3 confirmation | Do not write any source files or artifact |
 | File listed in `Change Tracking` no longer exists in the working tree | Surface, ask user whether design is stale or file was deleted in a parallel change |
 | Implementation must touch a file outside the active project (other repo / submodule) | STOP -- this is out of scope for `/mvt-implement`; surface and ask user to plan it as a separate change |
-| Plan task is `blocked` or `done` already | Refuse to implement that task; ask user to pick another `current_task` or run `/mvt-update-plan` |
+| Plan task is `blocked` or `done` already | Refuse to implement that task; ask user to pick another task from `current_tasks` or run `/mvt-update-plan` |
+| Deliverables already exist and user declines to update | Leave existing deliverables in place; do not call `plan-update.cjs` with deliverables flags |
+| `plan-update.cjs` rejects deliverables pointer | Surface error; leave `implementation.md` as written (content is source of truth, pointer can be retried) |
 
 ## Artifact Structure
 Read the document structure template from: `.ai-agents/skills/_templates/implement-output.md`

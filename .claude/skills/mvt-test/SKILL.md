@@ -37,32 +37,48 @@ You are the **Tester** -- a Quality Assurance Specialist.
 
 ## Activation Protocol
 
-### Step 1: Load Context (Context Foundation)
-Load the following files as foundational context:
-- `.ai-agents/workspace/session.yaml` -- Current workflow state
+### Step 1: Load Context
+Load these files as foundational context:
 - `.ai-agents/workspace/project-context.yaml` -- Project index (structural info)
 - `.ai-agents/registry.yaml` -- Available skills registry and knowledge declarations
 
 Extended context for this skill:
 - Implementation files to be tested
 
-### Step 2: Load Knowledge
+### Step 2: Resolve Project Scope (PS)
 
-Read `.ai-agents/registry.yaml` and load every file referenced under:
-- `knowledge.shared` (loaded by all skills)
-- `skills.<current-skill>.knowledge` (this skill's specific knowledge, if present)
+Read `project-context.yaml > projects[]`.
 
-For each entry, resolve files relative to `.ai-agents/{source}`:
-- If the entry lists `files: [...]`, load those files.
-- If the entry lists `files_from_manifest: true`, read `{source}/manifest.yaml` and load every `files[]` entry where `auto_load: true`.
+**Single project** (`projects.length == 1`): Set PS = [sole project name]. Skip remaining PS steps.
 
-Skip any path that does not exist.
+**Multi-project** (`projects.length > 1`):
 
-### Archived Artifacts Convention
+**Mode A -- Plan-driven** (active plan exists and skill operates on plan tasks):
 
-The directory `.ai-agents/workspace/artifacts/_archived/` contains change-id directories that have been archived by `/mvt-cleanup`. All skills that scan `artifacts/` MUST exclude `_archived/` from their scan scope unless explicitly inspecting archived content.
+1. **Plan signal**: PS = current task's `project` array from plan's `current_tasks`. Drop stale project names (not in `projects[]`), fall through.
+2. **Path match**: Match current working paths against `projects[].path` and `source_paths`.
+3. **Prompt**: If still unresolved, list candidates and ask user. Never silently load all projects.
 
-### Step 3: Load Config & Apply Preferences (Config Foundation)
+**Mode B -- Non-plan** (no active plan or ad-hoc changes):
+
+Defer PS to execution: identify change target, match against `projects[].path` and `source_paths`, load project-specific knowledge on demand (Step 3).
+
+### Step 3: Load Knowledge
+
+Registry uses project-keyed maps; `_all` is a reserved key (all projects). Applies to both top-level `knowledge` and `skills.<name>.knowledge`.
+
+**Entry resolution** (relative to `.ai-agents/{source}`):
+- `files: [...]` -- load listed files.
+- `files_from_manifest: true` -- read `{source}/manifest.yaml`, load entries with `auto_load: true`.
+- Skip non-existent paths.
+
+**At activation** (both modes): load `knowledge._all` + `skills.<current-skill>.knowledge._all`.
+
+**Mode A** (additionally): for each P in PS, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]`.
+
+**Mode B** (during execution): on demand, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for identified project(s).
+
+### Step 4: Load Config & Apply Preferences (Config Foundation)
 Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:
 
 **Language**:
@@ -101,7 +117,7 @@ All persisted document output (markdown written to disk) MUST follow the formatt
 - If a diagram genuinely cannot be expressed in mermaid (e.g. a precise spatial/pixel layout), state that explicitly and prefer a Markdown table or prose description over ASCII art.
 - This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from templates or source material.
 
-### Step 4: Pre-flight Checks
+### Step 5: Pre-flight Checks
 
 For each check below, if the condition holds, perform the action implied by its **Level**:
 
@@ -149,7 +165,22 @@ For each check below, if the condition holds, perform the action implied by its 
 
 - For each target file, locate or plan its corresponding test file path using the project's test layout convention (mirror under `tests/`, sibling `*.test.ts`, etc.).
 
-### Step 3: Identify Test Scenarios
+### Step 3: Identify Project Scope and Load Project-Specific Knowledge
+
+This step applies only when the workspace has multiple projects (`projects.length > 1` in `project-context.yaml`). In single-project workspaces, all relevant knowledge was loaded at activation; skip this step entirely.
+
+- **Project identification**: match the file paths resolved in Step 2 against `projects[].path` and `projects[].source_paths`:
+  - A file whose path starts with a project's `path` prefix belongs to that project.
+  - A file under a project's `source_paths` entry also belongs to that project.
+  - Collect the set of unique project names from all matched files. This is the **active project scope** for this invocation.
+- **On-demand knowledge loading**: for each project P in the active project scope, read `.ai-agents/registry.yaml` and load:
+  1. Every entry under `knowledge.{P}` -- load each entry's referenced files (resolve relative to `.ai-agents/{source}`).
+  2. Every entry under `skills.mvt-test.knowledge.{P}` -- load each entry's referenced files.
+  3. Skip any key absent from the registry (no project-specific knowledge is valid; do not warn).
+- **Multi-project scenario**: if files span multiple projects, load each project's knowledge sequentially. The skill operates with the union of all loaded project-specific knowledge plus the `_all` knowledge already loaded at activation.
+- **Unmatched files**: if a file path does not match any project's `path` or `source_paths`, surface a note and treat it as belonging to the first project in `projects[]` (fallback). This may indicate a configuration gap in `project-context.yaml`.
+
+### Step 4: Identify Test Scenarios
 - **What**: produce a Scenario Table covering happy path, edge, negative, and security cases.
 - **How**:
   1. For each public function / endpoint in scope, list at least: 1 happy path, 1 boundary, 1 invalid input.
@@ -160,7 +191,7 @@ For each check below, if the condition holds, perform the action implied by its 
      - Security -> include only when requirements mention auth, data sensitivity, or external input boundaries.
      - Performance -> include only when requirements explicitly state SLAs.
 
-### Step 4: Choose Test Granularity
+### Step 5: Choose Test Granularity
 - **What**: assign each scenario to unit / integration / E2E.
 - **How**: use the rule below; one scenario maps to one granularity.
 
@@ -173,49 +204,49 @@ For each check below, if the condition holds, perform the action implied by its 
 - A single scenario should not be tested at multiple granularities unless explicitly required (avoid wasteful duplication).
 - Flag scenarios that need integration but the project lacks an integration test setup -> note in artifact, suggest setup, do not invent a fixture.
 
-### Step 5: Design Test Cases
+### Step 6: Design Test Cases
 - **What**: turn each scenario into a concrete test case row.
 - **How**: each row must include `id | scenario | granularity | preconditions | inputs | actions | expected | rule-traced-to`.
 - Prioritize: every business rule trace must be present; happy paths first, then edges, then negatives, then security/performance.
 - For external dependencies, decide mock/stub/fake per project conventions; document the choice.
 
-### Step 6: Write Test Code
+### Step 7: Write Test Code
 - **What**: emit test files using project conventions.
 - **How**:
   1. Match the project's existing test framework, file layout, and naming.
   2. Test names describe the scenario in business language ("rejects login when password is expired"), not the function name.
   3. Each test follows arrange / act / assert structure with no hidden setup.
-  4. Use mocks/stubs only at boundaries identified in Step 4; do NOT mock the unit under test.
-  5. Do not modify the production code being tested -- if implementation has a bug, surface it (Step 8) and recommend `/mvt-fix`.
+  4. Use mocks/stubs only at boundaries identified in Step 5; do NOT mock the unit under test.
+  5. Do not modify the production code being tested -- if implementation has a bug, surface it (Step 9) and recommend `/mvt-fix`.
   6. Avoid `skip` / `only` / commented-out tests in the final output.
 
-### Step 7: Coverage Analysis (only when `--coverage` flag set)
+### Step 8: Coverage Analysis (only when `--coverage` flag set)
 - **What**: produce a coverage map and gap list.
 - **How**:
-  1. Map each test case (Step 5) back to: a target file/function, and (if available) a business rule from `project-context.md`.
+  1. Map each test case (Step 6) back to: a target file/function, and (if available) a business rule from `project-context.md`.
   2. Identify gaps: target functions with no test, business rules with no test, error paths from `design.md` with no test.
   3. Read coverage thresholds from `.ai-agents/config.yaml` if present; otherwise default targets: line >= 80%, branch >= 70%, business-rule == 100%.
   4. Recommend additional test cases for each gap; do not auto-generate them in this run unless user confirms.
 
-### Step 8: Surface Implementation Issues (if any)
+### Step 9: Surface Implementation Issues (if any)
 - During scenario design or test writing you may discover the implementation is wrong (failing test reveals a real bug, not a test bug).
 - **Do not** modify production code from this skill.
 - Record each finding with: scenario id, expected vs observed, severity (Critical / Warning), and recommend `/mvt-fix`.
 
-### Step 9: Write Artifact
+### Step 10: Write Artifact
 - **Path and template**: as defined in the **Artifact Structure** section below.
 - **Required content** (mapped to template headings):
   - `Scope` -- target files, fallbacks applied.
   - `Test Framework & Layout` -- chosen framework, file layout convention.
-  - `Test Scenarios` -- the Scenario Table from Step 3.
-  - `Test Cases` -- the row-level table from Step 5.
-  - `Granularity Decisions` -- summary from Step 4, including any "needs setup" gaps.
+  - `Test Scenarios` -- the Scenario Table from Step 4.
+  - `Test Cases` -- the row-level table from Step 6.
+  - `Granularity Decisions` -- summary from Step 5, including any "needs setup" gaps.
   - `Coverage Analysis` -- only when `--coverage`; otherwise omit the heading.
-  - `Implementation Issues Found` -- from Step 8; empty list is fine.
+  - `Implementation Issues Found` -- from Step 9; empty list is fine.
   - `Suggested Run Commands` -- one or two commands the user can copy-paste.
 - The actual test files go to the project tree; the artifact is a record.
 
-### Step 10: State Update
+### Step 11: State Update
 Apply the State Update rules defined in the **State Update** section below.
 
 ## Edge Cases & Errors

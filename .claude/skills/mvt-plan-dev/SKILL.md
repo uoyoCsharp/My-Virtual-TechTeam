@@ -28,9 +28,8 @@ You are the **Architect** -- a Development Planner.
 
 ## Activation Protocol
 
-### Step 1: Load Context (Context Foundation)
-Load the following files as foundational context:
-- `.ai-agents/workspace/session.yaml` -- Current workflow state
+### Step 1: Load Context
+Load these files as foundational context:
 - `.ai-agents/workspace/project-context.yaml` -- Project index (structural info)
 - `.ai-agents/registry.yaml` -- Available skills registry and knowledge declarations
 
@@ -38,23 +37,40 @@ Extended context for this skill:
 - .ai-agents/workspace/artifacts/{active_change.id}/ -- Existing analysis/design artifacts for this change
 - .ai-agents/workspace/artifacts/{active_change.id}/plan.yaml -- Existing plan, if any (regeneration mode)
 
-### Step 2: Load Knowledge
+### Step 2: Resolve Project Scope (PS)
 
-Read `.ai-agents/registry.yaml` and load every file referenced under:
-- `knowledge.shared` (loaded by all skills)
-- `skills.<current-skill>.knowledge` (this skill's specific knowledge, if present)
+Read `project-context.yaml > projects[]`.
 
-For each entry, resolve files relative to `.ai-agents/{source}`:
-- If the entry lists `files: [...]`, load those files.
-- If the entry lists `files_from_manifest: true`, read `{source}/manifest.yaml` and load every `files[]` entry where `auto_load: true`.
+**Single project** (`projects.length == 1`): Set PS = [sole project name]. Skip remaining PS steps.
 
-Skip any path that does not exist.
+**Multi-project** (`projects.length > 1`):
 
-### Archived Artifacts Convention
+**Mode A -- Plan-driven** (active plan exists and skill operates on plan tasks):
 
-The directory `.ai-agents/workspace/artifacts/_archived/` contains change-id directories that have been archived by `/mvt-cleanup`. All skills that scan `artifacts/` MUST exclude `_archived/` from their scan scope unless explicitly inspecting archived content.
+1. **Plan signal**: PS = current task's `project` array from plan's `current_tasks`. Drop stale project names (not in `projects[]`), fall through.
+2. **Path match**: Match current working paths against `projects[].path` and `source_paths`.
+3. **Prompt**: If still unresolved, list candidates and ask user. Never silently load all projects.
 
-### Step 3: Load Config & Apply Preferences (Config Foundation)
+**Mode B -- Non-plan** (no active plan or ad-hoc changes):
+
+Defer PS to execution: identify change target, match against `projects[].path` and `source_paths`, load project-specific knowledge on demand (Step 3).
+
+### Step 3: Load Knowledge
+
+Registry uses project-keyed maps; `_all` is a reserved key (all projects). Applies to both top-level `knowledge` and `skills.<name>.knowledge`.
+
+**Entry resolution** (relative to `.ai-agents/{source}`):
+- `files: [...]` -- load listed files.
+- `files_from_manifest: true` -- read `{source}/manifest.yaml`, load entries with `auto_load: true`.
+- Skip non-existent paths.
+
+**At activation** (both modes): load `knowledge._all` + `skills.<current-skill>.knowledge._all`.
+
+**Mode A** (additionally): for each P in PS, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]`.
+
+**Mode B** (during execution): on demand, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for identified project(s).
+
+### Step 4: Load Config & Apply Preferences (Config Foundation)
 Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:
 
 **Language**:
@@ -93,7 +109,7 @@ All persisted document output (markdown written to disk) MUST follow the formatt
 - If a diagram genuinely cannot be expressed in mermaid (e.g. a precise spatial/pixel layout), state that explicitly and prefer a Markdown table or prose description over ASCII art.
 - This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from templates or source material.
 
-### Step 4: Pre-flight Checks
+### Step 5: Pre-flight Checks
 
 For each check below, if the condition holds, perform the action implied by its **Level**:
 
@@ -124,7 +140,7 @@ If no analysis or design artifacts exist and the user provides no description, p
 If `active_change.plan_path is non-empty` AND `.ai-agents/workspace/artifacts/{active_change.id}/plan.yaml` already exists:
 
 - Read the existing plan.
-- Show a summary (task count, status counts, current_task).
+- Show a summary (task count, status counts, current_tasks).
 - Ask: "A plan already exists. Choose: (1) regenerate from scratch (existing tasks discarded), (2) cancel and use `/mvt-update-plan` to evolve it, (3) abort."
 - Only continue with generation on choice (1).
 
@@ -140,6 +156,7 @@ Decompose the change with the following constraints. These constraints are AI-fr
 | Explicit dependencies | If task B requires output from task A, list `A` in B's `depends_on`. Avoid hidden ordering. Tasks that can run in parallel should have no dependency between them. |
 | No cycles | Dependency graph must be a DAG. Validation will reject cycles. |
 | Skill hint | Set `skill_hint` to the skill best suited to execute the task (without `/` prefix): `mvt-implement`, `mvt-test`, `mvt-fix`, `mvt-design`, `mvt-review`, `mvt-refactor`, etc. |
+| Project attribution | Each task must have a `project` array listing which projects it belongs to. In a single-project workspace (`projects.length == 1`), set `project: ["default"]` (or the sole project's name). In a multi-project workspace, auto-infer from the task's file paths matching `projects[].path` and `projects[].source_paths`; if ambiguous, prompt the user. Cross-project tasks list multiple project names. |
 
 ### Step 4: Assemble plan.yaml
 
@@ -152,7 +169,8 @@ title: "Feature Name"
 created_at: "2026-05-31T11:30:00"
 updated_at: "2026-05-31T11:30:00"
 status: in_progress
-current_task: "t1-foundation-layer"
+current_tasks:
+  default: "t1-foundation-layer"
 
 tasks:
   - id: "t1-foundation-layer"
@@ -160,6 +178,8 @@ tasks:
     status: in_progress
     completed_at: null
     depends_on: []
+    project:
+      - default
     skill_hint: mvt-implement
     artifacts:
       files:
@@ -177,6 +197,8 @@ tasks:
     status: pending
     completed_at: null
     depends_on: ["t1-foundation-layer"]
+    project:
+      - default
     skill_hint: mvt-implement
     artifacts: null
     notes: >
@@ -196,7 +218,7 @@ tasks:
 - `created_at`: current ISO 8601 timestamp
 - `updated_at`: same as `created_at` initially
 - `status: in_progress`
-- `current_task`: the `id` of the first executable task (a task with `depends_on: []`), set to `in_progress`
+- `current_tasks`: a map of project name to task id. For single-project workspaces: `{ default: "<first_task_id>" }`. For multi-project: one key per project, each pointing to that project's first executable task.
 
 #### Task fields
 
@@ -207,6 +229,7 @@ For each task, populate:
 - **`status`**: first executable task → `in_progress`; all others → `pending`.
 - **`completed_at`**: `null` for all tasks on initial creation (set by `/mvt-update-plan` when marking `done`).
 - **`depends_on`**: array of task ids. Empty array `[]` means no dependencies.
+- **`project`**: array of project names this task belongs to. In single-project workspaces, use `["default"]` (or the sole project's name). Cross-project tasks list multiple names. Auto-infer from file paths matching `projects[].path` and `projects[].source_paths`; if ambiguous, prompt the user.
 - **`skill_hint`**: the skill name (without `/`) that will execute this task.
 - **`artifacts`**: structured object. On initial plan creation, set to `null` or pre-populate with planned target files if known:
   ```yaml
@@ -227,11 +250,12 @@ Before writing, validate the assembled YAML:
 
 1. **Unique IDs** — no two tasks share the same `id`
 2. **Valid references** — every `depends_on` entry references an existing task `id`
-3. **No cycles** — the dependency graph is a DAG
-4. **current_task validity** — references a task with status `pending` or `in_progress`
+3. **No cycles** — the dependency graph is a DAG (per-project subgraph when multi-project)
+4. **current_tasks validity** — each value references a task with status `pending` or `in_progress`
 5. **Acceptance required** — every task has at least one acceptance criterion
-6. **Single in_progress** — at most one task has status `in_progress`
+6. **Per-project in_progress** — at most one `in_progress` task per project (not globally)
 7. **completed_at consistency** — must be `null` for all non-done tasks
+8. **Project attribution** — every task has a `project` array with at least one valid project name
 
 If validation fails, revise the plan and re-validate (do NOT write a broken plan).
 
@@ -257,9 +281,9 @@ Render an inline summary (no external template). Structure:
 
 ### Task Breakdown
 
-| # | id | title | status | skill | depends_on |
-|---|----|----|--------|-------|------------|
-| 1 | {id} | {title} | {status} | {skill_hint} | {deps_or_"—"} |
+| # | id | title | status | skill | project | depends_on |
+|---|----|----|--------|-------|---------|------------|
+| 1 | {id} | {title} | {status} | {skill_hint} | {project_list} | {deps_or_"—"} |
 | ... |
 
 ```

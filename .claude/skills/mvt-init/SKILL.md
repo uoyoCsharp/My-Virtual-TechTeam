@@ -32,14 +32,12 @@ You are the **Conductor** -- a Workflow Coordinator.
 
 | Variant | Description |
 |---------|-------------|
-| `/mvt-init` | Standard initialization (scan + detect + write index) |
-| `/mvt-init --refresh` | Re-scan existing project -- preserve user state, update auto-detectable fields, show diff before writing |
+| `/mvt-init` | Standard initialization or interactive refresh (scan + detect + write index; re-scan on existing project with user confirmation) |
 
 ## Activation Protocol
 
-### Step 1: Load Context (Context Foundation)
-Load the following files as foundational context:
-- `.ai-agents/workspace/session.yaml` -- Current workflow state
+### Step 1: Load Context
+Load these files as foundational context:
 - `.ai-agents/workspace/project-context.yaml` -- Project index (structural info)
 - `.ai-agents/registry.yaml` -- Available skills registry and knowledge declarations
 
@@ -47,23 +45,40 @@ Extended context for this skill:
 - Scan project root for config files (package.json, requirements.txt, pom.xml, etc.)
 - Scan project root for directory structure (src/, lib/, app/, tests/, etc.)
 
-### Step 2: Load Knowledge
+### Step 2: Resolve Project Scope (PS)
 
-Read `.ai-agents/registry.yaml` and load every file referenced under:
-- `knowledge.shared` (loaded by all skills)
-- `skills.<current-skill>.knowledge` (this skill's specific knowledge, if present)
+Read `project-context.yaml > projects[]`.
 
-For each entry, resolve files relative to `.ai-agents/{source}`:
-- If the entry lists `files: [...]`, load those files.
-- If the entry lists `files_from_manifest: true`, read `{source}/manifest.yaml` and load every `files[]` entry where `auto_load: true`.
+**Single project** (`projects.length == 1`): Set PS = [sole project name]. Skip remaining PS steps.
 
-Skip any path that does not exist.
+**Multi-project** (`projects.length > 1`):
 
-### Archived Artifacts Convention
+**Mode A -- Plan-driven** (active plan exists and skill operates on plan tasks):
 
-The directory `.ai-agents/workspace/artifacts/_archived/` contains change-id directories that have been archived by `/mvt-cleanup`. All skills that scan `artifacts/` MUST exclude `_archived/` from their scan scope unless explicitly inspecting archived content.
+1. **Plan signal**: PS = current task's `project` array from plan's `current_tasks`. Drop stale project names (not in `projects[]`), fall through.
+2. **Path match**: Match current working paths against `projects[].path` and `source_paths`.
+3. **Prompt**: If still unresolved, list candidates and ask user. Never silently load all projects.
 
-### Step 3: Load Config & Apply Preferences (Config Foundation)
+**Mode B -- Non-plan** (no active plan or ad-hoc changes):
+
+Defer PS to execution: identify change target, match against `projects[].path` and `source_paths`, load project-specific knowledge on demand (Step 3).
+
+### Step 3: Load Knowledge
+
+Registry uses project-keyed maps; `_all` is a reserved key (all projects). Applies to both top-level `knowledge` and `skills.<name>.knowledge`.
+
+**Entry resolution** (relative to `.ai-agents/{source}`):
+- `files: [...]` -- load listed files.
+- `files_from_manifest: true` -- read `{source}/manifest.yaml`, load entries with `auto_load: true`.
+- Skip non-existent paths.
+
+**At activation** (both modes): load `knowledge._all` + `skills.<current-skill>.knowledge._all`.
+
+**Mode A** (additionally): for each P in PS, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]`.
+
+**Mode B** (during execution): on demand, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for identified project(s).
+
+### Step 4: Load Config & Apply Preferences (Config Foundation)
 Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:
 
 **Language**:
@@ -102,7 +117,7 @@ All persisted document output (markdown written to disk) MUST follow the formatt
 - If a diagram genuinely cannot be expressed in mermaid (e.g. a precise spatial/pixel layout), state that explicitly and prefer a Markdown table or prose description over ASCII art.
 - This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from templates or source material.
 
-### Step 4: Pre-flight Checks
+### Step 5: Pre-flight Checks
 
 For each check below, if the condition holds, perform the action implied by its **Level**:
 
@@ -206,6 +221,8 @@ For each project:
 - Name, path, type
 - Tech stack (language, framework, build tool, test framework)
 
+**Project naming constraint**: each project name must match `[a-zA-Z0-9][a-zA-Z0-9_-]*` (no leading underscore). Validate all detected names against this constraint; if a name violates it (e.g., auto-detected as `_internal`), prompt the user to provide a valid alternative before proceeding.
+
 Wait for user to confirm or adjust:
 - `yes` -- Accept all
 - Provide corrections -- User specifies which fields to change
@@ -229,6 +246,7 @@ For each target file, check if it already exists:
      - name: "{project_name}"
        path: "{relative_path}"
        type: "{project_type}"
+       source_paths: []
        tech_stack:
          primary_language: "{language}"
          secondary_languages: [{...}]
@@ -236,6 +254,7 @@ For each target file, check if it already exists:
          build_tool: "{build_tool}"
          test_framework: "{test_framework}"
    ```
+   `source_paths` is populated by `/mvt-analyze-code` based on analyzed code structure. On initial `/mvt-init`, leave as empty array.
    For multi-project repos, include one entry per detected project.
 
 #### 5.3 Post-write validation
@@ -247,26 +266,39 @@ After writing all files, validate:
 
 If any validation fails → report the specific error and offer to retry or skip.
 
-### Step 6: Refresh Mode Handling (--refresh only)
+### Step 6: Refresh Mode Handling (Interactive)
 
-When `--refresh` is specified:
+When `mvt-init` is executed and existing MVTT artifacts are detected:
 
-1. **Preserve** the following from existing files:
+1. **Prompt user**: "Existing MVTT configuration found. Refresh to re-scan project structure? (y/n)"
+   - If `n` -> stop, no changes made.
+   - If `y` -> proceed with refresh.
+
+2. **Re-scan** project structure using Steps 1-3 above.
+
+3. **Compare** new vs existing `projects[]`. If project changes detected (added/removed/renamed sub-projects):
+   - Show diff: "+N added / -N removed / ~N renamed"
+   - Confirm before writing.
+
+4. **Preserve** the following from existing files:
    - `session.yaml` > `history`
    - `project-context.yaml` > any user-added custom fields (fields not in the standard schema)
    - `config.yaml` > `preferences` section
 
-2. **Update** only auto-detectable fields:
+5. **Update** only auto-detectable fields:
    - `tech_stack` (re-scan and update)
    - `type` (re-infer)
+   - `source_paths` (re-scan)
 
-3. **Diff and confirm**: Show a summary of what will change vs what will be preserved. Ask for confirmation before writing.
-
-4. **Old format migration**: If existing `project-context.yaml` uses old format (has top-level `project`, `requirements`, `architecture`, `environment` keys):
+6. **Old format migration**: If existing `project-context.yaml` uses old format (has top-level `project`, `requirements`, `architecture`, `environment` keys):
    - Wrap `project.*` as `projects[0]` with `name="default"`, `path="."`
    - Discard `requirements`, `architecture` sections -- suggest running `/mvt-analyze-code` to regenerate
    - Discard `environment` section
    - Discard any `pattern` related fields
+
+7. **After writing** -> prompt: "Project structure updated. Recommend running `/mvt-analyze-code` to sync semantic context."
+
+8. **Orphan knowledge entries**: After refresh, if any knowledge entries in `registry.yaml` reference a project name not in the updated `projects[]`, prompt: "N orphan knowledge entries found for project(s) not in projects list: {names}. Consider `/mvt-manage-context remove` to clean up."
 
 ### Step 7: Determine Project State (drives next-step recommendation)
 
