@@ -239,7 +239,7 @@ describe("plan-update.cjs", () => {
     expect(res.stderr).toMatch(/not found/i);
   });
 
-  // ── ADR-4/8 Test Cases ────────────────────────────────────────────────
+  // ── Plan Attribution + DAG Test Cases ──────────────────────────────────
 
   it("(1) blocked does not satisfy depends_on -> task stays blocked", () => {
     // t2 depends_on t1; t1 is blocked -> t2 should stay pending
@@ -265,7 +265,7 @@ describe("plan-update.cjs", () => {
     expect(res.status).toBe(0);
 
     const p = readPlan();
-    // ADR-4: skipped satisfies depends_on, so t2 should be advanced
+    // skipped satisfies depends_on, so t2 should be advanced
     expect(p.tasks.find((t) => t.id === "t2")!.status).toBe("in_progress");
     expect(p.current_tasks).toEqual({ default: "t2" });
   });
@@ -588,9 +588,9 @@ describe("plan-update.cjs", () => {
     expect(p.current_tasks).toEqual({ web: "t2", api: "t3" });
   });
 
-  // ── ADR-5: Deliverables handoff tests ──────────────────────────────────
+  // -- Deliverables handoff tests --
 
-  it("(ADR-5 #1) --deliverables-pointer current sets task.deliverables.freshness = current", () => {
+  it("(#1) --deliverables-pointer current sets task.deliverables.freshness = current", () => {
     writePlan(basePlan());
     const res = update([
       "--task", "t1", "--status", "done",
@@ -603,7 +603,7 @@ describe("plan-update.cjs", () => {
     expect(t1.deliverables).toEqual({ freshness: "current" });
   });
 
-  it("(ADR-5 #2) --mark-deliverable-stale sets downstream task's freshness = stale", () => {
+  it("(#2) --mark-deliverable-stale sets downstream task's freshness = stale", () => {
     writePlan(basePlan());
     const res = update([
       "--task", "t1", "--status", "done",
@@ -616,7 +616,7 @@ describe("plan-update.cjs", () => {
     expect(t2.deliverables).toEqual({ freshness: "stale" });
   });
 
-  it("(ADR-5 #3) both --deliverables-pointer and --mark-deliverable-stale in single invocation", () => {
+  it("(#3) both --deliverables-pointer and --mark-deliverable-stale in single invocation", () => {
     writePlan(basePlan());
     const res = update([
       "--task", "t1", "--status", "done",
@@ -630,7 +630,7 @@ describe("plan-update.cjs", () => {
     expect(p.tasks.find((t) => t.id === "t2")!.deliverables).toEqual({ freshness: "stale" });
   });
 
-  it("(ADR-5 #4) validatePlan rejects invalid freshness values", () => {
+  it("(#4) validatePlan rejects invalid freshness values", () => {
     const plan = basePlan();
     plan.tasks[0].deliverables = { freshness: "unknown" };
     writePlan(plan);
@@ -640,7 +640,7 @@ describe("plan-update.cjs", () => {
     expect(res.stderr).toMatch(/invalid deliverables.freshness/i);
   });
 
-  it("(ADR-5 #5) stale deliverables never block writes", () => {
+  it("(#5) stale deliverables never block writes", () => {
     const plan = basePlan();
     plan.tasks[0].deliverables = { freshness: "stale" };
     writePlan(plan);
@@ -652,7 +652,7 @@ describe("plan-update.cjs", () => {
     expect(p.tasks.find((t) => t.id === "t1")!.status).toBe("done");
   });
 
-  it("(ADR-5 #6) --mark-deliverable-stale with non-existent task does not error", () => {
+  it("(#6) --mark-deliverable-stale with non-existent task does not error", () => {
     writePlan(basePlan());
     const res = update([
       "--task", "t1", "--status", "done",
@@ -665,7 +665,7 @@ describe("plan-update.cjs", () => {
     expect(p.tasks.find((t) => t.id === "t1")!.status).toBe("done");
   });
 
-  it("(ADR-5 #7) --deliverables-pointer current overwrites existing stale deliverables", () => {
+  it("(#7) --deliverables-pointer current overwrites existing stale deliverables", () => {
     const plan = basePlan();
     plan.tasks[0].deliverables = { freshness: "stale" };
     writePlan(plan);
@@ -680,7 +680,7 @@ describe("plan-update.cjs", () => {
     expect(p.tasks.find((t) => t.id === "t1")!.deliverables).toEqual({ freshness: "current" });
   });
 
-  it("(ADR-5 #8) --mark-deliverable-stale preserves existing deliverables object shape", () => {
+  it("(#8) --mark-deliverable-stale preserves existing deliverables object shape", () => {
     const plan = basePlan();
     plan.tasks[1].deliverables = { freshness: "current" };
     writePlan(plan);
@@ -696,7 +696,7 @@ describe("plan-update.cjs", () => {
     expect(t2.deliverables).toEqual({ freshness: "stale" });
   });
 
-  it("(ADR-5 #9) --deliverables-pointer with invalid value is rejected", () => {
+  it("(#9) --deliverables-pointer with invalid value is rejected", () => {
     writePlan(basePlan());
     const res = update([
       "--task", "t1", "--status", "done",
@@ -706,7 +706,7 @@ describe("plan-update.cjs", () => {
     expect(res.stderr).toMatch(/Invalid --deliverables-pointer/i);
   });
 
-  it("(ADR-5 #10) --mark-deliverable-stale supports comma-separated multiple task ids", () => {
+  it("(#10) --mark-deliverable-stale supports comma-separated multiple task ids", () => {
     const plan = basePlan({
       tasks: [
         { id: "t1", title: "Shared", status: "in_progress", completed_at: null, depends_on: [], project: ["web", "api"], artifacts: null, acceptance: ["a1"] },

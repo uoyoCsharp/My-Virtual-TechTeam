@@ -21,7 +21,7 @@ interface RegistryDoc {
   [key: string]: unknown;
 }
 
-describe("registry merge (map-aware — ADR-2/3/6)", () => {
+describe("registry merge (map-aware)", () => {
   let tmpDir: string;
 
   beforeEach(() => {
@@ -221,9 +221,9 @@ describe("registry merge (map-aware — ADR-2/3/6)", () => {
     expect(entry!.category).toBe("create_once");
   });
 
-  // ── P1-10: New map-aware merge tests ──
+  // -- New map-aware merge tests --
 
-  it("(P1-10 #1) project isolation — entries under 'web' not merged into 'api'", () => {
+  it("(#1) project isolation — entries under 'web' not merged into 'api'", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const doc = readRegistry();
     doc.knowledge!.web = [
@@ -245,7 +245,7 @@ describe("registry merge (map-aware — ADR-2/3/6)", () => {
     expect(apiIds).not.toContain("web-ctx");
   });
 
-  it("(P1-10 #2) _all binding preservation across install+update round-trip", () => {
+  it("(#2) _all binding preservation across install+update round-trip", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const doc = readRegistry();
     doc.knowledge!._all!.push({
@@ -264,7 +264,7 @@ describe("registry merge (map-aware — ADR-2/3/6)", () => {
     expect(ids).toContain("project-context");
   });
 
-  it("(P1-10 #3) empty project key does not crash merge", () => {
+  it("(#3) empty project key does not crash merge", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const doc = readRegistry();
     doc.knowledge![""] = [
@@ -279,7 +279,7 @@ describe("registry merge (map-aware — ADR-2/3/6)", () => {
     expect(emptyEntries.some((e) => e.id === "empty-key-entry")).toBe(true);
   });
 
-  it("(P1-10 #4) cross-project same-id collision handled (stableKey distinguishes)", () => {
+  it("(#4) cross-project same-id collision handled (stableKey distinguishes)", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const doc = readRegistry();
     doc.knowledge!.web = [
@@ -301,7 +301,7 @@ describe("registry merge (map-aware — ADR-2/3/6)", () => {
     expect((apiEntries[0] as Record<string, unknown>).source).toBe("knowledge/project/api/");
   });
 
-  it("(P1-10 #5) install and update produce byte-identical results for map-shaped inputs", () => {
+  it("(#5) install and update produce byte-identical results for map-shaped inputs", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const doc = readRegistry();
     doc.knowledge!.web = [
@@ -318,7 +318,7 @@ describe("registry merge (map-aware — ADR-2/3/6)", () => {
     expect(afterSecond).toBe(afterFirst);
   });
 
-  it("(P1-10 #6) stableKey does not falsely deduplicate across project keys", () => {
+  it("(#6) stableKey does not falsely deduplicate across project keys", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const doc = readRegistry();
     const identicalEntry = {
@@ -337,9 +337,9 @@ describe("registry merge (map-aware — ADR-2/3/6)", () => {
     expect((after.knowledge!.api ?? []).length).toBe(1);
   });
 
-  // ── Per-skill knowledge merge tests (NEW-P1) ──
+  // -- Per-skill knowledge merge tests --
 
-  it("(NEW-P1 #1) per-skill: project isolation — entries under 'web' not merged into 'api'", () => {
+  it("(#1) per-skill: project isolation — entries under 'web' not merged into 'api'", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const doc = readRegistry();
     doc.skills!["mvt-implement"].knowledge = {
@@ -373,7 +373,7 @@ describe("registry merge (map-aware — ADR-2/3/6)", () => {
     )).toBe(true);
   });
 
-  it("(NEW-P1 #2) per-skill: _all binding preservation across install+update", () => {
+  it("(#2) per-skill: _all binding preservation across install+update", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const doc = readRegistry();
     doc.skills!["mvt-review"].knowledge = {
@@ -394,9 +394,9 @@ describe("registry merge (map-aware — ADR-2/3/6)", () => {
     )).toBe(true);
   });
 
-  // ── Migration tests (ADR-3) ──
+  // -- Migration tests --
 
-  it("(ADR-3) migrates old flat knowledge.shared array to _all key", () => {
+  it("(migration #1) migrates old flat knowledge.shared array to _all key", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const doc = readRegistry();
     // Simulate old format: knowledge.shared as array
@@ -424,7 +424,7 @@ describe("registry merge (map-aware — ADR-2/3/6)", () => {
     expect(after.knowledge!.shared).toBeUndefined();
   });
 
-  it("(ADR-3) migrates old flat per-skill knowledge array to _all key", () => {
+  it("(migration #2) migrates old flat per-skill knowledge array to _all key", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const doc = readRegistry();
     // Simulate old format: skill knowledge as array

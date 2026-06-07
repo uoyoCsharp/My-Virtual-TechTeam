@@ -1,16 +1,13 @@
 # MVTT Framework Registry (v2)
 # Single source of truth for skill metadata and knowledge declarations.
-# Consumed at build-time by mvtt CLI and at runtime by /mvt-status and /mvt-help.
 
 version: "2.0"
 last_updated: "2026-05-23"
 
 # ============================================================
 # Knowledge
-# Project-keyed map (ADR-2/3). Each key is a project name; "_all" is
-# the reserved key for entries loaded by all projects and all skills.
-# Managed by /mvt-manage-context and /mvt-init.
-# Reviewed by /mvt-config and /mvt-check-context.
+# Project-keyed map. Each key is a project name; 
+# "_all" is the reserved key for entries loaded by all projects and all skills.
 # ============================================================
 knowledge:
   _all:

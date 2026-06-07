@@ -8,8 +8,8 @@
  * single task status change, recomputes current_tasks via the per-project DAG
  * rules, runs the full plan validator, and writes back atomically.
  *
- * ADR-4: task.project is an array, validated via caller-supplied --projects.
- * ADR-8: current_task (string) -> current_tasks (Record<string, string>).
+ * task.project is an array, validated via caller-supplied --projects.
+ * current_task (string) -> current_tasks (Record<string, string>).
  *        Per-project independent in_progress advancement.
  *        resolvedIds = done + skipped (blocked does NOT satisfy depends_on).
  *        Cross-project advancement emits project_switch notification.
@@ -137,7 +137,7 @@ function applyUpdate(plan, args, now) {
     task.completed_at = null;
   }
 
-  // ADR-5: --deliverables-pointer current
+  // --deliverables-pointer current
   if (args["deliverables-pointer"] && args["deliverables-pointer"] !== true) {
     if (args["deliverables-pointer"] !== "current") {
       return { error: ERRORS.INVALID_DELIVERABLES_POINTER(args["deliverables-pointer"]) };
@@ -145,7 +145,7 @@ function applyUpdate(plan, args, now) {
     task.deliverables = { freshness: "current" };
   }
 
-  // ADR-5: --mark-deliverable-stale <task_id>[,task_id2,...]
+  // --mark-deliverable-stale <task_id>[,task_id2,...]
   // Supports comma-separated list of downstream task ids.
   if (args["mark-deliverable-stale"] && args["mark-deliverable-stale"] !== true) {
     const staleIds = args["mark-deliverable-stale"]
@@ -170,7 +170,7 @@ function applyUpdate(plan, args, now) {
   return { id: task.id, title: task.title || "", old_status: oldStatus, new_status: args.status };
 }
 
-// ── current_tasks recomputation (ADR-8: per-project independent advancement) ──
+// -- current_tasks recomputation (per-project independent advancement) --
 function recomputeCurrentTasks(plan, changedTaskId, projectList) {
   let warning = null;
 
@@ -272,7 +272,7 @@ function getTaskProjects(task) {
   return ["default"];
 }
 
-// ── Validation (ADR-4 + ADR-8) ────────────────────────────────────────────────
+// ── Validation ────────────────────────────────────────────────
 function validatePlan(plan, projectList) {
   const errors = [];
   const tasks = Array.isArray(plan.tasks) ? plan.tasks : [];
@@ -301,7 +301,7 @@ function validatePlan(plan, projectList) {
     errors.push(`Dependency cycle detected: ${cycle.join(" -> ")}`);
   }
 
-  // Per-project in_progress constraint (ADR-8)
+  // Per-project in_progress constraint
   const projects = projectList && projectList.length > 0 ? projectList : ["default"];
   for (const proj of projects) {
     const inProgressForProject = tasks.filter(
@@ -314,7 +314,7 @@ function validatePlan(plan, projectList) {
     }
   }
 
-  // Task project validation against --projects (ADR-4)
+  // Task project validation against --projects
   if (projectList && projectList.length > 0) {
     for (const t of tasks) {
       if (Array.isArray(t.project)) {
@@ -350,7 +350,7 @@ function validatePlan(plan, projectList) {
     }
   }
 
-  // ADR-5: deliverables.freshness enum validation (stale never blocks a write)
+  // deliverables.freshness enum validation (stale never blocks a write)
   for (const t of tasks) {
     if (t.deliverables && typeof t.deliverables === "object") {
       if (!VALID_FRESHNESS.includes(t.deliverables.freshness)) {
@@ -381,7 +381,7 @@ function validatePlan(plan, projectList) {
 }
 
 // Returns an array describing a cycle path, or null if the graph is a DAG.
-// ADR-8: when projectList is provided, partition tasks by project into
+// when projectList is provided, partition tasks by project into
 // subgraphs; cross-project depends_on included in both subgraphs.
 function findCycle(tasks, projectList) {
   if (!projectList || projectList.length <= 1) {

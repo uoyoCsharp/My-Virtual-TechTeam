@@ -95,12 +95,12 @@ function backupRegistry(projectRoot: string, sourcePath: string): string {
  *   registry, and flagged `custom: true`) are preserved as-is.
  * - User skills that are neither framework skills nor flagged `custom: true`
  *   are dropped (retired framework skills / legacy/malformed entries).
- * - `knowledge` is a project-keyed map (ADR-2/3). Each key (e.g. "_all",
+ * - `knowledge` is a project-keyed map. Each key (e.g. "_all",
  *   "web", "api") is the framework baseline plus user additions not already
  *   present (keyed by `id`, falling back to deep content equality). Both
  *   top-level and per-skill knowledge maps are merged independently.
  * - Old flat arrays (pre-migration: `knowledge.shared` or `skills.*.knowledge`
- *   as arrays) are treated as the `_all` key during merge (ADR-3).
+ *   as arrays) are treated as the `_all` key during merge.
  */
 function mergeRegistry(
   framework: RegistryDoc,
@@ -112,7 +112,7 @@ function mergeRegistry(
   const mergedSkills: Record<string, Dict> = {};
   let preservedBindingCount = 0;
 
-  // --- Per-skill knowledge merge (map-aware, ADR-6) ---
+  // --- Per-skill knowledge merge (map-aware) ---
   // For each framework skill: refresh from framework, re-graft user-added
   // knowledge entries per project key.
   for (const [name, fwEntry] of Object.entries(fwSkills)) {
@@ -132,7 +132,7 @@ function mergeRegistry(
         Array.isArray(userKnowRaw)
           ? { _all: userKnowRaw as unknown[] }
           : ((userKnowRaw as Record<string, unknown[]>) ?? {});
-      // ADR-3 migration: old per-skill "shared" key -> "_all"
+      // Migration: old per-skill "shared" key -> "_all"
       if (Array.isArray(userKnowMap.shared)) {
         userKnowMap._all = [...(userKnowMap._all ?? []), ...userKnowMap.shared];
         delete userKnowMap.shared;
@@ -175,7 +175,7 @@ function mergeRegistry(
     // Otherwise drop: a retired framework skill or a legacy/unmarked entry.
   }
 
-  // --- Top-level knowledge map merge (ADR-2/3) ---
+  // --- Top-level knowledge map merge ---
   // Normalize old flat format (knowledge.shared as array) -> _all key.
   const fwKnowRaw = framework.knowledge;
   const userKnowRaw = user.knowledge;
@@ -188,7 +188,7 @@ function mergeRegistry(
     Array.isArray(userKnowRaw)
       ? { _all: userKnowRaw as unknown[] }
       : (userKnowRaw ?? {});
-  // ADR-3 migration: old top-level "shared" key -> "_all"
+  // Migration: old top-level "shared" key -> "_all"
   if (Array.isArray(userKnowMap.shared)) {
     userKnowMap._all = [...(userKnowMap._all ?? []), ...userKnowMap.shared];
     delete userKnowMap.shared;
