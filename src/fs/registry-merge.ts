@@ -144,14 +144,12 @@ function mergeRegistry(
       for (const key of allKeys) {
         const fwEntries = fwKnowMap[key] ?? [];
         const userEntries = userKnowMap[key] ?? [];
-        const fwKeys = new Set(
-          fwEntries.map((e) =>
-            typeof (e as Dict)?.id === "string"
-              ? `id:${(e as Dict).id as string}`
-              : stableKey(e),
-          ),
-        );
-        const additions = userEntries.filter((e) => !fwKeys.has(stableKey(e)));
+        const keyOf = (e: unknown): string =>
+          typeof (e as Dict)?.id === "string"
+            ? `id:${(e as Dict).id as string}`
+            : stableKey(e);
+        const fwKeys = new Set(fwEntries.map(keyOf));
+        const additions = userEntries.filter((e) => !fwKeys.has(keyOf(e)));
         mergedSkillKnowledge[key] = [...clone(fwEntries), ...clone(additions)];
         preservedBindingCount += additions.length;
       }

@@ -272,6 +272,18 @@ function getTaskProjects(task) {
   return ["default"];
 }
 
+// Derive the effective project list from tasks' project arrays.
+// Used when --projects is not explicitly provided.
+function deriveProjectList(tasks) {
+  const projects = new Set();
+  for (const t of tasks) {
+    for (const p of getTaskProjects(t)) {
+      projects.add(p);
+    }
+  }
+  return [...projects];
+}
+
 // ── Validation ────────────────────────────────────────────────
 function validatePlan(plan, projectList) {
   const errors = [];
@@ -390,12 +402,29 @@ function findCycle(tasks, projectList) {
   }
 
   // Per-project subgraph: each task belongs to every project in its project array.
-  // Cross-project depends_on are included in both subgraphs.
+  // Cross-project depends_on are included in both subgraphs (ADR-8):
+  // if task A[web] depends on B[api], B is added to the web subgraph so
+  // that cross-project cycles like A[web] -> B[api] -> A[web] are detected.
+  const taskMap = new Map(tasks.map((t) => [t.id, t]));
+
   for (const proj of projectList) {
-    const taskIdsForProject = tasks
-      .filter((t) => getTaskProjects(t).includes(proj))
-      .map((t) => t.id);
-    const cycle = findCycleInSubgraph(tasks, taskIdsForProject);
+    const idSet = new Set(
+      tasks
+        .filter((t) => getTaskProjects(t).includes(proj))
+        .map((t) => t.id)
+    );
+    // Expand: pull in cross-project depends_on targets (and their transitive deps)
+    // so that cross-project cycles are visible within each subgraph.
+    const queue = [...idSet];
+    for (const id of queue) {
+      for (const dep of (taskMap.get(id)?.depends_on || [])) {
+        if (!idSet.has(dep)) {
+          idSet.add(dep);
+          queue.push(dep);
+        }
+      }
+    }
+    const cycle = findCycleInSubgraph(tasks, [...idSet]);
     if (cycle) return cycle;
   }
   return null;
@@ -477,17 +506,22 @@ function main() {
     process.exit(1);
   }
 
-  // Parse --projects
+  // Parse --projects; if not provided, derive from tasks
   let projectList = null;
   if (args.projects && args.projects !== true) {
     projectList = args.projects.split(",").map((s) => s.trim()).filter(Boolean);
+  } else {
+    // Derive project list from task.project arrays so that validation
+    // and recomputation work correctly even without explicit --projects.
+    projectList = deriveProjectList(plan.tasks);
   }
 
-  // Migrate old current_task (string) to current_tasks (Record) if needed
+  // Migrate old current_task (string) to current_tasks (Record) if needed.
+  // Also remove legacy current_task field even when null (YAML `current_task: null`).
   if (plan.current_task != null && (!plan.current_tasks || typeof plan.current_tasks !== "object")) {
     plan.current_tasks = { default: plan.current_task };
-    delete plan.current_task;
-  } else if (plan.current_task != null) {
+  }
+  if ("current_task" in plan) {
     delete plan.current_task;
   }
   if (!plan.current_tasks) {

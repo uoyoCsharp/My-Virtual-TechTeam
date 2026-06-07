@@ -11,7 +11,7 @@
 
   | Condition | Recommendation |
   |-----------|---------------|
-  | `session.yaml` missing or `initialized_at` empty | `/mvt-init` -- Initialize the project |
+  | `.ai-agents/workspace/session.yaml` missing or `initialized_at` empty | `/mvt-init` -- Initialize the project |
   | Initialized AND `project-context.md` does not exist | `/mvt-analyze-code` -- Analyze existing code |
   | No requirements (no `analysis.md` for active change AND no completed `/mvt-analyze` in `history`) | `/mvt-analyze` -- Analyze requirements |
   | No requirements, but user describes a simple change directly | `/mvt-quick-dev` -- Implement a simple change quickly |

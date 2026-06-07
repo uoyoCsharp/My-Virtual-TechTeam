@@ -11,14 +11,14 @@
 ### Step 2: Build Activity Timeline
 - **What**: produce the most-recent-first list of history entries with derived metadata.
 - **How**:
-  1. Read `history` from `session.yaml`.
+  1. Read `.ai-agents/workspace/session.yaml`, extract `history`.
   2. For each entry, attach: relative time (e.g., "2h ago"), `change_id` (if present), and the originating skill name.
   3. Limit to the last 10 entries for the rendered table; keep full count separately for the summary line.
 
 ### Step 3: Discover All Plans (Multi-Change Dashboard)
 - **What**: produce the canonical plan list across the workspace.
 - **How**:
-  1. Iterate `changes[]` from `session.yaml`. For each entry with a `plan_path`, attempt to read the plan file.
+  1. From the session data loaded above, iterate `changes[]`. For each entry with a `plan_path`, attempt to read the plan file.
   2. Glob `.ai-agents/workspace/artifacts/*/plan.yaml` to find any plans not registered in `changes` (mark them `unindexed`). **Exclude paths under `artifacts/_archived/`** — those are completed changes archived by `/mvt-cleanup`.
   3. For each plan, extract: `change_id`, `title`, `status`, `current_tasks`, task progress (`done/total`), `updated_at`, `skill_hint` (from current task if present).
   4. If a plan file is present but malformed, include a row with `(corrupt)` in the status column and mark the file path; do not abort.

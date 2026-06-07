@@ -753,4 +753,79 @@ describe("plan-update.cjs", () => {
     const out = JSON.parse(res.stdout);
     expect(out.project_switch).toBeUndefined();
   });
+
+  // ── Cross-project cycle detection (BUG-1 fix) ───────────────────────
+
+  it("(cross-project cycle) detects cycle spanning two projects", () => {
+    // A[web] depends on B[api], B[api] depends on A[web] → cross-project cycle
+    const plan: Plan = {
+      version: 1,
+      change_id: "cross-cycle",
+      title: "Cross-project cycle",
+      created_at: "2026-06-03T10:00:00",
+      updated_at: "2026-06-03T10:00:00",
+      status: "in_progress",
+      current_tasks: { web: "t1", api: "t2" },
+      tasks: [
+        { id: "t1", title: "Web task", status: "in_progress", completed_at: null, depends_on: ["t2"], project: ["web"], artifacts: null, acceptance: ["a1"] },
+        { id: "t2", title: "API task", status: "in_progress", completed_at: null, depends_on: ["t1"], project: ["api"], artifacts: null, acceptance: ["a2"] },
+      ],
+    };
+    writePlan(plan);
+
+    const res = update(["--task", "t1", "--status", "done", "--projects", "web,api"]);
+    expect(res.status).toBe(1);
+    expect(res.stderr).toMatch(/cycle/i);
+  });
+
+  it("(cross-project no-cycle) cross-project dependency without cycle passes", () => {
+    // A[web] depends on B[api] — no cycle
+    const plan: Plan = {
+      version: 1,
+      change_id: "cross-nocycle",
+      title: "Cross-project no cycle",
+      created_at: "2026-06-03T10:00:00",
+      updated_at: "2026-06-03T10:00:00",
+      status: "in_progress",
+      current_tasks: { api: "t2" },
+      tasks: [
+        { id: "t1", title: "Web task", status: "pending", completed_at: null, depends_on: ["t2"], project: ["web"], artifacts: null, acceptance: ["a1"] },
+        { id: "t2", title: "API task", status: "in_progress", completed_at: null, depends_on: [], project: ["api"], artifacts: null, acceptance: ["a2"] },
+      ],
+    };
+    writePlan(plan);
+
+    // Mark t2 done -> t1 should advance
+    const res = update(["--task", "t2", "--status", "done", "--projects", "web,api"]);
+    expect(res.status).toBe(0);
+    expect(res.stderr).not.toMatch(/cycle/i);
+  });
+
+  // ── Derived project list (GAP-3 fix) ──────────────────────────
+
+  it("(derived projects) multi-project plan works without --projects", () => {
+    const plan: Plan = {
+      version: 1,
+      change_id: "derived-proj",
+      title: "Derived project list",
+      created_at: "2026-06-03T10:00:00",
+      updated_at: "2026-06-03T10:00:00",
+      status: "in_progress",
+      current_tasks: { web: "t1", api: "t2" },
+      tasks: [
+        { id: "t1", title: "Web task", status: "in_progress", completed_at: null, depends_on: [], project: ["web"], artifacts: null, acceptance: ["a1"] },
+        { id: "t2", title: "API task", status: "in_progress", completed_at: null, depends_on: [], project: ["api"], artifacts: null, acceptance: ["a2"] },
+        { id: "t3", title: "Web follow-up", status: "pending", completed_at: null, depends_on: ["t1"], project: ["web"], artifacts: null, acceptance: ["a3"] },
+      ],
+    };
+    writePlan(plan);
+
+    // Mark t1 done WITHOUT --projects -- should still correctly advance t3 for web
+    const res = update(["--task", "t1", "--status", "done"]);
+    expect(res.status).toBe(0);
+
+    const p = readPlan();
+    expect(p.tasks.find((t) => t.id === "t3")!.status).toBe("in_progress");
+    expect(p.current_tasks).toEqual({ web: "t3", api: "t2" });
+  });
 });

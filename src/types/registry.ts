@@ -28,11 +28,14 @@ export interface SkillEntry {
   mode: string;
   phase?: string | null;
   depends_on?: string[];
+  knowledge?: Record<string, unknown[]>;
   next_suggestions?: NextSuggestions;
+  [key: string]: unknown;
 }
 
 export interface Registry {
   version: string;
   last_updated: string;
+  knowledge?: Record<string, unknown[]>;
   skills: Record<string, SkillEntry>;
 }

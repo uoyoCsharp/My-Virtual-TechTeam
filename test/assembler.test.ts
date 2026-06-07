@@ -111,7 +111,7 @@ describe("assembler", () => {
     it("includes Operation Mode: Shortcut section", () => {
       const output = buildSkill("mvt-fix");
       expect(output).toContain("## Operation Mode: Shortcut");
-      expect(output).toContain("Do NOT update `progress`");
+      expect(output).toContain("Do NOT update `active_change`");
     });
 
     it("has WARN not BLOCK pre-flight", () => {
@@ -125,7 +125,7 @@ describe("assembler", () => {
     it("includes Variants", () => {
       const output = buildSkill("mvt-init");
       expect(output).toContain("## Variants");
-      expect(output).toContain("--refresh");
+      expect(output).toContain("interactive refresh");
     });
 
     it("suggests mvt-analyze as next step", () => {

@@ -14,7 +14,7 @@ Before processing any change, determine which project(s) the sync targets. Use t
 ### Step 2: Identify Completed Changes
 - **What**: produce a candidate list of change-ids whose artifacts will be aggregated.
 - **How**:
-  1. Read `session.yaml`. Collect `changes[]` entries with `status: done`.
+  1. Read `.ai-agents/workspace/session.yaml`. Collect `changes[]` entries with `status: done`.
   2. For each candidate, verify `.ai-agents/workspace/artifacts/{change-id}/` exists AND contains at least one of `analysis.md` or `implementation.md`. Drop entries with only `plan.yaml`, or with only `design.md` (design artifacts are not aggregated -- see Step 3).
   3. (Fallback) If `changes[]` is empty, scan `.ai-agents/workspace/artifacts/*/` directly; offer those with `analysis.md` or `implementation.md`, marked `unindexed`.
   4. Exclude already-archived or irrelevant changes:
@@ -141,7 +141,7 @@ If user opts in:
 
 3. Re-render the apply list with `verified` / `unverified` markers; final confirmation.
 
-If user skips verification: proceed directly to Step 9 with Step 7 selections.
+If user skips verification: proceed directly to Step 10 with Step 7 selections.
 
 ### Step 10: Apply Updates (Merge Mode)
 

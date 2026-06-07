@@ -2,12 +2,12 @@
 
 ### Step 1: Read Session State
 
-Extract from the already-loaded session context:
+Read `.ai-agents/workspace/session.yaml`. If the file is missing or empty, jump to Step 8 with the "no session" branch.
+
+Extract:
 - `active_change` -- the current change-id (if any), plan_path
 - `changes` -- list of changes with active plans
 - `history` -- last 20 entries (skill name, timestamp, change_id)
-
-If session.yaml is missing or empty, jump to Step 8 with the "no session" branch.
 
 ### Step 2: Discover Pending Plans
 
