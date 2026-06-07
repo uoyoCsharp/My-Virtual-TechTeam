@@ -12,13 +12,14 @@ Welcome to **My Virtual Tech Team (MVTT)** — an AI-guided prompt orchestration
 4. [Repository Layout](#4-repository-layout)
 5. [Common Workflows](#5-common-workflows)
 6. [Adding a New Skill (Most Common Task)](#6-adding-a-new-skill-most-common-task)
-7. [Adding a New CLI Command](#7-adding-a-new-cli-command)
-8. [The Build Pipeline Explained](#8-the-build-pipeline-explained)
-9. [Testing](#9-testing)
-10. [Coding Conventions](#10-coding-conventions)
-11. [Release & CI/CD](#11-release--cicd)
-12. [Troubleshooting](#12-troubleshooting)
-13. [Glossary](#13-glossary)
+7. [Skill Design Principles](#7-skill-design-principles)
+8. [Adding a New CLI Command](#8-adding-a-new-cli-command)
+9. [The Build Pipeline Explained](#9-the-build-pipeline-explained)
+10. [Testing](#10-testing)
+11. [Coding Conventions](#11-coding-conventions)
+12. [Release & CI/CD](#12-release--cicd)
+13. [Troubleshooting](#13-troubleshooting)
+14. [Glossary](#14-glossary)
 
 ---
 
@@ -248,7 +249,49 @@ Skills are **declarative**. New behavior lives in `business.md` prose, not TypeS
 
 ---
 
-## 7. Adding a New CLI Command
+## 7. Skill Design Principles
+
+MVTT skills follow a **single-entry-point, interactive-routing** design philosophy. Understanding these principles is essential before creating or modifying any skill.
+
+### Core Principle: Interactive Routing Over CLI Flags
+
+> **Use a single invocation to trigger a skill. When the operation target is ambiguous, resolve it through an interactive menu or user prompt — never through CLI-style flags or positional arguments.**
+
+**Why?** Skills run inside AI coding agents (Claude Code, Qoder, etc.), not in a terminal shell. There is no argv parsing, no flag convention, and no reason to teach users a flag syntax when the AI can simply ask.
+
+### Rules
+
+1. **One skill, one entry point.** `/mvt-skill-name` is the only invocation form. Do not define variants like `--all`, `--aspect`, or `{name}`.
+
+2. **Single-project workspace: auto-select.** When only one project exists, proceed without prompting.
+
+3. **Multi-project workspace: interactive menu.** When multiple projects are registered, present a selection menu listing project names. Include an "all projects" option where batch operation makes sense.
+
+4. **Ambiguous target: ask, don't guess.** If the skill needs to know which project, file, or entity to operate on and the context doesn't disambiguate — ask the user. Never silently pick the first match.
+
+5. **Subcommands are interactive menus, not flags.** Skills like `/mvt-manage-context` expose sub-operations (add, remove, move, rename, list) as an interactive menu when invoked without arguments — not as positional CLI args.
+
+### Good vs. Bad Examples
+
+| Pattern | Bad (CLI-style) | Good (Interactive) |
+|---------|----------------|--------------------|
+| Multi-project selection | `/mvt-analyze-code --all` | `/mvt-analyze-code` → prompt: "Which project? [project-a, project-b, All]" |
+| Scoped review | `/mvt-review --aspect security` | `/mvt-review` → prompt: "Review scope? [full, architecture, security, ...]" |
+| Context management | `/mvt-manage-context add shared` | `/mvt-manage-context` → interactive menu: "1. Add 2. Remove 3. Move ..." |
+| Named target | `/mvt-analyze-code my-project` | `/mvt-analyze-code` → prompt with project list |
+
+### Exceptions
+
+Some skills accept a narrow set of **well-defined string arguments** that act as sub-mode selectors (e.g., `/mvt-config` accepting a config key). This is acceptable when:
+- The set of valid values is small and enumerable
+- The skill provides an interactive fallback for unrecognized input
+- The argument is an accelerator for power users, not a parallel interface
+
+When in doubt: **make it interactive.**
+
+---
+
+## 8. Adding a New CLI Command
 
 If you need a new top-level command (e.g., `mvtt diagnose`):
 
@@ -278,7 +321,7 @@ program
 
 ---
 
-## 8. The Build Pipeline Explained
+## 9. The Build Pipeline Explained
 
 When the CLI runs `install` or `build`, it walks this pipeline:
 
@@ -314,7 +357,7 @@ Every change to `manifest.yaml` schemas (skill manifests or `install-manifest.ya
 
 ---
 
-## 9. Testing
+## 10. Testing
 
 **Framework:** [Vitest](https://vitest.dev/) v2
 
@@ -340,7 +383,7 @@ npx vitest run -t "should install" # Filter by name
 
 ---
 
-## 10. Coding Conventions
+## 11. Coding Conventions
 
 ### Style
 
@@ -375,7 +418,7 @@ npx vitest run -t "should install" # Filter by name
 
 ---
 
-## 11. Release & CI/CD
+## 12. Release & CI/CD
 
 CI is defined in `.github/workflows/publish.yml`.
 
@@ -407,7 +450,7 @@ The `prepublishOnly` script also runs `build` + `test` locally if you ever publi
 
 ---
 
-## 12. Troubleshooting
+## 13. Troubleshooting
 
 | Symptom | Likely Cause | Fix |
 |---------|--------------|-----|
@@ -421,7 +464,7 @@ The `prepublishOnly` script also runs `build` + `test` locally if you ever publi
 
 ---
 
-## 13. Glossary
+## 14. Glossary
 
 - **Skill** — A specialized AI capability (e.g., `mvt-analyze`) packaged as a manifest + Markdown. Lives under `sources/skills/`.
 - **Section** — A reusable Markdown fragment composed into multiple skills (e.g., shared role headers). Lives under `sources/sections/`.

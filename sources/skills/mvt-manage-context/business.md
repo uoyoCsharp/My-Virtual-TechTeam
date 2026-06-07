@@ -30,7 +30,7 @@ The registry uses project-keyed knowledge maps. Every knowledge block (top-level
 | global | all skills | `knowledge._all` |
 | project-specific | all skills | `knowledge.{projectName}` |
 | global | specific skill | `skills.{name}.knowledge._all` |
-| quadrant 4 | specific skill | `skills.{name}.knowledge.{projectName}` |
+| project-specific | specific skill | `skills.{name}.knowledge.{projectName}` |
 
 **`_all` promotion confirmation**: routing to `knowledge._all` or `skills.{name}.knowledge._all` means the entry will be loaded by every skill across every project (or every project for that skill). When the add flow routes to `_all`, prompt: "This knowledge will be loaded by ALL skills across ALL projects. Confirm? (y/n)" -- default to **n** for project-specific entries, default to **y** only when the user explicitly chose scope=global.
 
@@ -75,7 +75,7 @@ The skill should suggest a type based on content keywords; the user confirms or 
 Accept any of:
 - `Enter` (empty input) -- confirm pre-checked selection
 - Comma-separated indices (e.g. `1,3,5`) -- custom skill selection
-- `s` -- promote to **shared** (write to `registry.yaml > knowledge.shared`)
+- `s` -- promote to **global** (write to `registry.yaml > knowledge._all`)
 - `c` -- promote to **core** (write to `.ai-agents/knowledge/core/user/{filename}` + append entry to `core/manifest.yaml` with `origin: user`)
 - `n` -- **none** (file-only; not auto-loaded)
 - `m` -- **manual** mode (display the full skill list including below-threshold for direct picking)

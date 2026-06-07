@@ -37,13 +37,10 @@ sections:
 
   - type: inline
     content: |
-      ## Variants
+      ## Invocation
 
-      | Variant | Description |
-      |---------|-------------|
-      | `/mvt-analyze-code` | Analyze the first (or only) project |
-      | `/mvt-analyze-code --all` | Analyze all projects in the workspace |
-      | `/mvt-analyze-code {name}` | Analyze a specific project by name |
+      `/mvt-analyze-code` — single entry point, no arguments or flags.
+      When multiple projects exist, the skill interactively prompts the user to select the target(s).
 
   - type: shared
     source: sections/activation-load-context.md

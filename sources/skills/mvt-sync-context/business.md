@@ -4,12 +4,12 @@
 
 Before processing any change, determine which project(s) the sync targets. Use this 4-level fallback chain:
 
-1. **`task.project` exists** (when syncing within a plan-driven context): route to that project's `_generated/{name}/project-context.md`. If the task has multiple projects, route to each independently.
+1. **`task.project` exists** (when syncing within a plan-driven context): route to that project for per-project technical knowledge lookups (project-context.md always uses the flat path). If the task has multiple projects, route to each independently.
 2. **Artifact file paths match** a unique project's `source_paths` or `path` from `project-context.yaml`: route to that project.
 3. **Current operation's file path reverse-lookup**: match the file path against `projects[].path` and `projects[].source_paths` -> route to that project.
 4. **List candidate projects for user selection**: if none of the above resolved a unique project, list the project names and ask the user.
 
-**Cross-project changes** (task spanning multiple projects): split write per project -- each project's `project-context.md` receives only its relevant knowledge entries.
+**Cross-project changes** (task spanning multiple projects): route to each project for per-project technical knowledge lookups. The merge target for `project-context.md` is always the single flat file; per-project knowledge (quadrant 3/4) is routed per project.
 
 ### Step 2: Identify Completed Changes
 - **What**: produce a candidate list of change-ids whose artifacts will be aggregated.
@@ -38,8 +38,9 @@ Before processing any change, determine which project(s) the sync targets. Use t
 
 This step establishes the **target structure** that aggregated content must fit into. The structure is NOT assumed -- it is derived from the current document.
 
-1. Read `.ai-agents/knowledge/project/_generated/project-context.md`.
-   - Already required by preflight; if discovered missing here, STOP and recommend `/mvt-analyze-code`.
+1. Read the project-context file: always read `.ai-agents/knowledge/project/_generated/project-context.md` (flat path, regardless of project count).
+   - **Multi-project**: the file contains `# Project: {name}` sections; use the routing result from Step 1 to identify which project section(s) are relevant for the current sync operation.
+   - If the file does not exist, STOP and recommend `/mvt-analyze-code`.
 2. Parse the current `.md` into a section map:
    - Each top-level `##` heading -> one section anchor.
    - Record: section title (verbatim), byte range, and a 1-line semantic summary derived from the section's content (e.g., "lists domain terms with definitions" or "describes module dependencies").
@@ -153,7 +154,8 @@ If user skips verification: proceed directly to Step 9 with Step 7 selections.
   2. Each `modify` item with `replace`: replace the matching line in place. Smallest possible diff.
   3. Each `orphan` item with new-section choice: append a new `##` section at end of file.
   4. **Never delete** any existing line. **Never reorder** existing sections.
-  5. All merged content must already be normalized per Step 4 rules. Do not re-introduce stripped references during inline replacement or append operations.
+  5. **Multi-project files**: use `# Project: {name}` headings to scope merges to the correct project section. New items for project X go into its `# Project: X` section; do not mix cross-project content.
+  6. All merged content must already be normalized per Step 4 rules. Do not re-introduce stripped references during inline replacement or append operations.
 
 - **Update `project-context.yaml`** (structured merge):
   1. Apply accepted entries from Table 6d.

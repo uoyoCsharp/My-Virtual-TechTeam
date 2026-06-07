@@ -14,8 +14,8 @@ Resolution rules:
 - If `task_id` is omitted AND exactly one task currently has status `in_progress` -> default to that task.
 - If `task_id` is omitted AND zero or multiple tasks are in_progress -> ask the user to specify.
 - If the user reply is the natural-language form `done` / `blocked: <reason>` (from a workflow skill's soft-prompt) -> map to:
-  - `done` -> task = first value in plan.current_tasks, new_status = done
-  - `blocked: <reason>` -> task = first value in plan.current_tasks, new_status = blocked, notes = `<reason>`
+  - `done` -> task = the entry in `plan.current_tasks` matching the current project (or the sole entry if single-project), new_status = done
+  - `blocked: <reason>` -> task = the entry in `plan.current_tasks` matching the current project (or the sole entry if single-project), new_status = blocked, notes = `<reason>`
 
 ### Step 2: Load and Validate Existing Plan
 

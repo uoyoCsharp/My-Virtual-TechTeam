@@ -705,4 +705,52 @@ describe("plan-update.cjs", () => {
     expect(res.status).toBe(1);
     expect(res.stderr).toMatch(/Invalid --deliverables-pointer/i);
   });
+
+  it("(ADR-5 #10) --mark-deliverable-stale supports comma-separated multiple task ids", () => {
+    const plan = basePlan({
+      tasks: [
+        { id: "t1", title: "Shared", status: "in_progress", completed_at: null, depends_on: [], project: ["web", "api"], artifacts: null, acceptance: ["a1"] },
+        { id: "t2", title: "Web downstream", status: "pending", completed_at: null, depends_on: ["t1"], project: ["web"], artifacts: null, acceptance: ["a2"] },
+        { id: "t3", title: "API downstream", status: "pending", completed_at: null, depends_on: ["t1"], project: ["api"], artifacts: null, acceptance: ["a3"] },
+      ],
+    });
+    writePlan(plan);
+
+    const res = update([
+      "--task", "t1", "--status", "done",
+      "--mark-deliverable-stale", "t2,t3",
+      "--projects", "web,api",
+    ]);
+    expect(res.status).toBe(0);
+
+    const p = readPlan();
+    expect(p.tasks.find((t) => t.id === "t2")!.deliverables).toEqual({ freshness: "stale" });
+    expect(p.tasks.find((t) => t.id === "t3")!.deliverables).toEqual({ freshness: "stale" });
+  });
+
+  it("(cross-project) no false project_switch when cross-project task completes", () => {
+    // t1 is cross-project ["web","api"]. When done, t2 (web) and t3 (api) advance.
+    // Since both web and api were already active projects, no project_switch should fire.
+    const plan: Plan = {
+      version: 1,
+      change_id: "multi-proj",
+      title: "Multi-project",
+      created_at: "2026-06-03T10:00:00",
+      updated_at: "2026-06-03T10:00:00",
+      status: "in_progress",
+      current_tasks: { web: "t1", api: "t1" },
+      tasks: [
+        { id: "t1", title: "Shared task", status: "in_progress", completed_at: null, depends_on: [], project: ["web", "api"], artifacts: null, acceptance: ["a1"] },
+        { id: "t2", title: "Web follow-up", status: "pending", completed_at: null, depends_on: ["t1"], project: ["web"], artifacts: null, acceptance: ["a2"] },
+        { id: "t3", title: "API follow-up", status: "pending", completed_at: null, depends_on: ["t1"], project: ["api"], artifacts: null, acceptance: ["a3"] },
+      ],
+    };
+    writePlan(plan);
+
+    const res = update(["--task", "t1", "--status", "done", "--projects", "web,api"]);
+    expect(res.status).toBe(0);
+
+    const out = JSON.parse(res.stdout);
+    expect(out.project_switch).toBeUndefined();
+  });
 });

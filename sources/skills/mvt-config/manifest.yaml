@@ -79,7 +79,7 @@ sections:
 
       | Key | Type | Default | Description |
       |-----|------|---------|-------------|
-      | `knowledge.shared` | list | `[core, project-context]` | Shared knowledge entries in registry.yaml, loaded by all skills |
+      | `knowledge._all` | list | `[core, project-context]` | Global knowledge entries in registry.yaml under `_all` key, loaded by all skills across all projects |
 
   - type: file
     source: ./business.md

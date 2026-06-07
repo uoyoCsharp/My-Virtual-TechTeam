@@ -92,7 +92,8 @@ sections:
       ### Removed entry: `{id}`
       - File: `.ai-agents/knowledge/{path}` (deleted)
       - References dropped from:
-        - `registry.yaml > knowledge.shared` (if applicable)
+        - `registry.yaml > knowledge._all` (if applicable)
+        - `registry.yaml > knowledge.{projectName}` (if applicable)
         - `registry.yaml > skills.{name}.knowledge` x N (if applicable)
         - `core/manifest.yaml > files[]` (if applicable)
       ```

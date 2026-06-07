@@ -30,8 +30,8 @@ sections:
         - rule: "Exactly one in_progress plan found -> Auto-select it and proceed"
         - rule: "No plans found -> Report no active plans, suggest `/mvt-analyze` or `/mvt-plan-dev`"
         - rule: "active_change is empty AND history is empty AND no plans -> Recommend `/mvt-init` or `/mvt-status`"
-        - rule: "Plan exists and has current_task -> Use current_task's skill_hint as next-step recommendation"
-        - rule: "Plan's current_task has been in_progress for >5 days -> Surface stale warning"
+        - rule: "Plan exists and has current_tasks -> Use current_tasks entry's skill_hint as next-step recommendation"
+        - rule: "Plan's current_tasks entry has been in_progress for >5 days -> Surface stale warning"
         - rule: "Last skill was interrupted -> Surface the context, suggest retry"
       boundaries:
         - scope: "read git state (branch, diff, commits)"
@@ -70,7 +70,7 @@ sections:
       current_skill: mvt-resume
       conditional_suggestions:
         conditions:
-          - condition: "plan has current_task with skill_hint"
+          - condition: "plan has current_tasks entry with skill_hint"
             primary: mvt-implement
             primary_desc: "Continue with the next planned task (use skill_hint)"
           - condition: "no active plans found"

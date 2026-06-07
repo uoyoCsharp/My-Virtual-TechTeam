@@ -28,7 +28,7 @@
  *     [--artifacts "<comma,separated,paths>"] \
  *     [--notes "<free-form text>"] \
  *     [--deliverables-pointer current] \
- *     [--mark-deliverable-stale <downstream_task_id>]
+ *     [--mark-deliverable-stale <task_id>[,task_id2,...]]
  *
  * Output:
  *   Success (exit 0): one-line JSON on stdout, e.g.
@@ -130,8 +130,12 @@ function applyUpdate(plan, args, now) {
     task.notes = args.notes;
   }
 
-  // completed_at consistency: set only when transitioning to done, else null.
-  task.completed_at = args.status === "done" ? now : null;
+  // completed_at consistency: set only on first transition to done, else null.
+  if (args.status === "done" && !task.completed_at) {
+    task.completed_at = now;
+  } else if (args.status !== "done") {
+    task.completed_at = null;
+  }
 
   // ADR-5: --deliverables-pointer current
   if (args["deliverables-pointer"] && args["deliverables-pointer"] !== true) {
@@ -141,18 +145,24 @@ function applyUpdate(plan, args, now) {
     task.deliverables = { freshness: "current" };
   }
 
-  // ADR-5: --mark-deliverable-stale <task_id>
+  // ADR-5: --mark-deliverable-stale <task_id>[,task_id2,...]
+  // Supports comma-separated list of downstream task ids.
   if (args["mark-deliverable-stale"] && args["mark-deliverable-stale"] !== true) {
-    const staleTaskId = args["mark-deliverable-stale"];
-    const staleTask = plan.tasks.find((t) => t.id === staleTaskId);
-    if (staleTask) {
-      if (!staleTask.deliverables || typeof staleTask.deliverables !== "object") {
-        staleTask.deliverables = { freshness: "stale" };
-      } else {
-        staleTask.deliverables.freshness = "stale";
+    const staleIds = args["mark-deliverable-stale"]
+      .split(",")
+      .map((s) => s.trim())
+      .filter(Boolean);
+    for (const staleTaskId of staleIds) {
+      const staleTask = plan.tasks.find((t) => t.id === staleTaskId);
+      if (staleTask) {
+        if (!staleTask.deliverables || typeof staleTask.deliverables !== "object") {
+          staleTask.deliverables = { freshness: "stale" };
+        } else {
+          staleTask.deliverables.freshness = "stale";
+        }
       }
+      // If task not found, silently skip -- the task may not have deliverables yet
     }
-    // If task not found, silently skip -- the task may not have deliverables yet
   }
 
   plan.updated_at = now;
@@ -163,11 +173,16 @@ function applyUpdate(plan, args, now) {
 // ── current_tasks recomputation (ADR-8: per-project independent advancement) ──
 function recomputeCurrentTasks(plan, changedTaskId, projectList) {
   let warning = null;
-  const project_switch = null;
 
   const changedTask = plan.tasks.find((t) => t.id === changedTaskId);
   const changedToTerminal =
     changedTask && TERMINAL_STATUSES.includes(changedTask.status);
+
+  // Capture the set of projects that had active tasks BEFORE this recomputation.
+  // plan.current_tasks still holds the old value at this point.
+  const priorActiveProjects = new Set(
+    Object.keys(plan.current_tasks || {})
+  );
 
   // resolvedIds = done + skipped (blocked does NOT satisfy depends_on)
   const resolvedIds = new Set(
@@ -207,23 +222,23 @@ function recomputeCurrentTasks(plan, changedTaskId, projectList) {
     }
   }
 
-  // Detect project_switch: if the changed task was terminal and a different
-  // project's task was advanced
+  // Detect project_switch: compare projects active AFTER recomputation with
+  // projects active BEFORE. New projects = present in currentTasks but absent
+  // from priorActiveProjects. This correctly handles:
+  // - Single→single cross-project (api done, web advances -> from:[api] to:[web])
+  // - Cross-project task done (both web+api were active -> no false switch)
+  // - Mixed: cross-project done, downstream in new project (emits correctly)
   let switchNotification = null;
   if (changedToTerminal && changedTask) {
-    const changedProjects = getTaskProjects(changedTask);
-    for (const proj of projects) {
-      if (!changedProjects.includes(proj) && currentTasks[proj]) {
-        const advancedTask = plan.tasks.find((t) => t.id === currentTasks[proj]);
-        if (advancedTask && advancedTask.status === "in_progress") {
-          // Check if this task was just advanced (was pending before)
-          // The advanced task is for a different project than the completed one
-          switchNotification = {
-            project_switch: { from: changedProjects, to: [proj] },
-          };
-          break;
-        }
-      }
+    const newActiveProjects = new Set(Object.keys(currentTasks));
+    const newlyActive = [...newActiveProjects].filter((p) => !priorActiveProjects.has(p));
+    if (newlyActive.length > 0) {
+      switchNotification = {
+        project_switch: {
+          from: [...priorActiveProjects].filter((p) => !newActiveProjects.has(p)),
+          to: newlyActive,
+        },
+      };
     }
   }
 

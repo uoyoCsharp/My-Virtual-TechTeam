@@ -14,7 +14,7 @@
   2. Topologically order files by dependency: domain entities -> repositories/adapters -> use-case/services -> controllers/UI.
   3. Group consecutive files that share a single conceptual change into one commit boundary.
   4. For each file, decide: `create | modify | delete`, and write a one-line intent.
-- **Plan-aware behavior**: if `plan.yaml` is present, treat `current_task`'s `artifacts.files` (cross-reference `plan.tasks[*].artifacts.files`) as a **starting-scope hint, not a hard ceiling**. The source of truth for scope remains `design.md`'s `Change Tracking` (per Step 2.1). When `artifacts.files` is `null` or empty, derive scope entirely from `Change Tracking`. If implementation reveals files beyond this hint are genuinely required, do NOT silently expand — surface them via Step 3 confirmation and never absorb files that clearly belong to a different task.
+- **Plan-aware behavior**: if `plan.yaml` is present, identify the active task from `current_tasks` (the entry matching the current project, or the sole entry in single-project mode), then treat that task's `artifacts.files` (cross-reference `plan.tasks[*].artifacts.files`) as a **starting-scope hint, not a hard ceiling**. The source of truth for scope remains `design.md`'s `Change Tracking` (per Step 2.1). When `artifacts.files` is `null` or empty, derive scope entirely from `Change Tracking`. If implementation reveals files beyond this hint are genuinely required, do NOT silently expand — surface them via Step 3 confirmation and never absorb files that clearly belong to a different task.
 - **Output of this step**: an in-conversation list shown to user as a preview, with no write yet.
 
 ### Step 3: Confirm Scope (when needed)
@@ -23,7 +23,7 @@
   - The plan introduces a new public API (exported symbol, HTTP endpoint, CLI flag).
   - The plan deletes existing code (delete count > 0).
   - The plan deviates from `design.md` (e.g., adds files not in `Change Tracking` or skips files listed there).
-  - The plan touches files beyond `current_task`'s `artifacts.files` hint (state which files are added and why, in one line each).
+  - The plan touches files beyond the active task's `artifacts.files` hint (state which files are added and why, in one line each).
 - **Otherwise**: proceed silently.
 - **On deviation from design**: explain the deviation reason in one line; if the deviation is structural (new module, layer change, interface break), STOP and recommend re-running `/mvt-design`.
 
@@ -105,15 +105,15 @@ This step applies only when `plan.yaml` exists and the current task has downstre
     --task <current_task_id> \
     --status <current_status> \
     --deliverables-pointer current \
-    --mark-deliverable-stale <each_downstream_task_id>
+    --mark-deliverable-stale <downstream_task_id1>[,<downstream_task_id2>,...]
   ```
-  The `--status` must be the task's current status (typically `in_progress` at this point, since Step 9 has not yet run). Each downstream dependent gets `--mark-deliverable-stale` so that `/mvt-resume` and `/mvt-status` can surface the stale warning.
+  The `--status` must be the task's current status (typically `in_progress` at this point, since Step 9 has not yet run). Pass ALL downstream dependent task ids as a comma-separated list to `--mark-deliverable-stale` so that `/mvt-resume` and `/mvt-status` can surface the stale warning.
 - **On user decline**: do not write deliverables and do not call `plan-update.cjs` with the deliverables flags. The downstream tasks will not receive stale warnings, which is acceptable if the user considers the contract unchanged.
 - **Error handling**: if `plan-update.cjs` rejects (e.g., malformed freshness), surface stderr and leave `implementation.md` as written. The deliverables content is the source of truth; the pointer can be retried via `/mvt-update-plan`.
 
 ### Step 9: Plan-Aware Progress Hint (if applicable)
-- If `plan.yaml` exists and a single `current_task` covers this implementation, suggest the user run `/mvt-update-plan <task-id> done` (or `blocked` with reason).
-- If the files actually touched differ from `current_task`'s `artifacts.files` (extra files added during Step 3, or planned files left untouched), explicitly remind the user to run `/mvt-update-plan` so the plan's `artifacts.files` reflects reality for `/mvt-resume` and future sessions.
+- If `plan.yaml` exists and `current_tasks` identifies the active task for this implementation, suggest the user run `/mvt-update-plan <task-id> done` (or `blocked` with reason).
+- If the files actually touched differ from the active task's `artifacts.files` (extra files added during Step 3, or planned files left untouched), explicitly remind the user to run `/mvt-update-plan` so the plan's `artifacts.files` reflects reality for `/mvt-resume` and future sessions.
 - Do NOT modify `plan.yaml` directly from this skill; it is owned by `/mvt-update-plan`.
 - Do NOT modify `changes` directly; it is owned by `/mvt-plan-dev` / `/mvt-update-plan`.
 
@@ -127,6 +127,6 @@ This step applies only when `plan.yaml` exists and the current task has downstre
 | User aborts at Step 3 confirmation | Do not write any source files or artifact |
 | File listed in `Change Tracking` no longer exists in the working tree | Surface, ask user whether design is stale or file was deleted in a parallel change |
 | Implementation must touch a file outside the active project (other repo / submodule) | STOP -- this is out of scope for `/mvt-implement`; surface and ask user to plan it as a separate change |
-| Plan task is `blocked` or `done` already | Refuse to implement that task; ask user to pick another `current_task` or run `/mvt-update-plan` |
+| Plan task is `blocked` or `done` already | Refuse to implement that task; ask user to pick another task from `current_tasks` or run `/mvt-update-plan` |
 | Deliverables already exist and user declines to update | Leave existing deliverables in place; do not call `plan-update.cjs` with deliverables flags |
 | `plan-update.cjs` rejects deliverables pointer | Surface error; leave `implementation.md` as written (content is source of truth, pointer can be retried) |

@@ -3,7 +3,7 @@ output: .claude/skills/mvt-update-plan/SKILL.md
 
 frontmatter:
   name: mvt-update-plan
-  description: "Update a single task in the active change's plan.yaml: change status, attach artifacts, leave notes, and auto-advance current_task. This skill should be used after a workflow skill finishes work that maps to a plan task, or whenever the user wants to mark a task as done, blocked, or skipped."
+  description: "Update a single task in the active change's plan.yaml: change status, attach artifacts, leave notes, and auto-advance current_tasks. This skill should be used after a workflow skill finishes work that maps to a plan task, or whenever the user wants to mark a task as done, blocked, or skipped."
 
 sections:
   - type: inline
@@ -12,7 +12,7 @@ sections:
 
       ## Purpose
 
-      Apply incremental updates to the active plan.yaml: mark a task done/blocked/skipped, attach the artifacts produced, and let the skill auto-advance `current_task` to the next executable task. AI may invoke this skill on the user's behalf when the user replies to a soft-prompt with `done` / `blocked: <reason>`.
+      Apply incremental updates to the active plan.yaml: mark a task done/blocked/skipped, attach the artifacts produced, and let the skill auto-advance `current_tasks` to the next executable task. AI may invoke this skill on the user's behalf when the user replies to a soft-prompt with `done` / `blocked: <reason>`.
 
   - type: shared
     source: sections/role-header.md
@@ -20,10 +20,10 @@ sections:
       role: Architect
       role_desc: "a Development Planner"
       decision_rules:
-        - rule: "Task id provided AND target status valid -> Apply update, advance current_task, write back"
+        - rule: "Task id provided AND target status valid -> Apply update, advance current_tasks, write back"
         - rule: "Task id missing AND only one task is in_progress -> Default to that task"
-        - rule: "Target status would create an invalid current_task -> Recompute current_task automatically"
-        - rule: "All tasks become done -> Set plan.status = done, current_task = null"
+        - rule: "Target status would create an invalid current_tasks -> Recompute current_tasks automatically"
+        - rule: "All tasks become done -> Set plan.status = done, current_tasks = {}"
         - rule: "active_change.plan_path is empty -> Stop and suggest /mvt-plan-dev"
 
       boundaries:
@@ -94,7 +94,7 @@ sections:
       | ... |
 
       Progress: {done_count}/{total_count}
-      Current task: {new_current_task_id_or_"(plan complete)"}
+      Current tasks: {new_current_tasks_map_or_"(plan complete)"}
 
       ### Next
       {one-line guidance: continue to next task, resolve blocker, or run /mvt-cleanup}
@@ -119,7 +119,7 @@ sections:
             primary_desc: "All tasks complete -- clean up artifacts and prepare to start the next change"
           - condition: "default"
             primary: mvt-implement
-            primary_desc: "Continue with the next current_task"
+            primary_desc: "Continue with the next task from current_tasks"
         alternatives:
           - skill: mvt-resume
             desc: "Refresh context after task transitions"
