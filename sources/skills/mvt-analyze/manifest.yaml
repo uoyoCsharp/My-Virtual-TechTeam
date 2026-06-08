@@ -83,7 +83,10 @@ sections:
       current_skill: mvt-analyze
       conditional_suggestions:
         conditions:
-          - condition: "user chose quick path in Step 3 (Quick Path Detection)"
+          - condition: "epic-scale detected in Step 3 (Epic Detection) and user chose y"
+            primary: "mvt-decompose"
+            primary_desc: "Decompose this epic-scale requirement into sub-changes"
+          - condition: "user chose quick path in Step 4 (Quick Path Detection)"
             primary: "mvt-quick-dev"
             primary_desc: "Implement this simple change quickly"
           - condition: "default"

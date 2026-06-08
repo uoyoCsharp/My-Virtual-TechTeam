@@ -23,7 +23,12 @@
  *     [--set-change-status <status>] \
  *     [--no-change] \
  *     [--set-synced] \
- *     [--truncate-history <n>]
+ *     [--truncate-history <n>] \
+ *     [--new-epic <title> --epic-id <id>] \
+ *     [--set-epic-path <path>] \
+ *     [--set-epic-status <status>] \
+ *     [--close-epic] \
+ *     [--epic-id <id>]   (with --new-change, links sub-change to epic)
  *
  * Output:
  *   Success (exit 0): {"ok":true}
@@ -48,6 +53,10 @@ const ERRORS = {
   SESSION_WRITE_FAILED: (detail) => `Failed to write session.yaml: ${detail}`,
   CONFIG_LIMIT_INVALID: (key, val, min, max, fallback) =>
     `Warning: config history_limits.${key} value "${val}" is invalid (must be integer ${min}-${max}). Using default ${fallback}.`,
+  EPIC_ID_REQUIRED: () => "--new-epic requires --epic-id",
+  CLOSE_NEW_EPIC_CONFLICT: () => "--close-epic and --new-epic are mutually exclusive",
+  NO_ACTIVE_EPIC: (flag) => `${flag} requires an active epic (active_epic.id is empty)`,
+  EPIC_ID_ORPHAN: () => "--epic-id (for sub-change) requires --new-change",
 };
 
 // ── Defaults ────────────────────────────────────────────────────────────────
@@ -124,6 +133,12 @@ function validate(args) {
   if (!args.skill) return ERRORS.MISSING_SKILL();
   if (!args.summary) return ERRORS.MISSING_SUMMARY();
   if (args["new-change"] && !args["change-id"]) return ERRORS.CHANGE_ID_REQUIRED();
+
+  // Epic combo validation (§9.1.1, ADR-10)
+  if (args["new-epic"] && !args["epic-id"]) return ERRORS.EPIC_ID_REQUIRED();
+  if (args["close-epic"] && args["new-epic"]) return ERRORS.CLOSE_NEW_EPIC_CONFLICT();
+  if (args["epic-id"] && !args["new-change"] && !args["new-epic"]) return ERRORS.EPIC_ID_ORPHAN();
+
   return null;
 }
 
@@ -197,6 +212,7 @@ function main() {
         plan_path: session.active_change.plan_path || "",
         status: "active",
         updated_at: now,
+        epic_id: session.active_change.epic_id || "",
       };
       if (existingIdx >= 0) {
         session.changes[existingIdx] = snapshotEntry;
@@ -215,6 +231,7 @@ function main() {
     session.active_change.title = args["new-change"];
     session.active_change.created_at = now;
     session.active_change.plan_path = "";
+    session.active_change.epic_id = args["epic-id"] || "";
   }
 
   // --set-initialized
@@ -252,6 +269,7 @@ function main() {
       plan_path: ac.plan_path || "",
       status: "active",
       updated_at: now,
+      epic_id: ac.epic_id || "",
     };
     if (existingIdx >= 0) {
       session.changes[existingIdx] = entry;
@@ -281,6 +299,7 @@ function main() {
         plan_path: ac.plan_path || "",
         status: "done",
         updated_at: now,
+        epic_id: ac.epic_id || "",
       };
       if (existingIdx >= 0) {
         session.changes[existingIdx] = entry;
@@ -300,6 +319,7 @@ function main() {
       title: "",
       created_at: "",
       plan_path: "",
+      epic_id: "",
     };
   }
 
@@ -327,6 +347,86 @@ function main() {
         session.history = session.history.slice(-n);
       }
     }
+  }
+
+  // ── Epic flags ──────────────────────────────────────────────────────────
+
+  // --new-epic: auto-snapshot old active_epic, then set new one
+  if (args["new-epic"]) {
+    session.active_epic = session.active_epic || {};
+
+    // Auto-snapshot: if there's an existing active_epic with an id, upsert into epics[]
+    if (session.active_epic.id) {
+      session.epics = session.epics || [];
+      const existingIdx = session.epics.findIndex(
+        (e) => e.id === session.active_epic.id
+      );
+      const snapshotEntry = {
+        id: session.active_epic.id,
+        title: session.active_epic.title || "",
+        epic_path: session.active_epic.epic_path || "",
+        status: "active",
+        updated_at: now,
+      };
+      if (existingIdx >= 0) {
+        session.epics[existingIdx] = snapshotEntry;
+      } else {
+        session.epics.push(snapshotEntry);
+      }
+    }
+
+    // Set new active_epic
+    session.active_epic.id = args["epic-id"];
+    session.active_epic.title = args["new-epic"];
+    session.active_epic.created_at = now;
+    session.active_epic.epic_path = "";
+  }
+
+  // --set-epic-path: set active_epic.epic_path
+  if (args["set-epic-path"]) {
+    session.active_epic = session.active_epic || {};
+    if (!session.active_epic.id && !args["new-epic"]) {
+      process.stderr.write(ERRORS.NO_ACTIVE_EPIC("--set-epic-path") + "\n");
+      process.exit(1);
+    }
+    session.active_epic.epic_path = args["set-epic-path"];
+  }
+
+  // --set-epic-status: update matching epics[] entry status
+  if (args["set-epic-status"]) {
+    session.active_epic = session.active_epic || {};
+    if (!session.active_epic.id && !args["new-epic"]) {
+      process.stderr.write(ERRORS.NO_ACTIVE_EPIC("--set-epic-status") + "\n");
+      process.exit(1);
+    }
+    session.epics = session.epics || [];
+    const epicIdx = session.epics.findIndex(
+      (e) => e.id === session.active_epic.id
+    );
+    if (epicIdx >= 0) {
+      session.epics[epicIdx].status = args["set-epic-status"];
+      session.epics[epicIdx].updated_at = now;
+    }
+  }
+
+  // --close-epic: set matching epics[] entry to done, clear active_epic
+  if (args["close-epic"]) {
+    session.epics = session.epics || [];
+    session.active_epic = session.active_epic || {};
+    const aeId = session.active_epic.id;
+    if (aeId) {
+      const epicIdx = session.epics.findIndex((e) => e.id === aeId);
+      if (epicIdx >= 0) {
+        session.epics[epicIdx].status = "done";
+        session.epics[epicIdx].updated_at = now;
+      }
+    }
+    session.active_epic = {
+      id: "",
+      title: "",
+      created_at: "",
+      epic_path: "",
+    };
   }
 
   // ── Write back atomically ─────────────────────────────────────────────

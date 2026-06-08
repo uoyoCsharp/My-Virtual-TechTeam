@@ -12,6 +12,7 @@ await build({
   entryPoints: [
     "sources/scripts/session-update.js",
     "sources/scripts/plan-update.js",
+    "sources/scripts/epic-update.js",
   ],
   outdir: "dist/scripts",
   outExtension: { ".js": ".cjs" },

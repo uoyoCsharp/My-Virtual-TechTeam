@@ -75,6 +75,33 @@ Emit the Plan Update summary block defined in the Output Format section. Include
   - If plan complete -> recommend `/mvt-cleanup` or starting a new change via `/mvt-analyze`.
   - If all remaining tasks are blocked -> recommend resolving the blocker (point at the `notes` of the blocked task).
 
+### Step 5: Epic Advancement Check
+
+After the Step 3 script reports `plan_status: "done"`:
+
+1. Read `session.active_change.epic_id` from session.yaml.
+2. If empty -> skip this step (standard change, no epic context).
+3. If non-empty -> prompt user:
+
+   > This change belongs to epic: **{epic_title}** ({epic_id}).
+   > All plan tasks are complete.
+   >
+   > - **(y)** Mark child done and advance to next sub-change
+   > - **(n)** Keep change open (continue review/test/sync)
+   > - **(defer)** Mark child done but don't advance yet
+
+4. On **y**:
+   - `epic-update.cjs --epic <active_epic.epic_path> --complete-child <active_change.id>`
+   - `session-update.cjs --skill mvt-update-plan --summary "..." --close-change`
+   - Display: next child info from epic-update stdout. Suggest `/mvt-analyze` to start the next sub-change.
+
+5. On **n**: No action. Display reminder: "Change remains open. Run `/mvt-update-plan <task> done` again later to close and advance."
+
+6. On **defer**:
+   - `epic-update.cjs --epic <active_epic.epic_path> --set-child-status <active_change.id> done`
+   - `session-update.cjs --skill mvt-update-plan --summary "..." --close-change`
+   - Display: "Child marked done, current_change unchanged."
+
 ## Edge Cases & Errors
 
 | Case | Handling |

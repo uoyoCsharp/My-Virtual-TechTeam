@@ -1,0 +1,145 @@
+name: mvt-decompose
+output: .claude/skills/mvt-decompose/SKILL.md
+
+frontmatter:
+  name: mvt-decompose
+  description: "Decompose epic-scale requirements into right-sized sub-changes with DAG dependencies. This skill should be used when the user has a large requirement that spans multiple independent capability domains and needs to be broken into manageable sub-changes."
+
+sections:
+  - type: inline
+    content: |
+      # MVT Decompose
+
+      ## Purpose
+
+      Decompose epic-scale requirements into 2-8 right-sized sub-changes with explicit DAG dependencies, producing `epic.yaml` (structured) and `epic.md` (narrative) as the foundation for sequential analyze-design-implement cycles.
+
+  - type: shared
+    source: sections/role-header.md
+    params:
+      role: Strategist
+      role_desc: "an Epic Decomposition Strategist"
+      decision_rules:
+        - rule: "Epic-scale input -> Decompose into 2-8 sub-changes with DAG"
+        - rule: "Input too small for epic -> Redirect to /mvt-analyze"
+        - rule: "> 8 children needed -> Warn and suggest scope narrowing"
+        - rule: "Ambiguous boundaries -> Ask user to clarify before decomposing"
+      boundaries:
+        - scope: "implement code"
+          skill: "/mvt-implement"
+        - scope: "design architecture"
+          skill: "/mvt-design"
+        - scope: "analyze non-epic requirements"
+          skill: "/mvt-analyze"
+
+  - type: shared
+    source: sections/activation-load-context.md
+
+  - type: shared
+    source: sections/activation-load-config.md
+
+  - type: shared
+    source: sections/output-language-constraint.md
+
+  - type: shared
+    source: sections/output-format-constraint.md
+
+  - type: shared
+    source: sections/activation-preflight.md
+    params:
+      checks:
+        - order: "1"
+          field: "session.initialized_at"
+          level: "WARN"
+          message: 'Session not initialized. Run `/mvt-init` first.'
+        - order: "2"
+          field: "projects[] in project-context.yaml"
+          level: "WARN"
+          message: 'Project not initialized. Run `/mvt-init` first.'
+        - order: "3"
+          field: "active_change.id"
+          level: "WARN"
+          message: 'An active change already exists. Decomposing will create a new epic alongside it. Continue? (y/n)'
+
+  - type: file
+    source: ./business.md
+
+  - type: inline
+    content: |
+      ## Artifact Structure
+
+      **epic.md** (narrative):
+      Read the document structure template from: `.ai-agents/skills/_templates/decompose-output.md`
+      If a custom version exists at `.ai-agents/skills/_templates/custom/decompose-output.md`, use the custom version instead.
+      The template defines section headings only. Generate content for each section based on decomposition results.
+      Write to: `.ai-agents/workspace/artifacts/{epic_id}/epic.md`
+
+      **epic.yaml** (structured):
+      Write to: `.ai-agents/workspace/artifacts/{epic_id}/epic.yaml`
+      Schema:
+      ```yaml
+      version: 1
+      epic_id: "{epic_id}"
+      title: "{epic_title}"
+      created_at: "{ISO timestamp}"
+      updated_at: "{ISO timestamp}"
+      status: in_progress
+      vision: >
+        {epic vision summary}
+      current_change: "{first_active_child_id}"
+      children:
+        - change_id: "{YYYYMMDD}-{slug}"
+          title: "{child title}"
+          scope: >
+            {child scope description}
+          status: active       # first child: active, rest: pending
+          depends_on: []       # DAG dependencies
+          project: ["default"] # project hint for multi-project workspaces
+          completed_at: null
+      ```
+
+      **epic-id format**: `epic-{YYYYMMDD}-{slug}` (e.g., `epic-20260608-ecommerce-platform`)
+
+  - type: inline
+    content: |
+      ## State Update
+
+      After completing the decomposition, run the session update script **exactly once**:
+
+      ```bash
+      node .ai-agents/scripts/session-update.cjs \
+        --skill mvt-decompose \
+        --summary "<concise one-line summary>" \
+        --new-epic "<epic_title>" \
+        --epic-id "<epic_id>" \
+        --set-epic-path ".ai-agents/workspace/artifacts/{epic_id}/epic.yaml"
+      ```
+
+      If the script exits with code 0, the state update was applied successfully.
+
+      ### Argument values
+
+      | Argument | Value source | Example |
+      |----------|-------------|---------|
+      | `--skill` | Always `mvt-decompose` | `mvt-decompose` |
+      | `--summary` | One-line description of the decomposition | `"Decomposed ecommerce platform into 5 sub-changes"` |
+      | `--new-epic` | The epic title | `"ecommerce platform"` |
+      | `--epic-id` | Generated epic id (epic-YYYYMMDD-slug) | `"epic-20260608-ecommerce-platform"` |
+      | `--set-epic-path` | Path to the written epic.yaml | `".ai-agents/workspace/artifacts/epic-20260608-ecommerce-platform/epic.yaml"` |
+
+      ### Failure handling
+
+      If the script fails (non-zero exit), do NOT abort the skill's main task. Continue execution and add a note that the session could not be updated.
+
+  - type: shared
+    source: sections/footer-next-steps.md
+    params:
+      current_skill: mvt-decompose
+      conditional_suggestions:
+        conditions:
+          - condition: "decomposition complete"
+            primary: "mvt-analyze"
+            primary_desc: "Start analyzing the first (active) sub-change"
+          - condition: "default"
+            primary: "mvt-analyze"
+            primary_desc: "Begin the analyze-design-implement cycle for the current child"

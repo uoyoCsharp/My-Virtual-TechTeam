@@ -2,10 +2,11 @@ session:
   initialized_at: 2026-06-05T08:12:06.624Z
   last_synced_at: 2026-06-08T02:44:34.674Z
 active_change:
-  id: 20260608-epic-scope-detection
-  title: Epic Decomposition Layer (OPT-2026-003)
-  created_at: 2026-06-08T10:57:12.299Z
-  plan_path: .ai-agents/workspace/artifacts/20260608-epic-scope-detection/plan.yaml
+  id: 20260608-regular
+  title: Regular change
+  created_at: 2026-06-08T14:23:35.213Z
+  plan_path: ""
+  epic_id: ""
 changes:
   - id: 20260605-multi-project-workflow-support
     title: 多项目工作流支持 (OPT-2026-002)
@@ -16,107 +17,114 @@ changes:
     title: Epic Decomposition Layer (OPT-2026-003)
     plan_path: .ai-agents/workspace/artifacts/20260608-epic-scope-detection/plan.yaml
     status: active
-    updated_at: 2026-06-08T10:57:12.299Z
+    updated_at: 2026-06-08T14:23:34.708Z
+    epic_id: ""
+  - id: 20260608-sub
+    title: Sub-change
+    plan_path: ""
+    status: done
+    updated_at: 2026-06-08T14:23:34.967Z
+    epic_id: epic-20260608-demo
+  - id: 20260608-regular
+    title: Regular change
+    plan_path: ""
+    status: active
+    updated_at: 2026-06-08T14:37:17.059Z
 history:
-  - skill: /mvt-implement
-    completed_at: 2026-06-06T13:57:44.192Z
-    summary: "t3 实现完成: activation-load-context.md 完全重写 (PS 解析 3-优先级, Mode A/B 知识加载,
-      ADR-1 单项目折叠), 步骤重编号, 155 测试全通过"
-    change_id: 20260605-multi-project-workflow-support
+  - skill: /mvt-decompose
+    completed_at: 2026-06-08T14:23:33.503Z
+    summary: test
+    change_id: 20260608-epic-scope-detection
+  - skill: /mvt-decompose
+    completed_at: 2026-06-08T14:23:33.720Z
+    summary: test
+    change_id: 20260608-epic-scope-detection
+  - skill: /mvt-decompose
+    completed_at: 2026-06-08T14:23:33.849Z
+    summary: test
+    change_id: 20260608-epic-scope-detection
+  - skill: /mvt-decompose
+    completed_at: 2026-06-08T14:23:33.970Z
+    summary: test
+    change_id: 20260608-epic-scope-detection
+  - skill: /mvt-status
+    completed_at: 2026-06-08T14:23:34.089Z
+    summary: test
+    change_id: 20260608-epic-scope-detection
   - skill: /mvt-update-plan
-    completed_at: 2026-06-06T14:02:09.732Z
-    summary: 标记 t3 完成，计划推进到 t4-plan-skills (3/8)
-    change_id: 20260605-multi-project-workflow-support
-  - skill: /mvt-implement
-    completed_at: 2026-06-06T14:09:35.091Z
-    summary: "t4 实现完成: 4 个计划相关技能 business.md 更新 (current_tasks, --projects,
-      project_switch, stale deliverables), 155 测试全通过"
-    change_id: 20260605-multi-project-workflow-support
+    completed_at: 2026-06-08T14:23:34.207Z
+    summary: test
+    change_id: 20260608-epic-scope-detection
+  - skill: /mvt-status
+    completed_at: 2026-06-08T14:23:34.326Z
+    summary: test
+    change_id: 20260608-epic-scope-detection
   - skill: /mvt-update-plan
-    completed_at: 2026-06-06T14:10:47.656Z
-    summary: 标记 t4 完成，计划推进到 t5-context-and-routing (4/8)
-    change_id: 20260605-multi-project-workflow-support
-  - skill: /mvt-implement
-    completed_at: 2026-06-06T14:20:11.553Z
-    summary: "t5 实现完成: mvt-manage-context 4象限路由, mvt-sync-context 4级回退链,
-      硬编码知识路径全部移除, 155 测试全通过"
-    change_id: 20260605-multi-project-workflow-support
+    completed_at: 2026-06-08T14:23:34.442Z
+    summary: test
+    change_id: 20260608-epic-scope-detection
+  - skill: /mvt-analyze
+    completed_at: 2026-06-08T14:23:34.708Z
+    summary: test
+    change_id: 20260608-sub
+  - skill: /mvt-analyze
+    completed_at: 2026-06-08T14:23:34.831Z
+    summary: test
+    change_id: 20260608-sub
   - skill: /mvt-update-plan
-    completed_at: 2026-06-06T14:21:00.155Z
-    summary: 标记 t5 完成，计划推进到 t6-init-and-awareness (5/8)
-    change_id: 20260605-multi-project-workflow-support
-  - skill: /mvt-implement
-    completed_at: 2026-06-06T14:29:05.366Z
-    summary: "Implemented t6-init-and-awareness: updated mvt-init, mvt-analyze-code,
-      mvt-check-context for project-awareness"
-    change_id: 20260605-multi-project-workflow-support
-  - skill: /mvt-implement
-    completed_at: 2026-06-06T14:56:28.692Z
-    summary: "Implemented t7-mode-b-skills: added Mode B on-demand project
-      identification + knowledge loading to all 5 non-plan skills"
-    change_id: 20260605-multi-project-workflow-support
-  - skill: /mvt-implement
-    completed_at: 2026-06-06T15:04:34.440Z
-    summary: "Implemented t8-deliverables: ADR-5 deliverables handoff
-      (plan-update.js args + mvt-implement interaction). All 8 tasks complete,
-      plan done."
-    change_id: 20260605-multi-project-workflow-support
-  - skill: /mvt-sync-context
-    completed_at: 2026-06-08T02:29:18.094Z
-    summary: Synced 11 knowledge items from 20260605-multi-project-workflow-support
-      to project-context.md
-    change_id: ""
-  - skill: /mvt-sync-context
-    completed_at: 2026-06-08T02:36:09.610Z
-    summary: No new completed changes since last sync; nothing to sync.
-    change_id: ""
-  - skill: /mvt-sync-context
-    completed_at: 2026-06-08T02:44:34.674Z
-    summary: "Re-synced change 20260605-multi-project-workflow-support: added 8 Core
-      Terms, 6 Business Rules, Scripts section, source_paths to
-      project-context.yaml"
-    change_id: ""
-  - skill: /mvt-cleanup
-    completed_at: 2026-06-08T02:46:56.677Z
-    summary: "Archived completed change 20260605-multi-project-workflow-support to
-      _archived/: saved ~25k tokens"
+    completed_at: 2026-06-08T14:23:34.967Z
+    summary: test
+    change_id: 20260608-sub
+  - skill: /mvt-update-plan
+    completed_at: 2026-06-08T14:23:35.096Z
+    summary: test
     change_id: ""
   - skill: /mvt-analyze
-    completed_at: 2026-06-08T07:01:04.757Z
-    summary: "Analyzed epic-as-change problem in mvt-analyze: 3 solution options
-      with Option A (Three-Tier Classification) recommended"
-    change_id: 20260608-epic-scope-detection
-  - skill: /mvt-bug-detect
-    completed_at: 2026-06-08T07:42:55.216Z
-    summary: "Confirmed Step 3 path resolution bug in activation-load-context.md:
-      ambiguous {source} placeholder causes silent knowledge file skip across
-      all 23 skills"
-    change_id: 20260608-epic-scope-detection
-  - skill: /mvt-analyze
-    completed_at: 2026-06-08T09:48:19.309Z
-    summary: "Analyzed OPT-2026-003 Epic Decomposition Layer proposal: extracted 12
-      FRs, 11 BRs, 9 domain concepts, resolved 4/5 ambiguities (AQ-4 epic
-      advancement TBD)"
-    change_id: 20260608-epic-scope-detection
-  - skill: /mvt-analyze
-    completed_at: 2026-06-08T10:20:23.036Z
-    summary: "Resolved AQ-4: epic advancement via plan-done trigger in
-      mvt-update-plan (y/n/defer), close without archive, cleanup simplified to
-      archiving"
-    change_id: 20260608-epic-scope-detection
-  - skill: /mvt-analyze
-    completed_at: 2026-06-08T10:23:45.089Z
-    summary: "Updated OPT-2026-003 to v2.1: synced AQ-1~5 resolutions (plan-done
-      trigger, multi-flag add-child, no planning status, epic- prefix, standard
-      change-id)"
-    change_id: 20260608-epic-scope-detection
-  - skill: /mvt-design
-    completed_at: 2026-06-08T10:31:13.989Z
-    summary: "Designed Epic Decomposition Layer: 7 modules, 4 ADRs (9-12), 18 files
-      across data foundation, deterministic script, skill entry, detection gate,
-      advancement trigger, epic-pending alignment, and archiving"
-    change_id: 20260608-epic-scope-detection
-  - skill: /mvt-plan-dev
-    completed_at: 2026-06-08T10:57:12.299Z
-    summary: "生成 Epic 分解层 plan.yaml: 8 任务映射 7 模块+测试, t1/t2 可并行"
-    change_id: 20260608-epic-scope-detection
+    completed_at: 2026-06-08T14:23:35.213Z
+    summary: test
+    change_id: 20260608-regular
+  - skill: /mvt-decompose
+    completed_at: 2026-06-08T14:23:35.337Z
+    summary: test
+    change_id: 20260608-regular
+  - skill: /test
+    completed_at: 2026-06-08T14:26:01.193Z
+    summary: test
+    change_id: 20260608-regular
+  - skill: /test
+    completed_at: 2026-06-08T14:26:29.065Z
+    summary: test
+    change_id: 20260608-regular
+  - skill: /mvt-test
+    completed_at: 2026-06-08T14:30:59.322Z
+    summary: "t8 完成: epic-update 46 测试 + session-update 17 回归测试, 全部 232 测试通过"
+    change_id: 20260608-regular
+  - skill: /mvt-review
+    completed_at: 2026-06-08T14:32:37.899Z
+    summary: 审核 Epic 相关 business.md prompt，发现 0 个 Critical、4 个 Warning、3 个 Suggestion
+    change_id: 20260608-regular
+  - skill: /mvt-update-plan
+    completed_at: 2026-06-08T14:37:17.059Z
+    summary: 标记 t8-tests 完成，计划全部完成 (8/8 done)
+    change_id: 20260608-regular
+  - skill: /mvt-fix
+    completed_at: 2026-06-08T14:57:48.813Z
+    summary: "修复 review W1-W4 + S2(升级): batch archive 检测规则、project 默认值、resume epic
+      路径校验、emoji 冲突、epic-child 误触 re-decompose"
+    change_id: 20260608-regular
+active_epic:
+  id: epic-20260608-my
+  title: My Epic
+  created_at: 2026-06-08T14:23:35.337Z
+  epic_path: C:/Program Files/Git/some/path
+epics:
+  - id: epic-20260608-my-epic
+    title: My Epic
+    epic_path: ""
+    status: active
+    updated_at: 2026-06-08T14:23:33.720Z
+  - id: epic-20260608-new
+    title: New Epic
+    epic_path: ""
+    status: active
+    updated_at: 2026-06-08T14:23:33.849Z

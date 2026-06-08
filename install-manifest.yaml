@@ -13,6 +13,8 @@ generated:
     source: "bundle:sources/scripts/session-update.js"
   - pattern: ".ai-agents/scripts/plan-update.cjs"
     source: "bundle:sources/scripts/plan-update.js"
+  - pattern: ".ai-agents/scripts/epic-update.cjs"
+    source: "bundle:sources/scripts/epic-update.js"
 
 create_once:
   - path: ".ai-agents/config.yaml"
