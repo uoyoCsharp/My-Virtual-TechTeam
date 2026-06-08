@@ -83,7 +83,7 @@ sections:
       current_skill: mvt-analyze
       conditional_suggestions:
         conditions:
-          - condition: "user chose quick path in Step 2.5"
+          - condition: "user chose quick path in Step 3 (Quick Path Detection)"
             primary: "mvt-quick-dev"
             primary_desc: "Implement this simple change quickly"
           - condition: "default"

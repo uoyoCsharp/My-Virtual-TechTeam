@@ -3,42 +3,21 @@ session:
   last_synced_at: 2026-06-08T02:44:34.674Z
 active_change:
   id: 20260608-epic-scope-detection
-  title: Epic Scope Detection for mvt-analyze
-  created_at: 2026-06-08T07:01:04.757Z
-  plan_path: ""
+  title: Epic Decomposition Layer (OPT-2026-003)
+  created_at: 2026-06-08T10:57:12.299Z
+  plan_path: .ai-agents/workspace/artifacts/20260608-epic-scope-detection/plan.yaml
 changes:
   - id: 20260605-multi-project-workflow-support
     title: 多项目工作流支持 (OPT-2026-002)
     plan_path: .ai-agents/workspace/artifacts/20260605-multi-project-workflow-support/plan.yaml
     status: done
     updated_at: 2026-06-06T15:04:34.440Z
+  - id: 20260608-epic-scope-detection
+    title: Epic Decomposition Layer (OPT-2026-003)
+    plan_path: .ai-agents/workspace/artifacts/20260608-epic-scope-detection/plan.yaml
+    status: active
+    updated_at: 2026-06-08T10:57:12.299Z
 history:
-  - skill: /mvt-plan-dev
-    completed_at: 2026-06-06T13:09:44.156Z
-    summary: Decomposed multi-project workflow change into 8 tasks covering
-      ADR-2/3/4/5/6/7/8, 2x2 knowledge model, per-project DAG, and deliverables
-      handoff
-    change_id: 20260605-multi-project-workflow-support
-  - skill: /mvt-implement
-    completed_at: 2026-06-06T13:26:41.698Z
-    summary: "Implemented t1: registry knowledge restructured to project-keyed maps
-      (ADR-2/3), mergeRegistry rewritten map-aware (ADR-6), 21 tests passing"
-    change_id: 20260605-multi-project-workflow-support
-  - skill: /mvt-update-plan
-    completed_at: 2026-06-06T13:29:47.257Z
-    summary: Marked t1-registry-restructure as done; plan advanced to
-      t2-plan-attribution (1/8 complete)
-    change_id: 20260605-multi-project-workflow-support
-  - skill: /mvt-implement
-    completed_at: 2026-06-06T13:49:55.692Z
-    summary: "t2 实现完成: plan-update.js ADR-4/8 (current_tasks, --projects,
-      per-project in_progress, resolvedIds, project_switch, findCycle
-      per-project), project-context.yaml source_paths, 27 测试全通过, plan.yaml 已迁移"
-    change_id: 20260605-multi-project-workflow-support
-  - skill: /mvt-update-plan
-    completed_at: 2026-06-06T13:50:34.044Z
-    summary: 标记 t2 完成，计划推进到 t3-activation-section (2/8)
-    change_id: 20260605-multi-project-workflow-support
   - skill: /mvt-implement
     completed_at: 2026-06-06T13:57:44.192Z
     summary: "t3 实现完成: activation-load-context.md 完全重写 (PS 解析 3-优先级, Mode A/B 知识加载,
@@ -112,4 +91,32 @@ history:
     summary: "Confirmed Step 3 path resolution bug in activation-load-context.md:
       ambiguous {source} placeholder causes silent knowledge file skip across
       all 23 skills"
+    change_id: 20260608-epic-scope-detection
+  - skill: /mvt-analyze
+    completed_at: 2026-06-08T09:48:19.309Z
+    summary: "Analyzed OPT-2026-003 Epic Decomposition Layer proposal: extracted 12
+      FRs, 11 BRs, 9 domain concepts, resolved 4/5 ambiguities (AQ-4 epic
+      advancement TBD)"
+    change_id: 20260608-epic-scope-detection
+  - skill: /mvt-analyze
+    completed_at: 2026-06-08T10:20:23.036Z
+    summary: "Resolved AQ-4: epic advancement via plan-done trigger in
+      mvt-update-plan (y/n/defer), close without archive, cleanup simplified to
+      archiving"
+    change_id: 20260608-epic-scope-detection
+  - skill: /mvt-analyze
+    completed_at: 2026-06-08T10:23:45.089Z
+    summary: "Updated OPT-2026-003 to v2.1: synced AQ-1~5 resolutions (plan-done
+      trigger, multi-flag add-child, no planning status, epic- prefix, standard
+      change-id)"
+    change_id: 20260608-epic-scope-detection
+  - skill: /mvt-design
+    completed_at: 2026-06-08T10:31:13.989Z
+    summary: "Designed Epic Decomposition Layer: 7 modules, 4 ADRs (9-12), 18 files
+      across data foundation, deterministic script, skill entry, detection gate,
+      advancement trigger, epic-pending alignment, and archiving"
+    change_id: 20260608-epic-scope-detection
+  - skill: /mvt-plan-dev
+    completed_at: 2026-06-08T10:57:12.299Z
+    summary: "生成 Epic 分解层 plan.yaml: 8 任务映射 7 模块+测试, t1/t2 可并行"
     change_id: 20260608-epic-scope-detection

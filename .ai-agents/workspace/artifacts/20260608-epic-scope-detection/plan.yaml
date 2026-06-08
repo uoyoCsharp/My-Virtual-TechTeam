@@ -1,0 +1,238 @@
+version: 1
+change_id: "20260608-epic-scope-detection"
+title: "Epic Decomposition Layer (OPT-2026-003)"
+created_at: "2026-06-08T18:55:40"
+updated_at: "2026-06-08T18:55:40"
+status: in_progress
+current_tasks:
+  default: "t1-data-foundation"
+
+tasks:
+  - id: "t1-data-foundation"
+    title: "session.yaml schema + session-update.js epic params + combo validation"
+    status: in_progress
+    completed_at: null
+    depends_on: []
+    project:
+      - default
+    skill_hint: mvt-implement
+    artifacts:
+      files:
+        - "sources/defaults/session.yaml"
+        - "sources/scripts/session-update.js"
+    notes: >
+      Module 1 (design.md). Add active_epic{id,title,created_at,epic_path}, epics[],
+      and active_change.epic_id to session.yaml. Add 5 flat flags to session-update.js:
+      --new-epic (+--epic-id), --set-epic-path, --set-epic-status, --close-epic, and
+      extend --new-change with optional --epic-id. Mirror the existing --new-change /
+      --change-id branch pattern in parseArgs/main(), including auto-snapshot of old
+      active_epic into epics[]. Add the 4 combo-validation rules (§9.1.1, ADR-10) as a
+      post-parseArgs step with non-zero exit. Backward compat: old session.yaml without
+      epic fields reads as "no epic".
+    acceptance:
+      - "session.yaml has active_epic, epics[], and active_change.epic_id with documented defaults"
+      - "--new-epic without --epic-id exits non-zero; --close-epic with --new-epic exits non-zero"
+      - "--new-epic snapshots a prior non-empty active_epic into epics[]"
+      - "--new-change --epic-id writes epic_id into active_change and the history entry"
+      - "Old-format session.yaml (no epic fields) is handled without error"
+      - "tsc clean; existing 155 tests pass"
+
+  - id: "t2-epic-update-script"
+    title: "epic-update.js deterministic state script + build wiring"
+    status: pending
+    completed_at: null
+    depends_on: []
+    project:
+      - default
+    skill_hint: mvt-implement
+    artifacts:
+      files:
+        - "sources/scripts/epic-update.js"
+        - "build-scripts.js"
+        - "install-manifest.yaml"
+    notes: >
+      Module 2 (design.md, ADR-9). New standalone script mirroring plan-update.js
+      structure/output protocol (single-line JSON on stdout exit 0, plain-text stderr
+      exit 1, atomic temp+rename, node:fs + yaml). Ops: --complete-child (set done +
+      completed_at, recompute current_change by FIRST ready pending child in array order
+      = deterministic tie-break; all done/abandoned -> epic.status=done, current_change=""),
+      --set-child-status, --switch-active (atomic demote-old + promote-target + repoint,
+      validates target deps), --add-child (multi-flag), --validate (read-only). Validation
+      rules: unique change_id, valid depends_on refs, DAG (no cycles), current_change points
+      to pending/active, at-most-one active, status consistency. Add epic-update.js to
+      build-scripts.js entryPoints and the epic-update.cjs pattern to install-manifest.yaml
+      generated section.
+    acceptance:
+      - "epic-update.cjs --validate exits 0 on valid epic.yaml, 1 with error list on invalid"
+      - "--complete-child advances current_change to first ready pending child by array order"
+      - "--switch-active demotes old active to pending, promotes target, repoints current_change atomically"
+      - "--switch-active rejects a target with unresolved depends_on (exit 1)"
+      - "Cycle / dangling depends_on / multiple-active are rejected by validation"
+      - "build-scripts.js emits dist/scripts/epic-update.cjs; install-manifest has the generated pattern"
+      - "tsc clean; existing 155 tests pass"
+
+  - id: "t3-decompose-skill"
+    title: "mvt-decompose skill (manifest + business + template) + registry"
+    status: pending
+    completed_at: null
+    depends_on: ["t1-data-foundation", "t2-epic-update-script"]
+    project:
+      - default
+    skill_hint: mvt-implement
+    artifacts:
+      files:
+        - "sources/skills/mvt-decompose/manifest.yaml"
+        - "sources/skills/mvt-decompose/business.md"
+        - "sources/templates/decompose-output/manifest.yaml"
+        - "sources/templates/decompose-output/body.md"
+        - "registry.yaml"
+    notes: >
+      Module 3 (design.md, §6). New skill: manifest modeled on mvt-analyze/manifest.yaml
+      (role-header Strategist/analyst, shared activation/config/constraint sections,
+      business.md, session-update, footer-next-steps). business.md = 7-step flow (load,
+      lightweight sanity gate, epic analysis, decompose 2-8 children with DAG, write
+      epic.md+epic.yaml LLM-self-validated + optional --validate, session-update --new-epic,
+      output table+mermaid). Template is DIRECTORY-assembled (manifest.yaml + body.md,
+      mirrors sources/templates/analyze-output/), NOT a flat .md; body.md has 6 sections
+      (Vision, Scope & Out of Scope, Cross-cutting Concerns, Child Stories, Dependency Map,
+      Open Questions). Register mvt-decompose (category: workflow) in registry.yaml via the
+      reconcile-merge mechanism. epic-id format: epic-{YYYYMMDD}-{slug} (ADR-7).
+    acceptance:
+      - "manifest.yaml builds to .claude/skills/mvt-decompose/SKILL.md without error"
+      - "decompose-output template builds to .ai-agents/skills/_templates/decompose-output.md via build:templates"
+      - "registry.yaml lists mvt-decompose (category: workflow) and user custom skills are preserved"
+      - "business.md generates epic-id with epic- prefix and writes epic.yaml + epic.md"
+      - "tsc clean; existing 155 tests pass"
+
+  - id: "t4-analyze-gate"
+    title: "mvt-analyze Step 3 Epic Detection + epic-child mode + step renumbering"
+    status: pending
+    completed_at: null
+    depends_on: ["t1-data-foundation", "t3-decompose-skill"]
+    project:
+      - default
+    skill_hint: mvt-implement
+    artifacts:
+      files:
+        - "sources/skills/mvt-analyze/business.md"
+        - "sources/skills/mvt-analyze/manifest.yaml"
+    notes: >
+      Module 4 (design.md, §7, ADR-3/11). Insert new integer Step 3 "Assess Scale
+      (Epic Detection)" before existing Quick Path Detection; renumber old Steps 3-6 to
+      4-7. Trigger = any strong signal OR (strong + 2 weak); branches y/n/show-signals,
+      y routes to /mvt-decompose without writing analysis.md. Add epic-child mode
+      (active_epic non-empty, active_change empty): scenarios A (empty msg -> use
+      current_change scope), B (supplement), C (different child -> arbitration using
+      epic-update.cjs --switch-active, NOT bare --set-child-status). Update
+      manifest.yaml conditional_suggestions with epic branch and shift step refs 3-6 -> 4-7.
+    acceptance:
+      - "business.md Step 3 is Epic Detection; former Steps 3-6 are now 4-7 with no dangling refs"
+      - "Epic-hit y path routes to /mvt-decompose and does not write analysis.md"
+      - "Epic-child scenario C reorder calls --switch-active (not --set-child-status active)"
+      - "manifest.yaml conditional_suggestions and step references are updated"
+      - "tsc clean; existing 155 tests pass"
+
+  - id: "t5-advancement-trigger"
+    title: "mvt-update-plan Step 5 Epic Advancement Check"
+    status: pending
+    completed_at: null
+    depends_on: ["t1-data-foundation", "t2-epic-update-script"]
+    project:
+      - default
+    skill_hint: mvt-implement
+    artifacts:
+      files:
+        - "sources/skills/mvt-update-plan/business.md"
+    notes: >
+      Module 5 (design.md, ADR-12). Append new Step 5 "Epic Advancement Check" after
+      existing Step 4. Read plan-update.cjs stdout: if plan_status == "done" AND
+      active_change.epic_id non-empty -> prompt y/n/defer. y: epic-update.cjs
+      --complete-child + session-update.cjs --close-change (close not archive), show next
+      child. n: no advancement. defer: epic-update.cjs --set-child-status <id> done +
+      --close-change, current_change unchanged. plan-update.cjs itself is NOT modified
+      (BR-13); all epic awareness lives in the skill layer. Steps 1-4 untouched.
+    acceptance:
+      - "Step 5 only triggers when plan_status done AND active_change.epic_id non-empty"
+      - "y path calls epic-update --complete-child then session-update --close-change"
+      - "defer path marks child done but leaves current_change unchanged"
+      - "plan-update.cjs source is unchanged"
+      - "tsc clean; existing 155 tests pass"
+
+  - id: "t6-epic-pending-alignment"
+    title: "mvt-status / mvt-resume / mvt-help epic-pending state alignment"
+    status: pending
+    completed_at: null
+    depends_on: ["t1-data-foundation", "t2-epic-update-script"]
+    project:
+      - default
+    skill_hint: mvt-implement
+    artifacts:
+      files:
+        - "sources/skills/mvt-status/business.md"
+        - "sources/skills/mvt-resume/business.md"
+        - "sources/skills/mvt-help/business.md"
+    notes: >
+      Module 6 (design.md, §4.4, §8.1). epic-pending = active_epic.id non-empty AND
+      active_change.id empty AND epic.yaml.status != done. mvt-status: add epic progress
+      section (n/N done + child table with status/depends_on; internal plan progress only
+      for the single active child; epic-pending shows "next sub-change ... run /mvt-analyze").
+      mvt-resume: when active_change empty but active_epic non-empty, fall back to reading
+      epic.yaml via epic_path, current_change child is the resume target. mvt-help: add
+      epic-pending row to the next-skill decision table + update workflow mermaid with epic
+      dimension.
+    acceptance:
+      - "mvt-status renders epic n/N table and shows active child's plan progress only"
+      - "mvt-resume in epic-pending state reads epic.yaml and points to current_change child"
+      - "mvt-help decision table includes epic-pending -> /mvt-analyze and diagram has epic path"
+      - "tsc clean; existing 155 tests pass"
+
+  - id: "t7-cleanup-epic-aware"
+    title: "mvt-cleanup epic integrity check + batch archive (no advancement)"
+    status: pending
+    completed_at: null
+    depends_on: ["t1-data-foundation", "t2-epic-update-script"]
+    project:
+      - default
+    skill_hint: mvt-implement
+    artifacts:
+      files:
+        - "sources/skills/mvt-cleanup/business.md"
+    notes: >
+      Module 7 (design.md, ADR-8, BR-14). Two additions, NO advancement trigger.
+      (1) Epic integrity check: when a cleanup candidate change has non-empty epic_id and
+      its parent epic status != done, warn and default to n (skip). (2) Batch archive
+      suggestion: when archiving a done epic, read epic.yaml.children and offer
+      "epic only / all children / selective". Archive = abandon references; no post-archive
+      epic_id integrity maintenance. Skip _archived/ as before.
+    acceptance:
+      - "Archiving a change whose parent epic is not done emits a warning defaulting to n"
+      - "Archiving a done epic offers epic-only / all-children / selective options"
+      - "No epic advancement logic is added to cleanup (advancement stays in mvt-update-plan)"
+      - "tsc clean; existing 155 tests pass"
+
+  - id: "t8-tests"
+    title: "epic-update unit tests + session-update epic regression"
+    status: pending
+    completed_at: null
+    depends_on: ["t1-data-foundation", "t2-epic-update-script"]
+    project:
+      - default
+    skill_hint: mvt-test
+    artifacts:
+      files:
+        - "test/epic-update.test.ts"
+    notes: >
+      Build-order step 8 (design.md Testing Strategy). New test/epic-update.test.ts
+      (~30-40 cases): --complete-child (normal, last-child auto-done, DAG advance,
+      array-order tie-break, invalid id), --set-child-status, --switch-active (demote+
+      promote+repoint, reject unresolved deps, no-op when already active), --add-child
+      (valid, duplicate id, invalid depends_on), --validate (valid, missing fields, cycle,
+      dangling, multiple active), output protocol (JSON stdout / stderr / exit codes),
+      edge cases. Extend the existing session-update test file with epic-flag regression:
+      --new-epic, --close-epic, --set-epic-path/status, all 4 combo rules,
+      --new-change --epic-id, backward-compat old session.yaml.
+    acceptance:
+      - "epic-update.test.ts covers all 4 subcommands + validate + output protocol + tie-break"
+      - "session-update regression covers 5 epic flags + 4 combo rules + backward compat"
+      - "All existing 155 tests remain green; total suite passes"
+      - "tsc clean"

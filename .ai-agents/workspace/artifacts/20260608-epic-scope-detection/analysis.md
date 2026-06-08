@@ -1,17 +1,21 @@
-# Requirements Analysis: Epic Scope Detection for mvt-analyze
+# Requirements Analysis: Epic Decomposition Layer (OPT-2026-003)
 
 ## Feature Overview
 
-The MVTT framework currently has a gap in its workflow: when users input large-scale, vague, or strategic requirements (e.g., "build an e-commerce system", "implement based on this design manual"), `/mvt-analyze` treats them as a single actionable change. This propagates through the entire pipeline (`/mvt-design` → `/mvt-plan-dev` → `/mvt-implement`), causing scope explosion, unclear task boundaries, and chaotic development. The proposed improvement introduces an "epic detection gate" that recognizes when a requirement is at initiative-level granularity and guides the user to decompose it into focused, executable changes before creating any `active_change`.
+Introduce a two-tier requirement hierarchy -- **Epic -> Change** -- into the MVTT framework. When users input large-scale requirements (e.g., "build an e-commerce system", "implement based on this design manual"), the current single-layer `change` model forces the entire epic into one `analysis.md`, one `active_change`, and one `plan.yaml` (capped at 3-10 tasks), causing scope explosion and chaotic development. The proposed solution adds an Epic layer above Change, with a new `mvt-decompose` skill as the dedicated entry point for large requirements, and an "upward detection gate" in `mvt-analyze` that routes epic-level input to `mvt-decompose` (symmetric with the existing downward quick-path gate).
 
 ## Actors
 
 | Actor | Role |
 |-------|------|
-| **User (Developer)** | Inputs requirements at various granularity levels: task, feature, epic, initiative |
-| **Analyst (mvt-analyze)** | Requirements analysis skill — needs to distinguish change levels and route accordingly |
-| **Architect (mvt-design)** | Downstream consumer — needs well-scoped requirements to produce clean designs |
-| **Planner (mvt-plan-dev)** | Downstream consumer — limited to 3-10 tasks per change; epic-level input forces phasing |
+| **User (Developer)** | Inputs requirements at various granularity: task, feature, epic, initiative |
+| **Analyst (mvt-analyze)** | Requirements analysis skill -- gains epic detection gate (upward) alongside existing quick-path gate (downward) |
+| **Strategist (mvt-decompose)** | New skill for epic-level decomposition; agent reuses `analyst` role |
+| **Architect (mvt-design, mvt-plan-dev)** | Downstream consumer -- receives well-scoped sub-changes within the 3-10 task sweet spot |
+| **Developer (mvt-implement)** | Downstream consumer -- implements individual sub-changes |
+| **Conductor (mvt-status, mvt-resume, mvt-help, mvt-cleanup)** | Session/state management skills that must be aware of epic-pending state |
+| **epic-update.cjs** | New deterministic script for epic.yaml state mutations (mirrors plan-update.cjs) |
+| **session-update.cjs** | Existing script extended with epic-related parameters |
 
 ## Requirements
 
@@ -19,124 +23,94 @@ The MVTT framework currently has a gap in its workflow: when users input large-s
 
 | ID | Requirement | Priority |
 |----|-------------|----------|
-| FR-1 | Detect when input requirement is at "epic/initiative" level vs. "feature/change" level | Must |
-| FR-2 | When epic detected, guide user through scope decomposition before creating `active_change` | Must |
-| FR-3 | Preserve the existing quick-path (Step 3) for truly simple changes | Must |
-| FR-4 | Preserve the existing standard analysis flow for well-scoped feature-level requirements | Must |
-| FR-5 | The decomposition output should produce concrete, independently-actionable change descriptions | Must |
-| FR-6 | Each decomposed sub-change should be able to go through the normal analyze → design → plan → implement flow | Should |
-| FR-7 | Allow the user to select a starting sub-change and immediately proceed with analysis on it | Should |
-| FR-8 | Track decomposed sub-changes in a lightweight scope document for reference | Nice to have |
+| FR-1 | `mvt-analyze` Step 3 detects epic-level input via strong/weak signal heuristics and offers `/mvt-decompose` | Must |
+| FR-2 | `mvt-decompose` performs epic-level analysis, decomposes into 2-8 sub-changes with DAG dependencies, writes `epic.yaml` + `epic.md` | Must |
+| FR-3 | Each sub-change goes through the standard `analyze -> design -> plan -> implement` pipeline independently | Must |
+| FR-4 | Epic state persisted in `epic.yaml` (children, status, current_change pointer, depends_on DAG) | Must |
+| FR-5 | `session.yaml` extended with `active_epic`, `epics[]`, and `active_change.epic_id` | Must |
+| FR-6 | `epic-update.cjs` handles post-creation state mutations: `--complete-child`, `--set-child-status`, `--add-child`, `--validate` | Must |
+| FR-7 | `session-update.cjs` extended with `--new-epic`, `--epic-id`, `--set-epic-path`, `--set-epic-status`, `--close-epic` | Must |
+| FR-8 | epic-child mode in `mvt-analyze`: when `active_epic` exists and no `active_change`, use `current_change` scope as input | Must |
+| FR-9 | epic-pending state (active_epic non-empty, active_change empty) handled by `mvt-status`, `mvt-resume`, `mvt-help` | Must |
+| FR-10 | `mvt-cleanup` triggers epic advancement when archiving a completed sub-change | Must |
+| FR-11 | Epic archive suggests batch archiving all child changes; archive = abandon references (ADR-8) | Should |
+| FR-12 | `mvt-status` displays epic progress: n/N done table with per-child status, depends_on, and active child's internal plan progress | Should |
 
-### Business Rules
+### Non-Functional Requirements
 
-| Rule | Description |
-|------|-------------|
-| BR-1 | `active_change` must never represent an epic/initiative — only concrete feature-level work |
-| BR-2 | Epic detection must happen before creating any `active_change` in Step 6 |
-| BR-3 | Decomposition is iterative: user can always refine further if a sub-change is still too large |
-| BR-4 | The existing quick-path detection (Step 3) is preserved and takes priority over epic detection |
-| BR-5 | A scope document (if written) must not be confused with an analysis artifact — different file and purpose |
+| ID | Requirement |
+|----|-------------|
+| NFR-1 | Backward compatible: existing changes without `epic_id` treated as "no epic" |
+| NFR-2 | Existing 155+ tests remain green; new epic-related tests added |
+| NFR-3 | `mvt-sync-context` requires zero changes (transparent to epic layer) |
+| NFR-4 | Single-phase delivery (no phasing) -- epic state persistence is required for core value |
 
 ## Domain Concepts
 
 | Concept | Definition |
 |---------|------------|
-| **Change** | A unit of work that can be analyzed, designed, and implemented in one linear pass. Typically maps to a feature, a module addition, or a refactoring slice. The smallest granularity that `/mvt-analyze` creates as `active_change`. |
-| **Epic** | A large, multi-feature initiative that cannot be completed in a single analyze → design → implement pass. Must be decomposed into multiple Changes first. Examples: "build e-commerce system", "migrate to microservices". |
-| **Epic Detection Gate** | A new decision point in `/mvt-analyze` that identifies epic-level input and triggers decomposition instead of change creation. |
-| **Scope Document** | A lightweight artifact (not `analysis.md`) that records the decomposition of an epic into planned sub-changes. Each sub-change has a title, a one-line description, and a status (planned/in-progress/done). |
-| **Scope Heuristics** | Rules of thumb used to detect epic-level input: vagueness score, implied sub-systems count, estimated file count, number of distinct actors, presence of multi-phase language. |
-| **Three-Tier Classification** | The proposed expansion of Step 3's binary decision (quick vs. standard) into a three-way split: Quick / Standard / Epic. |
+| **Epic** | A top-level requirement entity above Change. Represents a large initiative that must be decomposed into multiple sub-changes. Has its own lifecycle (`in_progress`, `done`, `abandoned`), artifacts (`epic.yaml`, `epic.md`), and identity (`epic-{YYYYMMDD}-{slug}`). NOT a special type of change (ADR-1). |
+| **Sub-Change** | A standard change that belongs to an epic. Lives at `artifacts/{change-id}/` (flat, not nested -- ADR-4). Linked to parent epic via `active_change.epic_id`. Uses standard `{YYYYMMDD}-{slug}` id format. |
+| **epic.yaml** | Structured epic metadata: children list with change_id/title/status/depends_on/scope/project, current_change pointer, DAG dependencies. Initial draft by LLM (mvt-decompose), subsequent state mutations by `epic-update.cjs` (ADR-2). |
+| **epic.md** | Narrative epic analysis document: Vision, Scope, Cross-cutting Concerns, Child Stories, Dependency Map, Open Questions. Template defined by `decompose-output.md`. |
+| **Epic Detection Gate** | New Step 3 in `mvt-analyze` (integer step, before Quick Path). Triggers on strong signals (whole system/platform scope, design manual reference, multiple independent capability domains) or strong+weak signal combinations. Offers `/mvt-decompose` with reversible user confirmation (y/n/show-signals). |
+| **epic-child Mode** | When `active_epic` exists and `active_change.id` is empty, `mvt-analyze` enters epic-child mode: reads `epic.yaml.current_change` scope as requirement input, creates change with `epic_id` back-reference. Handles out-of-order requests via dependency-aware arbitration. |
+| **epic-pending State** | First-class intermediate state: `active_epic` non-empty AND `active_change.id` empty AND `epic.yaml.status != done`. Means "epic in progress, previous sub-change done, next not yet started". Must be handled by mvt-status, mvt-resume, mvt-help for cross-session recovery. |
+| **current_change Pointer** | Single active sub-change within an epic (ADR-5). Advanced by `epic-update.cjs` based on DAG topology after child completion. |
+| **Epic DAG** | Directed acyclic graph formed by `depends_on` arrays across epic children. Enforced by validation (no cycles, valid references, at most one active child). |
+
+## Business Rules
+
+| Rule | Description |
+|------|-------------|
+| BR-1 | `active_change` must never represent an epic -- only concrete feature-level work. Epic is a separate top-level entity. |
+| BR-2 | Epic detection (Step 3) must happen before Quick Path detection (Step 4) and before creating any `active_change`. |
+| BR-3 | Epic decomposition targets 2-8 sub-changes. Each sub-change must be "right-sized" -- coverable by one `analyze -> design -> plan(3-10 tasks)` pipeline. |
+| BR-4 | `epic.yaml` initial draft by LLM; all subsequent state mutations by `epic-update.cjs` only. LLM must not hand-edit structural state fields after initial creation. |
+| BR-5 | Single `current_change` pointer per epic. Sub-changes advance in DAG topological order. No parallel active sub-changes. |
+| BR-6 | Epic id format: `epic-{YYYYMMDD}-{slug}` (path-level distinction from change ids in shared `artifacts/` namespace). |
+| BR-7 | Sub-change id format: standard `{YYYYMMDD}-{slug}` (no epic prefix). Epic linkage via `active_change.epic_id` only. |
+| BR-8 | Epic status enum: `in_progress`, `done`, `abandoned` (no `planning` -- decompose creates epic directly in `in_progress`). |
+| BR-9 | `--add-child` uses multi-flag syntax: `--add-child <id> --child-title "..." --child-scope "..." [--child-depends-on "a,b"]`. |
+| BR-10 | Archiving an epic suggests (non-mandatory) batch archiving all child changes. Archive = abandon references; no post-archive `epic_id` integrity maintenance. |
+| BR-11 | Epic advancement triggered in `mvt-update-plan` skill layer: when `plan-update.cjs` outputs `plan_status: "done"` and `active_change.epic_id` is non-empty, prompt user with (y/n/defer). On `y`: call `epic-update.cjs --complete-child` + `session-update.cjs --close-change` (close but do not archive). On `n`: no advancement, user continues review/test/sync. On `defer`: mark child done but do not advance `current_change`. |
+| BR-12 | When `--complete-child` marks the last active/pending child as done, `epic-update.cjs` automatically sets `epic.yaml.status` to `done`. |
+| BR-13 | `plan-update.cjs` remains unchanged -- epic awareness lives entirely in the skill layer (`mvt-update-plan/business.md`). |
+| BR-14 | `mvt-cleanup` no longer triggers epic advancement; its epic-related role is simplified to pure archiving (archive completed changes/epics to `_archived/`). |
 
 ## Ambiguities & Questions
 
-| # | Ambiguity | Priority | Question |
-|---|-----------|----------|----------|
-| AQ-1 | Detection criteria: what specific signals separate "epic" from "large feature"? | High | Should detection use keyword heuristics (e.g., "system", "platform", "full"), sub-system counting, user confirmation, or a combination? |
-| AQ-2 | Decomposition depth: how fine-grained should the decomposition be? | High | Should each sub-change map to individual features (e.g., "product catalog", "shopping cart") or could sub-changes still be multiple-feature slices? |
-| AQ-3 | Scope document format: where and how to store decomposition results? | Medium | Option A: a section in analysis.md. Option B: a separate scope.yaml. Option C: no persisted document, purely conversational. |
-| AQ-4 | Downstream impact on mvt-design and mvt-plan-dev: do those skills need changes too? | Medium | If mvt-analyze changes handling, do mvt-design and mvt-plan-dev need to be more resilient to scope ambiguity, or is the gate sufficient? |
-| AQ-5 | Existing active_change: what if one already exists when the epic is detected? | Low | Should the existing change be completed/archived first, or can the decomposition coexist? |
+| # | Ambiguity | Status | Resolution |
+|---|-----------|--------|------------|
+| AQ-1 | Epic artifact path: `artifacts/epic-*/` vs separate `epics/` directory | **Resolved** | Use `artifacts/{epic-id}/` with `epic-` prefix (proposal ADR-7). Override previous "separate epics/ directory" decision. |
+| AQ-2 | `--add-child` parameter format | **Resolved** | Multi-flag syntax: `--add-child <id> --child-title "..." --child-scope "..." [--child-depends-on "a,b"]` |
+| AQ-3 | `planning` status usage | **Resolved** | Removed. Epic status enum is `in_progress | done | abandoned`. Decompose creates epic directly in `in_progress`. |
+| AQ-4 | Epic advancement trigger mechanism | **Resolved** | Plan-done trigger in `mvt-update-plan` skill layer: confirmed advancement (y/n/defer), close change without archiving, `plan-update.cjs` unchanged, last child auto-completes epic, cleanup simplified to archiving only |
+| AQ-5 | Epic-child change-id format | **Resolved** | Standard `{YYYYMMDD}-{slug}`, no epic prefix. Linkage via `active_change.epic_id` only. |
 
 ## Change Tracking
 
-| Item | Action | Expected outcome |
-|------|--------|-----------------|
-| mvt-analyze business.md | Modify | Add Epic Detection Gate and Three-Tier Classification |
-| mvt-analyze SKILL.md | Regenerate | Reflect new Step 3 flow with epic branch |
-| scope document (new concept) | Create | Optional lightweight artifact for decomposition tracking |
-| mvt-design business.md | No change needed | Gate at analyze level should suffice |
-| mvt-plan-dev business.md | No change needed | Existing 10-task limit already handles large plans |
-
-## Solution Options
-
-### Option A: Three-Tier Classification in Step 3 (Recommended)
-
-Expand the existing Step 3 (Complexity Assessment) from a binary decision into a three-tier gate:
-
-```mermaid
-flowchart TD
-    A[Load Requirements] --> B[Step 2: Extract Information]
-    B --> C[Step 3: Classify Scope]
-    
-    C --> D{Quck-path?<br>≤3 files, clear,<br>no new concepts}
-    D -->|Yes| E[Offer /mvt-quick-dev]
-    D -->|No| F{Epic-level?<br>vague, multi-system,<br>strategic scope}
-    F -->|Yes| G[Enter Decomposition Mode]
-    F -->|No| H[Proceed Standard<br>→ Detect Ambiguities<br>→ Write analysis.md]
-    
-    G --> I[Explain: recognized as large initiative]
-    I --> J[Guide user to decompose<br>into 2-6 sub-changes]
-    J --> K[User selects first sub-change to start with]
-    K --> L[Create active_change for selected sub-change only]
-    L --> H
-```
-
-**Epic detection heuristics** (at least 2 trigger):
-
-| Heuristic | Signal examples |
-|-----------|-----------------|
-| Vagueness cues | Input contains "system", "platform", "full", "suite" + lacks specific features |
-| Sub-system count | Requirement mentions 3+ distinct functional areas (e.g., "users, products, orders, payments") |
-| Multi-phase language | "Phase 1", "first step would be", "eventually we need" |
-| Design manual reference | "Implement based on this design handbook/manual/spec (50+ pages)" |
-| Explicit scope question | Requirement text asks "where should I start?" or "what do you recommend?" |
-
-**Epic decomposition output**: conversation-driven (no mandatory file write). Optionally write a lightweight scope document at `workspace/artifacts/{change-id}/scope.yaml` if the user requests tracking.
-
-**Pros**: Minimal change (one new decision branch in existing flow), no new skills, preserves all existing behavior.
-**Cons**: Adds complexity to `mvt-analyze` business logic; detection heuristics may have false positives.
-
-### Option B: New `/mvt-scope` Skill
-
-Create a dedicated skill for epic-level decomposition. The workflow becomes:
-
-- `/mvt-scope` → takes vague/large input → decomposes → writes scope document → user picks a sub-change → runs `/mvt-analyze` on it
-- `/mvt-analyze` remains unchanged
-
-**Pros**: Clean separation of concerns, no change to existing skill.
-**Cons**: Adds another entry point to the workflow, more cognitive load for users ("should I use analyze or scope?"), more code to maintain.
-
-### Option C: Prompt-Based Decomposition in Standard Flow
-
-No detection automation. In Step 5 (ambiguity detection), if the requirement is vague, the existing clarification questions naturally surface the need to decompose. The user manually decides to run multiple `/mvt-analyze` passes.
-
-**Pros**: Zero code changes, no new heuristics.
-**Cons**: Relies entirely on user judgment; no scaffolding or guidance; inconsistent results; most users won't realize the problem until it's too late (in the design or plan-dev phase).
-
-### Recommended: Option A
-
-Option A is recommended because:
-
-- It adds a single well-defined decision point to an existing step
-- It has clear heuristics that are easy to implement and iterate on
-- It prevents scope confusion before it propagates downstream
-- It creates zero new skills to maintain
-- It preserves all existing behavior for non-epic input
-- It is consistent with the existing design principle: "Ambiguous target: ask, don't guess"
+| Item | Type | Action |
+|------|------|--------|
+| `sources/defaults/session.yaml` | Modify | Add `active_epic`, `epics[]`, `active_change.epic_id` |
+| `sources/scripts/session-update.js` | Modify | Add `--new-epic`, `--epic-id`, `--set-epic-path`, `--set-epic-status`, `--close-epic` + combo validation |
+| `sources/scripts/epic-update.js` | New | `--complete-child`, `--set-child-status`, `--add-child`, `--validate` |
+| `build-scripts.js` | Modify | Add `epic-update.js` to esbuild entryPoints |
+| `sources/skills/mvt-decompose/manifest.yaml` | New | Skill manifest (Strategist/analyst role) |
+| `sources/skills/mvt-decompose/business.md` | New | Epic decomposition execution flow |
+| `sources/templates/decompose-output.md` | New | `epic.md` chapter template |
+| `registry.yaml` | Modify | Register `mvt-decompose` (category: workflow) |
+| `sources/skills/mvt-analyze/business.md` | Modify | Add Step 3 Epic Detection, epic-child mode, renumber Steps 3-6 to 4-7 |
+| `sources/skills/mvt-analyze/manifest.yaml` | Modify | Add epic detection branch to next-steps |
+| `sources/skills/mvt-status/business.md` | Modify | Epic progress view, epic-pending state |
+| `sources/skills/mvt-resume/business.md` | Modify | Epic context restoration, epic-pending fallback |
+| `sources/skills/mvt-cleanup/business.md` | Modify | Epic integrity check, batch archive suggestion; **no advancement trigger** (simplified to pure archiving) |
+| `sources/skills/mvt-update-plan/business.md` | Modify | **Add epic advancement logic**: detect `plan_status: done` + `epic_id` non-empty, prompt user (y/n/defer), call `epic-update.cjs --complete-child` + `session-update.cjs --close-change` |
+| `sources/skills/mvt-help/business.md` | Modify | Epic-pending in next-skill decision table + workflow diagram |
+| `tests/epic-update.test.ts` | New | epic-update.cjs unit tests |
+| `tests/` (session-update) | Modify | Epic parameter regression tests |
 
 ## Suggested Next Steps
 
-- `/mvt-design` -- Design the architecture for the Epic Detection Gate (ADR for the three-tier classification, heuristics spec, and integration points in mvt-analyze)
-- `/mvt-quick-dev` -- If the scope change is well-understood enough to implement directly (affects only `sources/skills/mvt-analyze/business.md`)
+- `/mvt-design` -- Design architecture for the Epic Decomposition Layer based on this analysis and the OPT-2026-003 proposal
+- `/mvt-plan-dev` -- Given the scale of this change (15+ files), generate a structured development plan after design is complete
