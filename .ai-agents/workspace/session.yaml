@@ -1,36 +1,18 @@
 session:
   initialized_at: 2026-06-05T08:12:06.624Z
-  last_synced_at: ""
+  last_synced_at: 2026-06-08T02:44:34.674Z
 active_change:
-  id: 20260605-multi-project-workflow-support
-  title: 多项目工作流支持 (OPT-2026-002)
-  created_at: 2026-06-06T13:09:44.156Z
-  plan_path: .ai-agents/workspace/artifacts/20260605-multi-project-workflow-support/plan.yaml
+  id: 20260608-epic-scope-detection
+  title: Epic Scope Detection for mvt-analyze
+  created_at: 2026-06-08T07:01:04.757Z
+  plan_path: ""
 changes:
   - id: 20260605-multi-project-workflow-support
     title: 多项目工作流支持 (OPT-2026-002)
     plan_path: .ai-agents/workspace/artifacts/20260605-multi-project-workflow-support/plan.yaml
-    status: active
+    status: done
     updated_at: 2026-06-06T15:04:34.440Z
 history:
-  - skill: /mvt-init
-    completed_at: 2026-06-05T08:12:06.624Z
-    summary: 扫描项目结构，检测到 TypeScript CLI 工具 (@uoyo/mvtt)，写入 project-context.yaml
-    change_id: ""
-  - skill: /mvt-analyze-code
-    completed_at: 2026-06-05T08:16:12.771Z
-    summary: 逆向分析 mvtt 代码库，生成 project-context.md（模块结构、业务规则、API 概览）
-    change_id: ""
-  - skill: /mvt-analyze
-    completed_at: 2026-06-05T08:29:24.784Z
-    summary: 分析 OPT-2026-002 多项目工作流提案，提取三方案+前提需求，解决两处歧义（单项目折叠按 length==1、存量工作区
-      analyze-code 自动拆分）
-    change_id: 20260605-multi-project-workflow-support
-  - skill: /mvt-design
-    completed_at: 2026-06-05T08:51:51.084Z
-    summary: 设计多项目工作流架构：7 个 ADR（含覆盖提案 §8 的 registry-merge src/ 改动），2x2
-      知识矩阵、task.project 数组、deliverables 交付物，约 20 文件改动
-    change_id: 20260605-multi-project-workflow-support
   - skill: /mvt-plan-dev
     completed_at: 2026-06-06T13:09:44.156Z
     summary: Decomposed multi-project workflow change into 8 tasks covering
@@ -100,3 +82,34 @@ history:
       (plan-update.js args + mvt-implement interaction). All 8 tasks complete,
       plan done."
     change_id: 20260605-multi-project-workflow-support
+  - skill: /mvt-sync-context
+    completed_at: 2026-06-08T02:29:18.094Z
+    summary: Synced 11 knowledge items from 20260605-multi-project-workflow-support
+      to project-context.md
+    change_id: ""
+  - skill: /mvt-sync-context
+    completed_at: 2026-06-08T02:36:09.610Z
+    summary: No new completed changes since last sync; nothing to sync.
+    change_id: ""
+  - skill: /mvt-sync-context
+    completed_at: 2026-06-08T02:44:34.674Z
+    summary: "Re-synced change 20260605-multi-project-workflow-support: added 8 Core
+      Terms, 6 Business Rules, Scripts section, source_paths to
+      project-context.yaml"
+    change_id: ""
+  - skill: /mvt-cleanup
+    completed_at: 2026-06-08T02:46:56.677Z
+    summary: "Archived completed change 20260605-multi-project-workflow-support to
+      _archived/: saved ~25k tokens"
+    change_id: ""
+  - skill: /mvt-analyze
+    completed_at: 2026-06-08T07:01:04.757Z
+    summary: "Analyzed epic-as-change problem in mvt-analyze: 3 solution options
+      with Option A (Three-Tier Classification) recommended"
+    change_id: 20260608-epic-scope-detection
+  - skill: /mvt-bug-detect
+    completed_at: 2026-06-08T07:42:55.216Z
+    summary: "Confirmed Step 3 path resolution bug in activation-load-context.md:
+      ambiguous {source} placeholder causes silent knowledge file skip across
+      all 23 skills"
+    change_id: 20260608-epic-scope-detection

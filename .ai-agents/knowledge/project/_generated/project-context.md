@@ -24,6 +24,13 @@ The most important invariant: every file the CLI writes is classified as `genera
 | Registry Merge | `src/fs/registry-merge.ts` — reconciles framework `registry.yaml` with user's existing `registry.yaml` on `update`, preserving custom skills (`custom: true`) and user-added knowledge bindings. |
 | Core Manifest | `knowledge/core/manifest.yaml` — lists which knowledge files are auto-loaded. Merged on update to preserve user-added entries (`origin: user`). |
 | Pattern | A pre-built architecture template (DDD, Clean Architecture, Frontend-React) under `sources/knowledge/patterns/` that users can opt into at install time. |
+| Project (sub-project) | One entry in `project-context.yaml > projects[]` (`name`/`path`/`type`/`tech_stack`); the unit of scoping for plan tasks and knowledge loading. |
+| Current project set (PS) | The set of projects a skill invocation operates on; single-element for normal tasks, multi-element for cross-project tasks. Resolved by the activation protocol. |
+| Scope matrix (2x2) | Orthogonal skill-axis × project-axis classification of knowledge into four quadrants: global shared, global per-skill, per-project shared, per-project × skill. |
+| `_all` reserved key | Map key meaning "all projects" in registry knowledge declarations, following the underscore-reserved convention (`_framework`, `_generated`, `_archived`). |
+| Deliverables | A task's downstream-facing contract; free-structured Markdown in `implementation.md` with a lightweight freshness flag in `plan.yaml`. |
+| Freshness | Whether a downstream-consumed deliverable is still trustworthy after an upstream re-implementation. Valid values: `current`, `stale`. |
+| Reverse-dependency lookup | Finding tasks whose `depends_on` includes a given task; drives deliverables interaction triggers and stale marking. |
 
 ## Module Structure
 
@@ -77,6 +84,12 @@ graph TD
 - `{{?optional}}` renders the block body verbatim (no var substitution inside) when the key is defined and truthy.
 - Tables whose header + separator have no data rows after conditional expansion are automatically stripped by `stripEmptyTables`.
 - NodeNext module resolution requires `.js` extensions on all relative imports, even when source files are `.ts`.
+- When `projects.length == 1`, all project-scoping logic collapses with zero new prompts; PS is set to the sole project. The trigger is the count, not the project name.
+- Activation never silently loads all projects in a multi-project repo; on ambiguity it offers preselected options for the user to pick from.
+- `plan.yaml` mutations (project validation, deliverables pointer, freshness, stale marking) are deterministic script logic in `plan-update.js`, never LLM judgment.
+- `task.project` validation: when `--projects` count > 1, the array must be non-empty with every element in the valid names set; otherwise absent is allowed and defaulted to `["default"]`.
+- Cross-project tasks load the **union** of all involved projects' knowledge.
+- Registry restructure from flat lists to project-keyed maps is a breaking change; top-level `knowledge.shared` becomes `knowledge._all`, per-skill knowledge becomes `skills.<name>.knowledge._all`. Single-project repos use only `_all`.
 
 ## API Overview
 
@@ -96,3 +109,10 @@ graph TD
 | `hashString(content)` | `(string) => string` | SHA-256 hash of a string, prefixed `sha256:` |
 | `updateRegistry(projectRoot, packageRoot)` | `(string, string) => RegistryMergeResult` | Diff-merge framework and user registry.yaml; backup old user copy |
 | `updateCoreManifest(projectRoot, packageRoot)` | `(string, string) => { written, backup, frameworkCount, userCount }` | Merge framework + user core/manifest.yaml entries |
+
+## Scripts
+
+| Script | Path | Responsibility |
+|--------|------|----------------|
+| plan-update | `sources/scripts/plan-update.js` | Validate and mutate `plan.yaml`: project attribution via `--projects`, per-project DAG cycle detection, `current_tasks` advancement, deliverables pointer writing (`--deliverables-pointer`), stale marking (`--mark-deliverable-stale`). Full parse-mutate-stringify round-trip. |
+| session-update | `sources/scripts/session-update.js` | Update session state: `--set-synced` (updates `last_synced_at`), `--set-active-project` (persists resolved project set). Full parse-mutate-stringify round-trip. |
