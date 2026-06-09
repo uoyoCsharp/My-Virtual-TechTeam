@@ -10,13 +10,10 @@ last_updated: "2026-05-23"
 # "_all" is the reserved key for entries loaded by all projects and all skills.
 # ============================================================
 knowledge:
-  _all:
-    - id: "core"
-      source: "knowledge/core/"
-      files_from_manifest: true
-    - id: "project-context"
-      source: "knowledge/project/_generated/"
-      files: ["project-context.md"]
+  # _all:
+  #   - id: "core"
+  #     source: "knowledge/core/"
+  #     files_from_manifest: true
 
 # ============================================================
 # Skills

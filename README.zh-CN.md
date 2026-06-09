@@ -8,7 +8,7 @@
 
 [![npm](https://img.shields.io/npm/v/@uoyo/mvtt)](https://www.npmjs.com/package/@uoyo/mvtt) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![GitHub stars](https://img.shields.io/github/stars/uoyoCsharp/My-Virtual-TechTeam)](https://github.com/uoyoCsharp/My-Virtual-TechTeam/stargazers)
 
-## 痛点
+## 你正在面对的难题
 
 每次 Claude Code 会话都从零开始。昨天花心思搭起来的项目上下文 —— 架构、约定、领域知识 —— 今天又没了。
 
@@ -18,7 +18,7 @@
 - **每次都要重新交代** —— 解释技术栈、重述代码规范、描述业务领域。
 - **没有职责分离** —— 需求分析、架构设计、写代码、测试，全挤在同一个对话里。
 
-> **30 秒心智模型**：把 MVTT 想象成一支驻扎在你代码仓库里的精简工程团队 —— 分析师、架构师、开发、评审、测试 —— 共用同一本项目笔记。
+> **30 秒心智模型**：把 MVTT 想象成一支驻扎在你代码仓库里的精简工程团队 —— 分析师、架构师、开发、评审、测试 —— 共用同一本项目笔记。流程是标准化的，无论你是高级工程师还是新人，跑出来的效果都一样 —— AI 熟练度不再决定产出质量。这就是 MVTT。
 
 ## 快速开始
 
@@ -31,8 +31,6 @@ npx @uoyo/mvtt install
 /mvt-analyze       # 从需求分析开始
 ```
 
-<!-- SCREENSHOT PLACEHOLDER #1：终端截图，展示 `npx @uoyo/mvtt install`、语言选择提示，以及 Claude Code 中第一次执行 /mvt-init + /mvt-analyze 的画面。建议尺寸：~1200x600。保存为 docs/assets/quickstart.png，并替换本注释为： ![MVTT 快速开始](docs/assets/quickstart.png) -->
-
 ## MVTT 适合谁
 
 MVTT 适合那些用 Claude Code 做真实、长期项目的开发者 —— 不是写一次性脚本的人。
@@ -41,6 +39,7 @@ MVTT 适合那些用 Claude Code 做真实、长期项目的开发者 —— 不
 
 - 维护一个中等规模代码库（5k+ 行），受够了上下文丢失的痛
 - 即使单兵作战，也想走结构化流程 —— 分析、设计、实现、评审、测试
+- 团队里 AI 熟练度参差不齐 —— MVTT 把流程标准化，让新人老人产出质量一致
 - 中英双语项目：MVTT 完整支持中英文双语
 - 想要一个能跟着仓库走、随团队共享的项目笔记（版本控制，团队可见）
 
@@ -52,7 +51,7 @@ MVTT 适合那些用 Claude Code 做真实、长期项目的开发者 —— 不
 
 ## 工作原理
 
-### 持续累积的项目上下文
+### 随项目一起成长的持久化上下文
 
 ```
 .ai-agents/
@@ -66,7 +65,7 @@ MVTT 适合那些用 Claude Code 做真实、长期项目的开发者 —— 不
     └── project/                  # 领域知识
 ```
 
-上下文**永不丢失**。明天再开一个新的 Claude Code 会话，它会接着上次的地方继续 —— 领域模型、架构决策、进行中的任务、团队约定，全都在。
+上下文在会话之间**永不丢失**。明天再开一个新的 Claude Code 会话，它会接着上次的地方继续 —— 领域模型、架构决策、进行中的任务、团队约定，全都在。
 
 ### 保存、恢复与同步
 
@@ -81,15 +80,33 @@ MVTT 适合那些用 Claude Code 做真实、长期项目的开发者 —— 不
 
 ### 同一份事实，零分歧
 
-```
-┌─────────────────────────────────────────────────────┐
-│              共享上下文层                              │
-│  session.yaml + project-context.yaml + knowledge/   │
-└───────────┬───────────┬───────────┬─────────────────┘
-            │           │           │
-      ┌─────┴──┐  ┌────┴────┐  ┌──┴──────┐
-      │分析师  │  │架构师   │  │开发    │  ...
-      └────────┘  └─────────┘  └─────────┘
+```mermaid
+flowchart LR
+    ctx["📚 共享上下文层"]
+
+    subgraph roles ["<b>👥 你的虚拟工程团队</b>"]
+        direction TB
+        a["🔍<br/><b>分析师</b><sub><br/>analyze</sub>"]
+        ar["🏗️<br/><b>架构师</b><br/><sub>design · plan-dev</sub>"]
+        d["⚙️<br/><b>开发</b><br/><sub>implement · fix</sub>"]
+        r["👀<br/><b>评审</b><br/><sub>review</sub>"]
+        t["🧪<br/><b>测试</b><br/><sub>test</sub>"]
+    end
+
+    a ~~~ r
+    ar ~~~ t
+    d ~~~ t
+
+    ctx ==> roles
+
+    style ctx fill:#6d4ad6,stroke:#4c1d95,stroke-width:3px,color:#ffffff,font-weight:bold,font-size:16px
+    style roles fill:#faf7ff,stroke:#a78bfa,stroke-width:1px,stroke-dasharray:4 3,color:#4c1d95
+
+    style a fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#78350f
+    style ar fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e3a8a
+    style d fill:#dcfce7,stroke:#22c55e,stroke-width:2px,color:#14532d
+    style r fill:#fce7f3,stroke:#ec4899,stroke-width:2px,color:#831843
+    style t fill:#e0e7ff,stroke:#6366f1,stroke-width:2px,color:#312e81
 ```
 
 分析师发现新领域概念，架构师能看到。架构师做了设计决策，开发会照着做。没有任何技能能"我行我素"，因为它们动手前都先读同一份事实。
@@ -98,22 +115,169 @@ MVTT 适合那些用 Claude Code 做真实、长期项目的开发者 —— 不
 
 MVTT 覆盖完整的工程流程 —— 不只是写代码：
 
-```
- 需求分析       架构设计       任务拆分       编码实现       评审        测试
-┌────────┐   ┌────────┐   ┌────────┐   ┌──────────┐   ┌────────┐   ┌──────┐
-│提取    │   │定义    │   │拆成    │   │按设计写  │   │检查    │   │生成  │
-│领域    │──▶│架构    │──▶│可执行  │──▶│代码      │──▶│质量    │──▶│测试  │
-│概念    │   │和模式  │   │任务    │   │          │   │与规范  │   │      │
-└────────┘   └────────┘   └────────┘   └──────────┘   └────────┘   └──────┘
-     │                                                                  │
-     └──────────────── 上下文贯穿每个阶段 ───────────────────────────────┘
+```mermaid
+flowchart LR
+    A["🔎<br/><b>分析</b><br/><sub>提取领域概念</sub>"] ==> B["🏗️<br/><b>设计</b><br/><sub>定义架构</sub>"] ==> C["📋<br/><b>计划</b><br/><sub>拆解任务</sub>"] ==> D["⚡<br/><b>实现</b><br/><sub>写代码</sub>"] ==> E["🔍<br/><b>评审</b><br/><sub>检查质量</sub>"] ==> F["🧪<br/><b>测试</b><br/><sub>生成测试</sub>"]
+
+    A -.->|史诗级| G["🧩<br/><b>拆分</b><br/><sub>拆成子改动</sub>"]
+    G -.-> B
+
+    A -.->|小改| H["🚀<br/><b>快速开发</b><br/><sub>跳过繁文缛节</sub>"]
+
+    style A fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e3a8a,font-weight:bold
+    style B fill:#e0e7ff,stroke:#6366f1,stroke-width:2px,color:#312e81,font-weight:bold
+    style C fill:#ede9fe,stroke:#8b5cf6,stroke-width:2px,color:#4c1d95,font-weight:bold
+    style D fill:#fae8ff,stroke:#a855f7,stroke-width:2px,color:#581c87,font-weight:bold
+    style E fill:#fce7f3,stroke:#ec4899,stroke-width:2px,color:#831843,font-weight:bold
+    style F fill:#dcfce7,stroke:#22c55e,stroke-width:2px,color:#14532d,font-weight:bold
+    style G fill:#fef3c7,stroke:#f59e0b,stroke-width:1.5px,stroke-dasharray:5 5,color:#78350f
+    style H fill:#e0e7ff,stroke:#6366f1,stroke-width:1.5px,stroke-dasharray:5 5,color:#312e81
+
+    linkStyle 0 stroke:#6366f1,stroke-width:3px
+    linkStyle 1 stroke:#6366f1,stroke-width:3px
+    linkStyle 2 stroke:#6366f1,stroke-width:3px
+    linkStyle 3 stroke:#6366f1,stroke-width:3px
+    linkStyle 4 stroke:#6366f1,stroke-width:3px
 ```
 
-史诗级需求先跑 `/mvt-decompose`，把需求拆成带 DAG 依赖的子改动，再走 `/mvt-analyze`。
+史诗级需求先跑 `/mvt-decompose`，把需求拆成带 DAG 依赖的子改动，再走 `/mvt-analyze`。小改动则用 `/mvt-quick-dev`，直接跳过整个流程。
 
-每一步的产物都是下一步的输入。上下文在累积，不在重置。
+上下文通过 `session.yaml` 和 `project-context.yaml` 在每个阶段流转 —— 上一步的产出就是下一步的输入。上下文在累积，不在重置。
+
+### 多项目与依赖感知
+
+现实中的仓库很少是单一项目。MVTT 都能应付。
+
+**单仓库多项目。** monorepo、微服务、多应用仓库 —— MVTT 天然支持。一份 `project-context.yaml` 用 `projects[]` 数组追踪所有子项目，注册表按项目名路由知识。技能会自动聚焦到当前项目，也可以显式切换作用域。一个工作区，多个项目，上下文不串。
+
+```mermaid
+flowchart TB
+    repo["🗂️<br/><b>工作区</b><br/><sub>.ai-agents/</sub>"]
+
+    subgraph projects ["<b>📦 多项目追踪</b>"]
+        direction LR
+        p1["📘<br/><b>项目 A</b><br/><sub>api-server</sub>"]
+        p2["📗<br/><b>项目 B</b><br/><sub>web-app</sub>"]
+        p3["📙<br/><b>项目 C</b><br/><sub>mobile-app</sub>"]
+    end
+
+    shared["🌐<br/><b>共享知识</b><br/><sub>core/ · principle/</sub>"]
+
+    repo ==> projects
+    repo ==> shared
+
+    style repo fill:#6d4ad6,stroke:#4c1d95,stroke-width:3px,color:#ffffff,font-weight:bold,font-size:16px
+    style projects fill:#faf7ff,stroke:#a78bfa,stroke-width:2px,stroke-dasharray:5 3,color:#4c1d95
+    style shared fill:#dcfce7,stroke:#22c55e,stroke-width:2px,color:#14532d,font-weight:bold
+
+    style p1 fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e3a8a,font-weight:bold
+    style p2 fill:#dcfce7,stroke:#22c55e,stroke-width:2px,color:#14532d,font-weight:bold
+    style p3 fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#78350f,font-weight:bold
+
+    linkStyle 0 stroke:#a855f7,stroke-width:3px
+    linkStyle 1 stroke:#22c55e,stroke-width:3px
+```
+
+**依赖感知的任务跟踪。** 真实功能有依赖关系 —— 有些任务阻塞别的任务，有些能并行跑。不用你拿脑子（或者 Excel）记，`/mvt-decompose` 生成子改动的 DAG，`/mvt-plan-dev` 把它镜像到 `plan.yaml`，`/mvt-update-plan` 带着你按正确的顺序走。关键路径和"现在能跑哪些"一目了然。
+
+```mermaid
+flowchart LR
+    subgraph foundation ["<b>🏛️ 基础层</b>"]
+        direction LR
+        T1["🔐<br/><b>鉴权模块</b><br/><sub>T1</sub>"]
+        T2["🗄️<br/><b>数据库结构</b><br/><sub>T2</sub>"]
+    end
+
+    subgraph parallel ["<b>⚡ 并行任务</b>"]
+        direction LR
+        T3["🔌<br/><b>用户接口</b><br/><sub>T3</sub>"]
+        T4["📝<br/><b>日志</b><br/><sub>T4</sub>"]
+    end
+
+    subgraph integration ["<b>✅ 集成</b>"]
+        direction TB
+        T5["🧪<br/><b>测试</b><br/><sub>T5</sub>"]
+    end
+
+    T1 --> T3
+    T2 --> T3
+    T2 --> T4
+    T3 --> T5
+    T4 --> T5
+
+    style foundation fill:#faf7ff,stroke:#a78bfa,stroke-width:2px,stroke-dasharray:4 3,color:#4c1d95
+    style parallel fill:#fff7ed,stroke:#fb923c,stroke-width:2px,stroke-dasharray:4 3,color:#7c2d12
+    style integration fill:#f0fdf4,stroke:#22c55e,stroke-width:2px,stroke-dasharray:4 3,color:#14532d
+
+    style T1 fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e3a8a,font-weight:bold
+    style T2 fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e3a8a,font-weight:bold
+    style T3 fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#78350f,font-weight:bold
+    style T4 fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#78350f,font-weight:bold
+    style T5 fill:#dcfce7,stroke:#22c55e,stroke-width:2px,color:#14532d,font-weight:bold
+
+    linkStyle 0 stroke:#6366f1,stroke-width:2.5px
+    linkStyle 1 stroke:#6366f1,stroke-width:2.5px
+    linkStyle 2 stroke:#6366f1,stroke-width:2.5px
+    linkStyle 3 stroke:#a855f7,stroke-width:2.5px
+    linkStyle 4 stroke:#a855f7,stroke-width:2.5px
+```
+
+读法：`T3` 和 `T4` 并行跑（都只依赖 `T2`），`T5` 等它们都完成。计划自动跟踪这一切。
 
 <!-- SCREENSHOT PLACEHOLDER #2：完整 lifecycle 的 30 秒 GIF（或 3 联截图），展示 analyze → design → test 的输出。建议尺寸：~1200x800。保存为 docs/assets/lifecycle.gif（或 .png），替换本注释为： ![MVTT 完整开发流程](docs/assets/lifecycle.gif) -->
+
+## 24 个技能如何像一个团队协作
+
+MVTT 的 24 个技能不是 24 条互不相关的命令 —— 它们是**一个整体团队**，共用同一本项目笔记。每个技能的输出就是下一个技能的输入，上下文在叠加，不在蒸发。
+
+### 一个功能，六个技能，一气贯通
+
+端到端加一个新功能，流程长这样：
+
+```mermaid
+flowchart LR
+    A["🔎<br/><b>/mvt-analyze</b><br/><sub>提取需求</sub>"] ==> B["🏗️<br/><b>/mvt-design</b><br/><sub>定义架构</sub>"] ==> C["📋<br/><b>/mvt-plan-dev</b><br/><sub>拆解任务</sub>"] ==> D["⚡<br/><b>/mvt-implement</b><br/><sub>写代码</sub>"] ==> E["🔍<br/><b>/mvt-review</b><br/><sub>检查质量</sub>"] ==> F["🧪<br/><b>/mvt-test</b><br/><sub>生成测试</sub>"]
+
+    style A fill:#dbeafe,stroke:#3b82f6,stroke-width:2.5px,color:#1e3a8a,font-weight:bold
+    style B fill:#e0e7ff,stroke:#6366f1,stroke-width:2.5px,color:#312e81,font-weight:bold
+    style C fill:#ede9fe,stroke:#8b5cf6,stroke-width:2.5px,color:#4c1d95,font-weight:bold
+    style D fill:#fae8ff,stroke:#a855f7,stroke-width:2.5px,color:#581c87,font-weight:bold
+    style E fill:#fce7f3,stroke:#ec4899,stroke-width:2.5px,color:#831843,font-weight:bold
+    style F fill:#dcfce7,stroke:#22c55e,stroke-width:2.5px,color:#14532d,font-weight:bold
+
+    linkStyle 0 stroke:#6366f1,stroke-width:3px
+    linkStyle 1 stroke:#8b5cf6,stroke-width:3px
+    linkStyle 2 stroke:#a855f7,stroke-width:3px
+    linkStyle 3 stroke:#ec4899,stroke-width:3px
+    linkStyle 4 stroke:#22c55e,stroke-width:3px
+```
+
+原本要开 6 次 Claude Code 会话（外加 6 轮重新解释项目背景），现在**一条流水线搞定** —— 同一份上下文，不用重复解释，不用复制粘贴。
+
+### 常用配方
+
+不是每次都要跑满 6 个。挑合适的就行：
+
+| 任务 | 使用的技能 |
+|------|-------------|
+| 添加一个新功能 | `analyze` → `design` → `plan-dev` → `implement` → `review` → `test` |
+| 排查疑似 bug | `bug-detect`（只读诊断） |
+| 修一个已知 bug | `fix`（可选先跑 `bug-detect`） |
+| 重构一个模块 | `analyze-code` → `refactor` → `review` → `test` |
+| 史诗级改动 | `decompose` → `analyze`（每个子改动） → ... |
+| 1–3 个文件的小修 | `quick-dev` |
+| 接手一个已有代码库 | `analyze-code` |
+| 隔了几天再回来 | `resume`（然后接着原流程跑） |
+| 清理堆积的产物 | `cleanup` + `check-context` |
+
+每个配方都是**起点** —— `/mvt-help` 会根据项目实际状态推荐下一步，你也可以增删或重排技能。
+
+### 多技能协作为什么赢
+
+- **上下文叠加** —— 分析师提取的领域概念喂给架构师；架构师的设计决策喂给开发。没有任何技能去重复造另一个技能已经学过的轮子。
+- **专项 prompt** —— 每个技能都是为单个阶段打磨过的聚焦 prompt，而不是一个臃肿的"啥都干"prompt。聚焦带来更高质量。
+- **内置交接** —— 一个技能的产物（分析文档、设计稿、plan.yaml）会被下一个技能显式读取。内容不会在对话里丢。
+- **可中断** —— 流程跑到一半停下来，隔几天再回来，`/mvt-resume` 准确接上，状态完全恢复。
 
 ## 24 个技能
 

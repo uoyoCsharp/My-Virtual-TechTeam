@@ -8,9 +8,9 @@
 
 [![npm](https://img.shields.io/npm/v/@uoyo/mvtt)](https://www.npmjs.com/package/@uoyo/mvtt) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![GitHub stars](https://img.shields.io/github/stars/uoyoCsharp/My-Virtual-TechTeam)](https://github.com/uoyoCsharp/My-Virtual-TechTeam/stargazers)
 
-## The Problem
+## We Know The Problem You Are Facing
 
-Every Claude Code session starts from zero. The project context you built yesterday — the architecture, the conventions, the domain knowledge — is gone today.
+Every AI session starts from zero. The project context you built yesterday — the architecture, the conventions, the domain knowledge — is gone today.
 
 Three things make this painful on real projects:
 
@@ -18,7 +18,7 @@ Three things make this painful on real projects:
 - **Same preamble every time** — re-explain the tech stack, re-state the conventions, re-describe the domain.
 - **No separation of concerns** — analysis, design, code, and tests jumbled in a single conversation.
 
-> **Mental model in 30 seconds**: imagine hiring a tiny engineering team — Analyst, Architect, Developer, Reviewer, Tester — and giving them a shared project notebook that lives in your repo. That's MVTT.
+> **Mental model in 30 seconds**: imagine hiring a tiny engineering team — Analyst, Architect, Developer, Reviewer, Tester — with a shared project notebook that lives in your repo. The workflow is standardized, so it works the same whether you're a senior engineer or a junior — AI proficiency no longer determines output quality. That's MVTT.
 
 ## Quick Start
 
@@ -31,8 +31,6 @@ npx @uoyo/mvtt install
 /mvt-analyze       # Start with requirements analysis
 ```
 
-<!-- SCREENSHOT PLACEHOLDER #1: terminal screenshot showing `npx @uoyo/mvtt install`, the language selection prompt, and the first /mvt-init + /mvt-analyze invocation in Claude Code. Recommended size: ~1200x600. Save as docs/assets/quickstart.png and replace this comment with: ![MVTT quick start](docs/assets/quickstart.png) -->
-
 ## Who MVTT Is For
 
 MVTT is for developers who use Claude Code on real, ongoing projects — not one-off scripts.
@@ -41,6 +39,7 @@ MVTT is for developers who use Claude Code on real, ongoing projects — not one
 
 - Maintain a medium-sized codebase (5k+ LOC) and feel context-loss pain
 - Want a structured workflow even when working solo — analysis, design, implement, review, test
+- Lead a team where AI proficiency varies — MVTT standardizes the workflow so juniors and seniors produce consistent output
 - Bilingual projects: MVTT works in both English and Chinese
 - Want a project notebook that travels with the repo (version-controlled, team-shared)
 
@@ -82,19 +81,32 @@ You can close your IDE, switch machines, or come back days later — the context
 ### One Shared Truth, Zero Drift
 
 ```mermaid
-flowchart TB
-    ctx["**Shared Context Layer**<br/>session.yaml + project-context.yaml + knowledge/"]
-    a["**Analyst**<br/>analyze · decompose<br/>analyze-code · bug-detect"]
-    ar["**Architect**<br/>design · plan-dev · update-plan"]
-    d["**Developer**<br/>implement · fix<br/>refactor · quick-dev"]
-    r["**Reviewer**<br/>review"]
-    t["**Tester**<br/>test"]
+flowchart LR
+    ctx["📚 Shared Context Layer"]
 
-    ctx --> a
-    ctx --> ar
-    ctx --> d
-    ctx --> r
-    ctx --> t
+    subgraph roles ["<b>👥 Your Virtual Tech Team</b>"]
+        direction TB
+        a["🔍<br/><b>Analyst</b><sub><br/>analyze</sub>"]
+        ar["🏗️<br/><b>Architect</b><br/><sub>design · plan-dev</sub>"]
+        d["⚙️<br/><b>Developer</b><br/><sub>implement · fix</sub>"]
+        r["👀<br/><b>Reviewer</b><br/><sub>review</sub>"]
+        t["🧪<br/><b>Tester</b><br/><sub>test</sub>"]
+    end
+
+    a ~~~ r
+    ar ~~~ t
+    d ~~~ t
+
+    ctx ==> roles
+
+    style ctx fill:#6d4ad6,stroke:#4c1d95,stroke-width:3px,color:#ffffff,font-weight:bold,font-size:16px
+    style roles fill:#faf7ff,stroke:#a78bfa,stroke-width:1px,stroke-dasharray:4 3,color:#4c1d95
+
+    style a fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#78350f
+    style ar fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e3a8a
+    style d fill:#dcfce7,stroke:#22c55e,stroke-width:2px,color:#14532d
+    style r fill:#fce7f3,stroke:#ec4899,stroke-width:2px,color:#831843
+    style t fill:#e0e7ff,stroke:#6366f1,stroke-width:2px,color:#312e81
 ```
 
 When the Analyst discovers a new domain concept, the Architect sees it. When the Architect makes a design decision, the Developer follows it. No skill can "go rogue" because they all read the same ground truth before acting.
@@ -105,12 +117,27 @@ MVTT covers the full engineering workflow — not just code generation:
 
 ```mermaid
 flowchart LR
-    A["**Analyze**<br/>Extract domain concepts"] --> B["**Design**<br/>Define architecture"] --> C["**Plan**<br/>Break into tasks"] --> D["**Implement**<br/>Write code"] --> E["**Review**<br/>Check quality"] --> F["**Test**<br/>Generate tests"]
+    A["🔎<br/><b>Analyze</b><br/><sub>Extract domain concepts</sub>"] ==> B["🏗️<br/><b>Design</b><br/><sub>Define architecture</sub>"] ==> C["📋<br/><b>Plan</b><br/><sub>Break into tasks</sub>"] ==> D["⚡<br/><b>Implement</b><br/><sub>Write code</sub>"] ==> E["🔍<br/><b>Review</b><br/><sub>Check quality</sub>"] ==> F["🧪<br/><b>Test</b><br/><sub>Generate tests</sub>"]
 
-    A -.->|epic scale| G["**Decompose**<br/>Break into sub-changes"]
+    A -.->|epic scale| G["🧩<br/><b>Decompose</b><br/><sub>Break into sub-changes</sub>"]
     G -.-> B
 
-    A -.->|simple change| H["**Quick Dev**"]
+    A -.->|simple change| H["🚀<br/><b>Quick Dev</b><br/><sub>Skip the ceremony</sub>"]
+
+    style A fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e3a8a,font-weight:bold
+    style B fill:#e0e7ff,stroke:#6366f1,stroke-width:2px,color:#312e81,font-weight:bold
+    style C fill:#ede9fe,stroke:#8b5cf6,stroke-width:2px,color:#4c1d95,font-weight:bold
+    style D fill:#fae8ff,stroke:#a855f7,stroke-width:2px,color:#581c87,font-weight:bold
+    style E fill:#fce7f3,stroke:#ec4899,stroke-width:2px,color:#831843,font-weight:bold
+    style F fill:#dcfce7,stroke:#22c55e,stroke-width:2px,color:#14532d,font-weight:bold
+    style G fill:#fef3c7,stroke:#f59e0b,stroke-width:1.5px,stroke-dasharray:5 5,color:#78350f
+    style H fill:#e0e7ff,stroke:#6366f1,stroke-width:1.5px,stroke-dasharray:5 5,color:#312e81
+
+    linkStyle 0 stroke:#6366f1,stroke-width:3px
+    linkStyle 1 stroke:#6366f1,stroke-width:3px
+    linkStyle 2 stroke:#6366f1,stroke-width:3px
+    linkStyle 3 stroke:#6366f1,stroke-width:3px
+    linkStyle 4 stroke:#6366f1,stroke-width:3px
 ```
 
 For epic-scale work, `/mvt-decompose` runs *before* `/mvt-analyze` and breaks the requirement into right-sized sub-changes with DAG dependencies. For small changes, `/mvt-quick-dev` skips the full workflow entirely.
@@ -121,31 +148,78 @@ Context flows through every phase via `session.yaml` and `project-context.yaml` 
 
 Real-world repos are rarely a single project. MVTT handles both shapes that slow other tools down.
 
-**Multi-project in one repo.** Monorepos, microservices, multi-app repos — MVTT handles them natively. Each project gets its own `project-context.yaml` and its own knowledge subset. Skills scope to the active project automatically; you can switch scopes explicitly. One workspace, many projects, no context bleed.
+**Multi-project in one repo.** Monorepos, microservices, multi-app repos — MVTT handles them natively. A single `project-context.yaml` tracks all sub-projects in a `projects[]` array, and the registry routes knowledge by project name. Skills scope to the active project automatically; you can switch scopes explicitly. One workspace, many projects, no context bleed.
 
 ```mermaid
 flowchart TB
-    repo[".ai-agents/"]
-    p1["**Project A**<br/>project-context.yaml"]
-    p2["**Project B**<br/>project-context.yaml"]
-    p3["**Project C**<br/>project-context.yaml"]
-    shared["**Shared knowledge**<br/>core/ · principle/"]
+    repo["🗂️<br/><b>Workspace</b><br/><sub>.ai-agents/</sub>"]
 
-    repo --> p1
-    repo --> p2
-    repo --> p3
-    repo --> shared
+    subgraph projects ["<b>📦 Multi-Project Tracking</b>"]
+        direction LR
+        p1["📘<br/><b>Project A</b><br/><sub>api-server</sub>"]
+        p2["📗<br/><b>Project B</b><br/><sub>web-app</sub>"]
+        p3["📙<br/><b>Project C</b><br/><sub>mobile-app</sub>"]
+    end
+
+    shared["🌐<br/><b>Shared Knowledge</b><br/><sub>core/ · principle/</sub>"]
+
+    repo ==> projects
+    repo ==> shared
+
+    style repo fill:#6d4ad6,stroke:#4c1d95,stroke-width:3px,color:#ffffff,font-weight:bold,font-size:16px
+    style projects fill:#faf7ff,stroke:#a78bfa,stroke-width:2px,stroke-dasharray:5 3,color:#4c1d95
+    style shared fill:#dcfce7,stroke:#22c55e,stroke-width:2px,color:#14532d,font-weight:bold
+
+    style p1 fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e3a8a,font-weight:bold
+    style p2 fill:#dcfce7,stroke:#22c55e,stroke-width:2px,color:#14532d,font-weight:bold
+    style p3 fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#78350f,font-weight:bold
+
+    linkStyle 0 stroke:#a855f7,stroke-width:3px
+    linkStyle 1 stroke:#22c55e,stroke-width:3px
 ```
 
 **Dependency-aware task tracking.** Real features have dependencies — some tasks block others, some can run in parallel. Instead of tracking these in your head (or a spreadsheet), `/mvt-decompose` produces a DAG of sub-changes, `/mvt-plan-dev` mirrors it in `plan.yaml`, and `/mvt-update-plan` walks you through in the right order. You always see the critical path and what's runnable *now*.
 
 ```mermaid
 flowchart LR
-    T1["Auth module"] --> T3["User API"]
-    T2["DB schema"] --> T3
-    T2 --> T4["Logging"]
-    T3 --> T5["Tests"]
+    subgraph foundation ["<b>🏛️ Foundation</b>"]
+        direction LR
+        T1["🔐<br/><b>Auth module</b><br/><sub>T1</sub>"]
+        T2["🗄️<br/><b>DB schema</b><br/><sub>T2</sub>"]
+    end
+
+    subgraph parallel ["<b>⚡ Parallel Work</b>"]
+        direction LR
+        T3["🔌<br/><b>User API</b><br/><sub>T3</sub>"]
+        T4["📝<br/><b>Logging</b><br/><sub>T4</sub>"]
+    end
+
+    subgraph integration ["<b>✅ Integration</b>"]
+        direction TB
+        T5["🧪<br/><b>Tests</b><br/><sub>T5</sub>"]
+    end
+
+    T1 --> T3
+    T2 --> T3
+    T2 --> T4
+    T3 --> T5
     T4 --> T5
+
+    style foundation fill:#faf7ff,stroke:#a78bfa,stroke-width:2px,stroke-dasharray:4 3,color:#4c1d95
+    style parallel fill:#fff7ed,stroke:#fb923c,stroke-width:2px,stroke-dasharray:4 3,color:#7c2d12
+    style integration fill:#f0fdf4,stroke:#22c55e,stroke-width:2px,stroke-dasharray:4 3,color:#14532d
+
+    style T1 fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e3a8a,font-weight:bold
+    style T2 fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e3a8a,font-weight:bold
+    style T3 fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#78350f,font-weight:bold
+    style T4 fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#78350f,font-weight:bold
+    style T5 fill:#dcfce7,stroke:#22c55e,stroke-width:2px,color:#14532d,font-weight:bold
+
+    linkStyle 0 stroke:#6366f1,stroke-width:2.5px
+    linkStyle 1 stroke:#6366f1,stroke-width:2.5px
+    linkStyle 2 stroke:#6366f1,stroke-width:2.5px
+    linkStyle 3 stroke:#a855f7,stroke-width:2.5px
+    linkStyle 4 stroke:#a855f7,stroke-width:2.5px
 ```
 
 Read this as: `T3` and `T4` run in parallel (both only need `T2`); `T5` waits for both. The plan tracks all of this automatically.
@@ -162,7 +236,20 @@ Adding a new feature end-to-end looks like this:
 
 ```mermaid
 flowchart LR
-    A["/mvt-analyze<br/>Extract requirements"] --> B["/mvt-design<br/>Define architecture"] --> C["/mvt-plan-dev<br/>Break into tasks"] --> D["/mvt-implement<br/>Write code"] --> E["/mvt-review<br/>Check quality"] --> F["/mvt-test<br/>Generate tests"]
+    A["🔎<br/><b>/mvt-analyze</b><br/><sub>Extract requirements</sub>"] ==> B["🏗️<br/><b>/mvt-design</b><br/><sub>Define architecture</sub>"] ==> C["📋<br/><b>/mvt-plan-dev</b><br/><sub>Break into tasks</sub>"] ==> D["⚡<br/><b>/mvt-implement</b><br/><sub>Write code</sub>"] ==> E["🔍<br/><b>/mvt-review</b><br/><sub>Check quality</sub>"] ==> F["🧪<br/><b>/mvt-test</b><br/><sub>Generate tests</sub>"]
+
+    style A fill:#dbeafe,stroke:#3b82f6,stroke-width:2.5px,color:#1e3a8a,font-weight:bold
+    style B fill:#e0e7ff,stroke:#6366f1,stroke-width:2.5px,color:#312e81,font-weight:bold
+    style C fill:#ede9fe,stroke:#8b5cf6,stroke-width:2.5px,color:#4c1d95,font-weight:bold
+    style D fill:#fae8ff,stroke:#a855f7,stroke-width:2.5px,color:#581c87,font-weight:bold
+    style E fill:#fce7f3,stroke:#ec4899,stroke-width:2.5px,color:#831843,font-weight:bold
+    style F fill:#dcfce7,stroke:#22c55e,stroke-width:2.5px,color:#14532d,font-weight:bold
+
+    linkStyle 0 stroke:#6366f1,stroke-width:3px
+    linkStyle 1 stroke:#8b5cf6,stroke-width:3px
+    linkStyle 2 stroke:#a855f7,stroke-width:3px
+    linkStyle 3 stroke:#ec4899,stroke-width:3px
+    linkStyle 4 stroke:#22c55e,stroke-width:3px
 ```
 
 What would take 6 separate Claude Code sessions (and 6 rounds of re-explaining the project) takes **one continuous workflow** — same context, no re-explanation, no copy-paste.
