@@ -586,7 +586,7 @@ function main() {
 
   const tmpPath = args.plan + ".tmp";
   try {
-    writeFileSync(tmpPath, stringifyYaml(plan), "utf-8");
+    writeFileSync(tmpPath, stringifyYaml(plan, { lineWidth: 200 }), "utf-8");
     renameSync(tmpPath, args.plan);
   } catch (e) {
     try {

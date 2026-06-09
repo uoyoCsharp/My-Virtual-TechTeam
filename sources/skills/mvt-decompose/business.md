@@ -43,7 +43,17 @@
   - Prefer shallow depth (wide parallelism) over deep chains
 - **Validation**: if > 8 children needed, WARN and suggest narrowing the epic scope. If < 2 children, suggest using `/mvt-analyze` directly.
 
-### Step 5: Write Artifacts
+### Step 5: Preview and Confirm
+- **What**: show the decomposition result to the user before writing any files.
+- **How**: display the following inline (conversation-only, no disk write yet):
+  1. **Child story table**: the same table that will appear in `epic.md`
+  2. **Dependency diagram**: Mermaid flowchart of child dependencies
+  3. **Suggested starting child**: "Start with: `{first_child_title}` (`{first_child_id}`)"
+- **Wait for user confirmation**: ask "Proceed with this decomposition? (y/n)". Default to **y** if the user does not respond.
+- **On decline or revision request**: do NOT write any files. Revise the decomposition based on user feedback and re-present, or abort if the user chooses to cancel.
+- **On confirmation**: proceed to Step 6.
+
+### Step 6: Write Artifacts
 Write two artifacts using the `decompose-output` template for `epic.md`:
 
 1. **epic.md** (narrative) -- `.ai-agents/workspace/artifacts/{epic_id}/epic.md`
@@ -73,13 +83,12 @@ Write two artifacts using the `decompose-output` template for `epic.md`:
 node .ai-agents/scripts/epic-update.cjs --validate .ai-agents/workspace/artifacts/{epic_id}/epic.yaml
 ```
 
-### Step 6: Update Session
+### Step 7: Update Session
 Run the session update command (see State Update section) to:
 1. Create a new `active_epic` in session.yaml
 2. Set the `epic_path` to the written `epic.yaml`
 
-### Step 7: Output
+### Step 8: Output
 Display to the user:
-1. **Child story table** (from epic.md)
-2. **Dependency diagram** (mermaid)
-3. **Suggested starting child**: "Start with: `{first_child_title}` (`{first_child_id}`). Run `/mvt-analyze` to begin."
+1. **Write confirmation**: "Epic created: `{epic_id}` at `{epic_path}`"
+2. **Suggested next step**: "Run `/mvt-analyze` to start the first child: `{first_child_title}` (`{first_child_id}`)"

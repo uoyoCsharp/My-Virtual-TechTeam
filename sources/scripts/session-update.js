@@ -433,7 +433,7 @@ function main() {
   const tmpPath = sessionPath + ".tmp";
 
   try {
-    writeFileSync(tmpPath, stringifyYaml(session), "utf-8");
+    writeFileSync(tmpPath, stringifyYaml(session, { lineWidth: 200 }), "utf-8");
     renameSync(tmpPath, sessionPath);
   } catch (e) {
     try {

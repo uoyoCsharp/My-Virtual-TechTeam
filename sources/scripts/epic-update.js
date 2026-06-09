@@ -494,7 +494,7 @@ function main() {
   // Atomic write
   const tmpPath = epicPath + ".tmp";
   try {
-    writeFileSync(tmpPath, stringifyYaml(epic), "utf-8");
+    writeFileSync(tmpPath, stringifyYaml(epic, { lineWidth: 200 }), "utf-8");
     renameSync(tmpPath, epicPath);
   } catch (e) {
     try {
