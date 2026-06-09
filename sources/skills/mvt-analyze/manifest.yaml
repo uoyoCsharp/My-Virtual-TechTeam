@@ -76,6 +76,7 @@ sections:
     params:
       current_skill: mvt-analyze
       update_active_change: true
+      link_subchange_to_epic: true
 
   - type: shared
     source: sections/footer-next-steps.md

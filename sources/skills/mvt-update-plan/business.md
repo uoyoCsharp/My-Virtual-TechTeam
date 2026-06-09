@@ -95,7 +95,7 @@ After the Step 3 script reports `plan_status: "done"`:
    - `session-update.cjs --skill mvt-update-plan --summary "..." --close-change`
    - Display: next child info from epic-update stdout. Suggest `/mvt-analyze` to start the next sub-change.
 
-5. On **n**: No action. Display reminder: "Change remains open. Run `/mvt-update-plan <task> done` again later to close and advance."
+5. On **n**: No action. Display reminder: "Change remains open. Run other skills (e.g., `/mvt-review`, `/mvt-test`, `/mvt-fix`) as needed; run `/mvt-update-plan` again when ready to advance the epic."
 
 6. On **defer**:
    - `epic-update.cjs --epic <active_epic.epic_path> --set-child-status <active_change.id> done`

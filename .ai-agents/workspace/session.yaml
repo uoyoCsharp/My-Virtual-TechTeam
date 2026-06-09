@@ -32,18 +32,6 @@ changes:
     updated_at: 2026-06-08T14:37:17.059Z
 history:
   - skill: /mvt-decompose
-    completed_at: 2026-06-08T14:23:33.503Z
-    summary: test
-    change_id: 20260608-epic-scope-detection
-  - skill: /mvt-decompose
-    completed_at: 2026-06-08T14:23:33.720Z
-    summary: test
-    change_id: 20260608-epic-scope-detection
-  - skill: /mvt-decompose
-    completed_at: 2026-06-08T14:23:33.849Z
-    summary: test
-    change_id: 20260608-epic-scope-detection
-  - skill: /mvt-decompose
     completed_at: 2026-06-08T14:23:33.970Z
     summary: test
     change_id: 20260608-epic-scope-detection
@@ -111,6 +99,24 @@ history:
     completed_at: 2026-06-08T14:57:48.813Z
     summary: "修复 review W1-W4 + S2(升级): batch archive 检测规则、project 默认值、resume epic
       路径校验、emoji 冲突、epic-child 误触 re-decompose"
+    change_id: 20260608-regular
+  - skill: /mvt-review
+    completed_at: 2026-06-09T02:07:07.265Z
+    summary: 二轮审核 7 个 business.md：W1/W3/W4/S2 已修复，W2 残留 (单项目仍写 default)，新增
+      3W+5S（within-epic plan-complete 状态空缺、decompose 验证失败路径未指定、help 文本回退缺 epic
+      维度等）
+    change_id: 20260608-regular
+  - skill: /mvt-fix
+    completed_at: 2026-06-09T02:39:53.497Z
+    summary: 扩展共享 session-update.md 模板加 5 个 epic flag 块；重构 mvt-decompose 用共享
+      section（删 30 行内联）+ 修 W2 残留；mvt-analyze 加 link_subchange_to_epic 参数。232
+      测试全绿。
+    change_id: 20260608-regular
+  - skill: /mvt-fix
+    completed_at: 2026-06-09T02:52:40.328Z
+    summary: 完成 follow-up 1+2：删 mvt-analyze 冗余 epic-id 提示；修 mvt-decompose 单项目
+      project 指引；plan-update.js + epic-update.js 加 project-context.yaml
+      自动检测，hardcoded default 保留作兜底。232 测试全绿，端到端验证 OK。
     change_id: 20260608-regular
 active_epic:
   id: epic-20260608-my

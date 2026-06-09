@@ -10,8 +10,6 @@ In this state the user is starting a new sub-change within an existing epic. Rea
 | B | Supplements current child | Merge user message with `current_change` child's scope. Proceed to Step 3. |
 | C | Points to different child | Locate target in `children[]`. If `depends_on` has unfinished prerequisites → warn and ask to confirm forced reorder (y/n). If deps satisfied → confirm switch (y/n). On confirmed reorder: call `epic-update.cjs --epic <epic_path> --switch-active <target_id>`. If target not in `children[]` → offer to treat as independent change (exit epic-child mode) or `--add-child`. |
 
-**Epic context for State Update**: When writing a sub-change linked to an epic, include `--epic-id <active_epic.id>` in the `--new-change` session-update command (Step 7).
-
 ## Execution Flow
 
 ### Step 1: Load Requirements
@@ -105,5 +103,5 @@ In this state the user is starting a new sub-change within an existing epic. Rea
 - If no ambiguities -> Skip this step
 
 ### Step 7: Update Workspace
-1. Generate change-id: `{YYYYMMDD}-{slug}` format (e.g., `20260425-user-authentication`)
+1. Generate change-id: `{YYYYMMDD}-{slug}` format (e.g., `20260425-user-authentication`). Slug constraints: lowercase ASCII, kebab-case, `[a-z0-9-]+`, 1-4 words.
 2. Write artifact: `.ai-agents/workspace/artifacts/{change-id}/analysis.md`

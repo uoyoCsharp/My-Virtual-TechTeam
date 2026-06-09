@@ -39,7 +39,38 @@
  */
 
 import { readFileSync, writeFileSync, renameSync, unlinkSync, existsSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
+
+// ── Project Discovery ──────────────────────────────────────────────────────
+// Mirrors the helpers in plan-update.js. Used to default the project array for
+// newly-added children to the actual workspace project name (not "default")
+// when project-context.yaml is present and single-project.
+function findProjectRootFromPath(filePath) {
+  let dir = resolve(dirname(filePath));
+  while (true) {
+    if (existsSync(join(dir, ".ai-agents"))) return dir;
+    const parent = dirname(dir);
+    if (parent === dir) return null;
+    dir = parent;
+  }
+}
+
+function loadSoleProject(projectRoot) {
+  if (!projectRoot) return null;
+  const ctxPath = join(projectRoot, ".ai-agents/workspace/project-context.yaml");
+  if (!existsSync(ctxPath)) return null;
+  try {
+    const ctx = parseYaml(readFileSync(ctxPath, "utf-8"));
+    const projects = ctx?.projects;
+    if (!Array.isArray(projects) || projects.length !== 1) return null;
+    const name = projects[0]?.name;
+    if (typeof name !== "string" || name === "") return null;
+    return [name];
+  } catch {
+    return null;
+  }
+}
 
 // ── Constants ─────────────────────────────────────────────────────────────
 const VALID_CHILD_STATUSES = ["pending", "active", "done", "abandoned"];
@@ -353,12 +384,17 @@ function switchActive(epic, changeId) {
   };
 }
 
-function addChild(epic, childrenToAdd) {
+function addChild(epic, childrenToAdd, epicPath) {
   if (!Array.isArray(childrenToAdd) || childrenToAdd.length === 0) {
     return { error: ERRORS.ADD_CHILD_MISSING() };
   }
 
   epic.children = epic.children || [];
+
+  // Default project attribution: read the sole project from
+  // project-context.yaml when available, fall back to ["default"] for
+  // legacy / unconfigured workspaces.
+  const defaultProject = loadSoleProject(findProjectRootFromPath(epicPath)) || ["default"];
 
   for (const child of childrenToAdd) {
     if (!child.id || child.id === true) return { error: ERRORS.ADD_CHILD_MISSING() };
@@ -373,7 +409,7 @@ function addChild(epic, childrenToAdd) {
       title: child.title,
       status: "pending",
       depends_on: child.depends_on || [],
-      project: ["default"],
+      project: defaultProject,
       scope: child.scope || "",
       completed_at: null,
     });
@@ -438,7 +474,7 @@ function main() {
   } else if (args["switch-active"]) {
     result = switchActive(epic, args["switch-active"]);
   } else if (args["add-child"]) {
-    result = addChild(epic, args["add-child"]);
+    result = addChild(epic, args["add-child"], args.epic);
   }
 
   if (result.error) {

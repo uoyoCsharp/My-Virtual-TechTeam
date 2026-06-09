@@ -94,42 +94,18 @@ sections:
             {child scope description}
           status: active       # first child: active, rest: pending
           depends_on: []       # DAG dependencies
-          project: ["default"] # project hint for multi-project workspaces
+          project: ["<project-name>"] # use the sole project name from project-context.yaml > projects[].name
           completed_at: null
       ```
 
       **epic-id format**: `epic-{YYYYMMDD}-{slug}` (e.g., `epic-20260608-ecommerce-platform`)
 
-  - type: inline
-    content: |
-      ## State Update
-
-      After completing the decomposition, run the session update script **exactly once**:
-
-      ```bash
-      node .ai-agents/scripts/session-update.cjs \
-        --skill mvt-decompose \
-        --summary "<concise one-line summary>" \
-        --new-epic "<epic_title>" \
-        --epic-id "<epic_id>" \
-        --set-epic-path ".ai-agents/workspace/artifacts/{epic_id}/epic.yaml"
-      ```
-
-      If the script exits with code 0, the state update was applied successfully.
-
-      ### Argument values
-
-      | Argument | Value source | Example |
-      |----------|-------------|---------|
-      | `--skill` | Always `mvt-decompose` | `mvt-decompose` |
-      | `--summary` | One-line description of the decomposition | `"Decomposed ecommerce platform into 5 sub-changes"` |
-      | `--new-epic` | The epic title | `"ecommerce platform"` |
-      | `--epic-id` | Generated epic id (epic-YYYYMMDD-slug) | `"epic-20260608-ecommerce-platform"` |
-      | `--set-epic-path` | Path to the written epic.yaml | `".ai-agents/workspace/artifacts/epic-20260608-ecommerce-platform/epic.yaml"` |
-
-      ### Failure handling
-
-      If the script fails (non-zero exit), do NOT abort the skill's main task. Continue execution and add a note that the session could not be updated.
+  - type: shared
+    source: sections/session-update.md
+    params:
+      current_skill: mvt-decompose
+      new_epic: true
+      set_epic_path: true
 
   - type: shared
     source: sections/footer-next-steps.md

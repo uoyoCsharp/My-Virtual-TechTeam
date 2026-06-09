@@ -32,11 +32,11 @@
 - **What**: break the epic into right-sized children, each suitable for one analyze-design-plan-implement cycle
 - **Sizing rule**: each child should produce one deliverable capability slice, implementable in 3-10 plan tasks
 - **For each child**, define:
-  - `change_id`: `{YYYYMMDD}-{slug}` format
+  - `change_id`: `{YYYYMMDD}-{slug}` format. Slug constraints: lowercase ASCII, kebab-case, `[a-z0-9-]+`, 1-4 words (e.g., `user-auth`, `catalog-search`)
   - `title`: concise name
   - `scope`: description of what this child delivers
   - `depends_on`: list of `change_id` values this child depends on (empty for root children)
-  - `project`: project hint array. For single-project workspaces: `["default"]`. For multi-project workspaces: must match a project name from `project-context.yaml > projects[].name`; if uncertain, ask the user rather than writing `["default"]`.
+  - `project`: project hint array. For single-project workspaces: use the sole project name from `project-context.yaml > projects[].name` (e.g., `["mvtt"]` in this workspace; do NOT hardcode `["default"]`). For multi-project workspaces: must match a project name from `project-context.yaml > projects[].name`; if uncertain, ask the user rather than guessing.
 - **DAG constraints**:
   - Dependencies must form a DAG (no cycles)
   - Dependencies reference existing `change_id` values only
@@ -47,7 +47,7 @@
 Write two artifacts using the `decompose-output` template for `epic.md`:
 
 1. **epic.md** (narrative) -- `.ai-agents/workspace/artifacts/{epic_id}/epic.md`
-   - Uses the `decompose-output` template (Vision, Scope & Out of Scope, Cross-cutting Concerns, Child Stories, Dependency Map, Open Questions)
+   - Uses the `decompose-output` template.
    - **Child Stories**: Markdown table mirroring `epic.yaml.children[]`
 
      | # | Child | Scope | Status | Depends On |

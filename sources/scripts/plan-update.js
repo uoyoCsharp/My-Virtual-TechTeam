@@ -37,7 +37,41 @@
  */
 
 import { readFileSync, writeFileSync, renameSync, unlinkSync, existsSync } from "node:fs";
+import { dirname, join, resolve } from "node:path";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
+
+// ── Project Discovery ──────────────────────────────────────────────────────
+// Resolve project root by walking up from a file path until `.ai-agents/` is
+// found. Returns null if no project root can be determined.
+function findProjectRootFromPath(filePath) {
+  let dir = resolve(dirname(filePath));
+  while (true) {
+    if (existsSync(join(dir, ".ai-agents"))) return dir;
+    const parent = dirname(dir);
+    if (parent === dir) return null;
+    dir = parent;
+  }
+}
+
+// Read the sole project name from `.ai-agents/workspace/project-context.yaml`.
+// Returns the project array (length 1) when the file exists AND has exactly
+// one project with a non-empty name; returns null otherwise (so the caller
+// can fall back to its hardcoded default).
+function loadSoleProject(projectRoot) {
+  if (!projectRoot) return null;
+  const ctxPath = join(projectRoot, ".ai-agents/workspace/project-context.yaml");
+  if (!existsSync(ctxPath)) return null;
+  try {
+    const ctx = parseYaml(readFileSync(ctxPath, "utf-8"));
+    const projects = ctx?.projects;
+    if (!Array.isArray(projects) || projects.length !== 1) return null;
+    const name = projects[0]?.name;
+    if (typeof name !== "string" || name === "") return null;
+    return [name];
+  } catch {
+    return null;
+  }
+}
 
 // ── Constants ─────────────────────────────────────────────────────────────
 const VALID_STATUSES = ["pending", "in_progress", "done", "blocked", "skipped"];
@@ -191,8 +225,12 @@ function recomputeCurrentTasks(plan, changedTaskId, projectList) {
       .map((t) => t.id)
   );
 
-  // Derive effective project list: use --projects if provided, else ["default"]
-  const projects = projectList && projectList.length > 0 ? projectList : ["default"];
+  // Derive effective project list: prefer explicit --projects, else read the
+  // sole project from project-context.yaml (single-project workspaces), else
+  // fall back to ["default"] for legacy / unconfigured cases.
+  const projects = (projectList && projectList.length > 0)
+    ? projectList
+    : (loadSoleProject(findProjectRootFromPath(args.plan)) || ["default"]);
 
   // Build current_tasks: for each project, find the in_progress task
   const currentTasks = {};
@@ -313,8 +351,11 @@ function validatePlan(plan, projectList) {
     errors.push(`Dependency cycle detected: ${cycle.join(" -> ")}`);
   }
 
-  // Per-project in_progress constraint
-  const projects = projectList && projectList.length > 0 ? projectList : ["default"];
+  // Per-project in_progress constraint (use the same effective project list
+  // resolution as recomputeCurrentTasks so validation matches runtime behavior).
+  const projects = (projectList && projectList.length > 0)
+    ? projectList
+    : (loadSoleProject(findProjectRootFromPath(args.plan)) || ["default"]);
   for (const proj of projects) {
     const inProgressForProject = tasks.filter(
       (t) => t.status === "in_progress" && getTaskProjects(t).includes(proj)
