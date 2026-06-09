@@ -1,7 +1,8 @@
 import { existsSync, readdirSync, rmSync, statSync, unlinkSync } from "node:fs";
 import path from "node:path";
 import prompts from "prompts";
-import { manifestPath, readInstallationManifest } from "../fs/install-manifest.js";
+import { manifestPath, readInstallationManifest, readInstalledPlatforms } from "../fs/install-manifest.js";
+import { PLATFORMS, getPlatformById } from "../types/platform.js";
 
 export async function uninstallCommand(): Promise<void> {
   const projectRoot = process.cwd();
@@ -31,12 +32,24 @@ export async function uninstallCommand(): Promise<void> {
     if (existsSync(abs)) unlinkSync(abs);
   }
 
-  const skillsRoot = path.resolve(projectRoot, ".claude/skills");
-  if (existsSync(skillsRoot)) {
-    for (const entry of readdirSync(skillsRoot)) {
-      const entryPath = path.join(skillsRoot, entry);
-      if (statSync(entryPath).isDirectory() && entry.startsWith("mvt-")) {
-        rmSync(entryPath, { recursive: true, force: true });
+  // Clean up residual mvt-* directories across all known platforms.
+  // Fall back to all known platforms if manifest is unreadable.
+  const installedPlatforms = readInstalledPlatforms(projectRoot);
+  const platformIds =
+    installedPlatforms.length > 0
+      ? installedPlatforms
+      : PLATFORMS.map((p) => p.id);
+
+  for (const platformId of platformIds) {
+    const platform = getPlatformById(platformId);
+    if (!platform) continue;
+    const skillsRoot = path.resolve(projectRoot, platform.skillDir);
+    if (existsSync(skillsRoot)) {
+      for (const entry of readdirSync(skillsRoot)) {
+        const entryPath = path.join(skillsRoot, entry);
+        if (statSync(entryPath).isDirectory() && entry.startsWith("mvt-")) {
+          rmSync(entryPath, { recursive: true, force: true });
+        }
       }
     }
   }

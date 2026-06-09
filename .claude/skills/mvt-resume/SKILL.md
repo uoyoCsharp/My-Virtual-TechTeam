@@ -118,9 +118,20 @@ For each check below, if the condition holds, perform the action implied by its 
 Read `.ai-agents/workspace/session.yaml`. If the file is missing or empty, jump to Step 8 with the "no session" branch.
 
 Extract:
-- `active_change` -- the current change-id (if any), plan_path
+- `active_change` -- the current change-id (if any), plan_path, epic_id
+- `active_epic` -- the current epic (if any): id, title, epic_path
 - `changes` -- list of changes with active plans
 - `history` -- last 20 entries (skill name, timestamp, change_id)
+
+### Step 1a: Check Epic State
+
+After extracting session data in Step 1, check for epic state:
+
+| Condition | Action |
+|-----------|--------|
+| `active_change.id` non-empty AND `active_change.epic_id` non-empty | Set `within_epic = true`. Continue to Step 2 (normal plan-based resume). In Step 7, include an Epic Context section. |
+| `active_change.id` empty AND `active_epic.id` non-empty (epic-pending) | Read `epic.yaml` via `active_epic.epic_path`. If unreadable, warn and jump to Step 8 with the "epic-pending but epic.yaml missing" edge case. Otherwise, identify the child referenced by `epic.yaml.current_change` as the resume target. Skip Steps 2-6 and go directly to Step 7 with a simplified report containing: (1) **Epic State** -- epic title, id, status, progress (done/total); (2) **Current Sub-change** -- title, scope, depends_on status of each dependency; (3) **Resume Point** -- "Resuming epic: {title}. Next sub-change: {current_change_title}. Run `/mvt-analyze` to start."; (4) **Recommended Next Step** -- `/mvt-analyze` -- Start the next sub-change in the epic. |
+| Neither | Continue to Step 2 (normal flow). |
 
 ### Step 2: Discover Pending Plans
 
@@ -200,11 +211,12 @@ And the **Current Task Detail** section:
 Render via the `resume-output.md` template. Sections to fill:
 
 1. **Active Task** -- name, change-id, started_at (from selected plan)
-2. **Plan Progress** -- task table + counts + current task detail
-3. **Recent Skill History** -- last 5 entries from history (filtered to selected change if applicable)
-4. **Recent Artifacts** -- the top 5 artifacts collected in Step 4 (path, mtime, size)
-5. **Resume Point** -- a one-paragraph natural-language summary of "where we are"
-6. **Recommended Next Step** -- the mapped next skill from Step 5, with justification
+2. **Epic Context** (if `within_epic` is true) -- epic title, id, progress (done/total children), current position within the epic. Resolve the parent epic path: compare `active_change.epic_id` to `active_epic.id`. If they match, use `active_epic.epic_path`. If they do not match, search `session.epics[]` for an entry with `id == active_change.epic_id` and use its `epic_path`. If neither path exists, render the plan resume and add a bounded warning: "Epic context could not be loaded (epic_id: {active_change.epic_id})." Read `epic.yaml` via the resolved path and render: "This change is part of epic: **{epic_title}** ({done}/{total} sub-changes done). Current: {active_child_title}."
+3. **Plan Progress** -- task table + counts + current task detail
+4. **Recent Skill History** -- last 5 entries from history (filtered to selected change if applicable)
+5. **Recent Artifacts** -- the top 5 artifacts collected in Step 4 (path, mtime, size)
+6. **Resume Point** -- a one-paragraph natural-language summary of "where we are"
+7. **Recommended Next Step** -- the mapped next skill from Step 5, with justification
 
 ### Step 8: Edge Cases
 
@@ -214,6 +226,8 @@ Render via the `resume-output.md` template. Sections to fill:
 - **Plan exists but plan.yaml is invalid** (parse error or schema violation): warn "plan.yaml is corrupted or invalid. Run `/mvt-plan-dev` to regenerate, or `/mvt-status` to inspect."
 - **Stale task warning**: If plan's `current_tasks` entries reference tasks with status `in_progress` but the plan's `updated_at` is more than 5 days old, append a notice: "Current task has been in_progress for {N} days without updates. Consider running `/mvt-update-plan` to refresh status."
 - **Stale deliverables warning**: If any task has `deliverables.freshness == "stale"`, warn: "Task(s) {ids} have stale deliverables. Downstream tasks may reference outdated contracts. Run `/mvt-implement` to refresh."
+- **Epic-pending but epic.yaml missing**: warn "Epic state references `epic_path` but file not found at `{path}`. Run `/mvt-status` to inspect or `/mvt-cleanup` to archive stale entries."
+- **Epic-pending but current_change empty or invalid**: warn "Epic `current_change` is empty or points to a non-existent child. Run `/mvt-status` to inspect the epic state."
 
 ## State Update
 

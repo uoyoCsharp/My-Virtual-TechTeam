@@ -7316,7 +7316,32 @@ var require_dist = __commonJS({
 
 // sources/scripts/plan-update.js
 var import_node_fs = require("node:fs");
+var import_node_path = require("node:path");
 var import_yaml = __toESM(require_dist(), 1);
+function findProjectRootFromPath(filePath) {
+  let dir = (0, import_node_path.resolve)((0, import_node_path.dirname)(filePath));
+  while (true) {
+    if ((0, import_node_fs.existsSync)((0, import_node_path.join)(dir, ".ai-agents"))) return dir;
+    const parent = (0, import_node_path.dirname)(dir);
+    if (parent === dir) return null;
+    dir = parent;
+  }
+}
+function loadSoleProject(projectRoot) {
+  if (!projectRoot) return null;
+  const ctxPath = (0, import_node_path.join)(projectRoot, ".ai-agents/workspace/project-context.yaml");
+  if (!(0, import_node_fs.existsSync)(ctxPath)) return null;
+  try {
+    const ctx = (0, import_yaml.parse)((0, import_node_fs.readFileSync)(ctxPath, "utf-8"));
+    const projects = ctx?.projects;
+    if (!Array.isArray(projects) || projects.length !== 1) return null;
+    const name = projects[0]?.name;
+    if (typeof name !== "string" || name === "") return null;
+    return [name];
+  } catch {
+    return null;
+  }
+}
 var VALID_STATUSES = ["pending", "in_progress", "done", "blocked", "skipped"];
 var TERMINAL_STATUSES = ["done", "blocked", "skipped"];
 var PROJECT_NAME_RE = /^[a-zA-Z0-9][a-zA-Z0-9_-]*$/;
@@ -7339,34 +7364,34 @@ var ERRORS = {
   INVALID_DELIVERABLES_POINTER: (val) => `Invalid --deliverables-pointer "${val}". Only "current" is supported.`
 };
 function parseArgs(argv) {
-  const args = {};
+  const args2 = {};
   for (let i = 2; i < argv.length; i++) {
     if (argv[i].startsWith("--")) {
       const key = argv[i].slice(2);
       const next = argv[i + 1];
       if (next && !next.startsWith("--")) {
-        args[key] = next;
+        args2[key] = next;
         i++;
       } else {
-        args[key] = true;
+        args2[key] = true;
       }
     }
   }
-  return args;
+  return args2;
 }
-function validateArgs(args) {
-  if (!args.plan || args.plan === true) return ERRORS.MISSING_PLAN();
-  if (!args.task || args.task === true) return ERRORS.MISSING_TASK();
-  if (!args.status || args.status === true) return ERRORS.MISSING_STATUS();
-  if (!VALID_STATUSES.includes(args.status)) return ERRORS.INVALID_STATUS(args.status);
+function validateArgs(args2) {
+  if (!args2.plan || args2.plan === true) return ERRORS.MISSING_PLAN();
+  if (!args2.task || args2.task === true) return ERRORS.MISSING_TASK();
+  if (!args2.status || args2.status === true) return ERRORS.MISSING_STATUS();
+  if (!VALID_STATUSES.includes(args2.status)) return ERRORS.INVALID_STATUS(args2.status);
   return null;
 }
-function applyUpdate(plan, args, now) {
-  const task = plan.tasks.find((t) => t.id === args.task);
+function applyUpdate(plan, args2, now) {
+  const task = plan.tasks.find((t) => t.id === args2.task);
   const oldStatus = task.status;
-  task.status = args.status;
-  if (args.artifacts && args.artifacts !== true) {
-    const incoming = args.artifacts.split(",").map((s) => s.trim()).filter(Boolean);
+  task.status = args2.status;
+  if (args2.artifacts && args2.artifacts !== true) {
+    const incoming = args2.artifacts.split(",").map((s) => s.trim()).filter(Boolean);
     if (incoming.length) {
       if (!task.artifacts || typeof task.artifacts !== "object") {
         task.artifacts = { files: [] };
@@ -7383,22 +7408,22 @@ function applyUpdate(plan, args, now) {
       }
     }
   }
-  if (args.notes && args.notes !== true) {
-    task.notes = args.notes;
+  if (args2.notes && args2.notes !== true) {
+    task.notes = args2.notes;
   }
-  if (args.status === "done" && !task.completed_at) {
+  if (args2.status === "done" && !task.completed_at) {
     task.completed_at = now;
-  } else if (args.status !== "done") {
+  } else if (args2.status !== "done") {
     task.completed_at = null;
   }
-  if (args["deliverables-pointer"] && args["deliverables-pointer"] !== true) {
-    if (args["deliverables-pointer"] !== "current") {
-      return { error: ERRORS.INVALID_DELIVERABLES_POINTER(args["deliverables-pointer"]) };
+  if (args2["deliverables-pointer"] && args2["deliverables-pointer"] !== true) {
+    if (args2["deliverables-pointer"] !== "current") {
+      return { error: ERRORS.INVALID_DELIVERABLES_POINTER(args2["deliverables-pointer"]) };
     }
     task.deliverables = { freshness: "current" };
   }
-  if (args["mark-deliverable-stale"] && args["mark-deliverable-stale"] !== true) {
-    const staleIds = args["mark-deliverable-stale"].split(",").map((s) => s.trim()).filter(Boolean);
+  if (args2["mark-deliverable-stale"] && args2["mark-deliverable-stale"] !== true) {
+    const staleIds = args2["mark-deliverable-stale"].split(",").map((s) => s.trim()).filter(Boolean);
     for (const staleTaskId of staleIds) {
       const staleTask = plan.tasks.find((t) => t.id === staleTaskId);
       if (staleTask) {
@@ -7411,7 +7436,7 @@ function applyUpdate(plan, args, now) {
     }
   }
   plan.updated_at = now;
-  return { id: task.id, title: task.title || "", old_status: oldStatus, new_status: args.status };
+  return { id: task.id, title: task.title || "", old_status: oldStatus, new_status: args2.status };
 }
 function recomputeCurrentTasks(plan, changedTaskId, projectList) {
   let warning = null;
@@ -7423,7 +7448,7 @@ function recomputeCurrentTasks(plan, changedTaskId, projectList) {
   const resolvedIds = new Set(
     plan.tasks.filter((t) => t.status === "done" || t.status === "skipped").map((t) => t.id)
   );
-  const projects = projectList && projectList.length > 0 ? projectList : ["default"];
+  const projects = projectList && projectList.length > 0 ? projectList : loadSoleProject(findProjectRootFromPath(args.plan)) || ["default"];
   const currentTasks = {};
   for (const proj of projects) {
     const inProgressForProject = plan.tasks.filter(
@@ -7506,7 +7531,7 @@ function validatePlan(plan, projectList) {
   if (cycle) {
     errors.push(`Dependency cycle detected: ${cycle.join(" -> ")}`);
   }
-  const projects = projectList && projectList.length > 0 ? projectList : ["default"];
+  const projects = projectList && projectList.length > 0 ? projectList : loadSoleProject(findProjectRootFromPath(args.plan)) || ["default"];
   for (const proj of projects) {
     const inProgressForProject = tasks.filter(
       (t) => t.status === "in_progress" && getTaskProjects(t).includes(proj)
@@ -7630,19 +7655,19 @@ function findCycleInSubgraph(tasks, taskIds) {
   return null;
 }
 function main() {
-  const args = parseArgs(process.argv);
-  const argErr = validateArgs(args);
+  const args2 = parseArgs(process.argv);
+  const argErr = validateArgs(args2);
   if (argErr) {
     process.stderr.write(argErr + "\n");
     process.exit(1);
   }
-  if (!(0, import_node_fs.existsSync)(args.plan)) {
-    process.stderr.write(ERRORS.PLAN_NOT_FOUND(args.plan) + "\n");
+  if (!(0, import_node_fs.existsSync)(args2.plan)) {
+    process.stderr.write(ERRORS.PLAN_NOT_FOUND(args2.plan) + "\n");
     process.exit(1);
   }
   let plan;
   try {
-    plan = (0, import_yaml.parse)((0, import_node_fs.readFileSync)(args.plan, "utf-8"));
+    plan = (0, import_yaml.parse)((0, import_node_fs.readFileSync)(args2.plan, "utf-8"));
   } catch (e) {
     process.stderr.write(ERRORS.PLAN_PARSE_FAILED(e.message) + "\n");
     process.exit(1);
@@ -7651,15 +7676,15 @@ function main() {
     process.stderr.write(ERRORS.PLAN_PARSE_FAILED("missing tasks[]") + "\n");
     process.exit(1);
   }
-  if (!plan.tasks.some((t) => t.id === args.task)) {
+  if (!plan.tasks.some((t) => t.id === args2.task)) {
     process.stderr.write(
-      ERRORS.TASK_NOT_FOUND(args.task, plan.tasks.map((t) => t.id)) + "\n"
+      ERRORS.TASK_NOT_FOUND(args2.task, plan.tasks.map((t) => t.id)) + "\n"
     );
     process.exit(1);
   }
   let projectList = null;
-  if (args.projects && args.projects !== true) {
-    projectList = args.projects.split(",").map((s) => s.trim()).filter(Boolean);
+  if (args2.projects && args2.projects !== true) {
+    projectList = args2.projects.split(",").map((s) => s.trim()).filter(Boolean);
   } else {
     projectList = deriveProjectList(plan.tasks);
   }
@@ -7673,21 +7698,21 @@ function main() {
     plan.current_tasks = {};
   }
   const now = (/* @__PURE__ */ new Date()).toISOString();
-  const taskChange = applyUpdate(plan, args, now);
+  const taskChange = applyUpdate(plan, args2, now);
   if (taskChange.error) {
     process.stderr.write(taskChange.error + "\n");
     process.exit(1);
   }
-  const { warning, project_switch: switchNotif } = recomputeCurrentTasks(plan, args.task, projectList);
+  const { warning, project_switch: switchNotif } = recomputeCurrentTasks(plan, args2.task, projectList);
   const validationErrors = validatePlan(plan, projectList);
   if (validationErrors.length) {
     process.stderr.write(ERRORS.VALIDATION_FAILED(validationErrors) + "\n");
     process.exit(1);
   }
-  const tmpPath = args.plan + ".tmp";
+  const tmpPath = args2.plan + ".tmp";
   try {
     (0, import_node_fs.writeFileSync)(tmpPath, (0, import_yaml.stringify)(plan), "utf-8");
-    (0, import_node_fs.renameSync)(tmpPath, args.plan);
+    (0, import_node_fs.renameSync)(tmpPath, args2.plan);
   } catch (e) {
     try {
       if ((0, import_node_fs.existsSync)(tmpPath)) (0, import_node_fs.unlinkSync)(tmpPath);

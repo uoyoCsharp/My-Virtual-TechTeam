@@ -3,6 +3,8 @@ version: 2
 generated:
   - pattern: ".claude/skills/mvt-*/SKILL.md"
     source: "build:skills"
+  - pattern: ".qoder/skills/mvt-*/SKILL.md"
+    source: "build:skills"
   - pattern: ".ai-agents/skills/_templates/*-output.md"
     source: "build:templates"
   - pattern: ".ai-agents/skills/_templates/project-context.md"

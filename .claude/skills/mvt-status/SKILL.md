@@ -144,6 +144,26 @@ For each check below, if the condition holds, perform the action implied by its 
   2. **Projects** -- table: name | type | tech stack (truncated). Cap at 10 rows; collapse the rest into `+N more`.
   3. **Semantic Context** -- one line: `project-context.md present` / `missing -- run /mvt-analyze-code`.
   4. **Active Change** -- if `active_change` exists: id, title, start time. Else: `none`.
+  4a. **Epic Progress** -- if `active_epic.id` is non-empty:
+     - Read `epic.yaml` via `active_epic.epic_path`. If the file is missing or unreadable, render `(epic.yaml not found at {path})` and skip this section.
+     - Compute progress: count children with `status` in `["done", "abandoned"]` as completed; total = `children.length`.
+     - Render:
+
+       ```markdown
+       ## Epic: {epic_title} ({epic_id})
+       Progress: {done}/{total} done -- Status: {status}
+
+       | Sub-change | Status | depends_on | Internal Progress |
+       |------------|--------|------------|-------------------|
+       | {title} | {status} | {deps or --} | {plan progress or --} |
+       ```
+
+     - For each child in `epic.yaml.children[]`:
+       - `depends_on`: comma-separated list of change_ids, or `--` if empty.
+       - `Internal Progress`: for a child with `status: active`, attempt to read its plan.yaml from `.ai-agents/workspace/artifacts/{change_id}/plan.yaml`. If found, show `{done_count}/{total_count} tasks`. If not found, show `--`. For non-active children, show `--`.
+     - Below the table, render a context line:
+       - If `active_change.id` is non-empty (within-epic active change): "Current: **{active_child_title}**. Run `/mvt-resume` to continue."
+       - If `active_change.id` is empty (epic-pending state): "Next sub-change: **{current_change_title}**. Run `/mvt-analyze` to start."
   5. **Changes Overview** -- table from Step 3 (skip if no plans). Render with these columns:
 
      | change-id | title | status | progress | current_tasks | project | updated_at |
@@ -159,8 +179,9 @@ For each check below, if the condition holds, perform the action implied by its 
 ### Step 5: Suggest Next Step
 - Resolution order (first match wins):
   1. `active_change` has a plan in `in_progress`, `current_tasks` has entries -> suggest the relevant task's `skill_hint` (or, if missing, recommend `/mvt-update-plan` to set `current_tasks`).
-  2. `project-context.md` is missing -> suggest `/mvt-analyze-code`.
-  3. No `active_change` or no active plan -> suggest `/mvt-analyze` to start a new feature OR `/mvt-help` to browse the catalog.
+  2. `active_epic.id` non-empty AND `active_change.id` empty (epic-pending state) -> suggest `/mvt-analyze` -- Start the next sub-change in the epic.
+  3. `project-context.md` is missing -> suggest `/mvt-analyze-code`.
+  4. No `active_change` or no active plan -> suggest `/mvt-analyze` to start a new feature OR `/mvt-help` to browse the catalog.
 - The suggestion must be a single line: skill command + one-clause reason.
 
 ## Edge Cases & Errors
@@ -175,6 +196,9 @@ For each check below, if the condition holds, perform the action implied by its 
 | Both `changes[]` and the artifact glob find the same plan | Deduplicate by `change_id`; prefer the indexed entry's metadata |
 | Multiple `in_progress` plans | All rendered in Changes Overview; Step 5's suggestion picks the most recently updated; mention the count in the suggestion line |
 | Workspace contains zero projects | Render header only with a single suggestion: `/mvt-init` |
+| `active_epic.epic_path` points to missing `epic.yaml` | Render `(epic.yaml not found at {path})` in Epic Progress section; skip the section |
+| `epic.yaml` parse error | Surface one-line error with file path, skip Epic Progress section; do not attempt repair |
+| `epic.yaml.current_change` points to non-existent child | Show `(invalid: {id})` in the child table context line |
 
 ## State Update
 

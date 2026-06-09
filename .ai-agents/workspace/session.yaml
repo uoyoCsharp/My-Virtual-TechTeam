@@ -31,22 +31,6 @@ changes:
     status: active
     updated_at: 2026-06-08T14:37:17.059Z
 history:
-  - skill: /mvt-decompose
-    completed_at: 2026-06-08T14:23:33.970Z
-    summary: test
-    change_id: 20260608-epic-scope-detection
-  - skill: /mvt-status
-    completed_at: 2026-06-08T14:23:34.089Z
-    summary: test
-    change_id: 20260608-epic-scope-detection
-  - skill: /mvt-update-plan
-    completed_at: 2026-06-08T14:23:34.207Z
-    summary: test
-    change_id: 20260608-epic-scope-detection
-  - skill: /mvt-status
-    completed_at: 2026-06-08T14:23:34.326Z
-    summary: test
-    change_id: 20260608-epic-scope-detection
   - skill: /mvt-update-plan
     completed_at: 2026-06-08T14:23:34.442Z
     summary: test
@@ -117,6 +101,27 @@ history:
     summary: 完成 follow-up 1+2：删 mvt-analyze 冗余 epic-id 提示；修 mvt-decompose 单项目
       project 指引；plan-update.js + epic-update.js 加 project-context.yaml
       自动检测，hardcoded default 保留作兜底。232 测试全绿，端到端验证 OK。
+    change_id: 20260608-regular
+  - skill: /mvt-quick-dev
+    completed_at: 2026-06-09T06:05:47.313Z
+    summary: Analyzed why mvtt install only outputs to .claude platform - root cause
+      is hardcoded output paths in manifest.yaml files
+    change_id: ""
+  - skill: /mvt-quick-dev
+    completed_at: 2026-06-09T06:26:06.855Z
+    summary: Implemented multi-platform skill output support (claude + qoder) with
+      interactive platform selection during install
+    change_id: ""
+  - skill: /mvt-quick-dev
+    completed_at: 2026-06-09T06:35:45.957Z
+    summary: Moved platform storage from config.yaml to .mvtt-manifest.json
+      (installation metadata)
+    change_id: ""
+  - skill: /mvt-review
+    completed_at: 2026-06-09T06:40:22.748Z
+    summary: "Multi-platform skill output code review: 0 critical, 2 warnings (stale
+      comment, double manifest read), 3 suggestions. Verdict: Approve with
+      comments."
     change_id: 20260608-regular
 active_epic:
   id: epic-20260608-my

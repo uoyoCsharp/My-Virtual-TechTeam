@@ -7,6 +7,8 @@ import {
 } from "node:fs";
 import path from "node:path";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
+import type { PlatformId } from "../types/platform.js";
+import { getPlatformById } from "../types/platform.js";
 
 const FRAMEWORK_REGISTRY_REL = "registry.yaml";
 const USER_REGISTRY_REL = ".ai-agents/registry.yaml";
@@ -234,7 +236,7 @@ function mergeRegistry(
  * exists it is backed up to `.ai-agents/.backup/` and rewritten with the merged
  * result.
  */
-export function updateRegistry(projectRoot: string, packageRoot: string): RegistryMergeResult {
+export function updateRegistry(projectRoot: string, packageRoot: string, primaryPlatform?: PlatformId): RegistryMergeResult {
   const frameworkPath = path.resolve(packageRoot, FRAMEWORK_REGISTRY_REL);
   const userPath = path.resolve(projectRoot, USER_REGISTRY_REL);
 
@@ -263,6 +265,29 @@ export function updateRegistry(projectRoot: string, packageRoot: string): Regist
   }
 
   const { merged, result } = mergeRegistry(framework, existingUser);
+
+  // Rewrite framework skill `path` fields to match the primary platform.
+  // Custom user skills (custom: true) keep their original paths.
+  const primary = primaryPlatform ?? "claude";
+  if (primary !== "claude") {
+    const primaryDef = getPlatformById(primary);
+    if (primaryDef && merged.skills) {
+      const fwSkillNames = new Set(Object.keys(framework.skills ?? {}));
+      for (const [name, skill] of Object.entries(merged.skills)) {
+        if (
+          fwSkillNames.has(name) &&
+          typeof skill.path === "string" &&
+          skill.path.startsWith(".claude/skills/")
+        ) {
+          skill.path = skill.path.replace(
+            ".claude/skills/",
+            primaryDef.skillDir + "/",
+          );
+        }
+      }
+    }
+  }
+
   // lineWidth: 0 disables YAML line folding so long `description` strings stay
   // on a single line. Only the framework file's leading comment header is
   // preserved (yaml.stringify drops comments); inline section comments are not.

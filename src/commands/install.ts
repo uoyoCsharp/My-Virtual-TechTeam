@@ -9,6 +9,8 @@ import {
 } from "../fs/install-manifest.js";
 import { getPackageRoot, getVersion } from "./shared.js";
 import { color } from "../util/color.js";
+import type { PlatformId } from "../types/platform.js";
+import { PLATFORMS, DEFAULT_PLATFORMS } from "../types/platform.js";
 
 type Language = "en-US" | "zh-CN";
 
@@ -27,12 +29,14 @@ export async function installCommand(): Promise<void> {
 
   const interactionLanguage = await selectLanguage("interaction");
   const documentLanguage = await selectLanguage("document", interactionLanguage);
+  const platforms = await selectPlatforms();
 
   console.log(`Installing MVTT v${version} into ${projectRoot}...`);
 
   const materialized = materializeProject({
     packageRoot,
     projectRoot,
+    platforms,
     overwriteCreateOnce: false,
   });
 
@@ -48,7 +52,7 @@ export async function installCommand(): Promise<void> {
   );
   writeFileSync(configPath, config, "utf-8");
 
-  writeInstallationManifest(projectRoot, version, materialized, null);
+  writeInstallationManifest(projectRoot, version, materialized, null, platforms);
 
   const generatedCount = materialized.filter((f) => f.category === "generated").length;
   const createOnceCount = materialized.filter((f) => f.category === "create_once").length;
@@ -58,9 +62,10 @@ export async function installCommand(): Promise<void> {
   console.log(`  ${createOnceCount} user-editable files`);
   console.log(`  Interaction language: ${interactionLanguage}`);
   console.log(`  Document output language: ${documentLanguage}`);
+  console.log(`  Platforms: ${platforms.join(", ")}`);
   console.log(`  Manifest: ${color.gray(path.relative(projectRoot, manifestPath(projectRoot)))}`);
   console.log(`\n${color.bold("Next steps:")}`);
-  console.log(`  Run ${color.cyan("/mvt-init")} in Claude Code to initialize the project`);
+  console.log(`  Run ${color.cyan("/mvt-init")} in your AI IDE to initialize the project`);
 }
 
 async function selectLanguage(
@@ -100,4 +105,30 @@ async function selectLanguage(
   );
 
   return response.language as Language;
+}
+
+async function selectPlatforms(): Promise<PlatformId[]> {
+  if (!process.stdin.isTTY) return DEFAULT_PLATFORMS;
+
+  const response = await prompts(
+    {
+      type: "multiselect",
+      name: "platforms",
+      message: "Target AI platforms / 目标 AI 平台",
+      choices: PLATFORMS.map((p) => ({
+        title: `${p.dir} — ${p.description}`,
+        value: p.id,
+        selected: true,
+      })),
+      min: 1,
+    },
+    {
+      onCancel: () => {
+        throw new Error("Cancelled");
+      },
+    },
+  );
+
+  const selected = response.platforms as PlatformId[];
+  return selected.length > 0 ? selected : DEFAULT_PLATFORMS;
 }

@@ -3,6 +3,7 @@ import path from "node:path";
 import { materializeProject } from "../fs/materialize.js";
 import {
   readInstallationManifest,
+  readInstalledPlatforms,
   writeInstallationManifest,
 } from "../fs/install-manifest.js";
 import { hashFile } from "../fs/hash.js";
@@ -59,9 +60,11 @@ export function updateCommand(options: UpdateOptions = {}): void {
 
   console.log(`Updating MVTT from v${existing.mvtt_version} to v${version}...`);
 
+  const platforms = readInstalledPlatforms(existing);
   const materialized = materializeProject({
     packageRoot,
     projectRoot,
+    platforms,
     overwriteCreateOnce: false,
   });
 
@@ -71,7 +74,7 @@ export function updateCommand(options: UpdateOptions = {}): void {
     for (const f of removed) console.log(`  - ${f}`);
   }
 
-  writeInstallationManifest(projectRoot, version, materialized, existing);
+  writeInstallationManifest(projectRoot, version, materialized, existing, platforms);
 
   console.log(`\nUpdate complete: ${materialized.length} files processed.`);
 }

@@ -10,6 +10,8 @@ import {
 import path from "node:path";
 import { parse as parseYaml } from "yaml";
 import type { Manifest } from "../types/manifest.js";
+import type { PlatformId } from "../types/platform.js";
+import { DEFAULT_PLATFORMS, PLATFORMS, getPlatformById } from "../types/platform.js";
 import { assembleFromManifest } from "../build/assembler.js";
 import { hashString, hashFile } from "./hash.js";
 import { updateCoreManifest } from "./core-manifest.js";
@@ -27,7 +29,10 @@ export interface MaterializeOptions {
   projectRoot: string;
   timestamp?: string;
   overwriteCreateOnce?: boolean;
+  platforms?: PlatformId[];
 }
+
+const SKILL_OUTPUT_PREFIX = PLATFORMS[0].skillDir + "/";
 
 function copyRecursive(
   srcDir: string,
@@ -68,6 +73,7 @@ function copyRecursive(
 
 export function materializeProject(options: MaterializeOptions): MaterializedFile[] {
   const { packageRoot, projectRoot, overwriteCreateOnce = false } = options;
+  const selectedPlatforms = options.platforms ?? DEFAULT_PLATFORMS;
   const timestamp = options.timestamp ?? new Date().toISOString();
   const sourcesDir = path.resolve(packageRoot, "sources");
   const materialized: MaterializedFile[] = [];
@@ -88,16 +94,46 @@ export function materializeProject(options: MaterializeOptions): MaterializedFil
         timestamp,
       });
 
-      const outPath = path.resolve(projectRoot, manifest.output);
-      mkdirSync(path.dirname(outPath), { recursive: true });
-      writeFileSync(outPath, content, "utf-8");
+      const isSkillOutput = manifest.output.startsWith(SKILL_OUTPUT_PREFIX);
 
-      materialized.push({
-        absPath: outPath,
-        relPath: manifest.output,
-        hash: hashString(content),
-        category: "generated",
-      });
+      if (isSkillOutput) {
+        // Write to all selected platforms
+        const written = new Set<string>();
+        for (const platformId of selectedPlatforms) {
+          const platform = getPlatformById(platformId);
+          if (!platform) continue;
+          const platformRelPath = manifest.output.replace(
+            SKILL_OUTPUT_PREFIX,
+            platform.skillDir + "/",
+          );
+          // Avoid duplicate writes (e.g. if same platform appears twice)
+          if (written.has(platformRelPath)) continue;
+          written.add(platformRelPath);
+
+          const outPath = path.resolve(projectRoot, platformRelPath);
+          mkdirSync(path.dirname(outPath), { recursive: true });
+          writeFileSync(outPath, content, "utf-8");
+
+          materialized.push({
+            absPath: outPath,
+            relPath: platformRelPath,
+            hash: hashString(content),
+            category: "generated",
+          });
+        }
+      } else {
+        // Non-skill output (templates, etc.) — write once to canonical path
+        const outPath = path.resolve(projectRoot, manifest.output);
+        mkdirSync(path.dirname(outPath), { recursive: true });
+        writeFileSync(outPath, content, "utf-8");
+
+        materialized.push({
+          absPath: outPath,
+          relPath: manifest.output,
+          hash: hashString(content),
+          category: "generated",
+        });
+      }
     }
   }
 
@@ -131,7 +167,7 @@ export function materializeProject(options: MaterializeOptions): MaterializedFil
   // /mvt-manage-context must survive `mvtt update`. Treated as create_once
   // (like core/manifest.yaml) so the modified-files guard does not flag it.
   const registryDest = path.resolve(projectRoot, ".ai-agents/registry.yaml");
-  updateRegistry(projectRoot, packageRoot);
+  updateRegistry(projectRoot, packageRoot, selectedPlatforms[0]);
   materialized.push({
     absPath: registryDest,
     relPath: ".ai-agents/registry.yaml",

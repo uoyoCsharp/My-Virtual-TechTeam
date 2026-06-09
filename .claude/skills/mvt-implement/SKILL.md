@@ -212,9 +212,12 @@ For each check below, if the condition holds, perform the action implied by its 
 
 ### Step 8: Deliverables Handoff (if applicable)
 
-This step applies only when `plan.yaml` exists and the current task has downstream dependents (other tasks whose `depends_on` includes the current task).
+**SKIP this step entirely** (go directly to Step 9) if ANY of the following is true:
+- No `plan.yaml` exists for the active change (`active_change.plan_path` is empty or the file does not exist).
+- No task in `plan.tasks[]` has a `depends_on` entry that includes the current task id (i.e., the current task has zero downstream dependents).
 
-- **Check for downstream dependents**: scan `plan.tasks[]` for any task whose `depends_on` array includes the current task id. If none exist, skip this step silently.
+> These are hard guards. Do NOT prompt the user about deliverables unless BOTH guards pass.
+
 - **Prompt the user**:
   - If `task.deliverables` already exists (re-implementation / rescope): "Implementation changed, and downstream task(s) {ids} depend on it. Update deliverables? (y/n)"
   - If this is the first time (no `deliverables` field on the task): "Downstream task(s) {ids} will consume this task's output. Generate deliverables? (default y)"

@@ -445,4 +445,59 @@ describe("registry merge (map-aware)", () => {
       Array.isArray(e.files) && (e.files as string[]).includes("team-rules.md"),
     )).toBe(true);
   });
+
+  // -- primaryPlatform path rewrite tests --
+
+  it("primaryPlatform 'qoder' rewrites framework skill path fields", () => {
+    materializeProject({
+      packageRoot: PACKAGE_ROOT,
+      projectRoot: tmpDir,
+      platforms: ["qoder"],
+    });
+
+    const after = readRegistry();
+    const initSkill = after.skills!["mvt-init"];
+    expect(initSkill.path).toBe(".qoder/skills/mvt-init/SKILL.md");
+
+    const analyzeSkill = after.skills!["mvt-analyze"];
+    expect(analyzeSkill.path).toBe(".qoder/skills/mvt-analyze/SKILL.md");
+  });
+
+  it("primaryPlatform default (no param) keeps .claude paths", () => {
+    materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
+
+    const after = readRegistry();
+    expect(after.skills!["mvt-init"].path).toBe(".claude/skills/mvt-init/SKILL.md");
+  });
+
+  it("primaryPlatform does NOT rewrite custom user skill paths", () => {
+    materializeProject({
+      packageRoot: PACKAGE_ROOT,
+      projectRoot: tmpDir,
+      platforms: ["qoder"],
+    });
+    const doc = readRegistry();
+    doc.skills!["app-deploy"] = {
+      agent: "developer",
+      description: "Deploy the app.",
+      path: ".claude/skills/app-deploy/SKILL.md",
+      template: null,
+      category: "utility",
+      custom: true,
+    };
+    writeRegistry(doc);
+
+    // Re-materialize with qoder as primary
+    materializeProject({
+      packageRoot: PACKAGE_ROOT,
+      projectRoot: tmpDir,
+      platforms: ["qoder"],
+    });
+
+    const after = readRegistry();
+    // Custom skill path preserved as-is
+    expect(after.skills!["app-deploy"].path).toBe(".claude/skills/app-deploy/SKILL.md");
+    // Framework skill path rewritten
+    expect(after.skills!["mvt-init"].path).toBe(".qoder/skills/mvt-init/SKILL.md");
+  });
 });

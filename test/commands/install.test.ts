@@ -101,4 +101,82 @@ describe("install (via materialize + manifest)", () => {
       process.chdir(originalCwd);
     }
   });
+
+  // -- Multi-platform tests --
+
+  it("multi-platform: writes skill files to all selected platforms", () => {
+    const materialized = materializeProject({
+      packageRoot: PACKAGE_ROOT,
+      projectRoot: tmpDir,
+      platforms: ["claude", "qoder"],
+    });
+
+    // Both platforms should have skill files
+    expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-init/SKILL.md"))).toBe(true);
+    expect(existsSync(path.join(tmpDir, ".qoder/skills/mvt-init/SKILL.md"))).toBe(true);
+    expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-analyze/SKILL.md"))).toBe(true);
+    expect(existsSync(path.join(tmpDir, ".qoder/skills/mvt-analyze/SKILL.md"))).toBe(true);
+
+    // Templates should still be in .ai-agents (not per-platform)
+    expect(existsSync(path.join(tmpDir, ".ai-agents/skills/_templates/analyze-output.md"))).toBe(true);
+  });
+
+  it("multi-platform: content is identical across platforms", () => {
+    materializeProject({
+      packageRoot: PACKAGE_ROOT,
+      projectRoot: tmpDir,
+      platforms: ["claude", "qoder"],
+    });
+
+    const claudeContent = readFileSync(
+      path.join(tmpDir, ".claude/skills/mvt-init/SKILL.md"),
+      "utf-8",
+    );
+    const qoderContent = readFileSync(
+      path.join(tmpDir, ".qoder/skills/mvt-init/SKILL.md"),
+      "utf-8",
+    );
+    expect(qoderContent).toBe(claudeContent);
+  });
+
+  it("multi-platform: materialized count includes all platform outputs", () => {
+    const singlePlatform = materializeProject({
+      packageRoot: PACKAGE_ROOT,
+      projectRoot: tmpDir,
+      platforms: ["claude"],
+    });
+    const singleSkillCount = singlePlatform.filter(
+      (f) => f.category === "generated" && f.relPath.includes("/skills/mvt-"),
+    ).length;
+
+    // Clean tmpDir for second run
+    rmSync(tmpDir, { recursive: true, force: true });
+    tmpDir = mkdtempSync(path.join(os.tmpdir(), "mvtt-test-"));
+
+    const dualPlatform = materializeProject({
+      packageRoot: PACKAGE_ROOT,
+      projectRoot: tmpDir,
+      platforms: ["claude", "qoder"],
+    });
+    const dualSkillCount = dualPlatform.filter(
+      (f) => f.category === "generated" && f.relPath.includes("/skills/mvt-"),
+    ).length;
+
+    expect(dualSkillCount).toBe(singleSkillCount * 2);
+  });
+
+  it("default (no platforms param): only writes to .claude (backward compat)", () => {
+    const materialized = materializeProject({
+      packageRoot: PACKAGE_ROOT,
+      projectRoot: tmpDir,
+    });
+
+    expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-init/SKILL.md"))).toBe(true);
+    expect(existsSync(path.join(tmpDir, ".qoder/skills/mvt-init/SKILL.md"))).toBe(false);
+
+    const skillEntries = materialized.filter(
+      (f) => f.category === "generated" && f.relPath.includes("/skills/mvt-"),
+    );
+    expect(skillEntries.every((f) => f.relPath.startsWith(".claude/skills/"))).toBe(true);
+  });
 });

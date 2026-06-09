@@ -55,6 +55,12 @@ skills:
     path: .claude/skills/mvt-analyze-code/SKILL.md
     template: .ai-agents/skills/_templates/project-context.md
     category: workflow
+  mvt-decompose:
+    agent: analyst
+    description: Decompose epic-scale requirements into right-sized sub-changes with DAG dependencies. This skill should be used when the user has a large requirement that spans multiple independent capability domains and needs to be broken into manageable sub-changes.
+    path: .claude/skills/mvt-decompose/SKILL.md
+    template: .ai-agents/skills/_templates/decompose-output.md
+    category: workflow
   mvt-design:
     agent: architect
     description: Create architecture design based on analyzed requirements. This skill should be used when user wants to design system architecture, define module structure, or create technical blueprints for implementation.

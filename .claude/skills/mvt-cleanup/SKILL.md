@@ -149,7 +149,7 @@ For each check below, if the condition holds, perform the action implied by its 
 
 For each `changes[]` entry with `status: done`:
 1. Compare `session.last_synced_at` with the change's `updated_at`.
-2. If `last_synced_at` is empty OR `last_synced_at` < `updated_at`, mark the change as **⚠️ unsynced**.
+2. If `last_synced_at` is empty OR `last_synced_at` < `updated_at`, mark the change as **WARNING: unsynced**.
 3. Collect all unsynced change-ids into a warning list for display in Step 6.
 
 This check ensures `/mvt-sync-context` has processed a change's knowledge before cleanup archives it. Once archived, the original artifact files (`analysis.md`, `design.md`, `implementation.md`) are no longer accessible to sync-context.
@@ -173,6 +173,8 @@ This check ensures `/mvt-sync-context` has processed a change's knowledge before
   | Source | Rule | Proposed action |
   |--------|------|-----------------|
   | `changes[]` entry with `status: done` AND any task in plan is older than the active change's start | Summarize: generate a `summary.md` from the change's artifacts, then move the **entire** `artifacts/{id}/` directory (including `summary.md`) to `artifacts/_archived/{id}/` |
+  | `changes[]` entry with `status: done` AND `epic_id` non-empty AND parent epic status is NOT `done` | **Epic integrity warning**: mark the candidate as `epic-unsafe` -- archiving a sub-change whose parent epic is still in-progress may leave the epic in an inconsistent state. Default to `n` (skip) in the cleanup plan. User may override to force-archive. |
+  | Artifact directory under `artifacts/` whose id starts with `epic-` AND contains `epic.yaml` with `status: done` | **Batch archive candidate**: mark for batch suggestion in Step 7 -- read `epic.yaml.children[]` for child change-ids to offer as batch archive options alongside the epic |
   | Change-id directory marked `unindexed` | List for user review (do NOT auto-archive -- could be in-flight work the user just hasn't registered) |
   | `history` entries beyond the most recent N (from `config.yaml > preferences.history_limits.history`, default 20) | Truncate via `session-update.cjs --truncate-history <N>` |
   | Directory `knowledge/patterns/` exists | Flag for deletion (legacy pattern data; no replacement) |
@@ -197,7 +199,7 @@ This check ensures `/mvt-sync-context` has processed a change's knowledge before
   - `summarize` action (collapses multi-file content).
   - `archive` action (moves entire change-id directory into `artifacts/_archived/`).
 - If the Step 2 warning list is non-empty, prepend it to the confirmation prompt:
-  > ⚠️ The following changes have NOT been synced by `/mvt-sync-context`. Archiving them will permanently lose their knowledge for aggregation:
+  > WARNING: The following changes have NOT been synced by `/mvt-sync-context`. Archiving them will permanently lose their knowledge for aggregation:
   > - {change-id}: {title}
   > Options: `y` = archive anyway, `n` = cancel, `sync-first` = abort and run `/mvt-sync-context` first, `show-details` = per-file breakdown.
 - If no unsynced warnings, use the standard prompt: `Apply cleanup plan? (y / n / show-details)`. `show-details` prints the per-file actions, then re-asks.
@@ -209,6 +211,16 @@ This check ensures `/mvt-sync-context` has processed a change's knowledge before
 - **How**:
   1. **Summarize action**: read the full set of files in the change-id directory; produce a `summary.md` with: title, change-id, status, key decisions (list each ADR/decision title), final outcomes, list of original files. Write `summary.md` into the change-id directory, then move the **entire** `artifacts/{id}/` directory to `artifacts/_archived/{id}/` (summary.md travels with it).
   2. **Archive action** (no summarize): move the **entire** `artifacts/{id}/` directory to `artifacts/_archived/{id}/`. No internal path restructuring needed.
+  2a. **Batch archive action** (epic with children): when archiving a completed epic (the change-id is an epic directory containing `epic.yaml` with `status: done`), read `epic.yaml.children` and present the user with three options before proceeding:
+
+       | Option | Description |
+       |--------|-------------|
+       | Epic only | Archive only the epic directory (leave child change directories in place) |
+       | All children | Archive the epic directory AND move all child change directories (`artifacts/{child_id}/`) to `artifacts/_archived/{child_id}/` |
+       | Selective | User picks which children to include alongside the epic |
+
+     Per ADR-8: archive = abandon references; no post-archive `epic_id` integrity maintenance. Child changes that are also `status: done` are eligible for batch archiving; in-progress or pending children are excluded with a note.
+
   3. **Delete action**: remove only the items explicitly marked for deletion in the confirmed plan; never recurse beyond what was listed.
   4. **Stale history truncation**: call `session-update.cjs --truncate-history <N>` where N is from `config.yaml > preferences.history_limits.history` (default 20).
   5. All file mutations atomic where possible (write-temp + rename, copy-then-delete for moves).
@@ -246,6 +258,9 @@ Apply the State Update rules defined in the **State Update** section below.
 | File targeted for action no longer exists (concurrent removal) | Skip with a note; do not error out the whole run |
 | Unindexed change-id directory contains only `plan.yaml` | List as review-only; suggest user runs `/mvt-update-plan` or registers it via `/mvt-plan-dev` instead of cleaning |
 | `session.yaml.bak` present from a previous failed run | Overwrite during Step 7 collapse (only the most recent backup is useful) |
+| Change with `epic_id` is a cleanup candidate but parent epic is still `in_progress` | Mark as `epic-unsafe`; default to skip. User may override to force-archive. Warn: "This change belongs to in-progress epic '{title}'. Archiving it separately may leave the epic in an inconsistent state." |
+| Epic directory marked for batch archive but `epic.yaml` is missing or unreadable | Skip batch suggestion; treat as a regular archive candidate |
+| Batch archive includes a child that is still `in_progress` | Exclude that child from the batch with a note: "Child {id} is in_progress and cannot be archived." |
 
 ## State Update
 
