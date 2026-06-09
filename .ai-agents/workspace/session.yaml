@@ -32,18 +32,6 @@ changes:
     updated_at: 2026-06-08T14:37:17.059Z
 history:
   - skill: /mvt-update-plan
-    completed_at: 2026-06-08T14:23:34.442Z
-    summary: test
-    change_id: 20260608-epic-scope-detection
-  - skill: /mvt-analyze
-    completed_at: 2026-06-08T14:23:34.708Z
-    summary: test
-    change_id: 20260608-sub
-  - skill: /mvt-analyze
-    completed_at: 2026-06-08T14:23:34.831Z
-    summary: test
-    change_id: 20260608-sub
-  - skill: /mvt-update-plan
     completed_at: 2026-06-08T14:23:34.967Z
     summary: test
     change_id: 20260608-sub
@@ -123,6 +111,19 @@ history:
       comment, double manifest read), 3 suggestions. Verdict: Approve with
       comments."
     change_id: 20260608-regular
+  - skill: /mvt-quick-dev
+    completed_at: 2026-06-09T14:38:36.128Z
+    summary: 在 config.yaml 注释和 mvt-config skill 中加入 code→name 映射,AI 可从裸 code 确认语言
+    change_id: ""
+  - skill: /mvt-analyze
+    completed_at: 2026-06-09T14:43:18.071Z
+    summary: 分析了 registry.yaml 中 agent 字段的使用情况,确认是死字段,无代码/脚本/模板读取
+    change_id: 20260608-regular
+  - skill: /mvt-quick-dev
+    completed_at: 2026-06-09T15:16:24.561Z
+    summary: 从 registry.yaml 移除 agent/template/category 三个死字段,同步 TS
+      类型、mvt-help/mvt-create-skill 模板、测试夹具、物化副本
+    change_id: ""
 active_epic:
   id: epic-20260608-my
   title: My Epic

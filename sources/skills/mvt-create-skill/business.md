@@ -68,7 +68,7 @@ If the user is unsure on any field, propose a default and ask for confirmation r
   | Output template | `_templates/` | Persisted document that needs a stable structure | `_templates/{name}-output.md` |
 
 - **Reuse vs new**: before declaring a new shared resource, check existing skills' SKILL.md files and knowledge entries -- prefer reusing patterns that already exist.
-- **Output of this step**: a checklist `(name | category | purpose | path)` shown to user.
+- **Output of this step**: a checklist `(name | purpose | path)` shown to user.
 
 ### Step 5: Design the Skill
 - **What**: produce a one-page outline before generating any file.
@@ -105,22 +105,13 @@ Append the skill entry to `.ai-agents/registry.yaml` > `skills` section:
 
 ```yaml
   {name}:
-    agent: {agent}
     description: "{third-person description with trigger keywords}"
     path: .claude/skills/{name}/SKILL.md
-    template: {template_path_or_null}
-    category: {category}
     depends_on: {dependencies_or_omitted}
     custom: true
-    knowledge:
-      {entries_or_empty_list}
-    next_suggestions:
-      primary: {suggested_next_skill}
-      primary_desc: "{when to use the next skill}"
 ```
 
 - The `custom: true` field is **required** for user-created skills; without it, framework updates will overwrite the entry.
-- If the skill has no specific knowledge needs, set `knowledge: []` or omit the key entirely.
 - Validate the YAML still parses after the append; if not, abort and surface the parse error.
 
 ### Step 8: Validation
@@ -226,7 +217,7 @@ Copy the following sections verbatim from this document (the assembled SKILL.md 
 | Load Config | Load Config step within Activation Protocol | Copy as-is |
 | Output Language Constraint | Output Language Constraint step within Activation Protocol | Copy as-is |
 | Pre-flight Checks | Pre-flight Checks step within Activation Protocol | Replace `checks` table with skill-specific checks; if none required, use a single INFO row |
-| State Update | `## State Update` | Replace `/{name}` with the new skill's command; include `active_change` conditional block only if the skill creates changes; include `Shortcut Operation Rules` only if category is `shortcut` |
+| State Update | `## State Update` | Replace `/{name}` with the new skill's command; include `active_change` conditional block only if the skill creates changes; include `Shortcut Operation Rules` if the user opted for shortcut semantics during Step 5 design |
 | Suggested Next Steps | `## Suggested Next Steps` | Replace `current_skill` with the new skill name; replace conditional suggestions with skill-appropriate ones |
 
 **Important**: Do NOT paraphrase or rewrite the standard sections. Copy them character-for-character from this document and only substitute the skill-specific values. This ensures consistency across all MVTT skills.

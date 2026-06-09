@@ -20,11 +20,8 @@ export interface NextSuggestions {
 }
 
 export interface SkillEntry {
-  agent: string;
   description: string;
   path: string;
-  template: string | null;
-  category: "workflow" | "shortcut" | "utility" | "project";
   mode: string;
   phase?: string | null;
   depends_on?: string[];

@@ -65,11 +65,8 @@ describe("registry merge (map-aware)", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const doc = readRegistry();
     doc.skills!["app-deploy"] = {
-      agent: "developer",
       description: "Deploy the app. This skill should be used when shipping.",
       path: ".claude/skills/app-deploy/SKILL.md",
-      template: null,
-      category: "utility",
       custom: true,
     };
     writeRegistry(doc);
@@ -79,7 +76,6 @@ describe("registry merge (map-aware)", () => {
     const after = readRegistry();
     expect(after.skills!["app-deploy"]).toMatchObject({
       custom: true,
-      agent: "developer",
     });
     expect(after.skills!["mvt-init"]).toBeTruthy();
   });
@@ -88,11 +84,8 @@ describe("registry merge (map-aware)", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const doc = readRegistry();
     doc.skills!["ghost-skill"] = {
-      agent: "developer",
       description: "No custom flag.",
       path: ".claude/skills/ghost-skill/SKILL.md",
-      template: null,
-      category: "utility",
     };
     writeRegistry(doc);
 
@@ -172,11 +165,8 @@ describe("registry merge (map-aware)", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const doc = readRegistry();
     doc.skills!["app-x"] = {
-      agent: "developer",
       description: "x",
       path: ".claude/skills/app-x/SKILL.md",
-      template: null,
-      category: "utility",
       custom: true,
     };
     writeRegistry(doc);
@@ -192,11 +182,8 @@ describe("registry merge (map-aware)", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const doc = readRegistry();
     doc.skills!["app-x"] = {
-      agent: "developer",
       description: "x",
       path: ".claude/skills/app-x/SKILL.md",
-      template: null,
-      category: "utility",
       custom: true,
     };
     writeRegistry(doc);
@@ -478,11 +465,8 @@ describe("registry merge (map-aware)", () => {
     });
     const doc = readRegistry();
     doc.skills!["app-deploy"] = {
-      agent: "developer",
       description: "Deploy the app.",
       path: ".claude/skills/app-deploy/SKILL.md",
-      template: null,
-      category: "utility",
       custom: true,
     };
     writeRegistry(doc);

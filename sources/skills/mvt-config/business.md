@@ -38,7 +38,7 @@
 
    | Type | Validation |
    |------|------------|
-   | `enum` | Value MUST be in the allowed list. Reject with the allowed list shown. For `language` enums (`en-US`, `zh-CN`), reject other locale strings -- ask user to pick from the allowed list (do not fuzzy-match) |
+   | `enum` | Value MUST be in the allowed list. Reject with the allowed list shown. For `language` enums (`en-US` = English, `zh-CN` = 简体中文), reject other locale strings -- ask user to pick from the allowed list (do not fuzzy-match) |
    | `bool` | Accept exactly `true` / `false` (case-insensitive). Reject `yes`/`1`/`y` |
    | `int` | Parse as integer; check range when range is documented (e.g., `relevance_threshold` must be 0-100) |
    | `list` | Parse as comma-separated tokens; for knowledge map entries (`_all` and project keys), every token must be a registered knowledge id |

@@ -26,14 +26,11 @@
 
 ### Step 3: Display Skills Catalog
 Read `registry.yaml` > `skills` section.
-Group skills by `category` field and display as tables:
-- `workflow` -> "Workflow Skills (sequential phases)"
-- `shortcut` -> "Shortcut Skills (anytime, no prerequisites)"
-- `project` -> "Project Management Skills"
-- `utility` -> "Utility Skills"
+Display all skills as a single flat table (no grouping; the section comment headers in `registry.yaml` already group them by role for human readers):
+- Header row: `Skill | Description`
 
 For each skill, show: `/{skill-name}` | `description` field from registry.
-Sort within each group by declaration order in registry.
+Sort by declaration order in registry.
 
 ### Step 4: Show Workflow Diagram
 Display the standard workflow with current position highlighted:
@@ -60,7 +57,7 @@ Color-code based on current progress: green (done), yellow (current/recommended)
   | Question pattern | Response |
   |------------------|----------|
   | "What should I do next?" / no specific question | Repeat the Step 2 recommendation in one line, followed by a one-clause reason citing the matched condition |
-  | "What does `/mvt-X` do?" / asks about a specific skill | Read the skill's metadata from `registry.yaml`, show: name, description, category, dependencies, knowledge entries (if any), template (if any). If the skill has a `path`, mention "see SKILL.md for the full procedure" -- do NOT inline the full SKILL.md content (too large) |
+  | "What does `/mvt-X` do?" / asks about a specific skill | Read the skill's metadata from `registry.yaml`, show: name, description, dependencies, knowledge entries (if any), template (if any). If the skill has a `path`, mention "see SKILL.md for the full procedure" -- do NOT inline the full SKILL.md content (too large) |
   | "Compare `/mvt-X` and `/mvt-Y`" | Pull descriptions from registry; if both are workflow skills, mention their relative position in the diagram |
   | Asks about something not in registry | Reply: "No skill matches that. Available skills: see catalog above." Do not invent skills |
 
