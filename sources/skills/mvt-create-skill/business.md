@@ -50,7 +50,6 @@ Collect core metadata. Each field has an explicit constraint -- do not accept va
 | Purpose | One sentence | Will become the SKILL.md `## Purpose` section |
 | Category | One of: `workflow`, `shortcut`, `project`, `utility` | Drives how `/mvt-help` groups it |
 | Description | Third-person, includes what + when + how it differs | Will become the frontmatter `description` |
-| Dependencies | List of skill names that must run first, OR `none` | Becomes `depends_on` in registry |
 | Variants (optional) | List of flag/sub-mode entries | Becomes the Variants table |
 
 If the user is unsure on any field, propose a default and ask for confirmation rather than leaving it blank.
@@ -106,8 +105,6 @@ Append the skill entry to `.ai-agents/registry.yaml` > `skills` section:
 ```yaml
   {name}:
     description: "{third-person description with trigger keywords}"
-    path: .claude/skills/{name}/SKILL.md
-    depends_on: {dependencies_or_omitted}
     custom: true
 ```
 

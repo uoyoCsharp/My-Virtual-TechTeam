@@ -19,5 +19,5 @@ preferences:
 
   # Session history limits
   history_limits:
-    history: 20
-    changes: 20
+    history: 10
+    changes: 10

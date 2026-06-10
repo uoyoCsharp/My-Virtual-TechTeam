@@ -133,7 +133,13 @@ describe("registry merge (map-aware)", () => {
   it("preserves user additions to knowledge._all, keyed by id", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const doc = readRegistry();
-    doc.knowledge!._all!.push({
+    // The framework ships no top-level _all entries (knowledge block is commented
+    // out by default), so seed a baseline before exercising user-addition merge.
+    doc.knowledge = doc.knowledge ?? {};
+    doc.knowledge._all = [
+      { id: "core", source: "knowledge/core/", files_from_manifest: true },
+    ];
+    doc.knowledge._all.push({
       id: "team-glossary",
       source: "knowledge/project/",
       files: ["glossary.md"],
@@ -148,12 +154,18 @@ describe("registry merge (map-aware)", () => {
     expect(ids).toContain("core");
   });
 
-  it("does not duplicate a framework _all entry the user happens to repeat", () => {
+  it("does not accumulate a user _all entry across repeated updates", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const doc = readRegistry();
-    doc.knowledge!._all!.push({ id: "core", source: "knowledge/core/", files_from_manifest: true });
+    // Seed a user _all entry, then run update twice: the merge keys by id, so
+    // re-merging the already-written entry must not produce a duplicate.
+    doc.knowledge = doc.knowledge ?? {};
+    doc.knowledge._all = [
+      { id: "core", source: "knowledge/core/", files_from_manifest: true },
+    ];
     writeRegistry(doc);
 
+    materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
 
     const after = readRegistry();
@@ -235,7 +247,14 @@ describe("registry merge (map-aware)", () => {
   it("(#2) _all binding preservation across install+update round-trip", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const doc = readRegistry();
-    doc.knowledge!._all!.push({
+    // Seed a baseline _all (framework ships none) plus a user addition, then
+    // verify every _all entry survives a subsequent update.
+    doc.knowledge = doc.knowledge ?? {};
+    doc.knowledge._all = [
+      { id: "core", source: "knowledge/core/", files_from_manifest: true },
+      { id: "project-context", source: "knowledge/project/_generated/", files: ["project-context.md"] },
+    ];
+    doc.knowledge._all.push({
       id: "user-global",
       source: "knowledge/custom/",
       files: ["global.md"],
@@ -386,11 +405,14 @@ describe("registry merge (map-aware)", () => {
   it("(migration #1) migrates old flat knowledge.shared array to _all key", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const doc = readRegistry();
-    // Simulate old format: knowledge.shared as array
+    // Simulate old format: knowledge.shared as array. The framework ships no
+    // _all entries, so seed a baseline "core" into the old shared array to prove
+    // the shared -> _all migration carries every entry over.
     const oldFormat = {
       ...doc,
       knowledge: {
         shared: [
+          { id: "core", source: "knowledge/core/", files_from_manifest: true },
           ...((doc.knowledge!._all ?? []) as Record<string, unknown>[]),
           { id: "user-added", source: "knowledge/custom/", files: ["custom.md"] },
         ],
@@ -433,55 +455,4 @@ describe("registry merge (map-aware)", () => {
     )).toBe(true);
   });
 
-  // -- primaryPlatform path rewrite tests --
-
-  it("primaryPlatform 'qoder' rewrites framework skill path fields", () => {
-    materializeProject({
-      packageRoot: PACKAGE_ROOT,
-      projectRoot: tmpDir,
-      platforms: ["qoder"],
-    });
-
-    const after = readRegistry();
-    const initSkill = after.skills!["mvt-init"];
-    expect(initSkill.path).toBe(".qoder/skills/mvt-init/SKILL.md");
-
-    const analyzeSkill = after.skills!["mvt-analyze"];
-    expect(analyzeSkill.path).toBe(".qoder/skills/mvt-analyze/SKILL.md");
-  });
-
-  it("primaryPlatform default (no param) keeps .claude paths", () => {
-    materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
-
-    const after = readRegistry();
-    expect(after.skills!["mvt-init"].path).toBe(".claude/skills/mvt-init/SKILL.md");
-  });
-
-  it("primaryPlatform does NOT rewrite custom user skill paths", () => {
-    materializeProject({
-      packageRoot: PACKAGE_ROOT,
-      projectRoot: tmpDir,
-      platforms: ["qoder"],
-    });
-    const doc = readRegistry();
-    doc.skills!["app-deploy"] = {
-      description: "Deploy the app.",
-      path: ".claude/skills/app-deploy/SKILL.md",
-      custom: true,
-    };
-    writeRegistry(doc);
-
-    // Re-materialize with qoder as primary
-    materializeProject({
-      packageRoot: PACKAGE_ROOT,
-      projectRoot: tmpDir,
-      platforms: ["qoder"],
-    });
-
-    const after = readRegistry();
-    // Custom skill path preserved as-is
-    expect(after.skills!["app-deploy"].path).toBe(".claude/skills/app-deploy/SKILL.md");
-    // Framework skill path rewritten
-    expect(after.skills!["mvt-init"].path).toBe(".qoder/skills/mvt-init/SKILL.md");
-  });
 });

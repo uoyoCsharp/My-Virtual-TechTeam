@@ -170,7 +170,7 @@ When `mvt-init` is executed and existing MVTT artifacts are detected:
 
 ### Step 7: Determine Project State (drives next-step recommendation)
 
-After Step 5 writes are committed, classify the project state to select the appropriate next_suggestions branch from registry.yaml:
+After Step 5 writes are committed, classify the project state to select the appropriate recommendation branch in the **Suggested Next Steps** section below:
 
 | Condition | Detection logic |
 |-----------|-----------------|
@@ -178,4 +178,4 @@ After Step 5 writes are committed, classify the project state to select the appr
 | `empty_project` | Step 1 found no source files AND no package manager file (truly empty or docs-only repo) -- the recommended next step is `/mvt-manage-context` to manually capture context |
 | `default` | Neither condition matched (rare -- fallback path) |
 
-Pass the resolved condition to the output template so the suggested next steps section renders the matching branch from `registry.yaml > skills.mvt-init.next_suggestions.conditional[]`.
+Use the resolved condition to render the matching branch in the **Suggested Next Steps** section (Conditional Recommendations).

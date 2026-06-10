@@ -167,7 +167,7 @@ export function materializeProject(options: MaterializeOptions): MaterializedFil
   // /mvt-manage-context must survive `mvtt update`. Treated as create_once
   // (like core/manifest.yaml) so the modified-files guard does not flag it.
   const registryDest = path.resolve(projectRoot, ".ai-agents/registry.yaml");
-  updateRegistry(projectRoot, packageRoot, selectedPlatforms[0]);
+  updateRegistry(projectRoot, packageRoot);
   materialized.push({
     absPath: registryDest,
     relPath: ".ai-agents/registry.yaml",
