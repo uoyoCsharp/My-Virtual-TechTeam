@@ -1,4 +1,3 @@
-version: "2.0"
 preferences:
   # Language used for interactive responses
   # Options: en-US (English), zh-CN (简体中文)

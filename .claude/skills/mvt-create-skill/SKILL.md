@@ -123,9 +123,6 @@ All persisted document output (markdown written to disk) MUST follow the formatt
 - If a diagram genuinely cannot be expressed in mermaid (e.g. a precise spatial/pixel layout), state that explicitly and prefer a Markdown table or prose description over ASCII art.
 - This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from templates or source material.
 
-### Step 4: Pre-flight Checks
-- No blocking checks required.
-
 ## Design Principles
 
 ### Progressive Disclosure
@@ -178,7 +175,6 @@ Collect core metadata. Each field has an explicit constraint -- do not accept va
 | Purpose | One sentence | Will become the SKILL.md `## Purpose` section |
 | Category | One of: `workflow`, `shortcut`, `project`, `utility` | Drives how `/mvt-help` groups it |
 | Description | Third-person, includes what + when + how it differs | Will become the frontmatter `description` |
-| Dependencies | List of skill names that must run first, OR `none` | Becomes `depends_on` in registry |
 | Variants (optional) | List of flag/sub-mode entries | Becomes the Variants table |
 
 If the user is unsure on any field, propose a default and ask for confirmation rather than leaving it blank.
@@ -196,7 +192,7 @@ If the user is unsure on any field, propose a default and ask for confirmation r
   | Output template | `_templates/` | Persisted document that needs a stable structure | `_templates/{name}-output.md` |
 
 - **Reuse vs new**: before declaring a new shared resource, check existing skills' SKILL.md files and knowledge entries -- prefer reusing patterns that already exist.
-- **Output of this step**: a checklist `(name | category | purpose | path)` shown to user.
+- **Output of this step**: a checklist `(name | purpose | path)` shown to user.
 
 ### Step 5: Design the Skill
 - **What**: produce a one-page outline before generating any file.
@@ -233,22 +229,11 @@ Append the skill entry to `.ai-agents/registry.yaml` > `skills` section:
 
 ```yaml
   {name}:
-    agent: {agent}
     description: "{third-person description with trigger keywords}"
-    path: .claude/skills/{name}/SKILL.md
-    template: {template_path_or_null}
-    category: {category}
-    depends_on: {dependencies_or_omitted}
     custom: true
-    knowledge:
-      {entries_or_empty_list}
-    next_suggestions:
-      primary: {suggested_next_skill}
-      primary_desc: "{when to use the next skill}"
 ```
 
 - The `custom: true` field is **required** for user-created skills; without it, framework updates will overwrite the entry.
-- If the skill has no specific knowledge needs, set `knowledge: []` or omit the key entirely.
 - Validate the YAML still parses after the append; if not, abort and surface the parse error.
 
 ### Step 8: Validation
@@ -354,7 +339,7 @@ Copy the following sections verbatim from this document (the assembled SKILL.md 
 | Load Config | Load Config step within Activation Protocol | Copy as-is |
 | Output Language Constraint | Output Language Constraint step within Activation Protocol | Copy as-is |
 | Pre-flight Checks | Pre-flight Checks step within Activation Protocol | Replace `checks` table with skill-specific checks; if none required, use a single INFO row |
-| State Update | `## State Update` | Replace `/{name}` with the new skill's command; include `active_change` conditional block only if the skill creates changes; include `Shortcut Operation Rules` only if category is `shortcut` |
+| State Update | `## State Update` | Replace `/{name}` with the new skill's command; include `active_change` conditional block only if the skill creates changes; include `Shortcut Operation Rules` if the user opted for shortcut semantics during Step 5 design |
 | Suggested Next Steps | `## Suggested Next Steps` | Replace `current_skill` with the new skill name; replace conditional suggestions with skill-appropriate ones |
 
 **Important**: Do NOT paraphrase or rewrite the standard sections. Copy them character-for-character from this document and only substitute the skill-specific values. This ensures consistency across all MVTT skills.
@@ -408,6 +393,7 @@ If the script fails (non-zero exit), do NOT abort the skill's main task. Continu
 ## Suggested Next Steps
 
 Recommend 2-3 relevant next skills based on the skill just completed (`mvt-create-skill`) and the current project state.
+**Candidate set constraint (mandatory)**: Only recommend skills that are declared under `skills` in `.ai-agents/registry.yaml`.
 
 ### Conditional Recommendations
 

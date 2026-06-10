@@ -7711,7 +7711,7 @@ function main() {
   }
   const tmpPath = args2.plan + ".tmp";
   try {
-    (0, import_node_fs.writeFileSync)(tmpPath, (0, import_yaml.stringify)(plan), "utf-8");
+    (0, import_node_fs.writeFileSync)(tmpPath, (0, import_yaml.stringify)(plan, { lineWidth: 200 }), "utf-8");
     (0, import_node_fs.renameSync)(tmpPath, args2.plan);
   } catch (e) {
     try {

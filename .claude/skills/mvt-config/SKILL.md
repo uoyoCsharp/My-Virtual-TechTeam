@@ -105,17 +105,14 @@ Read `.ai-agents/config.yaml` and enforce the following throughout this entire s
 - `preferences.output.data_format` → Use this format for data sections in artifacts
 - `preferences.context_routing.relevance_threshold` → Used by `/mvt-manage-context add` for AI routing (default 70 if missing)
 
-### Step 4: Pre-flight Checks
-- No blocking checks required (config is always accessible)
-
 ## Configuration Keys
 
 ### User Preferences
 
 | Key | Type | Default | Description |
 |-----|------|---------|-------------|
-| `preferences.interaction_language` | enum | `en-US` | Language for interactive output: chat replies, prompts, tables (en-US, zh-CN) |
-| `preferences.document_output_language` | enum | `en-US` | Language for persisted documents: artifacts, project-context.md (falls back to interaction_language) |
+| `preferences.interaction_language` | enum | `en-US` | Language for interactive output: chat replies, prompts, tables. Values: `en-US` (English), `zh-CN` (简体中文) |
+| `preferences.document_output_language` | enum | `en-US` | Language for persisted documents: artifacts, project-context.md (falls back to interaction_language). Values: `en-US` (English), `zh-CN` (简体中文) |
 | `preferences.output.no_emojis` | bool | `true` | Disable emojis in output |
 | `preferences.output.data_format` | enum | `yaml` | Data output format (yaml, json) |
 | `preferences.context_routing.relevance_threshold` | int | `70` | AI routing threshold for `/mvt-manage-context add` (0-100) |
@@ -168,7 +165,7 @@ Read `.ai-agents/config.yaml` and enforce the following throughout this entire s
 
    | Type | Validation |
    |------|------------|
-   | `enum` | Value MUST be in the allowed list. Reject with the allowed list shown. For `language` enums (`en-US`, `zh-CN`), reject other locale strings -- ask user to pick from the allowed list (do not fuzzy-match) |
+   | `enum` | Value MUST be in the allowed list. Reject with the allowed list shown. For `language` enums (`en-US` = English, `zh-CN` = 简体中文), reject other locale strings -- ask user to pick from the allowed list (do not fuzzy-match) |
    | `bool` | Accept exactly `true` / `false` (case-insensitive). Reject `yes`/`1`/`y` |
    | `int` | Parse as integer; check range when range is documented (e.g., `relevance_threshold` must be 0-100) |
    | `list` | Parse as comma-separated tokens; for knowledge map entries (`_all` and project keys), every token must be a registered knowledge id |
@@ -229,6 +226,7 @@ This skill is read-only and does NOT modify `.ai-agents/workspace/session.yaml`.
 ## Suggested Next Steps
 
 Recommend 2-3 relevant next skills based on the skill just completed (`mvt-config`) and the current project state.
+**Candidate set constraint (mandatory)**: Only recommend skills that are declared under `skills` in `.ai-agents/registry.yaml`.
 
 ### Conditional Recommendations
 

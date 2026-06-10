@@ -138,9 +138,6 @@ All persisted document output (markdown written to disk) MUST follow the formatt
 - If a diagram genuinely cannot be expressed in mermaid (e.g. a precise spatial/pixel layout), state that explicitly and prefer a Markdown table or prose description over ASCII art.
 - This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from templates or source material.
 
-### Step 4: Pre-flight Checks
-- No blocking checks required (shortcut operation).
-
 ## Operation Mode: Shortcut
 
 This skill operates as a shortcut — it can execute at any time without checking workflow prerequisites.
@@ -292,6 +289,7 @@ If the script fails (non-zero exit), do NOT abort the skill's main task. Continu
 ## Suggested Next Steps
 
 Recommend 2-3 relevant next skills based on the skill just completed (`mvt-refactor`) and the current project state.
+**Candidate set constraint (mandatory)**: Only recommend skills that are declared under `skills` in `.ai-agents/registry.yaml`.
 
 ### Conditional Recommendations
 

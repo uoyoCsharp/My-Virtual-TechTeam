@@ -150,9 +150,6 @@ All persisted document output (markdown written to disk) MUST follow the formatt
 - If a diagram genuinely cannot be expressed in mermaid (e.g. a precise spatial/pixel layout), state that explicitly and prefer a Markdown table or prose description over ASCII art.
 - This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from templates or source material.
 
-### Step 4: Pre-flight Checks
-- No blocking checks required.
-
 ## Execution Flow
 
 ### Step 1: Parse Subcommand
@@ -431,6 +428,7 @@ This skill is read-only and does NOT modify `.ai-agents/workspace/session.yaml`.
 ## Suggested Next Steps
 
 Recommend 2-3 relevant next skills based on the skill just completed (`mvt-manage-context`) and the current project state.
+**Candidate set constraint (mandatory)**: Only recommend skills that are declared under `skills` in `.ai-agents/registry.yaml`.
 
 ### Conditional Recommendations
 

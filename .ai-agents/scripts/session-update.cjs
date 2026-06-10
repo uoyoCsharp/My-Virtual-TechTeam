@@ -7631,7 +7631,7 @@ function main() {
   }
   const tmpPath = sessionPath + ".tmp";
   try {
-    (0, import_node_fs.writeFileSync)(tmpPath, (0, import_yaml.stringify)(session), "utf-8");
+    (0, import_node_fs.writeFileSync)(tmpPath, (0, import_yaml.stringify)(session, { lineWidth: 200 }), "utf-8");
     (0, import_node_fs.renameSync)(tmpPath, sessionPath);
   } catch (e) {
     try {

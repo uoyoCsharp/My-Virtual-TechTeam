@@ -58,9 +58,6 @@ sections:
 
   - type: inline
     content: |
-      ### Step 4: Pre-flight Checks
-      - No blocking checks required (config is always accessible)
-
       ## Configuration Keys
 
       ### User Preferences

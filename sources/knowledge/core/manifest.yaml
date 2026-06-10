@@ -1,6 +1,3 @@
 id: core
 type: shared
-
-files:
-  # User-added entries (origin: user) are appended by /mvt-manage-context.
-  # `mvtt update` preserves them and only rewrites origin: framework entries.
+files: []

@@ -93,9 +93,6 @@ Read `.ai-agents/config.yaml` and enforce the following throughout this entire s
 - `preferences.output.data_format` → Use this format for data sections in artifacts
 - `preferences.context_routing.relevance_threshold` → Used by `/mvt-manage-context add` for AI routing (default 70 if missing)
 
-### Step 4: Pre-flight Checks
-- No blocking checks required.
-
 ## Execution Flow
 
 ### Step 1: Load Inputs
@@ -198,6 +195,7 @@ This skill is read-only and does NOT modify `.ai-agents/workspace/session.yaml`.
 ## Suggested Next Steps
 
 Recommend 2-3 relevant next skills based on the skill just completed (`mvt-template`) and the current project state.
+**Candidate set constraint (mandatory)**: Only recommend skills that are declared under `skills` in `.ai-agents/registry.yaml`.
 
 ### Conditional Recommendations
 

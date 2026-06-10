@@ -268,7 +268,12 @@ export function updateRegistry(projectRoot: string, packageRoot: string): Regist
   // on a single line. Only the framework file's leading comment header is
   // preserved (yaml.stringify drops comments); inline section comments are not.
   const serialized =
-    leadingComments(frameworkRaw) + stringifyYaml(merged, { lineWidth: 0 });
+    leadingComments(frameworkRaw) +
+    stringifyYaml(merged, {
+      lineWidth: 0,
+      defaultStringType: "QUOTE_DOUBLE",
+      defaultKeyType: "PLAIN",
+    });
   writeFileSync(userPath, serialized, "utf-8");
 
   return { written: true, backup, ...result };

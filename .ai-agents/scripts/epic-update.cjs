@@ -7655,7 +7655,7 @@ function main() {
   epic.updated_at = now;
   const tmpPath = epicPath + ".tmp";
   try {
-    (0, import_node_fs.writeFileSync)(tmpPath, (0, import_yaml.stringify)(epic), "utf-8");
+    (0, import_node_fs.writeFileSync)(tmpPath, (0, import_yaml.stringify)(epic, { lineWidth: 200 }), "utf-8");
     (0, import_node_fs.renameSync)(tmpPath, epicPath);
   } catch (e) {
     try {

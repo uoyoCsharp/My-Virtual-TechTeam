@@ -130,7 +130,6 @@ For each target file, check if it already exists:
 After writing all files, validate:
 - `project-context.yaml` is valid YAML with `projects[]` containing at least one entry
 - Each project entry has required fields: `name`, `path`, `type`, `tech_stack.primary_language`
-- `session.yaml` is structurally intact and contains: `session` (with `initialized_at`, `last_synced_at`), `active_change` (with `plan_path`), `changes` (array), `history`
 
 If any validation fails → report the specific error and offer to retry or skip.
 
@@ -158,15 +157,9 @@ When `mvt-init` is executed and existing MVTT artifacts are detected:
    - `type` (re-infer)
    - `source_paths` (re-scan)
 
-6. **Old format migration**: If existing `project-context.yaml` uses old format (has top-level `project`, `requirements`, `architecture`, `environment` keys):
-   - Wrap `project.*` as `projects[0]` with `name="default"`, `path="."`
-   - Discard `requirements`, `architecture` sections -- suggest running `/mvt-analyze-code` to regenerate
-   - Discard `environment` section
-   - Discard any `pattern` related fields
+6. **After writing** -> prompt: "Project structure updated. Recommend running `/mvt-analyze-code` to sync semantic context."
 
-7. **After writing** -> prompt: "Project structure updated. Recommend running `/mvt-analyze-code` to sync semantic context."
-
-8. **Orphan knowledge entries**: After refresh, if any knowledge entries in `registry.yaml` reference a project name not in the updated `projects[]`, prompt: "N orphan knowledge entries found for project(s) not in projects list: {names}. Consider `/mvt-manage-context remove` to clean up."
+7. **Orphan knowledge entries**: After refresh, if any knowledge entries in `registry.yaml` reference a project name not in the updated `projects[]`, prompt: "N orphan knowledge entries found for project(s) not in projects list: {names}. Consider `/mvt-manage-context remove` to clean up."
 
 ### Step 7: Determine Project State (drives next-step recommendation)
 

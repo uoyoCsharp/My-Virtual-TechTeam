@@ -40,11 +40,6 @@ sections:
   - type: shared
     source: sections/activation-load-config.md
 
-  - type: inline
-    content: |
-      ### Step 4: Pre-flight Checks
-      - No blocking checks required.
-
   - type: file
     source: ./business.md
 
