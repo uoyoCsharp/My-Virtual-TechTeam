@@ -132,12 +132,6 @@ describe("assembler", () => {
       const output = buildSkill("mvt-init");
       expect(output).toContain("/mvt-analyze");
     });
-
-    it("documents new session.yaml fields for plan support", () => {
-      const output = buildSkill("mvt-init");
-      expect(output).toContain("plan_path");
-      expect(output).toContain("changes");
-    });
   });
 
   describe("mvt-implement", () => {

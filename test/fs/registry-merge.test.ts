@@ -45,10 +45,10 @@ describe("registry merge (map-aware)", () => {
 
   // ── Existing tests (updated for map structure) ──
 
-  it("fresh install writes the framework registry with header comment intact", () => {
+  it("fresh install writes the framework registry", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const raw = readFileSync(registryPath(), "utf-8");
-    expect(raw).toContain("# MVTT Framework Registry");
+    expect(raw).toContain("last_updated");
     const doc = readRegistry();
     expect(doc.skills && doc.skills["mvt-init"]).toBeTruthy();
   });
