@@ -44,7 +44,7 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/output-language-constraint.md
+    source: sections/language-constraint.md
 
   - type: shared
     source: sections/output-format-constraint.md

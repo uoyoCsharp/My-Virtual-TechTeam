@@ -2,8 +2,8 @@
 Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:
 
 **Language**:
-- `preferences.interaction_language` → Use for everything spoken to the user (chat, prompts, tables); NOT for files written to disk.
-- `preferences.document_output_language` → See **Output Language Constraint** section below for the full rules governing files written to disk.
+- `preferences.interaction_language` → Language for everything spoken to the user (chat, prompts, tables); NOT for files written to disk. See the **Language Constraint** section below for the full, non-negotiable rules.
+- `preferences.document_output_language` → Language for files written to disk. See the **Language Constraint** section below for the full rules.
 
 **Other preferences**:
 - `preferences.output.no_emojis` → If true, never use emojis

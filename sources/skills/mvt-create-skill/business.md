@@ -212,7 +212,7 @@ Copy the following sections verbatim from this document (the assembled SKILL.md 
 |---------|----------------------|-----------------|
 | Activation Protocol | `## Activation Protocol` | Add `extended_context` entries if the skill needs additional context sources; otherwise copy as-is |
 | Load Config | Load Config step within Activation Protocol | Copy as-is |
-| Output Language Constraint | Output Language Constraint step within Activation Protocol | Copy as-is |
+| Language Constraint | Language Constraint step within Activation Protocol | Copy as-is |
 | Pre-flight Checks | Pre-flight Checks step within Activation Protocol | Replace `checks` table with skill-specific checks; if none required, use a single INFO row |
 | State Update | `## State Update` | Replace `/{name}` with the new skill's command; include `active_change` conditional block only if the skill creates changes; include `Shortcut Operation Rules` if the user opted for shortcut semantics during Step 5 design |
 | Suggested Next Steps | `## Suggested Next Steps` | Replace `current_skill` with the new skill name; replace conditional suggestions with skill-appropriate ones |
