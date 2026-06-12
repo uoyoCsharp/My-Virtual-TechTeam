@@ -24,6 +24,9 @@ sections:
   - type: shared
     source: sections/activation-load-config.md
 
+  - type: shared
+    source: sections/language-constraint.md
+
   - type: file
     source: ./business.md
 
