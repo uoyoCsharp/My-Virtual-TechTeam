@@ -30,14 +30,6 @@ export function updateCommand(options: UpdateOptions = {}): void {
     process.exit(1);
   }
 
-  if (existing.mvtt_version === version && !checkOnly) {
-    console.log(bilingual(
-      `Already at v${version}. Nothing to update.`,
-      `已是 v${version}。无需更新。`,
-    ));
-    return;
-  }
-
   if (checkOnly) {
     console.log(bilingual(`Current: v${existing.mvtt_version}`, `当前版本：v${existing.mvtt_version}`));
     console.log(bilingual(`Latest:  v${version}`, `最新版本：v${version}`));
@@ -46,6 +38,14 @@ export function updateCommand(options: UpdateOptions = {}): void {
     } else {
       console.log(bilingual("Up to date.", "已是最新版本。"));
     }
+    return;
+  }
+
+  if (existing.mvtt_version === version) {
+    console.log(bilingual(
+      `Already at v${version}. Nothing to update.`,
+      `已是 v${version}。无需更新。`,
+    ));
     return;
   }
 
@@ -108,7 +108,7 @@ export function updateCommand(options: UpdateOptions = {}): void {
 
   console.log(bilingual(
     `\nUpdate complete: ${materialized.length} files processed.`,
-    `\n更新完成：已处理 ${materialized.length} 个文件。`,
+    `\n更新完成:已处理 ${materialized.length} 个文件。`,
   ));
 }
 

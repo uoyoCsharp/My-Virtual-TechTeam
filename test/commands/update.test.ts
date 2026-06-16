@@ -76,7 +76,7 @@ describe("update (via re-materialize)", () => {
         category: "generated" as const,
       },
     ];
-    writeInstallationManifest(tmpDir, "2.0.0", initialPlusStale, null);
+    writeInstallationManifest(tmpDir, "1.0.0", initialPlusStale, null);
 
     const originalCwd = process.cwd();
     process.chdir(tmpDir);
@@ -155,13 +155,13 @@ describe("update (via re-materialize)", () => {
       projectRoot: tmpDir,
       platforms: ["claude", "qoder"],
     });
-    writeInstallationManifest(tmpDir, "2.0.0", initial, null, ["claude", "qoder"]);
+    writeInstallationManifest(tmpDir, "1.0.0", initial, null, ["claude", "qoder"]);
 
     expect(existsSync(path.join(tmpDir, ".qoder/skills/mvt-init/SKILL.md"))).toBe(true);
 
     // Simulate platform reduction: rewrite manifest to only claude,
     // while qoder files remain on disk from the previous install.
-    writeInstallationManifest(tmpDir, "2.0.0", initial, null, ["claude"]);
+    writeInstallationManifest(tmpDir, "1.0.0", initial, null, ["claude"]);
 
     // Update via command (reads platforms from manifest)
     const originalCwd = process.cwd();
