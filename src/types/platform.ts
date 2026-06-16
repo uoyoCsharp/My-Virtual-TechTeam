@@ -1,4 +1,4 @@
-export type PlatformId = "claude" | "qoder";
+export type PlatformId = "claude" | "qoder" | "cursor" | "opencode";
 
 export interface PlatformDef {
   id: PlatformId;
@@ -19,6 +19,18 @@ export const PLATFORMS: PlatformDef[] = [
     dir: ".qoder",
     skillDir: ".qoder/skills",
     description: "Qoder IDE",
+  },
+  {
+    id: "cursor",
+    dir: ".cursor",
+    skillDir: ".cursor/skills",
+    description: "Cursor IDE",
+  },
+  {
+    id: "opencode",
+    dir: ".opencode",
+    skillDir: ".opencode/skills",
+    description: "Opencode CLI",
   },
 ];
 

@@ -1,6 +1,6 @@
 import path from "node:path";
 import { readFileSync, writeFileSync } from "node:fs";
-import prompts from "prompts";
+import * as p from "@clack/prompts";
 import { materializeProject } from "../fs/materialize.js";
 import {
   manifestPath,
@@ -12,6 +12,7 @@ import { color } from "../util/color.js";
 import { bilingual } from "../util/bilingual.js";
 import type { PlatformId } from "../types/platform.js";
 import { PLATFORMS, DEFAULT_PLATFORMS } from "../types/platform.js";
+import { cancelled } from "../util/cancel.js";
 
 type Language = "en-US" | "zh-CN";
 
@@ -29,59 +30,87 @@ export async function installCommand(): Promise<void> {
     process.exit(1);
   }
 
+  p.intro(color.cyan(bilingual(
+    `MVTT Installer — v${version}`,
+    `MVTT 安装器 — v${version}`,
+  )));
+
   const interactionLanguage = await selectLanguage("interaction");
   const documentLanguage = await selectLanguage("document", interactionLanguage);
   const platforms = await selectPlatforms();
 
-  console.log(bilingual(
-    `Installing MVTT v${version} into ${projectRoot}...`,
-    `正在将 MVTT v${version} 安装到 ${projectRoot}...`,
-  ));
-
-  const materialized = materializeProject({
-    packageRoot,
-    projectRoot,
-    platforms,
-    overwriteCreateOnce: false,
-  });
-
   const configPath = path.resolve(projectRoot, ".ai-agents/config.yaml");
-  let config = readFileSync(configPath, "utf-8");
-  config = config.replace(
-    /interaction_language:\s*en-US/,
-    `interaction_language: ${interactionLanguage}`,
-  );
-  config = config.replace(
-    /document_output_language:\s*en-US/,
-    `document_output_language: ${documentLanguage}`,
-  );
-  writeFileSync(configPath, config, "utf-8");
+  let materialized!: ReturnType<typeof materializeProject>;
 
-  writeInstallationManifest(projectRoot, version, materialized, null, platforms);
+  await p.tasks([
+    {
+      title: bilingual(
+        `Materializing ${platforms.length} platform(s)`,
+        `正在生成 ${platforms.length} 个平台的文件`,
+      ),
+      task: async () => {
+        materialized = materializeProject({
+          packageRoot,
+          projectRoot,
+          platforms,
+          overwriteCreateOnce: false,
+        });
+        return bilingual(
+          `${materialized.length} files written`,
+          `已写入 ${materialized.length} 个文件`,
+        );
+      },
+    },
+    {
+      title: bilingual(
+        `Writing config (interaction: ${interactionLanguage}, document: ${documentLanguage})`,
+        `正在写入配置（交互：${interactionLanguage}，文档：${documentLanguage}）`,
+      ),
+      task: async () => {
+        let config = readFileSync(configPath, "utf-8");
+        config = config.replace(
+          /interaction_language:\s*en-US/,
+          `interaction_language: ${interactionLanguage}`,
+        );
+        config = config.replace(
+          /document_output_language:\s*en-US/,
+          `document_output_language: ${documentLanguage}`,
+        );
+        writeFileSync(configPath, config, "utf-8");
+        return bilingual("Config updated", "配置已更新");
+      },
+    },
+    {
+      title: bilingual("Writing installation manifest", "正在写入安装清单"),
+      task: async () => {
+        writeInstallationManifest(projectRoot, version, materialized, null, platforms);
+        return bilingual("Manifest written", "清单已写入");
+      },
+    },
+  ]);
 
   const generatedCount = materialized.filter((f) => f.category === "generated").length;
   const createOnceCount = materialized.filter((f) => f.category === "create_once").length;
 
-  console.log(`\n${color.green(bilingual("Installation complete:", "安装完成："))}`);
-  console.log(bilingual(`  ${generatedCount} generated files`, `  ${generatedCount} 个生成文件`));
-  console.log(bilingual(`  ${createOnceCount} user-editable files`, `  ${createOnceCount} 个用户可编辑文件`));
-  console.log(bilingual(`  Interaction language: ${interactionLanguage}`, `  交互语言：${interactionLanguage}`));
-  console.log(bilingual(`  Document output language: ${documentLanguage}`, `  文档输出语言：${documentLanguage}`));
-  console.log(bilingual(`  Platforms: ${platforms.join(", ")}`, `  平台：${platforms.join(", ")}`));
-  console.log(`  ${bilingual("Manifest:", "清单：")} ${color.gray(path.relative(projectRoot, manifestPath(projectRoot)))}`);
-  console.log(`\n${color.bold(bilingual("Next steps:", "下一步："))}`);
-  console.log(bilingual(
-    `  Run ${color.cyan("/mvt-init")} in your AI IDE to initialize the project`,
-    `  在你的 AI IDE 中运行 ${color.cyan("/mvt-init")} 以初始化项目`,
+  p.log.info(bilingual(
+    `${generatedCount} generated · ${createOnceCount} user-editable · ${platforms.length} platform(s)`,
+    `${generatedCount} 个生成文件 · ${createOnceCount} 个用户可编辑文件 · ${platforms.length} 个平台`,
   ));
+  p.log.info(bilingual(
+    `Manifest: ${path.relative(projectRoot, manifestPath(projectRoot))}`,
+    `清单路径：${path.relative(projectRoot, manifestPath(projectRoot))}`,
+  ));
+
+  p.outro(color.green(bilingual(
+    `Next: run /mvt-init in your AI IDE`,
+    `下一步：在你的 AI IDE 中运行 /mvt-init`,
+  )));
 }
 
 async function selectLanguage(
   kind: "interaction" | "document",
   fallback?: Language,
 ): Promise<Language> {
-  if (!process.stdin.isTTY) return fallback ?? "en-US";
-
   const baseMessage =
     kind === "interaction"
       ? bilingual("Interaction language (chat replies, prompts)", "交互语言")
@@ -91,57 +120,34 @@ async function selectLanguage(
         );
   const message =
     kind === "document" && fallback
-      ? `${baseMessage} [default: ${fallback} / 默认：${fallback}]`
+      ? `${baseMessage} [${bilingual(`default: ${fallback}`, `默认：${fallback}`)}]`
       : baseMessage;
 
-  const initial =
-    kind === "document" && fallback === "zh-CN"
-      ? 1
-      : 0;
+  const response = await p.select({
+    message,
+    options: [
+      { value: "en-US", label: bilingual("English (en-US)", "English (en-US)") },
+      { value: "zh-CN", label: bilingual("中文 (zh-CN)", "中文 (zh-CN)") },
+    ] as { value: Language; label: string }[],
+    initialValue: kind === "document" && fallback ? fallback : "en-US",
+  });
 
-  const response = await prompts(
-    {
-      type: "select",
-      name: "language",
-      message,
-      choices: [
-        { title: bilingual("English (en-US)", "English (en-US)"), value: "en-US" },
-        { title: bilingual("中文 (zh-CN)", "中文 (zh-CN)"), value: "zh-CN" },
-      ],
-      initial,
-    },
-    {
-      onCancel: () => {
-        throw new Error("Cancelled");
-      },
-    },
-  );
-
-  return response.language as Language;
+  if (p.isCancel(response)) cancelled();
+  return response as Language;
 }
 
 async function selectPlatforms(): Promise<PlatformId[]> {
-  if (!process.stdin.isTTY) return DEFAULT_PLATFORMS;
+  const response = await p.multiselect({
+    message: bilingual("Target AI platforms", "目标 AI 平台"),
+    options: PLATFORMS.map((pl) => ({
+      value: pl.id,
+      label: `${pl.dir} — ${pl.description}`,
+    })),
+    initialValues: DEFAULT_PLATFORMS,
+    required: true,
+  });
 
-  const response = await prompts(
-    {
-      type: "multiselect",
-      name: "platforms",
-      message: bilingual("Target AI platforms", "目标 AI 平台"),
-      choices: PLATFORMS.map((p) => ({
-        title: bilingual(`${p.dir} — ${p.description}`, `${p.dir} — ${p.description}`),
-        value: p.id,
-        selected: true,
-      })),
-      min: 1,
-    },
-    {
-      onCancel: () => {
-        throw new Error("Cancelled");
-      },
-    },
-  );
-
-  const selected = response.platforms as PlatformId[];
+  if (p.isCancel(response)) cancelled();
+  const selected = response as PlatformId[];
   return selected.length > 0 ? selected : DEFAULT_PLATFORMS;
 }

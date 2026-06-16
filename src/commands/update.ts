@@ -9,6 +9,7 @@ import {
 import { hashFile } from "../fs/hash.js";
 import { getPackageRoot, getVersion } from "./shared.js";
 import { bilingual } from "../util/bilingual.js";
+import { startSpinner } from "../util/spinner.js";
 
 export interface UpdateOptions {
   check?: boolean;
@@ -77,12 +78,22 @@ export function updateCommand(options: UpdateOptions = {}): void {
   ));
 
   const platforms = readInstalledPlatforms(existing);
-  const materialized = materializeProject({
-    packageRoot,
-    projectRoot,
-    platforms,
-    overwriteCreateOnce: false,
-  });
+  const spinner = startSpinner(
+    bilingual(`Materializing ${platforms.length} platform(s)...`, `正在生成 ${platforms.length} 个平台的文件...`),
+  );
+  let materialized: ReturnType<typeof materializeProject>;
+  try {
+    materialized = materializeProject({
+      packageRoot,
+      projectRoot,
+      platforms,
+      overwriteCreateOnce: false,
+    });
+    spinner.succeed();
+  } catch (err) {
+    spinner.fail();
+    throw err;
+  }
 
   const removed = removeStaleGeneratedFiles(projectRoot, existing.files, materialized);
   if (removed.length > 0) {

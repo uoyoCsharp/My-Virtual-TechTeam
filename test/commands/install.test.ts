@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach } from "vitest";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import path from "node:path";
 import os from "node:os";
@@ -8,6 +8,26 @@ import {
   writeInstallationManifest,
 } from "../../src/fs/install-manifest.js";
 import { installCommand } from "../../src/commands/install.js";
+
+vi.mock("@clack/prompts", () => ({
+  select: vi.fn().mockResolvedValue("en-US"),
+  multiselect: vi.fn().mockResolvedValue(["claude"]),
+  confirm: vi.fn().mockResolvedValue(true),
+  isCancel: vi.fn().mockReturnValue(false),
+  intro: vi.fn(),
+  outro: vi.fn(),
+  cancel: vi.fn(),
+  tasks: vi.fn().mockImplementation(async (taskDefs: Array<{ task: (msg: (s: string) => void) => Promise<string> | string }>) => {
+    for (const t of taskDefs) await t.task(() => {});
+  }),
+  log: {
+    info: vi.fn(),
+    success: vi.fn(),
+    warn: vi.fn(),
+    error: vi.fn(),
+    message: vi.fn(),
+  },
+}));
 
 const PACKAGE_ROOT = path.resolve(".");
 

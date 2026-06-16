@@ -1,12 +1,26 @@
 import { Command } from "commander";
+import * as p from "@clack/prompts";
 import { installCommand } from "./commands/install.js";
 import { updateCommand } from "./commands/update.js";
 import { doctorCommand } from "./commands/doctor.js";
 import { uninstallCommand } from "./commands/uninstall.js";
 import { getVersion } from "./commands/shared.js";
 import { bilingual } from "./util/bilingual.js";
+import { color } from "./util/color.js";
 
 export async function run(argv: string[]): Promise<void> {
+  const version = getVersion();
+
+  const isMeta = argv.some(
+    (a) => a === "--help" || a === "-h" || a === "--version" || a === "-v" || a === "help",
+  );
+  if (isMeta && process.stdout.isTTY) {
+    p.intro(color.cyan(bilingual(
+      `MVTT v${version} — My Virtual Tech Team`,
+      `MVTT v${version} — 我的虚拟技术团队`,
+    )));
+  }
+
   const program = new Command();
 
   program

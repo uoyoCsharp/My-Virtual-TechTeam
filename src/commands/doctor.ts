@@ -1,17 +1,21 @@
 import { existsSync } from "node:fs";
 import path from "node:path";
+import * as p from "@clack/prompts";
 import { readInstallationManifest } from "../fs/install-manifest.js";
 import { hashFile } from "../fs/hash.js";
 import { getVersion } from "./shared.js";
-import { color } from "../util/color.js";
 import { bilingual } from "../util/bilingual.js";
+import { color } from "../util/color.js";
 
 export function doctorCommand(): void {
   const projectRoot = process.cwd();
   const version = getVersion();
   const checks: Array<{ status: "PASS" | "WARN" | "FAIL"; message: string }> = [];
 
-  console.log(bilingual(`mvtt doctor v${version}`, `mvtt doctor v${version}`) + `\n`);
+  p.intro(color.cyan(bilingual(
+    `mvtt doctor v${version}`,
+    `mvtt doctor v${version}`,
+  )));
 
   const manifest = readInstallationManifest(projectRoot);
   if (!manifest) {
@@ -91,19 +95,16 @@ export function doctorCommand(): void {
 
 function report(checks: Array<{ status: "PASS" | "WARN" | "FAIL"; message: string }>): void {
   for (const c of checks) {
-    const tag =
-      c.status === "PASS"
-        ? color.green(`[${c.status}]`)
-        : c.status === "WARN"
-          ? color.yellow(`[${c.status}]`)
-          : color.red(`[${c.status}]`);
-    console.log(`${tag} ${c.message}`);
+    const fn = c.status === "PASS" ? p.log.success : c.status === "WARN" ? p.log.warn : p.log.error;
+    fn(`[${c.status}] ${c.message}`);
   }
   const errors = checks.filter((c) => c.status === "FAIL").length;
   const warnings = checks.filter((c) => c.status === "WARN").length;
   const summary = bilingual(
-    `\nSummary: ${warnings} warning${warnings === 1 ? "" : "s"}, ${errors} error${errors === 1 ? "" : "s"}`,
-    `\n汇总：${warnings} 个警告，${errors} 个错误`,
+    `Summary: ${warnings} warning${warnings === 1 ? "" : "s"}, ${errors} error${errors === 1 ? "" : "s"}`,
+    `汇总：${warnings} 个警告，${errors} 个错误`,
   );
-  console.log(errors > 0 ? color.red(summary) : warnings > 0 ? color.yellow(summary) : color.green(summary));
+  if (errors > 0) p.log.error(summary);
+  else if (warnings > 0) p.log.warn(summary);
+  else p.log.success(summary);
 }
