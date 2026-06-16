@@ -1,14 +1,55 @@
 # My Virtual Tech Team (MVTT)
 
-> A prompt orchestration framework for [Claude Code](https://claude.ai/claude-code) — 22 AI skills that share persistent context and cover the full development lifecycle from requirements to testing.
+> **Stop repeating context. Ship features end-to-end.**
+>
+> 24 specialized AI skills that share a persistent workspace — covering the full development lifecycle from requirements to tested code.
 
-[![npm](https://img.shields.io/npm/v/@uoyo/mvtt)](https://www.npmjs.com/package/@uoyo/mvtt) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+**English** | [中文](README.zh-CN.md)
 
-## What is MVTT
+[![npm](https://img.shields.io/npm/v/@uoyo/mvtt)](https://www.npmjs.com/package/@uoyo/mvtt) [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE) [![GitHub stars](https://img.shields.io/github/stars/uoyoCsharp/My-Virtual-TechTeam)](https://github.com/uoyoCsharp/My-Virtual-TechTeam/stargazers)
 
-MVTT turns Claude Code into a coordinated engineering team — Analyst, Architect, Developer, Reviewer, and Tester — each with a distinct role but sharing the same persistent workspace. Every skill reads from and writes to a file-based context layer that lives in your repository, so knowledge accumulates across conversations instead of being lost.
+## We Know The Problem You Are Facing
 
-## Highlights
+Every AI session starts from zero. The project context you built yesterday — the architecture, the conventions, the domain knowledge — is gone today.
+
+Three things make this painful on real projects:
+
+- **Context evaporates** — close the IDE, switch machines, come back next week, and the AI has forgotten everything.
+- **Same preamble every time** — re-explain the tech stack, re-state the conventions, re-describe the domain.
+- **No separation of concerns** — analysis, design, code, and tests jumbled in a single conversation.
+
+> **Mental model in 30 seconds**: imagine hiring a tiny engineering team — Analyst, Architect, Developer, Reviewer, Tester — with a shared project notebook that lives in your repo. The workflow is standardized, so it works the same whether you're a senior engineer or a junior — AI proficiency no longer determines output quality. That's MVTT.
+
+## Quick Start
+
+```bash
+# Install into any project
+npx @uoyo/mvtt install
+
+# Open in Claude Code, then:
+/mvt-init          # Detect tech stack, initialize context
+/mvt-analyze       # Start with requirements analysis
+```
+
+## Who MVTT Is For
+
+MVTT is for developers who use Claude Code on real, ongoing projects — not one-off scripts.
+
+**Use MVTT if you:**
+
+- Maintain a medium-sized codebase (5k+ LOC) and feel context-loss pain
+- Want a structured workflow even when working solo — analysis, design, implement, review, test
+- Lead a team where AI proficiency varies — MVTT standardizes the workflow so juniors and seniors produce consistent output
+- Bilingual projects: MVTT works in both English and Chinese
+- Want a project notebook that travels with the repo (version-controlled, team-shared)
+
+**Skip MVTT if you:**
+
+- Build throwaway scripts (regular Claude Code is faster)
+- Need enterprise CI/CD pipelines or role-based access control (not what MVTT does)
+- Prefer a single CLAUDE.md and rolling your own prompts
+
+## How It Works
 
 ### Persistent Context That Grows With Your Project
 
@@ -19,7 +60,7 @@ MVTT turns Claude Code into a coordinated engineering team — Analyst, Architec
 │   ├── project-context.yaml      # Tech stack, domain model, conventions
 │   └── artifacts/                # Analysis docs, design specs, review logs
 └── knowledge/
-    ├── core/                     # Framework principles & architecture patterns
+    ├── core/                     # Framework principles
     ├── principle/                # Your team's coding standards
     └── project/                  # Domain-specific knowledge
 ```
@@ -39,17 +80,33 @@ You can close your IDE, switch machines, or come back days later — the context
 
 ### One Shared Truth, Zero Drift
 
-Every skill operates against the **same context source**:
+```mermaid
+flowchart LR
+    ctx["📚 Shared Context Layer"]
 
-```
-┌─────────────────────────────────────────────────────┐
-│              Shared Context Layer                    │
-│  session.yaml + project-context.yaml + knowledge/   │
-└───────────┬───────────┬───────────┬─────────────────┘
-            │           │           │
-      ┌─────┴──┐  ┌────┴────┐  ┌──┴──────┐
-      │Analyst │  │Architect│  │Developer│  ...
-      └────────┘  └─────────┘  └─────────┘
+    subgraph roles ["<b>👥 Your Virtual Tech Team</b>"]
+        direction TB
+        a["🔍<br/><b>Analyst</b><sub><br/>analyze</sub>"]
+        ar["🏗️<br/><b>Architect</b><br/><sub>design · plan-dev</sub>"]
+        d["⚙️<br/><b>Developer</b><br/><sub>implement · fix</sub>"]
+        r["👀<br/><b>Reviewer</b><br/><sub>review</sub>"]
+        t["🧪<br/><b>Tester</b><br/><sub>test</sub>"]
+    end
+
+    a ~~~ r
+    ar ~~~ t
+    d ~~~ t
+
+    ctx ==> roles
+
+    style ctx fill:#6d4ad6,stroke:#4c1d95,stroke-width:3px,color:#ffffff,font-weight:bold,font-size:16px
+    style roles fill:#faf7ff,stroke:#a78bfa,stroke-width:1px,stroke-dasharray:4 3,color:#4c1d95
+
+    style a fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#78350f
+    style ar fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e3a8a
+    style d fill:#dcfce7,stroke:#22c55e,stroke-width:2px,color:#14532d
+    style r fill:#fce7f3,stroke:#ec4899,stroke-width:2px,color:#831843
+    style t fill:#e0e7ff,stroke:#6366f1,stroke-width:2px,color:#312e81
 ```
 
 When the Analyst discovers a new domain concept, the Architect sees it. When the Architect makes a design decision, the Developer follows it. No skill can "go rogue" because they all read the same ground truth before acting.
@@ -58,73 +115,215 @@ When the Analyst discovers a new domain concept, the Architect sees it. When the
 
 MVTT covers the full engineering workflow — not just code generation:
 
+```mermaid
+flowchart LR
+    A["🔎<br/><b>Analyze</b><br/><sub>Extract domain concepts</sub>"] ==> B["🏗️<br/><b>Design</b><br/><sub>Define architecture</sub>"] ==> C["📋<br/><b>Plan</b><br/><sub>Break into tasks</sub>"] ==> D["⚡<br/><b>Implement</b><br/><sub>Write code</sub>"] ==> E["🔍<br/><b>Review</b><br/><sub>Check quality</sub>"] ==> F["🧪<br/><b>Test</b><br/><sub>Generate tests</sub>"]
+
+    A -.->|epic scale| G["🧩<br/><b>Decompose</b><br/><sub>Break into sub-changes</sub>"]
+    G -.-> B
+
+    A -.->|simple change| H["🚀<br/><b>Quick Dev</b><br/><sub>Skip the ceremony</sub>"]
+
+    style A fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e3a8a,font-weight:bold
+    style B fill:#e0e7ff,stroke:#6366f1,stroke-width:2px,color:#312e81,font-weight:bold
+    style C fill:#ede9fe,stroke:#8b5cf6,stroke-width:2px,color:#4c1d95,font-weight:bold
+    style D fill:#fae8ff,stroke:#a855f7,stroke-width:2px,color:#581c87,font-weight:bold
+    style E fill:#fce7f3,stroke:#ec4899,stroke-width:2px,color:#831843,font-weight:bold
+    style F fill:#dcfce7,stroke:#22c55e,stroke-width:2px,color:#14532d,font-weight:bold
+    style G fill:#fef3c7,stroke:#f59e0b,stroke-width:1.5px,stroke-dasharray:5 5,color:#78350f
+    style H fill:#e0e7ff,stroke:#6366f1,stroke-width:1.5px,stroke-dasharray:5 5,color:#312e81
+
+    linkStyle 0 stroke:#6366f1,stroke-width:3px
+    linkStyle 1 stroke:#6366f1,stroke-width:3px
+    linkStyle 2 stroke:#6366f1,stroke-width:3px
+    linkStyle 3 stroke:#6366f1,stroke-width:3px
+    linkStyle 4 stroke:#6366f1,stroke-width:3px
 ```
- Analyze        Design        Plan         Implement      Review        Test
-┌────────┐   ┌────────┐   ┌────────┐   ┌──────────┐   ┌────────┐   ┌──────┐
-│Extract │   │Define  │   │Break   │   │Write code│   │Check   │   │Write │
-│domain  │──▶│arch &  │──▶│into    │──▶│following │──▶│quality │──▶│tests │
-│concepts│   │patterns│   │tasks   │   │the design│   │& style │   │      │
-└────────┘   └────────┘   └────────┘   └──────────┘   └────────┘   └──────┘
-     │                                                                  │
-     └──────────────── Context flows through every phase ───────────────┘
+
+For epic-scale work, `/mvt-decompose` runs *before* `/mvt-analyze` and breaks the requirement into right-sized sub-changes with DAG dependencies. For small changes, `/mvt-quick-dev` skips the full workflow entirely.
+
+Context flows through every phase via `session.yaml` and `project-context.yaml` — each step's output is the next step's input. The context accumulates, it doesn't reset.
+
+### Multi-Project & Dependency-Aware
+
+Real-world repos are rarely a single project. MVTT handles both shapes that slow other tools down.
+
+**Multi-project in one repo.** Monorepos, microservices, multi-app repos — MVTT handles them natively. A single `project-context.yaml` tracks all sub-projects in a `projects[]` array, and the registry routes knowledge by project name. Skills scope to the active project automatically; you can switch scopes explicitly. One workspace, many projects, no context bleed.
+
+```mermaid
+flowchart TB
+    repo["🗂️<br/><b>Workspace</b><br/><sub>.ai-agents/</sub>"]
+
+    subgraph projects ["<b>📦 Multi-Project Tracking</b>"]
+        direction LR
+        p1["📘<br/><b>Project A</b><br/><sub>api-server</sub>"]
+        p2["📗<br/><b>Project B</b><br/><sub>web-app</sub>"]
+        p3["📙<br/><b>Project C</b><br/><sub>mobile-app</sub>"]
+    end
+
+    shared["🌐<br/><b>Shared Knowledge</b><br/><sub>core/ · principle/</sub>"]
+
+    repo ==> projects
+    repo ==> shared
+
+    style repo fill:#6d4ad6,stroke:#4c1d95,stroke-width:3px,color:#ffffff,font-weight:bold,font-size:16px
+    style projects fill:#faf7ff,stroke:#a78bfa,stroke-width:2px,stroke-dasharray:5 3,color:#4c1d95
+    style shared fill:#dcfce7,stroke:#22c55e,stroke-width:2px,color:#14532d,font-weight:bold
+
+    style p1 fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e3a8a,font-weight:bold
+    style p2 fill:#dcfce7,stroke:#22c55e,stroke-width:2px,color:#14532d,font-weight:bold
+    style p3 fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#78350f,font-weight:bold
+
+    linkStyle 0 stroke:#a855f7,stroke-width:3px
+    linkStyle 1 stroke:#22c55e,stroke-width:3px
 ```
 
-Each phase produces artifacts that become input for the next. The context accumulates — it doesn't reset.
+**Dependency-aware task tracking.** Real features have dependencies — some tasks block others, some can run in parallel. Instead of tracking these in your head (or a spreadsheet), `/mvt-decompose` produces a DAG of sub-changes, `/mvt-plan-dev` mirrors it in `plan.yaml`, and `/mvt-update-plan` walks you through in the right order. You always see the critical path and what's runnable *now*.
 
-## Quick Start
+```mermaid
+flowchart LR
+    subgraph foundation ["<b>🏛️ Foundation</b>"]
+        direction LR
+        T1["🔐<br/><b>Auth module</b><br/><sub>T1</sub>"]
+        T2["🗄️<br/><b>DB schema</b><br/><sub>T2</sub>"]
+    end
 
-```bash
-# Install into any project
-npx @uoyo/mvtt install
+    subgraph parallel ["<b>⚡ Parallel Work</b>"]
+        direction LR
+        T3["🔌<br/><b>User API</b><br/><sub>T3</sub>"]
+        T4["📝<br/><b>Logging</b><br/><sub>T4</sub>"]
+    end
 
-# Open in Claude Code, then:
-/mvt-init          # Detect tech stack, initialize context
-/mvt-analyze       # Start with requirements analysis
+    subgraph integration ["<b>✅ Integration</b>"]
+        direction TB
+        T5["🧪<br/><b>Tests</b><br/><sub>T5</sub>"]
+    end
+
+    T1 --> T3
+    T2 --> T3
+    T2 --> T4
+    T3 --> T5
+    T4 --> T5
+
+    style foundation fill:#faf7ff,stroke:#a78bfa,stroke-width:2px,stroke-dasharray:4 3,color:#4c1d95
+    style parallel fill:#fff7ed,stroke:#fb923c,stroke-width:2px,stroke-dasharray:4 3,color:#7c2d12
+    style integration fill:#f0fdf4,stroke:#22c55e,stroke-width:2px,stroke-dasharray:4 3,color:#14532d
+
+    style T1 fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e3a8a,font-weight:bold
+    style T2 fill:#dbeafe,stroke:#3b82f6,stroke-width:2px,color:#1e3a8a,font-weight:bold
+    style T3 fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#78350f,font-weight:bold
+    style T4 fill:#fef3c7,stroke:#f59e0b,stroke-width:2px,color:#78350f,font-weight:bold
+    style T5 fill:#dcfce7,stroke:#22c55e,stroke-width:2px,color:#14532d,font-weight:bold
+
+    linkStyle 0 stroke:#6366f1,stroke-width:2.5px
+    linkStyle 1 stroke:#6366f1,stroke-width:2.5px
+    linkStyle 2 stroke:#6366f1,stroke-width:2.5px
+    linkStyle 3 stroke:#a855f7,stroke-width:2.5px
+    linkStyle 4 stroke:#a855f7,stroke-width:2.5px
 ```
 
-## All Skills (22)
+Read this as: `T3` and `T4` run in parallel (both only need `T2`); `T5` waits for both. The plan tracks all of this automatically.
+
+<!-- SCREENSHOT PLACEHOLDER #2: a 30-second GIF (or 3-panel screenshot) showing the full lifecycle: /mvt-analyze output → /mvt-design output → /mvt-test output. Recommended size: ~1200x800. Save as docs/assets/lifecycle.gif (or .png) and replace this comment with: ![MVTT full lifecycle](docs/assets/lifecycle.gif) -->
+
+## Skills Working as a Team
+
+MVTT's 24 skills aren't 24 independent commands — they're an **integrated team** that shares one project notebook. Every skill's output becomes the next skill's input, so context compounds instead of evaporating.
+
+### One Feature, Six Skills, One Continuous Flow
+
+Adding a new feature end-to-end looks like this:
+
+```mermaid
+flowchart LR
+    A["🔎<br/><b>/mvt-analyze</b><br/><sub>Extract requirements</sub>"] ==> B["🏗️<br/><b>/mvt-design</b><br/><sub>Define architecture</sub>"] ==> C["📋<br/><b>/mvt-plan-dev</b><br/><sub>Break into tasks</sub>"] ==> D["⚡<br/><b>/mvt-implement</b><br/><sub>Write code</sub>"] ==> E["🔍<br/><b>/mvt-review</b><br/><sub>Check quality</sub>"] ==> F["🧪<br/><b>/mvt-test</b><br/><sub>Generate tests</sub>"]
+
+    style A fill:#dbeafe,stroke:#3b82f6,stroke-width:2.5px,color:#1e3a8a,font-weight:bold
+    style B fill:#e0e7ff,stroke:#6366f1,stroke-width:2.5px,color:#312e81,font-weight:bold
+    style C fill:#ede9fe,stroke:#8b5cf6,stroke-width:2.5px,color:#4c1d95,font-weight:bold
+    style D fill:#fae8ff,stroke:#a855f7,stroke-width:2.5px,color:#581c87,font-weight:bold
+    style E fill:#fce7f3,stroke:#ec4899,stroke-width:2.5px,color:#831843,font-weight:bold
+    style F fill:#dcfce7,stroke:#22c55e,stroke-width:2.5px,color:#14532d,font-weight:bold
+
+    linkStyle 0 stroke:#6366f1,stroke-width:3px
+    linkStyle 1 stroke:#8b5cf6,stroke-width:3px
+    linkStyle 2 stroke:#a855f7,stroke-width:3px
+    linkStyle 3 stroke:#ec4899,stroke-width:3px
+    linkStyle 4 stroke:#22c55e,stroke-width:3px
+```
+
+What would take 6 separate Claude Code sessions (and 6 rounds of re-explaining the project) takes **one continuous workflow** — same context, no re-explanation, no copy-paste.
+
+### Common Recipes
+
+You don't always need all 6. Pick the recipe that fits:
+
+| Task | Skills used |
+|------|-------------|
+| Add a new feature | `analyze` → `design` → `plan-dev` → `implement` → `review` → `test` |
+| Investigate a suspected bug | `bug-detect` (read-only diagnosis) |
+| Fix a known bug | `fix` (with optional `bug-detect` first) |
+| Refactor a module | `analyze-code` → `refactor` → `review` → `test` |
+| Tackle an epic-scale change | `decompose` → `analyze` (per sub-change) → ... |
+| Quick 1–3 file tweak | `quick-dev` |
+| Onboard to an existing codebase | `analyze-code` |
+| Resume after days off | `resume` (then continue the workflow) |
+| Clean up accumulated artifacts | `cleanup` + `check-context` |
+
+Each recipe is a **starting point** — `/mvt-help` suggests the next step based on your project's actual state, and you can drop or reorder skills as needed.
+
+### Why Multi-Skill Coordination Wins
+
+- **Compounding context** — the Analyst's extracted domain concepts feed the Architect; the Architect's design decisions feed the Developer. No skill re-derives what another already learned.
+- **Specialized prompts** — each skill is a focused prompt tuned for one phase, not one bloated "do everything" prompt. Focused prompts produce higher-quality output.
+- **Built-in handoffs** — the artifact from one skill (analysis doc, design spec, plan.yaml) is explicitly read by the next. Nothing gets lost in the conversation.
+- **Interruptible** — stop mid-workflow, come back days later, `/mvt-resume` picks up exactly where you left off, with full state restored.
+
+## The 24 Skills
 
 ### Workflow — Full Development Lifecycle
 
-| Skill | Role | What It Does |
-|-------|------|--------------|
-| `/mvt-analyze` | Analyst | Extract requirements, domain concepts, acceptance criteria |
-| `/mvt-analyze-code` | Analyst | Reverse-analyze existing code into structured context |
-| `/mvt-design` | Architect | Define architecture, component boundaries, data flow |
-| `/mvt-plan-dev` | Architect | Break design into ordered implementation tasks |
-| `/mvt-update-plan` | Architect | Update plan as tasks complete or scope changes |
-| `/mvt-implement` | Developer | Write code following the design and plan |
-| `/mvt-review` | Reviewer | Check quality, standards compliance, potential issues |
-| `/mvt-test` | Tester | Generate tests that validate the implementation |
+| Skill | Use when... | What it does |
+|-------|-------------|--------------|
+| `/mvt-analyze` | You have a new requirements doc | Extracts domain concepts, features, and acceptance criteria |
+| `/mvt-decompose` | A requirement is epic-scale, spans multiple domains | Breaks it into right-sized sub-changes with DAG dependencies |
+| `/mvt-analyze-code` | Joining an existing codebase | Reverse-analyzes code into structured project context |
+| `/mvt-design` | Requirements ready, need architecture | Defines modules, boundaries, and data flow |
+| `/mvt-plan-dev` | Design is too big for a single implement pass | Generates a tracked plan with ordered tasks |
+| `/mvt-update-plan` | A task just completed or scope changed | Marks task done/blocked/skipped, auto-advances `current_tasks` |
+| `/mvt-implement` | Design and plan are ready | Writes code following the design and plan |
+| `/mvt-review` | Implementation is written | Checks quality, standards, and potential issues |
+| `/mvt-test` | Implementation is reviewed | Generates tests that validate the behavior |
 
 ### Shortcuts — Skip the Ceremony
 
-| Skill | Description |
-|-------|-------------|
-| `/mvt-fix` | Diagnose and fix bugs (reads context to understand the system) |
-| `/mvt-refactor` | Refactor with full awareness of architecture decisions |
-| `/mvt-quick-dev` | Fast implementation for simple, well-scoped changes |
+| Skill | Use when... | What it does |
+|-------|-------------|--------------|
+| `/mvt-bug-detect` | Suspect a bug, want diagnosis before any change | Investigates root cause and impact, makes no code changes |
+| `/mvt-fix` | Bug confirmed, ready to resolve | Diagnoses and fixes with full context awareness |
+| `/mvt-refactor` | Want to restructure, keep behavior unchanged | Refactors with awareness of architecture decisions |
+| `/mvt-quick-dev` | 1–3 file change, well-scoped, architecturally neutral | Goes straight to implementation, no full workflow |
 
 ### Context Management
 
-| Skill | Description |
-|-------|-------------|
-| `/mvt-init` | Initialize project context, detect tech stack |
-| `/mvt-sync-context` | Update context after code changes made outside MVTT |
-| `/mvt-resume` | Restore full context in a new conversation |
-| `/mvt-status` | Show what's in progress, what context is loaded |
-| `/mvt-manage-context` | Add, remove, or reorganize knowledge entries |
-| `/mvt-check-context` | Analyze context token usage and optimize |
-| `/mvt-cleanup` | Archive stale artifacts, maintain context health |
+| Skill | Use when... | What it does |
+|-------|-------------|--------------|
+| `/mvt-init` | First time on a project, or major restructure | Detects tech stack and initializes the workspace |
+| `/mvt-sync-context` | Code changed outside the MVTT workflow | Reconciles workspace with actual code state |
+| `/mvt-resume` | New session, work was in progress | Restores full context from `session.yaml` |
+| `/mvt-status` | "Where am I in the workflow?" | Shows progress and loaded context |
+| `/mvt-manage-context` | Want to add/remove/reorganize knowledge | Manages knowledge entries and the registry |
+| `/mvt-check-context` | Token usage feels high | Analyzes footprint and suggests optimizations |
+| `/mvt-cleanup` | Workspace feels bloated | Archives stale artifacts, maintains health |
 
 ### Utility
 
-| Skill | Description |
-|-------|-------------|
-| `/mvt-help` | Overview of skills and workflow guidance |
-| `/mvt-config` | Change language, output format, and preferences |
-| `/mvt-create-skill` | Create custom skills for your team's workflows |
-| `/mvt-template` | View and customize output templates |
+| Skill | Use when... | What it does |
+|-------|-------------|--------------|
+| `/mvt-help` | New to MVTT or unsure what to do next | Shows skills, status, and workflow guidance |
+| `/mvt-config` | Want different language or output format | Changes framework settings |
+| `/mvt-create-skill` | Need a custom workflow for your team | Scaffolds a new skill interactively |
+| `/mvt-template` | Want to customize output formats | Views and manages output templates |
 
 ## How Context Stays in Sync
 
@@ -145,16 +344,6 @@ mvtt update [--check]     # Upgrade to latest (user data preserved)
 mvtt doctor               # Check installation health
 mvtt uninstall            # Remove generated files (user data preserved)
 ```
-
-## Architecture Patterns
-
-MVTT ships knowledge for three patterns that workflow skills automatically consume:
-
-- **`ddd`** — Domain-Driven Design (bounded contexts, aggregates, domain events)
-- **`clean-architecture`** — Layered boundaries, dependency inversion
-- **`frontend-react`** — React-specific structural conventions
-
-Detected automatically by `/mvt-init` or configured via `/mvt-config`.
 
 ## Extending MVTT
 
@@ -177,6 +366,43 @@ preferences:
   context_routing:
     relevance_threshold: 70
 ```
+
+## FAQ
+
+### How is MVTT different from a well-written CLAUDE.md?
+
+A CLAUDE.md gives Claude **instructions**. MVTT gives Claude a **team** — 24 specialized skills with shared memory, dedicated templates, and a handoff protocol. CLAUDE.md is a memo; MVTT is an org chart. You can use both; they don't conflict.
+
+### Does it explode my token usage?
+
+No. The workspace is file-based and on-demand. MVTT loads only the context that's relevant to the current skill (default relevance threshold: 70%). Run `/mvt-check-context` to see your token footprint and optimize.
+
+### Is it English-only?
+
+No. Set `preferences.interaction_language: zh-CN` and the framework switches to Chinese — both in chat and in generated artifacts. Bilingual projects are first-class.
+
+### Can my team use it together?
+
+Yes. The `.ai-agents/` workspace is version-controlled, so it travels with your repo. Everyone on the team sees the same context, the same plans, the same history. The only requirement: commit `.ai-agents/` (or at least the `knowledge/` and `project-context.yaml` parts).
+
+### Does it work with any existing project?
+
+Yes. `npx @uoyo/mvtt install` adds MVTT to any repo. It doesn't change your code, your git history, or your workflow — it adds structure on top.
+
+### What happens to my data when I uninstall?
+
+`mvtt uninstall` removes the generated framework files but preserves your `.ai-agents/workspace/` and `.ai-agents/knowledge/`. Nothing you've written is lost.
+
+### Why 24 skills? Isn't that overkill?
+
+Most teams use 5–8 skills regularly. The other 15–19 are there for specific situations (epic decomposition, context sync, output templating) — you don't need to learn them up front. Run `/mvt-help` and it tells you exactly which one to use next.
+
+## Community & Roadmap
+
+- **Issues**: [github.com/uoyoCsharp/My-Virtual-TechTeam/issues](https://github.com/uoyoCsharp/My-Virtual-TechTeam/issues)
+- **Discussions**: [github.com/uoyoCsharp/My-Virtual-TechTeam/discussions](https://github.com/uoyoCsharp/My-Virtual-TechTeam/discussions)
+- **Roadmap**: see [open milestones](https://github.com/uoyoCsharp/My-Virtual-TechTeam/milestones)
+- **Star the repo** if MVTT helps you ship faster
 
 ## Development
 

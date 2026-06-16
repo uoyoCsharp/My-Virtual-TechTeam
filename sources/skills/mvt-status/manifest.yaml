@@ -25,7 +25,7 @@ sections:
         - rule: "If workflow in progress -> Highlight recent skill history and next recommended step"
         - rule: "If project-context.md missing -> Suggest `/mvt-analyze-code` to generate semantic context"
         - rule: "If one or more plans exist -> Show Changes Overview table with progress for all plans"
-        - rule: "If an in_progress plan has a current_task -> Suggest the matching skill_hint as next step"
+        - rule: "If an in_progress plan has current_tasks -> Suggest the matching skill_hint as next step"
       boundaries:
         - scope: "analyze requirements"
           skill: "/mvt-analyze"
@@ -41,7 +41,7 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/output-language-constraint.md
+    source: sections/language-constraint.md
 
   - type: shared
     source: sections/activation-preflight.md
@@ -64,3 +64,14 @@ sections:
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-status
+      conditional_suggestions:
+        conditions:
+          - condition: "active change with current_tasks"
+            primary: mvt-resume
+            primary_desc: "Resume work on the current task"
+          - condition: "project-context.md missing"
+            primary: mvt-analyze-code
+            primary_desc: "Generate semantic project context"
+          - condition: "no active change"
+            primary: mvt-analyze
+            primary_desc: "Start analyzing a new feature"

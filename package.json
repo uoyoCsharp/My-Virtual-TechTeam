@@ -1,6 +1,6 @@
 {
   "name": "@uoyo/mvtt",
-  "version": "2.0.0-beta.1",
+  "version": "2.0.0",
   "description": "My Virtual Tech Team - AI-guided prompt orchestration framework",
   "type": "module",
   "bin": {
@@ -35,7 +35,7 @@
     "access": "public"
   },
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
+    "build": "node -e \"require('fs').rmSync('dist',{recursive:true,force:true})\" && tsc -p tsconfig.build.json && node build-scripts.js",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
@@ -43,14 +43,16 @@
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
-    "@types/prompts": "^2.4.9",
     "@vitest/coverage-v8": "^2.1.9",
+    "esbuild": "^0.28.0",
     "typescript": "^5.4.0",
     "vitest": "^2.0.0"
   },
   "dependencies": {
+    "@clack/prompts": "^1.5.1",
     "commander": "^14.0.3",
-    "prompts": "^2.4.2",
+    "ora": "^9.4.0",
+    "picocolors": "^1.1.1",
     "yaml": "^2.4.0"
   },
   "license": "MIT"

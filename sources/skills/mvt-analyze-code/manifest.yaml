@@ -15,6 +15,9 @@ sections:
       Analyze existing code to generate the project-context.md file, which describes the project's terms, modules, layer structure, business rules, and API overview. This is an independent operation that does not create a change-id.
 
   - type: shared
+    source: sections/project-context-profile.md
+
+  - type: shared
     source: sections/role-header.md
     params:
       role: Analyst
@@ -34,13 +37,10 @@ sections:
 
   - type: inline
     content: |
-      ## Variants
+      ## Invocation
 
-      | Variant | Description |
-      |---------|-------------|
-      | `/mvt-analyze-code` | Analyze the first (or only) project |
-      | `/mvt-analyze-code --all` | Analyze all projects in the workspace |
-      | `/mvt-analyze-code {name}` | Analyze a specific project by name |
+      `/mvt-analyze-code` — single entry point, no arguments or flags.
+      When multiple projects exist, the skill interactively prompts the user to select the target(s).
 
   - type: shared
     source: sections/activation-load-context.md
@@ -54,7 +54,10 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/output-language-constraint.md
+    source: sections/language-constraint.md
+
+  - type: shared
+    source: sections/output-format-constraint.md
 
   - type: shared
     source: sections/activation-preflight.md
@@ -71,10 +74,11 @@ sections:
 
   - type: inline
     content: |
-      ### Independent Operation Rules
-      - This is an independent operation -- no workflow prerequisites required
-      - Does NOT create a change-id
-      - Output is written to `.ai-agents/knowledge/project/_generated/project-context.md`
+      ## Operation Mode: Independent
+
+      This is an independent operation — no workflow prerequisites required.
+      - Does NOT create a change-id.
+      - Output is written to `.ai-agents/knowledge/project/_generated/project-context.md`.
 
   - type: file
     source: ./business.md
@@ -89,8 +93,21 @@ sections:
 
   - type: shared
     source: sections/session-update.md
+    params:
+      current_skill: mvt-analyze-code
 
   - type: shared
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-analyze-code
+      conditional_suggestions:
+        conditions:
+          - condition: "project-context.md generated, no active change"
+            primary: mvt-analyze
+            primary_desc: "Analyze requirements for a new feature"
+          - condition: "project-context.md generated, active change exists"
+            primary: mvt-design
+            primary_desc: "Design with the updated project context"
+          - condition: "analysis revealed outdated knowledge"
+            primary: mvt-manage-context
+            primary_desc: "Update knowledge entries"

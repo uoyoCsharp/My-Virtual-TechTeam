@@ -103,4 +103,78 @@ describe("update (via re-materialize)", () => {
     expect(m2.mvtt_version).toBe("2.0.1");
     expect(m2.last_updated_at).not.toBe(firstUpdate);
   });
+
+  // -- Multi-platform tests --
+
+  it("multi-platform: update refreshes files on all platforms", () => {
+    // Install with 2 platforms
+    const initial = materializeProject({
+      packageRoot: PACKAGE_ROOT,
+      projectRoot: tmpDir,
+      platforms: ["claude", "qoder"],
+    });
+    writeInstallationManifest(tmpDir, "2.0.0", initial, null);
+
+    // Tamper with a file on both platforms
+    writeFileSync(
+      path.join(tmpDir, ".claude/skills/mvt-init/SKILL.md"),
+      "tampered",
+      "utf-8",
+    );
+    writeFileSync(
+      path.join(tmpDir, ".qoder/skills/mvt-init/SKILL.md"),
+      "tampered",
+      "utf-8",
+    );
+
+    // Re-materialize with same platforms
+    materializeProject({
+      packageRoot: PACKAGE_ROOT,
+      projectRoot: tmpDir,
+      platforms: ["claude", "qoder"],
+    });
+
+    // Both should be restored
+    const claudeContent = readFileSync(
+      path.join(tmpDir, ".claude/skills/mvt-init/SKILL.md"),
+      "utf-8",
+    );
+    const qoderContent = readFileSync(
+      path.join(tmpDir, ".qoder/skills/mvt-init/SKILL.md"),
+      "utf-8",
+    );
+    expect(claudeContent.startsWith("---\n")).toBe(true);
+    expect(claudeContent).not.toBe("tampered");
+    expect(qoderContent).toBe(claudeContent);
+  });
+
+  it("multi-platform: platform reduction removes stale platform files", () => {
+    // Install with 2 platforms
+    const initial = materializeProject({
+      packageRoot: PACKAGE_ROOT,
+      projectRoot: tmpDir,
+      platforms: ["claude", "qoder"],
+    });
+    writeInstallationManifest(tmpDir, "2.0.0", initial, null, ["claude", "qoder"]);
+
+    expect(existsSync(path.join(tmpDir, ".qoder/skills/mvt-init/SKILL.md"))).toBe(true);
+
+    // Simulate platform reduction: rewrite manifest to only claude,
+    // while qoder files remain on disk from the previous install.
+    writeInstallationManifest(tmpDir, "2.0.0", initial, null, ["claude"]);
+
+    // Update via command (reads platforms from manifest)
+    const originalCwd = process.cwd();
+    process.chdir(tmpDir);
+    try {
+      updateCommand();
+    } finally {
+      process.chdir(originalCwd);
+    }
+
+    // .qoder files should be cleaned up (stale)
+    expect(existsSync(path.join(tmpDir, ".qoder/skills/mvt-init/SKILL.md"))).toBe(false);
+    // .claude files should still exist
+    expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-init/SKILL.md"))).toBe(true);
+  });
 });

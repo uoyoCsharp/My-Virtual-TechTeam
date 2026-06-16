@@ -20,8 +20,8 @@ sections:
       role: Architect
       role_desc: "a Development Planner"
       decision_rules:
-        - rule: "active_change is set AND has_plan is false -> Generate a fresh plan.yaml"
-        - rule: "active_change is set AND has_plan is true -> Confirm before regenerating; default to /mvt-update-plan"
+        - rule: "active_change is set AND plan_path is empty -> Generate a fresh plan.yaml"
+        - rule: "active_change is set AND plan_path is non-empty -> Confirm before regenerating; default to /mvt-update-plan"
         - rule: "Tasks would exceed 10 -> Stop, propose phasing the change into multiple plans"
         - rule: "Dependencies form a cycle -> Reject and ask the user to resolve"
         - rule: "active_change is empty -> Stop and request /mvt-analyze first"
@@ -46,7 +46,10 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/output-language-constraint.md
+    source: sections/language-constraint.md
+
+  - type: shared
+    source: sections/output-format-constraint.md
 
   - type: shared
     source: sections/activation-preflight.md
@@ -67,25 +70,24 @@ sections:
 
   - type: shared
     source: sections/session-update.md
-
-  - type: inline
-    content: |
-      ### Plan-Dev Specific State Updates
-
-      In addition to the mandatory updates above, this skill MUST update:
-
-      - `active_change.plan_path`: Set to `".ai-agents/workspace/artifacts/{active_change.id}/plan.yaml"`
-      - `active_change.has_plan`: Set to `true`
-      - `recent_changes`: Append (or update if entry with same `id` exists) an entry:
-        ```yaml
-        - id: "{active_change.id}"
-          title: "{active_change.title}"
-          plan_path: ".ai-agents/workspace/artifacts/{active_change.id}/plan.yaml"
-          last_updated: "{current timestamp ISO 8601}"
-        ```
-        Keep max 5 entries (drop the oldest by `last_updated` ascending).
+    params:
+      current_skill: mvt-plan-dev
+      update_active_change: true
+      set_plan_path: true
+      update_change: true
 
   - type: shared
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-plan-dev
+      conditional_suggestions:
+        conditions:
+          - condition: "plan created, first task is implementation"
+            primary: mvt-implement
+            primary_desc: "Start implementing the first task"
+          - condition: "plan created, first task is design"
+            primary: mvt-design
+            primary_desc: "Design the architecture for the first task"
+          - condition: "plan created, first task is testing"
+            primary: mvt-test
+            primary_desc: "Write tests for the first task"

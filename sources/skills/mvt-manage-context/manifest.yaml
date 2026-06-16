@@ -15,6 +15,9 @@ sections:
       Unified CRUD entry point for project context and knowledge entries. Handles add (with AI-driven skill routing), remove, move, rename, and list operations across `project-context.yaml`, `project-context.md`, `knowledge/principle/`, `knowledge/project/`, `knowledge/core/user/`, and the corresponding `registry.yaml` / `core/manifest.yaml` references.
 
   - type: shared
+    source: sections/project-context-profile.md
+
+  - type: shared
     source: sections/role-header.md
     params:
       role: Conductor
@@ -34,8 +37,8 @@ sections:
           skill: "/mvt-design"
         - scope: "write implementation code"
           skill: "/mvt-implement"
-        - scope: "edit framework knowledge under core/_framework/"
-          skill: "(Read-only -- framework files are not user-editable)"
+        - scope: "edit framework knowledge under core/_framework/ (framework files are read-only)"
+          skill: "(constraint)"
 
   - type: shared
     source: sections/activation-load-context.md
@@ -44,12 +47,10 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/output-language-constraint.md
+    source: sections/language-constraint.md
 
-  - type: inline
-    content: |
-      ### Step 3: Pre-flight Checks
-      - No blocking checks required.
+  - type: shared
+    source: sections/output-format-constraint.md
 
   - type: file
     source: ./business.md
@@ -86,7 +87,8 @@ sections:
       ### Removed entry: `{id}`
       - File: `.ai-agents/knowledge/{path}` (deleted)
       - References dropped from:
-        - `registry.yaml > knowledge.shared` (if applicable)
+        - `registry.yaml > knowledge._all` (if applicable)
+        - `registry.yaml > knowledge.{projectName}` (if applicable)
         - `registry.yaml > skills.{name}.knowledge` x N (if applicable)
         - `core/manifest.yaml > files[]` (if applicable)
       ```
@@ -121,3 +123,14 @@ sections:
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-manage-context
+      conditional_suggestions:
+        conditions:
+          - condition: "knowledge added or moved"
+            primary: mvt-check-context
+            primary_desc: "Verify context health after the change"
+          - condition: "knowledge removed"
+            primary: mvt-check-context
+            primary_desc: "Confirm token savings"
+          - condition: "large knowledge files detected"
+            primary: mvt-cleanup
+            primary_desc: "Clean up workspace to reduce context load"

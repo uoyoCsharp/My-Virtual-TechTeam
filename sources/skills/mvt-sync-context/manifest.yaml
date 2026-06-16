@@ -58,7 +58,10 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/output-language-constraint.md
+    source: sections/language-constraint.md
+
+  - type: shared
+    source: sections/output-format-constraint.md
 
   - type: shared
     source: sections/activation-preflight.md
@@ -73,11 +76,17 @@ sections:
           level: "BLOCK"
           message: "project-context.md not found. Run `/mvt-analyze-code` to create the initial document; this skill only handles incremental updates."
 
+  - type: shared
+    source: sections/project-context-profile.md
+
   - type: file
     source: ./business.md
 
   - type: shared
     source: sections/session-update.md
+    params:
+      current_skill: mvt-sync-context
+      set_synced: true
 
   - type: shared
     source: sections/footer-next-steps.md

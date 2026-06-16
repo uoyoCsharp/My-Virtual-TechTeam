@@ -52,7 +52,10 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/output-language-constraint.md
+    source: sections/language-constraint.md
+
+  - type: shared
+    source: sections/output-format-constraint.md
 
   - type: shared
     source: sections/activation-preflight.md
@@ -63,23 +66,28 @@ sections:
           level: "REQUIRED"
           message: "Project must be initialized (session.yaml exists)"
 
-  - type: inline
-    content: |
-      ## Cleanup Rules
-
-      | Category | Rule | Action |
-      |----------|------|--------|
-      | Completed changes | Change with `status: completed` older than current task | Summarize -> archive |
-      | Orphaned artifacts | Files in `artifacts/` not referenced by any active change | List for user review |
-      | Stale session data | Session history entries older than 5 phases ago | Summarize into single entry |
-
   - type: file
     source: ./business.md
 
   - type: shared
     source: sections/session-update.md
+    params:
+      current_skill: mvt-cleanup
+      truncate_history: true
+      close_change: true
 
   - type: shared
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-cleanup
+      conditional_suggestions:
+        conditions:
+          - condition: "cleanup freed significant tokens"
+            primary: mvt-check-context
+            primary_desc: "Validate post-cleanup context health"
+          - condition: "active change still in progress"
+            primary: mvt-resume
+            primary_desc: "Resume work on the active change"
+          - condition: "no active changes remain"
+            primary: mvt-analyze
+            primary_desc: "Start a new feature"

@@ -2,17 +2,15 @@
 
 ### Step 1: Determine Analysis Target
 
-Identify which project(s) to analyze:
+Identify which project(s) to analyze using interactive routing:
 
-| Variant | Target |
-|---------|--------|
-| `/mvt-analyze-code` | Analyze the first project in `project-context.yaml` (or the only one) |
-| `/mvt-analyze-code --all` | Analyze all projects listed in `project-context.yaml` |
-| `/mvt-analyze-code {name}` | Analyze the project matching the given name |
-
-For each target project:
-1. Read its `path` from `project-context.yaml`
-2. Use `path` as the source directory for analysis
+1. Read `project-context.yaml > projects[]` to get the list of registered projects.
+2. **Single project** (only one entry): automatically select it — no prompt needed.
+3. **Multiple projects**: present an interactive selection menu:
+   - List each project by `name` with its `path`
+   - Include an option to **analyze all projects**
+   - Wait for user selection before proceeding
+4. For each selected project, read its `path` and use it as the source directory for analysis.
 
 ### Step 2: Load Template
 
@@ -72,11 +70,14 @@ Identify public interfaces:
    - Fill each template section with analysis results
    - If a section has no relevant content, include the heading with "(No relevant content detected)"
 
-2. Write the output to `.ai-agents/knowledge/project/_generated/project-context.md`:
-   - If analyzing a single project, write that project's section
-   - If analyzing multiple projects (`--all`), write all sections separated by `---`
-   - If the file already exists, merge with existing content:
-     - Replace sections for re-analyzed projects
-     - Preserve sections for projects NOT in this analysis run
+2. Write the output to `.ai-agents/knowledge/project/_generated/project-context.md` (always the flat path, regardless of project count).
+   - **Single-project**: write the full document.
+   - **Multi-project**: use `# Project: {name}` as the top-level heading to separate each project's content sections within the single file.
 
-3. Do NOT update `project-context.yaml` -- it is the lean index, managed by `/mvt-init` and `/mvt-sync-context` only
+3. If the output file already exists:
+   - **Single-project**: replace the whole file.
+   - **Multi-project**: replace only the `# Project: {name}` section(s) for re-analyzed projects; preserve sections for projects NOT in this analysis run.
+
+4. **Populate `source_paths`** in `project-context.yaml`: after analyzing each project, update the matching project entry's `source_paths` array with the detected source directories (e.g., `["src/", "test/"]`). This overwrites the empty default set by `/mvt-init`.
+
+5. Do NOT update other fields in `project-context.yaml` -- only `source_paths` is touched by this skill.

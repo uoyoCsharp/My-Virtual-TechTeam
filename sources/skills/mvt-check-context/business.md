@@ -10,10 +10,10 @@ This skill measures only files the **user** can reduce or relocate. Framework-fi
 
 **In scope (user-actionable):**
 - Index: `.ai-agents/workspace/project-context.yaml`.
-- Semantic context: `.ai-agents/knowledge/project/_generated/project-context.md`.
-- Shared knowledge: every entry in `registry.yaml > knowledge.shared`. For the `core` entry, scan only files marked as user-origin per `core/manifest.yaml` (or whose path begins with `user/`); skip files under `core/_framework/`.
-- Per-skill knowledge: every entry in `registry.yaml > skills.*.knowledge`, grouped by skill.
-- Artifacts: all files under `.ai-agents/workspace/artifacts/` recursively.
+- Semantic context: `.ai-agents/knowledge/project/_generated/project-context.md` (always the flat path, regardless of project count).
+- Shared knowledge: every entry in `registry.yaml > knowledge._all` and `knowledge.{projectName}` (map-aware -- traverse ALL project keys in the knowledge map). For the `core` entry, scan only files marked as user-origin per `core/manifest.yaml` (or whose path begins with `user/`); skip files under `core/_framework/`.
+- Per-skill knowledge: every entry in `registry.yaml > skills.*.knowledge._all` and `skills.*.knowledge.{projectName}` (map-aware -- traverse ALL project keys for each skill), grouped by skill.
+- Artifacts: all files under `.ai-agents/workspace/artifacts/` recursively. **Exclude the `_archived/` subdirectory** — it contains completed changes archived by `/mvt-cleanup` and should not count toward the active workspace token budget.
 
 **Out of scope (do NOT scan):**
 - `.claude/skills/mvt-*/SKILL.md` -- framework-shipped, not user-editable.
@@ -21,13 +21,19 @@ This skill measures only files the **user** can reduce or relocate. Framework-fi
 - `.ai-agents/config.yaml`, `.ai-agents/workspace/session.yaml`, `.ai-agents/registry.yaml` -- small, required, and addressed via `/mvt-config` or `/mvt-manage-context`, not here.
 
 ### Step 3: Estimate Token Consumption
-- **What**: produce a per-file tokens estimate and per-category subtotals.
+- **What**: produce a per-file tokens estimate and per-category subtotals, with **per-project breakdown**.
 - **How**:
   1. For each in-scope file: tokens ~= `characters / 4`.
   2. Group by category: `Index`, `Semantic Context`, `Shared Knowledge`, `Per-Skill Knowledge`, `Artifacts`.
   3. For Shared Knowledge, compute total once -- this is per-skill overhead (loaded by every skill invocation).
   4. For Per-Skill Knowledge, compute totals per skill so users can see which skill is heaviest.
   5. Identify the Top 5 largest single files across the whole in-scope set.
+  6. **Per-project breakdown**: for multi-project workspaces, also compute token costs per project:
+     - `knowledge._all` = shared across all projects
+     - `knowledge.{projectName}` = project-specific overhead
+     - `skills.*.knowledge.{projectName}` = per-skill per-project overhead
+     Display as a separate table: `project | knowledge tokens | per-skill tokens | total`.
+  7. **Global summary**: total tokens across all projects + `_all` overhead loaded every time.
 
 ### Step 4: Apply Thresholds and Health Status
 - **What**: assign each file/category a status of `healthy | borderline | oversized`.
@@ -51,7 +57,7 @@ This skill measures only files the **user** can reduce or relocate. Framework-fi
   |---------|------------------|-----------------|
   | `project-context.md` is `oversized` | "project-context.md is {N} tokens. Regenerate with leaner sections." | `/mvt-analyze-code` |
   | `project-context.md` is `borderline` AND last `/mvt-analyze-code` ran > 30 days ago | "project-context.md is {N} tokens and may be stale. Consider regenerating." | `/mvt-analyze-code` |
-  | Total artifacts tokens > artifacts threshold OR > 3 completed changes still in `artifacts/` | "Workspace has {N} tokens of historical artifacts. Archive completed changes." | `/mvt-cleanup` |
+  | Total artifacts tokens > artifacts threshold OR > 3 completed changes still in `artifacts/` (excluding `_archived/`) | "Workspace has {N} tokens of historical artifacts. Archive completed changes." | `/mvt-cleanup` |
   | A specific change-id directory is `oversized` | "artifacts/{id} alone is {N} tokens. Summarize this change." | `/mvt-cleanup` |
   | Shared Knowledge total is `oversized` | "Shared knowledge totals {N} tokens (loaded by every skill). Move skill-specific entries to per-skill." | `/mvt-manage-context move` |
   | A single Shared Knowledge file is `oversized` | "{path} is {N} tokens. Split or move to per-skill." | `/mvt-manage-context move` |
@@ -70,11 +76,10 @@ This skill measures only files the **user** can reduce or relocate. Framework-fi
   2. **Per-Category Breakdown** -- table: `category | files | tokens | status`.
   3. **Top 5 Largest Files** -- table: `path | tokens | category | status`.
   4. **Per-Skill Knowledge Cost** -- table: `skill | tokens` (sorted desc); include shared knowledge as a separate row labeled `(shared, loaded every time)`.
-  5. **Recommendations** -- numbered list from Step 5; if empty, render the healthy line.
-  6. **Excluded Scope Note** -- one paragraph reminding the user that framework files (`_framework/`, `mvt-*/SKILL.md`, `config.yaml`, `session.yaml`, `registry.yaml`) were not measured here.
+  5. **Per-Project Token Accounting** -- table: `project | knowledge tokens | per-skill tokens | total` (only for multi-project workspaces; for single-project, omit this section).
+  6. **Recommendations** -- numbered list from Step 5; if empty, render the healthy line.
+  7. **Excluded Scope Note** -- one paragraph reminding the user that framework files (`_framework/`, `mvt-*/SKILL.md`, `config.yaml`, `session.yaml`, `registry.yaml`) were not measured here.
 - The report is conversation output; this skill does NOT write any artifact.
-
-### Step 7: (session update handled by shared section)
 
 ## Edge Cases & Errors
 
@@ -83,7 +88,7 @@ This skill measures only files the **user** can reduce or relocate. Framework-fi
 | `registry.yaml` references a knowledge id whose source path is empty / missing | Include in Step 5 recommendations; do NOT count missing files toward token totals |
 | `core/manifest.yaml` cannot be parsed | Treat the whole `core/` tree as in-scope (over-counts); add a note in the report |
 | Workspace has zero artifacts | Skip the artifacts category in Step 6; do not error |
-| Workspace exceeds the artifacts threshold AND the user just ran `/mvt-cleanup` (within last hour per `skill_history`) | Surface but downgrade to a one-line note ("recently cleaned -- remaining {N} tokens are likely active work") |
+| Workspace exceeds the artifacts threshold AND the user just ran `/mvt-cleanup` (within last hour per `history`) | Surface but downgrade to a one-line note ("recently cleaned -- remaining {N} tokens are likely active work") |
 | User passes a path argument | This skill ignores arguments; print a one-line note and run as normal (do not narrow scope to a single file -- that is `/mvt-status` territory) |
 | Token estimate disagrees with model's actual consumption | This is expected; the `chars/4` heuristic is an approximation. State this caveat in the Summary line |
 | Two skills declare the same knowledge id | Count the file once for storage but report it under both skills in the Per-Skill table; flag the duplication in Step 5 |

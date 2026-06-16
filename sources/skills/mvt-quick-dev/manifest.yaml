@@ -39,31 +39,48 @@ sections:
     params:
       extended_context:
         - ".ai-agents/knowledge/project/_generated/project-context.md -- Module/layer map (optional)"
-        - ".ai-agents/knowledge/principle/coding-standards.md -- Coding standards (optional)"
         - "Target source files (load based on change description)"
 
   - type: shared
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/output-language-constraint.md
+    source: sections/language-constraint.md
+
+  - type: shared
+    source: sections/output-format-constraint.md
 
   - type: inline
     content: |
-      ### Shortcut Operation Rules
-      - Can execute at any time without checking workflow prerequisites
-      - Do NOT update `progress` (this is a shortcut operation, not a workflow phase)
-      - Do NOT create an `active_change` if one doesn't already exist
-      - Do NOT write any artifact or document — results are conversation-only
-      - Do NOT interact with plan.yaml in any way — this skill is plan-independent
+      ## Operation Mode: Shortcut
+
+      This skill operates as a shortcut — it can execute at any time without checking workflow prerequisites.
+      - Do NOT update `active_change` fields (this is a shortcut operation, not a workflow phase).
+      - Do NOT create an `active_change` if one doesn't already exist.
+      - Do NOT write any artifact or document — results are conversation-only.
+      - Do NOT interact with plan.yaml in any way — this skill is plan-independent.
 
   - type: file
     source: ./business.md
 
   - type: shared
     source: sections/session-update.md
+    params:
+      current_skill: mvt-quick-dev
+      no_change: true
 
   - type: shared
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-quick-dev
+      conditional_suggestions:
+        conditions:
+          - condition: "change applied, tests exist for affected code"
+            primary: mvt-test
+            primary_desc: "Run tests on the changed code"
+          - condition: "change applied, no tests exist"
+            primary: mvt-review
+            primary_desc: "Quick review of the change"
+          - condition: "change was more complex than expected"
+            primary: mvt-analyze
+            primary_desc: "Do a full analysis for this change"

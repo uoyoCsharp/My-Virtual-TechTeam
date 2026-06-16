@@ -20,10 +20,9 @@ sections:
       role: Conductor
       role_desc: "a Workflow Coordinator"
       decision_rules:
-        - rule: "Total tokens < 5,000 -> Report as \"Good\""
-        - rule: "Total tokens 5,000-15,000 -> Report as \"Moderate\""
-        - rule: "Total tokens 15,000-30,000 -> Report as \"High\", suggest optimizations"
-        - rule: "Total tokens > 30,000 -> Report as \"Overloaded\", strongly recommend cleanup"
+        - rule: "Total tokens <= 12,000 -> Report as \"Healthy\""
+        - rule: "Total tokens 12,001-25,000 -> Report as \"Borderline\", suggest optimizations"
+        - rule: "Total tokens > 25,000 -> Report as \"Oversized\", strongly recommend cleanup"
       boundaries:
         - scope: "modify any files"
           skill: "(Only analyze and recommend)"
@@ -42,12 +41,7 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/output-language-constraint.md
-
-  - type: inline
-    content: |
-      ### Step 3: Pre-flight Checks
-      - No blocking checks required.
+    source: sections/language-constraint.md
 
   - type: file
     source: ./business.md
@@ -61,3 +55,14 @@ sections:
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-check-context
+      conditional_suggestions:
+        conditions:
+          - condition: "context oversized or borderline"
+            primary: mvt-cleanup
+            primary_desc: "Archive old artifacts to reduce context"
+            alternatives:
+              - skill: mvt-manage-context
+                desc: "Move per-skill knowledge to reduce shared load"
+          - condition: "context healthy"
+            primary: mvt-status
+            primary_desc: "Check overall project status"

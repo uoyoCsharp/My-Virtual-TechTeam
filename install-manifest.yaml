@@ -3,14 +3,20 @@ version: 2
 generated:
   - pattern: ".claude/skills/mvt-*/SKILL.md"
     source: "build:skills"
+  - pattern: ".qoder/skills/mvt-*/SKILL.md"
+    source: "build:skills"
   - pattern: ".ai-agents/skills/_templates/*-output.md"
     source: "build:templates"
   - pattern: ".ai-agents/skills/_templates/project-context.md"
     source: "build:templates"
   - pattern: ".ai-agents/knowledge/core/_framework/**"
     source: "copy:sources/knowledge/core/_framework/"
-  - pattern: ".ai-agents/registry.yaml"
-    source: "copy:registry.yaml"
+  - pattern: ".ai-agents/scripts/session-update.cjs"
+    source: "bundle:sources/scripts/session-update.js"
+  - pattern: ".ai-agents/scripts/plan-update.cjs"
+    source: "bundle:sources/scripts/plan-update.js"
+  - pattern: ".ai-agents/scripts/epic-update.cjs"
+    source: "bundle:sources/scripts/epic-update.js"
 
 create_once:
   - path: ".ai-agents/config.yaml"
@@ -21,6 +27,10 @@ create_once:
     source: "sources/defaults/project-context.yaml"
   - path: ".ai-agents/knowledge/core/manifest.yaml"
     source: "sources/knowledge/core/manifest.yaml"
+  # Reconcile-merged on update (see src/fs/registry-merge.ts): framework skills
+  # are refreshed, user `custom: true` skills and added knowledge bindings kept.
+  - path: ".ai-agents/registry.yaml"
+    source: "registry.yaml"
 
 user_data_dirs:
   - ".ai-agents/workspace/artifacts/"

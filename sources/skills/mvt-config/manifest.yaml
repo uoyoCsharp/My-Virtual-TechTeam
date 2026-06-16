@@ -57,30 +57,29 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/output-language-constraint.md
+    source: sections/language-constraint.md
 
   - type: inline
     content: |
-      ### Step 3: Pre-flight Checks
-      - No blocking checks required (config is always accessible)
-
       ## Configuration Keys
 
       ### User Preferences
 
       | Key | Type | Default | Description |
       |-----|------|---------|-------------|
-      | `preferences.interaction_language` | enum | `en-US` | Language for interactive output: chat replies, prompts, tables (en-US, zh-CN) |
-      | `preferences.document_output_language` | enum | `en-US` | Language for persisted documents: artifacts, project-context.md (falls back to interaction_language) |
+      | `preferences.interaction_language` | enum | `en-US` | Language for interactive output: chat replies, prompts, tables. Values: `en-US` (English), `zh-CN` (简体中文) |
+      | `preferences.document_output_language` | enum | `en-US` | Language for persisted documents: artifacts, project-context.md (falls back to interaction_language). Values: `en-US` (English), `zh-CN` (简体中文) |
       | `preferences.output.no_emojis` | bool | `true` | Disable emojis in output |
       | `preferences.output.data_format` | enum | `yaml` | Data output format (yaml, json) |
       | `preferences.context_routing.relevance_threshold` | int | `70` | AI routing threshold for `/mvt-manage-context add` (0-100) |
+      | `preferences.history_limits.history` | int | `20` | Max history entries (1-100) |
+      | `preferences.history_limits.changes` | int | `20` | Max changes entries (1-100) |
 
       ### Knowledge Settings
 
       | Key | Type | Default | Description |
       |-----|------|---------|-------------|
-      | `knowledge.shared` | list | `[core, project-context]` | Shared knowledge entries in registry.yaml, loaded by all skills |
+      | `knowledge._all` | list | `[core, project-context]` | Global knowledge entries in registry.yaml under `_all` key, loaded by all skills across all projects |
 
   - type: file
     source: ./business.md
@@ -94,3 +93,11 @@ sections:
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-config
+      conditional_suggestions:
+        conditions:
+          - condition: "configuration updated"
+            primary: mvt-status
+            primary_desc: "Check project status with new settings"
+          - condition: "language changed"
+            primary: mvt-help
+            primary_desc: "Verify output in the new language"

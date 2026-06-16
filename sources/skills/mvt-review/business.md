@@ -4,7 +4,7 @@
 - **Required**:
   - The set of files to review (see Step 2 for resolution).
 - **Fallback**:
-  - If `design.md`/`implementation.md` are missing, downgrade to "code-only review": skip the design-compliance checks (Step 4 row group A) and note the limitation in the artifact.
+  - If `design.md`/`implementation.md` are missing, downgrade to "code-only review": skip the design-compliance checks (Step 5 row group A) and note the limitation in the artifact.
   - If `project-context.md` is missing, skip layer-compliance checks and note the limitation.
 
 ### Step 2: Resolve Review Target
@@ -22,12 +22,27 @@
 - If the resolved list is empty, STOP and ask the user to specify the target.
 - If the list exceeds ~30 files, ask the user to scope down OR confirm a high-level (per-module) review depth.
 
-### Step 3: Determine Review Depth
-- **Default**: full review across all axes (Step 4).
+### Step 3: Identify Project Scope and Load Project-Specific Knowledge
+
+This step applies only when the workspace has multiple projects (`projects.length > 1` in `project-context.yaml`). In single-project workspaces, all relevant knowledge was loaded at activation; skip this step entirely.
+
+- **Project identification**: match the file paths resolved in Step 2 against `projects[].path` and `projects[].source_paths`:
+  - A file whose path starts with a project's `path` prefix belongs to that project.
+  - A file under a project's `source_paths` entry also belongs to that project.
+  - Collect the set of unique project names from all matched files. This is the **active project scope** for this invocation.
+- **On-demand knowledge loading**: for each project P in the active project scope, read `.ai-agents/registry.yaml` and load:
+  1. Every entry under `knowledge.{P}` -- load each entry's referenced files (resolve relative to `.ai-agents/{source}`).
+  2. Every entry under `skills.mvt-review.knowledge.{P}` -- load each entry's referenced files.
+  3. Skip any key absent from the registry (no project-specific knowledge is valid; do not warn).
+- **Multi-project scenario**: if files span multiple projects, load each project's knowledge sequentially. The skill operates with the union of all loaded project-specific knowledge plus the `_all` knowledge already loaded at activation.
+- **Unmatched files**: if a file path does not match any project's `path` or `source_paths`, surface a note and treat it as belonging to the first project in `projects[]` (fallback). This may indicate a configuration gap in `project-context.yaml`.
+
+### Step 4: Determine Review Depth
+- **Default**: full review across all axes (Step 5).
 - `--aspect <name>`: narrow to a single axis. Supported aspects: `architecture`, `quality`, `errors`, `edge-cases`, `security`, `naming`, `tests`. Other aspects -> ask user to clarify.
 - For files >300 lines, do a structural pass first (interfaces, exports, key paths) before line-level review; do not attempt line-by-line on huge files.
 
-### Step 4: Run Review Checks
+### Step 5: Run Review Checks
 - **What**: produce findings, each tagged with severity, location, and a concrete remedy.
 - **How**: walk the checklist below. Skip any group whose inputs were missing per Step 1 fallback notes.
 
@@ -39,7 +54,7 @@
 
   **Group B -- Code Quality**
   - Functions are small and focused; flag functions > ~50 lines or with > ~3 nested control levels.
-  - Naming is clear, consistent with `naming-conventions.md`, and matches surrounding code.
+  - Naming is clear, consistent with the naming conventions loaded by activation (if any), and matches surrounding code.
   - No duplication: same logic appearing >= 3 times warrants extraction.
   - No premature abstraction: a single-use helper / interface / wrapper is a finding.
   - No dead code, unused imports, commented-out blocks left behind.
@@ -68,7 +83,7 @@
   - Auth/authz checks present on every protected endpoint or operation.
   - SQL/NoSQL/HTML rendered through parameterized / escaped APIs.
 
-### Step 5: Categorize and De-duplicate Findings
+### Step 6: Categorize and De-duplicate Findings
 - **Severity**: assign each finding using the table below.
 
   | Level | Definition | Examples |
@@ -80,9 +95,8 @@
 - Merge duplicate findings (same root cause appearing in multiple files) into one entry with a list of locations.
 - Each finding must include: file, line range, severity, observation, recommendation.
 
-### Step 6: Write Artifact
-- **Path**: `.ai-agents/workspace/artifacts/{active_change.id}/review.md` if `active_change` exists; else `.ai-agents/workspace/artifacts/_ad-hoc-review-{YYYY-MM-DD-HHMM}/review.md`.
-- **Template**: `.ai-agents/skills/_templates/review-output.md` (custom override at `_templates/custom/...` takes precedence).
+### Step 7: Write Artifact
+- **Path and template**: as defined in the **Artifact Structure** section below. If no `active_change` exists, use `.ai-agents/workspace/artifacts/_ad-hoc-review-{YYYY-MM-DD-HHMM}/review.md`.
 - **Required content** (mapped to template headings):
   - `Review Scope` -- file list, depth, aspect filter, fallbacks applied (e.g., "design.md missing -> Group A skipped").
   - `Summary` -- counts per severity + one-paragraph overall verdict (Approve / Approve with comments / Request changes / Block).
@@ -92,13 +106,14 @@
   - `Skipped Checks` -- groups skipped because inputs were missing, with reason.
   - `Recommended Next Skill` -- e.g., `/mvt-fix` for Critical, `/mvt-test` if Group E gaps, `/mvt-refactor` if Group B is dominant.
 
-### Step 7: Verdict Rule
+### Step 8: Verdict Rule
 - Critical > 0 -> verdict is `Request changes`. Suggest `/mvt-fix`.
 - Critical = 0, Warnings > 5 -> verdict is `Approve with comments`.
 - Critical = 0, Warnings <= 5, Suggestions only -> verdict is `Approve`.
 - Code-only review (design.md missing) -> verdict cannot be higher than `Approve with comments` (call it out explicitly).
 
-### Step 8: (session update handled by shared section)
+### Step 9: State Update
+Apply the State Update rules defined in the **State Update** section below.
 
 ## Edge Cases & Errors
 

@@ -11,9 +11,10 @@
 
   | Condition | Recommendation |
   |-----------|---------------|
-  | `session.yaml` missing or `initialized_at` empty | `/mvt-init` -- Initialize the project |
+  | `.ai-agents/workspace/session.yaml` missing or `initialized_at` empty | `/mvt-init` -- Initialize the project |
   | Initialized AND `project-context.md` does not exist | `/mvt-analyze-code` -- Analyze existing code |
-  | No requirements (no `analysis.md` for active change AND no completed `/mvt-analyze` in `skill_history`) | `/mvt-analyze` -- Analyze requirements |
+  | `active_epic.id` non-empty AND `active_change.id` empty (epic-pending) | `/mvt-analyze` -- Start the next sub-change in the epic |
+  | No requirements (no `analysis.md` for active change AND no completed `/mvt-analyze` in `history`) | `/mvt-analyze` -- Analyze requirements |
   | No requirements, but user describes a simple change directly | `/mvt-quick-dev` -- Implement a simple change quickly |
   | Requirements present, no `design.md` | `/mvt-design` -- Design architecture |
   | `design.md` exists, change is large (Change Tracking lists > 5 files OR ADR includes breaking change OR > 1 new module) | `/mvt-plan-dev` -- Decompose into tracked plan |
@@ -25,14 +26,11 @@
 
 ### Step 3: Display Skills Catalog
 Read `registry.yaml` > `skills` section.
-Group skills by `category` field and display as tables:
-- `workflow` -> "Workflow Skills (sequential phases)"
-- `shortcut` -> "Shortcut Skills (anytime, no prerequisites)"
-- `project` -> "Project Management Skills"
-- `utility` -> "Utility Skills"
+Display all skills as a single flat table (no grouping; the section comment headers in `registry.yaml` already group them by role for human readers):
+- Header row: `Skill | Description`
 
 For each skill, show: `/{skill-name}` | `description` field from registry.
-Sort within each group by declaration order in registry.
+Sort by declaration order in registry.
 
 ### Step 4: Show Workflow Diagram
 Display the standard workflow with current position highlighted:
@@ -45,6 +43,9 @@ flowchart LR
     E --> F[review] --> G[test]
 
     C -.->|simple change| Q[quick-dev]
+    C -.->|epic scale| DC[decompose]
+    DC --> C2[analyze<br/>epic-child]
+    C2 --> D
 ```
 
 Color-code based on current progress: green (done), yellow (current/recommended), gray (pending). The "current" node is whichever skill the Step 2 table recommended; "done" is determined by the same evidence the Step 2 table consumed.
@@ -56,11 +57,9 @@ Color-code based on current progress: green (done), yellow (current/recommended)
   | Question pattern | Response |
   |------------------|----------|
   | "What should I do next?" / no specific question | Repeat the Step 2 recommendation in one line, followed by a one-clause reason citing the matched condition |
-  | "What does `/mvt-X` do?" / asks about a specific skill | Read the skill's metadata from `registry.yaml`, show: name, description, category, dependencies, knowledge entries (if any), template (if any). If the skill has a `path`, mention "see SKILL.md for the full procedure" -- do NOT inline the full SKILL.md content (too large) |
+  | "What does `/mvt-X` do?" / asks about a specific skill | Read the skill's metadata from `registry.yaml`, show: name, description, knowledge entries (if any), template (if any). Mention "see the skill's SKILL.md for the full procedure" -- do NOT inline the full SKILL.md content (too large) |
   | "Compare `/mvt-X` and `/mvt-Y`" | Pull descriptions from registry; if both are workflow skills, mention their relative position in the diagram |
   | Asks about something not in registry | Reply: "No skill matches that. Available skills: see catalog above." Do not invent skills |
-
-### Step 6: (session update handled by shared section)
 
 ## Edge Cases & Errors
 
@@ -68,7 +67,8 @@ Color-code based on current progress: green (done), yellow (current/recommended)
 |------|----------|
 | `registry.yaml` missing | STOP at Step 1; recommend `mvtt install`; show no catalog |
 | `session.yaml` missing | Render catalog (Step 3) and diagram (Step 4) without the "current position" highlight; Step 2 recommends `/mvt-init` |
-| `recent_changes[]` references a `plan_path` that no longer exists | Ignore for help purposes; do not warn -- `/mvt-status` is the right place for that |
+| `changes[]` references a `plan_path` that no longer exists | Ignore for help purposes; do not warn -- `/mvt-status` is the right place for that |
 | User invokes `/mvt-help` while inside an active change with Critical review findings | Step 2's recommendation is `/mvt-fix`; surface this prominently above the catalog |
 | User asks about a custom skill (registry entry with `custom: true`) | Treat identically to built-ins; the only difference is showing `custom: true` in the metadata view |
-| Workflow diagram cannot be rendered (mermaid unsupported in environment) | Fall back to a textual flow: `init -> analyze-code -> analyze -> design -> [plan-dev] -> implement -> review -> test` |
+| Workflow diagram cannot be rendered (mermaid unsupported in environment) | Fall back to a textual flow: `init -> analyze-code -> analyze -> [decompose (epic) -> analyze (epic-child)] -> design -> [plan-dev] -> implement -> review -> test` |
+| Epic-pending state (`active_epic` non-empty, `active_change` empty) | Step 2's recommendation is `/mvt-analyze` to start the next sub-change; the decompose path is shown in the workflow diagram |

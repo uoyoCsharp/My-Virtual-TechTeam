@@ -43,8 +43,7 @@ sections:
 
       | Variant | Description |
       |---------|-------------|
-      | `/mvt-init` | Standard initialization (scan + detect + write index) |
-      | `/mvt-init --refresh` | Re-scan existing project -- preserve user state, update auto-detectable fields, show diff before writing |
+      | `/mvt-init` | Standard initialization or interactive refresh (scan + detect + write index; re-scan on existing project with user confirmation) |
 
   - type: shared
     source: sections/activation-load-context.md
@@ -57,7 +56,10 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/output-language-constraint.md
+    source: sections/language-constraint.md
+
+  - type: shared
+    source: sections/output-format-constraint.md
 
   - type: shared
     source: sections/activation-preflight.md
@@ -75,6 +77,7 @@ sections:
   - type: shared
     source: sections/session-update.md
     params:
+      current_skill: mvt-init
       update_initialized_at: true
 
   - type: shared

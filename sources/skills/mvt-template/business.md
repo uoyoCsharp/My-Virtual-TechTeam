@@ -82,15 +82,13 @@
 
   3. Never write outside the project root unless an absolute path was explicitly provided by the user.
 
-### Step 5: (session update handled by shared section)
-
 ## Edge Cases & Errors
 
 | Case | Handling |
 |------|----------|
 | User selects a `#` that doesn't exist in inventory | Re-display the table, ask again |
 | `customize` validation fails repeatedly | After two failed attempts, suggest user export to a file and edit manually, then re-import via `customize` with `free-form patch` |
-| Custom file exists but registry no longer references the template (`Orphan-custom`) | Allow `view` and `reset`; refuse `customize` (stale target); recommend running `/mvt-init --refresh` or removing the file manually |
+| Custom file exists but registry no longer references the template (`Orphan-custom`) | Allow `view` and `reset`; refuse `customize` (stale target); recommend running `/mvt-init` (interactive refresh) or removing the file manually |
 | Default file is missing (`Missing`) | Refuse all actions for that row; suggest reinstall (`mvtt install`) |
 | User aborts at any confirmation prompt | Do not modify any file; report "no changes" |
 | External process modified the file between preview and write | Detect via mtime check just before write; abort and re-run preview |

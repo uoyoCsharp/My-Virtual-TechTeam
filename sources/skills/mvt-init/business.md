@@ -89,6 +89,8 @@ For each project:
 - Name, path, type
 - Tech stack (language, framework, build tool, test framework)
 
+**Project naming constraint**: each project name must match `[a-zA-Z0-9][a-zA-Z0-9_-]*` (no leading underscore). Validate all detected names against this constraint; if a name violates it (e.g., auto-detected as `_internal`), prompt the user to provide a valid alternative before proceeding.
+
 Wait for user to confirm or adjust:
 - `yes` -- Accept all
 - Provide corrections -- User specifies which fields to change
@@ -112,6 +114,7 @@ For each target file, check if it already exists:
      - name: "{project_name}"
        path: "{relative_path}"
        type: "{project_type}"
+       source_paths: []
        tech_stack:
          primary_language: "{language}"
          secondary_languages: [{...}]
@@ -119,6 +122,7 @@ For each target file, check if it already exists:
          build_tool: "{build_tool}"
          test_framework: "{test_framework}"
    ```
+   `source_paths` is populated by `/mvt-analyze-code` based on analyzed code structure. On initial `/mvt-init`, leave as empty array.
    For multi-project repos, include one entry per detected project.
 
 #### 5.3 Post-write validation
@@ -126,34 +130,40 @@ For each target file, check if it already exists:
 After writing all files, validate:
 - `project-context.yaml` is valid YAML with `projects[]` containing at least one entry
 - Each project entry has required fields: `name`, `path`, `type`, `tech_stack.primary_language`
-- `session.yaml` is structurally intact and contains: `session`, `active_change` (with `plan_path` / `has_plan`), `recent_changes` (array), `skill_history`, `recent_actions`
 
 If any validation fails → report the specific error and offer to retry or skip.
 
-### Step 6: Refresh Mode Handling (--refresh only)
+### Step 6: Refresh Mode Handling (Interactive)
 
-When `--refresh` is specified:
+When `mvt-init` is executed and existing MVTT artifacts are detected:
 
-1. **Preserve** the following from existing files:
-   - `session.yaml` > `skill_history` and `recent_actions`
+1. **Prompt user**: "Existing MVTT configuration found. Refresh to re-scan project structure? (y/n)"
+   - If `n` -> stop, no changes made.
+   - If `y` -> proceed with refresh.
+
+2. **Re-scan** project structure using Steps 1-3 above.
+
+3. **Compare** new vs existing `projects[]`. If project changes detected (added/removed/renamed sub-projects):
+   - Show diff: "+N added / -N removed / ~N renamed"
+   - Confirm before writing.
+
+4. **Preserve** the following from existing files:
+   - `session.yaml` > `history`
    - `project-context.yaml` > any user-added custom fields (fields not in the standard schema)
    - `config.yaml` > `preferences` section
 
-2. **Update** only auto-detectable fields:
+5. **Update** only auto-detectable fields:
    - `tech_stack` (re-scan and update)
    - `type` (re-infer)
+   - `source_paths` (re-scan)
 
-3. **Diff and confirm**: Show a summary of what will change vs what will be preserved. Ask for confirmation before writing.
+6. **After writing** -> prompt: "Project structure updated. Recommend running `/mvt-analyze-code` to sync semantic context."
 
-4. **Old format migration**: If existing `project-context.yaml` uses old format (has top-level `project`, `requirements`, `architecture`, `environment` keys):
-   - Wrap `project.*` as `projects[0]` with `name="default"`, `path="."`
-   - Discard `requirements`, `architecture` sections -- suggest running `/mvt-analyze-code` to regenerate
-   - Discard `environment` section
-   - Discard any `pattern` related fields
+7. **Orphan knowledge entries**: After refresh, if any knowledge entries in `registry.yaml` reference a project name not in the updated `projects[]`, prompt: "N orphan knowledge entries found for project(s) not in projects list: {names}. Consider `/mvt-manage-context remove` to clean up."
 
 ### Step 7: Determine Project State (drives next-step recommendation)
 
-After Step 5 writes are committed, classify the project state to select the appropriate next_suggestions branch from registry.yaml:
+After Step 5 writes are committed, classify the project state to select the appropriate recommendation branch in the **Suggested Next Steps** section below:
 
 | Condition | Detection logic |
 |-----------|-----------------|
@@ -161,4 +171,4 @@ After Step 5 writes are committed, classify the project state to select the appr
 | `empty_project` | Step 1 found no source files AND no package manager file (truly empty or docs-only repo) -- the recommended next step is `/mvt-manage-context` to manually capture context |
 | `default` | Neither condition matched (rare -- fallback path) |
 
-Pass the resolved condition to the output template so the suggested next steps section renders the matching branch from `registry.yaml > skills.mvt-init.next_suggestions.conditional[]`.
+Use the resolved condition to render the matching branch in the **Suggested Next Steps** section (Conditional Recommendations).

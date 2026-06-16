@@ -215,6 +215,72 @@ Group {{name}}:
     expect(result).not.toContain("{{#alternatives}}");
   });
 
+  it("collapses consecutive blank lines left by removed blocks", () => {
+    const template = `Table end
+| row |
+{{#optionA}}
+| optA |
+{{/optionA}}
+{{#optionB}}
+| optB |
+{{/optionB}}
+{{^optionA}}
+Inverted block
+{{/optionA}}
+{{#optionC}}
+| optC |
+{{/optionC}}
+
+### Next heading`;
+    const result = applyParams(template, {});
+    expect(result).not.toMatch(/\n{3,}/);
+    expect(result).toContain("| row |\nInverted block\n\n### Next heading");
+  });
+
+  it("strips heading + empty table when all conditional rows are removed", () => {
+    const template = `Some content
+
+### Parameter semantics
+
+| Argument | When to use | Effect |
+|----------|-------------|--------|
+{{#optA}}
+| \`--opt-a\` | When A | Does A |
+{{/optA}}
+{{#optB}}
+| \`--opt-b\` | When B | Does B |
+{{/optB}}
+
+### Failure handling
+
+Handle failures gracefully.`;
+    const result = applyParams(template, {});
+    expect(result).not.toContain("Parameter semantics");
+    expect(result).not.toContain("|----------|");
+    expect(result).toContain("Some content");
+    expect(result).toContain("### Failure handling");
+    expect(result).toContain("Handle failures gracefully.");
+  });
+
+  it("preserves heading + table when at least one conditional row exists", () => {
+    const template = `### Parameter semantics
+
+| Argument | When to use | Effect |
+|----------|-------------|--------|
+{{#optA}}
+| \`--opt-a\` | When A | Does A |
+{{/optA}}
+{{#optB}}
+| \`--opt-b\` | When B | Does B |
+{{/optB}}
+
+### Next section`;
+    const result = applyParams(template, { optA: true });
+    expect(result).toContain("### Parameter semantics");
+    expect(result).toContain("| `--opt-a` | When A | Does A |");
+    expect(result).toContain("### Next section");
+  });
+
   it("preserves single-brace placeholders meant for runtime substitution", () => {
     const template = `{{#conditions}}
 - When \`{{condition}}\`: Primary -> /{primary} -- {primary_desc}

@@ -1,0 +1,11 @@
+name: decompose-output
+output: .ai-agents/skills/_templates/decompose-output.md
+
+frontmatter:
+  id: decompose-output
+  version: "1.0"
+  skill: mvt-decompose
+
+sections:
+  - type: file
+    source: ./body.md

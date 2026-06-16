@@ -49,10 +49,21 @@ sections:
       Usage: `/mvt-review` or `/mvt-review --aspect {type}`
 
   - type: shared
+    source: sections/activation-load-context.md
+    params:
+      extended_context:
+        - ".ai-agents/workspace/artifacts/{active_change.id}/analysis.md -- Requirements analysis"
+        - ".ai-agents/workspace/artifacts/{active_change.id}/design.md -- Architecture design"
+        - ".ai-agents/workspace/artifacts/{active_change.id}/implementation.md -- Implementation record"
+
+  - type: shared
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/output-language-constraint.md
+    source: sections/language-constraint.md
+
+  - type: shared
+    source: sections/output-format-constraint.md
 
   - type: shared
     source: sections/activation-preflight.md
@@ -63,7 +74,7 @@ sections:
           level: "WARN"
           message: "Session not initialized. Run `/mvt-init` first."
         - order: "2"
-          field: "no code to review"
+          field: "review target (user args, implementation.md, or git diff)"
           level: "WARN"
           message: "No code to review. Run `/mvt-implement` first or specify files."
 
@@ -80,8 +91,21 @@ sections:
 
   - type: shared
     source: sections/session-update.md
+    params:
+      current_skill: mvt-review
 
   - type: shared
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-review
+      conditional_suggestions:
+        conditions:
+          - condition: "critical issues found"
+            primary: mvt-fix
+            primary_desc: "Fix the critical issues before merge"
+          - condition: "review approved, tests not written"
+            primary: mvt-test
+            primary_desc: "Add test coverage"
+          - condition: "review approved, all checks passed"
+            primary: mvt-update-plan
+            primary_desc: "Mark review task done in the plan"

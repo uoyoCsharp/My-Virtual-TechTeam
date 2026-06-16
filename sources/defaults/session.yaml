@@ -1,31 +1,36 @@
-# Workspace Session State
-# Supports flexible workflows -- no longer bound to a fixed pipeline
-
 session:
   initialized_at: ""
-  last_command: ""
+  last_synced_at: ""
 
-# Current active change (id/title/created_at set by /mvt-analyze;
-# plan_path/has_plan set by /mvt-plan-dev once a plan is generated)
+active_epic:
+  id: ""
+  title: ""
+  created_at: ""
+  epic_path: ""
+
+epics: []
+  # - id: "epic-20260608-ecommerce-platform"
+  #   title: "ecommerce platform"
+  #   epic_path: ".ai-agents/workspace/artifacts/epic-20260608-ecommerce-platform/epic.yaml"
+  #   status: "active"   # active | done | abandoned
+  #   updated_at: "..."
+
 active_change:
   id: ""
   title: ""
   created_at: ""
   plan_path: ""
-  has_plan: false
+  epic_id: ""            # epic parent id or empty
 
-# Recent changes with active plans (max 5, owned by /mvt-plan-dev and /mvt-update-plan)
-# Each entry: { id, title, plan_path, last_updated }
-# Status is the responsibility of plan.yaml (read on demand by /mvt-resume).
-recent_changes: []
+changes: []
+  # - id: "chg-001"
+  #   title: "User authentication"
+  #   plan_path: ".ai-agents/workspace/artifacts/chg-001/plan.yaml"
+  #   status: "active"           # active | done | abandoned
+  #   updated_at: "2026-05-23T14:30:00"
 
-# Skill execution history (append-only, max 10)
-# Records which skills have been executed, replacing the old progress field
-skill_history: []
-  # - command: "/mvt-analyze"
+history: []
+  # - skill: "/mvt-analyze"
   #   completed_at: "2026-05-23T14:30:00"
   #   summary: "Analyzed user authentication requirements"
   #   change_id: ""   # set when work belongs to an active change
-
-# Recent actions (append-only, max 5)
-recent_actions: []

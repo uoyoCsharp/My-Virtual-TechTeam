@@ -42,7 +42,10 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/output-language-constraint.md
+    source: sections/language-constraint.md
+
+  - type: shared
+    source: sections/output-format-constraint.md
 
   - type: shared
     source: sections/activation-preflight.md
@@ -71,7 +74,9 @@ sections:
   - type: shared
     source: sections/session-update.md
     params:
+      current_skill: mvt-analyze
       update_active_change: true
+      link_subchange_to_epic: true
 
   - type: shared
     source: sections/footer-next-steps.md
@@ -79,7 +84,10 @@ sections:
       current_skill: mvt-analyze
       conditional_suggestions:
         conditions:
-          - condition: "user chose quick path in Step 2.5"
+          - condition: "epic-scale detected in Step 3 (Epic Detection) and user chose y"
+            primary: "mvt-decompose"
+            primary_desc: "Decompose this epic-scale requirement into sub-changes"
+          - condition: "user chose quick path in Step 4 (Quick Path Detection)"
             primary: "mvt-quick-dev"
             primary_desc: "Implement this simple change quickly"
           - condition: "default"

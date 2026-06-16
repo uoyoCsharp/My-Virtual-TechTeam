@@ -27,16 +27,16 @@ sections:
         - rule: "Skill needs bundled resources -> Plan scripts/references/assets in Step 3"
         - rule: "Usage patterns unclear -> Ask for concrete examples before proceeding"
       boundaries:
-        - scope: "Generated skills must follow MVTT SKILL.md standard structure"
-          skill: "(constraint)"
-        - scope: "Skill names may use `mvt-` prefix or a project-specific prefix (e.g., `app-`, `proj-`)"
-          skill: "(constraint)"
-        - scope: "All custom skills MUST be registered in `registry.yaml` with `custom: true`"
-          skill: "(to prevent overwrite during framework updates)"
-        - scope: "Description field must use third-person with effective trigger keywords"
-          skill: "(constraint)"
-        - scope: "SKILL.md body target <5k words; move detailed content to references/"
-          skill: "(progressive disclosure)"
+        - scope: "generate skills that deviate from MVTT SKILL.md standard structure"
+          skill: "the standard structure as documented"
+        - scope: "use arbitrary prefixes without validating naming conventions"
+          skill: "`mvt-` or a project-specific prefix like `app-`, `proj-`"
+        - scope: "create skills without registering in registry.yaml"
+          skill: "`custom: true` in registry.yaml"
+        - scope: "write vague or first-person descriptions"
+          skill: "third-person with effective trigger keywords"
+        - scope: "exceed ~5k words in SKILL.md body"
+          skill: "references/ for detailed content"
 
   - type: shared
     source: sections/activation-load-context.md
@@ -48,12 +48,10 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/output-language-constraint.md
+    source: sections/language-constraint.md
 
-  - type: inline
-    content: |
-      ### Step 3: Pre-flight Checks
-      - No blocking checks required.
+  - type: shared
+    source: sections/output-format-constraint.md
 
   - type: file
     source: ./business.md
@@ -70,7 +68,6 @@ sections:
       - **Skill**: `/{name}`
       - **Agent**: {agent role}
       - **Location**: `.claude/skills/{name}/SKILL.md`
-      - **Manifest**: Generated with shared sections
       - **Registry**: `registry.yaml` (custom: true)
       - **Template**: {created/none}
       - **Resources**: {scripts/references/assets listing, or none}
@@ -88,8 +85,21 @@ sections:
 
   - type: shared
     source: sections/session-update.md
+    params:
+      current_skill: mvt-create-skill
 
   - type: shared
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-create-skill
+      conditional_suggestions:
+        conditions:
+          - condition: "skill created successfully"
+            primary: mvt-help
+            primary_desc: "Verify the new skill appears in the catalog"
+          - condition: "skill needs knowledge entries"
+            primary: mvt-manage-context
+            primary_desc: "Add knowledge files for the new skill"
+          - condition: "skill needs testing with real tasks"
+            primary: mvt-status
+            primary_desc: "Check project state before testing the skill"

@@ -27,10 +27,10 @@ sections:
         - rule: "User selects \"export\" -> Output template to specified location"
         - rule: "Custom template must preserve frontmatter format"
       boundaries:
-        - scope: "modify default templates in `_templates/` root"
-          skill: "(Only create/modify in `custom/`)"
-        - scope: "modify skill logic"
-          skill: "(Only change output formatting)"
+        - scope: "modify default templates in `_templates/` root (only create/modify in `custom/`)"
+          skill: "(constraint)"
+        - scope: "modify skill logic (only change output formatting)"
+          skill: "(constraint)"
 
   - type: shared
     source: sections/activation-load-context.md
@@ -42,12 +42,7 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/output-language-constraint.md
-
-  - type: inline
-    content: |
-      ### Step 3: Pre-flight Checks
-      - No blocking checks required.
+    source: sections/language-constraint.md
 
   - type: file
     source: ./business.md
@@ -61,3 +56,11 @@ sections:
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-template
+      conditional_suggestions:
+        conditions:
+          - condition: "template customized"
+            primary: mvt-status
+            primary_desc: "Check project status"
+          - condition: "template reset to default"
+            primary: mvt-help
+            primary_desc: "Review available skills and templates"

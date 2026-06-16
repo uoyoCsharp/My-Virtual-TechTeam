@@ -41,7 +41,7 @@ sections:
       | Variant | Description |
       |---------|-------------|
       | `/mvt-design` | Full architecture design |
-      | `/mvt-design --plan` | High-level implementation plan only |
+      | `/mvt-design --plan` | High-level implementation plan only: skip Step 5 (data flow detail) and Step 6 (full ADR fields). ADRs collapse to one-line `decision: <text>`. Step 8 writes `design.md` with abbreviated content and a top-line `Mode: plan` indicator. If the request is actually small (1 file), downgrade to a 5-line summary in chat and do NOT write `design.md`. |
 
   - type: shared
     source: sections/activation-load-context.md
@@ -53,7 +53,10 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/output-language-constraint.md
+    source: sections/language-constraint.md
+
+  - type: shared
+    source: sections/output-format-constraint.md
 
   - type: shared
     source: sections/activation-preflight.md
@@ -89,8 +92,21 @@ sections:
 
   - type: shared
     source: sections/session-update.md
+    params:
+      current_skill: mvt-design
 
   - type: shared
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-design
+      conditional_suggestions:
+        conditions:
+          - condition: "design complete, change tracking lists >5 files or >1 new module"
+            primary: mvt-plan-dev
+            primary_desc: "Create a structured implementation plan"
+          - condition: "design complete, small scope"
+            primary: mvt-implement
+            primary_desc: "Implement the designed architecture"
+          - condition: "design has proposed ADRs needing stakeholder review"
+            primary: mvt-review
+            primary_desc: "Review the design decisions"

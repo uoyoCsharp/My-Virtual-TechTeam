@@ -14,8 +14,8 @@ Resolution rules:
 - If `task_id` is omitted AND exactly one task currently has status `in_progress` -> default to that task.
 - If `task_id` is omitted AND zero or multiple tasks are in_progress -> ask the user to specify.
 - If the user reply is the natural-language form `done` / `blocked: <reason>` (from a workflow skill's soft-prompt) -> map to:
-  - `done` -> task = plan.current_task, new_status = done
-  - `blocked: <reason>` -> task = plan.current_task, new_status = blocked, notes = `<reason>`
+  - `done` -> task = the entry in `plan.current_tasks` matching the current project (or the sole entry if single-project), new_status = done
+  - `blocked: <reason>` -> task = the entry in `plan.current_tasks` matching the current project (or the sole entry if single-project), new_status = blocked, notes = `<reason>`
 
 ### Step 2: Load and Validate Existing Plan
 
@@ -23,50 +23,92 @@ Resolution rules:
 2. Parse YAML; if parse fails or schema is invalid -> stop and report. Do not attempt to repair silently.
 3. Verify the target `task_id` exists in `tasks[]`. If not, list valid ids and stop.
 
-### Step 3: Apply the Update
+### Step 3: Apply the Update, Recompute, Validate, and Write (via script)
 
-Mutate the in-memory plan:
+The mechanical work — mutating the task, recomputing `current_tasks` via the per-project DAG
+rules, validating the result, and writing back atomically — is performed by a
+deterministic script. Do NOT hand-edit `plan.yaml` or reason through the
+`current_tasks` selection yourself; call the script with the resolved arguments
+from Step 1–2:
 
-1. Find the target task; capture `old_status` for the report.
-2. Set `tasks[i].status = new_status`.
-3. If `artifacts` provided -> append to `tasks[i].artifacts` (de-duplicate).
-4. If `notes` provided -> overwrite `tasks[i].notes`.
-5. Update `plan.updated_at` to current ISO 8601 timestamp.
+```bash
+node .ai-agents/scripts/plan-update.cjs --plan "<active_change.plan_path>" --task <task_id> --status <new_status> --projects "<comma,separated,project,names>" [--artifacts "<comma,separated,paths>"] [--notes "<note text>"]
+```
 
-### Step 4: Recompute current_task
+Include `--artifacts` only if artifacts were provided, and `--notes` only if a note was provided; omit each flag otherwise.
 
-Selection logic, in order:
+| Argument | Value source |
+|----------|-------------|
+| `--plan` | `active_change.plan_path` resolved from session.yaml |
+| `--task` | the `task_id` resolved in Step 1 |
+| `--status` | the `new_status` resolved in Step 1 (`pending`/`in_progress`/`done`/`blocked`/`skipped`) |
+| `--projects` | comma-separated project names read from `project-context.yaml > projects[].name` |
+| `--artifacts` | optional; comma-separated paths to append (the script de-duplicates) |
+| `--notes` | optional; overwrites the task's `notes` |
 
-1. If any task has status `in_progress` AND it is **not** the task we just changed to a terminal status (done/blocked/skipped) -> `current_task` = that task's id.
-2. Otherwise pick the first task (by array order) where:
-   - `status == pending`
-   - All ids in `depends_on` reference tasks with status `done`
-3. If no such task exists AND every task is `done` -> set `plan.status = done`, `current_task = null`.
-4. If no such task exists but some tasks are still `pending` (because their dependencies are not done -- e.g., everything reachable is blocked) -> set `current_task = null`, leave `plan.status = in_progress`. Surface a warning in the output ("All remaining tasks are blocked by dependencies; resolve a blocker before continuing").
+The script performs, deterministically:
 
-If the selected next task is currently `pending` -> promote it to `in_progress` (so the plan accurately reflects the active focus). Skip this promotion if `plan.status` just transitioned to `done`.
+1. **Apply**: sets the task status; appends + de-duplicates `--artifacts` (handles `artifacts: null`); overwrites `--notes`; sets `completed_at` to now when status is `done`, else `null`; refreshes `plan.updated_at`.
+2. **Recompute `current_tasks`** (per-project independent advancement): for each project, finds the `in_progress` task or advances the first `pending` task whose `depends_on` are all in `resolvedIds` (done + skipped; blocked does NOT satisfy). Detects `project_switch` when advancement crosses a project boundary. Plan done -> `current_tasks = {}`.
+3. **Validate** the mutated plan (unique ids, valid `depends_on` references, DAG/no-cycle per project, one `in_progress` per project, every task has acceptance, `completed_at` consistency, `current_tasks` validity, project naming constraint, task project membership).
+4. **Write atomically** (temp + rename) only if validation passes.
 
-### Step 5: Validate and Write
+**Interpreting the result:**
 
-1. Run the plan validator on the mutated structure.
-2. If validation fails -> abort the write, report the validation errors, leave the original file untouched.
-3. Otherwise, write back to `active_change.plan_path`.
+- **Exit 0**: success. stdout is a single-line JSON object:
+  ```json
+  {"ok":true,"task":{"id":"t1","title":"...","old_status":"in_progress","new_status":"done"},"current_tasks":{"default":"t2"},"plan_status":"in_progress","progress":{"done":1,"total":4},"warning":null,"project_switch":null}
+  ```
+  Use these fields directly to render the Output Format block. The file is already written — do NOT read it back to verify. If `warning` is non-null, surface it. If `project_switch` is non-null, note the project boundary crossing.
+- **Exit 1**: failure. stderr carries the error (invalid status, task not found, validation failure, parse/write error). The file was **not** modified. Report the error to the user and do not fabricate a success summary.
 
-### Step 6: Update Session State
-
-Apply the standard State Update rules (see shared section above) AND the update-plan-specific updates:
-
-- Refresh the matching entry in `recent_changes[]`: `last_updated` -> current ISO 8601 timestamp.
-- Do NOT touch `active_change.has_plan` / `active_change.plan_path`.
-
-### Step 7: Output
+### Step 4: Output
 
 Emit the Plan Update summary block defined in the Output Format section. Include:
 
 - The task that changed (id, title, old -> new status).
 - A compact table of all tasks with their current status.
-- The new `current_task` (or "(plan complete)" if `plan.status == done`).
+- The new `current_tasks` map (or "(plan complete)" if `plan.status == done`).
+- If `project_switch` was emitted in the script output, note: "Project switch: {from} -> {to}".
 - A one-line "Next" hint:
-  - If a new `current_task` is set -> recommend the skill matching its `skill_hint`.
+  - If `current_tasks` has entries -> recommend the skill matching the relevant task's `skill_hint`.
   - If plan complete -> recommend `/mvt-cleanup` or starting a new change via `/mvt-analyze`.
   - If all remaining tasks are blocked -> recommend resolving the blocker (point at the `notes` of the blocked task).
+
+### Step 5: Epic Advancement Check
+
+After the Step 3 script reports `plan_status: "done"`:
+
+1. Read `session.active_change.epic_id` from session.yaml.
+2. If empty -> skip this step (standard change, no epic context).
+3. If non-empty -> prompt user:
+
+   > This change belongs to epic: **{epic_title}** ({epic_id}).
+   > All plan tasks are complete.
+   >
+   > - **(y)** Mark child done and advance to next sub-change
+   > - **(n)** Keep change open (continue review/test/sync)
+   > - **(defer)** Mark child done but don't advance yet
+
+4. On **y**:
+   - `epic-update.cjs --epic <active_epic.epic_path> --complete-child <active_change.id>`
+   - `session-update.cjs --skill mvt-update-plan --summary "..." --close-change`
+   - Display: next child info from epic-update stdout. Suggest `/mvt-analyze` to start the next sub-change.
+
+5. On **n**: No action. Display reminder: "Change remains open. Run other skills (e.g., `/mvt-review`, `/mvt-test`, `/mvt-fix`) as needed; run `/mvt-update-plan` again when ready to advance the epic."
+
+6. On **defer**:
+   - `epic-update.cjs --epic <active_epic.epic_path> --set-child-status <active_change.id> done`
+   - `session-update.cjs --skill mvt-update-plan --summary "..." --close-change`
+   - Display: "Child marked done, current_change unchanged."
+
+## Edge Cases & Errors
+
+| Case | Handling |
+|------|----------|
+| `plan.yaml` not found at `active_change.plan_path` | Abort with error: "No plan found. Run `/mvt-plan-dev` to create one." |
+| Task id provided does not exist in `plan.yaml` | Abort with error listing valid task ids |
+| Transition to `done` but `depends_on` tasks are not all `done` | Warn but allow: "Task marked done despite unfinished dependencies — verify correctness" |
+| All tasks are `done` but user marks another as `in_progress` | Reject: plan is already complete; suggest creating a new change |
+| Circular dependency detected in `depends_on` | Report the cycle and refuse to auto-advance `current_tasks`; suggest manual fix |
+| `plan.yaml` write fails (permission denied, invalid YAML state) | Abort; do not update session; report the write error |
