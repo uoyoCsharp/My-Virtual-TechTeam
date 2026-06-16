@@ -9,6 +9,7 @@ import {
 } from "../fs/install-manifest.js";
 import { getPackageRoot, getVersion } from "./shared.js";
 import { color } from "../util/color.js";
+import { bilingual } from "../util/bilingual.js";
 import type { PlatformId } from "../types/platform.js";
 import { PLATFORMS, DEFAULT_PLATFORMS } from "../types/platform.js";
 
@@ -21,9 +22,10 @@ export async function installCommand(): Promise<void> {
 
   const existing = readInstallationManifest(projectRoot);
   if (existing) {
-    console.error(
+    console.error(bilingual(
       `MVTT is already installed (v${existing.mvtt_version}). Use \`mvtt update\` to update.`,
-    );
+      `MVTT 已经安装（v${existing.mvtt_version}）。请使用 \`mvtt update\` 进行更新。`,
+    ));
     process.exit(1);
   }
 
@@ -31,7 +33,10 @@ export async function installCommand(): Promise<void> {
   const documentLanguage = await selectLanguage("document", interactionLanguage);
   const platforms = await selectPlatforms();
 
-  console.log(`Installing MVTT v${version} into ${projectRoot}...`);
+  console.log(bilingual(
+    `Installing MVTT v${version} into ${projectRoot}...`,
+    `正在将 MVTT v${version} 安装到 ${projectRoot}...`,
+  ));
 
   const materialized = materializeProject({
     packageRoot,
@@ -57,15 +62,18 @@ export async function installCommand(): Promise<void> {
   const generatedCount = materialized.filter((f) => f.category === "generated").length;
   const createOnceCount = materialized.filter((f) => f.category === "create_once").length;
 
-  console.log(`\n${color.green("Installation complete:")}`);
-  console.log(`  ${generatedCount} generated files`);
-  console.log(`  ${createOnceCount} user-editable files`);
-  console.log(`  Interaction language: ${interactionLanguage}`);
-  console.log(`  Document output language: ${documentLanguage}`);
-  console.log(`  Platforms: ${platforms.join(", ")}`);
-  console.log(`  Manifest: ${color.gray(path.relative(projectRoot, manifestPath(projectRoot)))}`);
-  console.log(`\n${color.bold("Next steps:")}`);
-  console.log(`  Run ${color.cyan("/mvt-init")} in your AI IDE to initialize the project`);
+  console.log(`\n${color.green(bilingual("Installation complete:", "安装完成："))}`);
+  console.log(bilingual(`  ${generatedCount} generated files`, `  ${generatedCount} 个生成文件`));
+  console.log(bilingual(`  ${createOnceCount} user-editable files`, `  ${createOnceCount} 个用户可编辑文件`));
+  console.log(bilingual(`  Interaction language: ${interactionLanguage}`, `  交互语言：${interactionLanguage}`));
+  console.log(bilingual(`  Document output language: ${documentLanguage}`, `  文档输出语言：${documentLanguage}`));
+  console.log(bilingual(`  Platforms: ${platforms.join(", ")}`, `  平台：${platforms.join(", ")}`));
+  console.log(`  ${bilingual("Manifest:", "清单：")} ${color.gray(path.relative(projectRoot, manifestPath(projectRoot)))}`);
+  console.log(`\n${color.bold(bilingual("Next steps:", "下一步："))}`);
+  console.log(bilingual(
+    `  Run ${color.cyan("/mvt-init")} in your AI IDE to initialize the project`,
+    `  在你的 AI IDE 中运行 ${color.cyan("/mvt-init")} 以初始化项目`,
+  ));
 }
 
 async function selectLanguage(
@@ -74,12 +82,17 @@ async function selectLanguage(
 ): Promise<Language> {
   if (!process.stdin.isTTY) return fallback ?? "en-US";
 
-  const message =
+  const baseMessage =
     kind === "interaction"
-      ? "Interaction language (chat replies, prompts) / 交互语言"
-      : `Document output language (artifacts, project-context.md) / 文档输出语言${
-          fallback ? ` [default: ${fallback}]` : ""
-        }`;
+      ? bilingual("Interaction language (chat replies, prompts)", "交互语言")
+      : bilingual(
+          "Document output language (artifacts, project-context.md)",
+          "文档输出语言（artifacts、project-context.md）",
+        );
+  const message =
+    kind === "document" && fallback
+      ? `${baseMessage} [default: ${fallback} / 默认：${fallback}]`
+      : baseMessage;
 
   const initial =
     kind === "document" && fallback === "zh-CN"
@@ -92,8 +105,8 @@ async function selectLanguage(
       name: "language",
       message,
       choices: [
-        { title: "English (en-US)", value: "en-US" },
-        { title: "中文 (zh-CN)", value: "zh-CN" },
+        { title: bilingual("English (en-US)", "English (en-US)"), value: "en-US" },
+        { title: bilingual("中文 (zh-CN)", "中文 (zh-CN)"), value: "zh-CN" },
       ],
       initial,
     },
@@ -114,9 +127,9 @@ async function selectPlatforms(): Promise<PlatformId[]> {
     {
       type: "multiselect",
       name: "platforms",
-      message: "Target AI platforms / 目标 AI 平台",
+      message: bilingual("Target AI platforms", "目标 AI 平台"),
       choices: PLATFORMS.map((p) => ({
-        title: `${p.dir} — ${p.description}`,
+        title: bilingual(`${p.dir} — ${p.description}`, `${p.dir} — ${p.description}`),
         value: p.id,
         selected: true,
       })),

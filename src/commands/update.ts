@@ -8,6 +8,7 @@ import {
 } from "../fs/install-manifest.js";
 import { hashFile } from "../fs/hash.js";
 import { getPackageRoot, getVersion } from "./shared.js";
+import { bilingual } from "../util/bilingual.js";
 
 export interface UpdateOptions {
   check?: boolean;
@@ -21,22 +22,28 @@ export function updateCommand(options: UpdateOptions = {}): void {
 
   const existing = readInstallationManifest(projectRoot);
   if (!existing) {
-    console.error(`MVTT is not installed in this project. Run \`mvtt install\` first.`);
+    console.error(bilingual(
+      "MVTT is not installed in this project. Run `mvtt install` first.",
+      "MVTT 尚未安装到当前项目。请先运行 `mvtt install`。",
+    ));
     process.exit(1);
   }
 
   if (existing.mvtt_version === version && !checkOnly) {
-    console.log(`Already at v${version}. Nothing to update.`);
+    console.log(bilingual(
+      `Already at v${version}. Nothing to update.`,
+      `已是 v${version}。无需更新。`,
+    ));
     return;
   }
 
   if (checkOnly) {
-    console.log(`Current: v${existing.mvtt_version}`);
-    console.log(`Latest:  v${version}`);
+    console.log(bilingual(`Current: v${existing.mvtt_version}`, `当前版本：v${existing.mvtt_version}`));
+    console.log(bilingual(`Latest:  v${version}`, `最新版本：v${version}`));
     if (existing.mvtt_version !== version) {
-      console.log(`Run \`mvtt update\` to upgrade.`);
+      console.log(bilingual("Run `mvtt update` to upgrade.", "运行 `mvtt update` 进行升级。"));
     } else {
-      console.log(`Up to date.`);
+      console.log(bilingual("Up to date.", "已是最新版本。"));
     }
     return;
   }
@@ -53,12 +60,21 @@ export function updateCommand(options: UpdateOptions = {}): void {
   }
 
   if (modified.length > 0) {
-    console.warn(`\nWarning: the following generated files have been modified:`);
+    console.warn(bilingual(
+      "\nWarning: the following generated files have been modified:",
+      "\n警告：以下生成文件已被修改：",
+    ));
     for (const f of modified) console.warn(`  - ${f}`);
-    console.warn(`These changes will be OVERWRITTEN by update.\n`);
+    console.warn(bilingual(
+      "These changes will be OVERWRITTEN by update.\n",
+      "更新时将覆盖这些修改。\n",
+    ));
   }
 
-  console.log(`Updating MVTT from v${existing.mvtt_version} to v${version}...`);
+  console.log(bilingual(
+    `Updating MVTT from v${existing.mvtt_version} to v${version}...`,
+    `正在将 MVTT 从 v${existing.mvtt_version} 更新到 v${version}...`,
+  ));
 
   const platforms = readInstalledPlatforms(existing);
   const materialized = materializeProject({
@@ -70,13 +86,19 @@ export function updateCommand(options: UpdateOptions = {}): void {
 
   const removed = removeStaleGeneratedFiles(projectRoot, existing.files, materialized);
   if (removed.length > 0) {
-    console.log(`Removed ${removed.length} stale generated file(s):`);
+    console.log(bilingual(
+      `Removed ${removed.length} stale generated file(s):`,
+      `已删除 ${removed.length} 个过时的生成文件:`,
+    ));
     for (const f of removed) console.log(`  - ${f}`);
   }
 
   writeInstallationManifest(projectRoot, version, materialized, existing, platforms);
 
-  console.log(`\nUpdate complete: ${materialized.length} files processed.`);
+  console.log(bilingual(
+    `\nUpdate complete: ${materialized.length} files processed.`,
+    `\n更新完成：已处理 ${materialized.length} 个文件。`,
+  ));
 }
 
 function removeStaleGeneratedFiles(

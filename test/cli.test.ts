@@ -182,12 +182,25 @@ describe("CLI commands (in-process)", () => {
       await captureIO(tmpDir, () => installCommand());
       const userFile = path.join(tmpDir, ".ai-agents/workspace/artifacts/mine.md");
       writeFileSync(userFile, "my work", "utf-8");
-      prompts.inject([true]);
+      prompts.inject([true, true]);
       await captureIO(tmpDir, () => uninstallCommand());
       expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-analyze/SKILL.md"))).toBe(false);
       expect(existsSync(path.join(tmpDir, ".ai-agents/.mvtt-manifest.json"))).toBe(false);
       expect(readFileSync(userFile, "utf-8")).toBe("my work");
       expect(existsSync(path.join(tmpDir, ".ai-agents/config.yaml"))).toBe(true);
+    });
+
+    it("removes user data when user opts out of preservation", async () => {
+      await captureIO(tmpDir, () => installCommand());
+      const userFile = path.join(tmpDir, ".ai-agents/workspace/artifacts/mine.md");
+      writeFileSync(userFile, "my work", "utf-8");
+      prompts.inject([true, false]);
+      await captureIO(tmpDir, () => uninstallCommand());
+      expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-analyze/SKILL.md"))).toBe(false);
+      expect(existsSync(path.join(tmpDir, ".ai-agents/.mvtt-manifest.json"))).toBe(false);
+      expect(existsSync(userFile)).toBe(false);
+      expect(existsSync(path.join(tmpDir, ".ai-agents/config.yaml"))).toBe(false);
+      expect(existsSync(path.join(tmpDir, ".ai-agents/registry.yaml"))).toBe(false);
     });
   });
 
