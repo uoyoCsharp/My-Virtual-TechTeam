@@ -332,4 +332,84 @@ describe("loadSection", () => {
     expect(result).toContain("Header");
     expect(result).toContain("Footer");
   });
+
+  it("renders script-usage-rule.md with plan-update block when uses_plan_update is true", () => {
+    const sourcesDir = path.resolve("sources");
+    const result = loadSection(
+      { type: "shared", source: "sections/script-usage-rule.md", params: { uses_plan_update: true } },
+      path.resolve("."),
+      sourcesDir,
+    );
+
+    // Plan-update block rendered
+    expect(result).toContain("## Script Usage Rule");
+    expect(result).toContain("node .ai-agents/scripts/plan-update.cjs");
+    expect(result).toContain("--plan");
+    expect(result).toContain("--task");
+    expect(result).toContain("--status");
+    expect(result).toContain("--projects");
+    // Pointer to full reference doc
+    expect(result).toContain(".ai-agents/scripts/plan-update.md");
+    // Epic-update block NOT rendered
+    expect(result).not.toContain("node .ai-agents/scripts/epic-update.cjs");
+    // No leftover Mustache markers
+    expect(result).not.toContain("{{#uses_plan_update}}");
+    expect(result).not.toContain("{{/uses_plan_update}}");
+    expect(result).not.toContain("{{#uses_epic_update}}");
+  });
+
+  it("renders script-usage-rule.md with epic-update block when uses_epic_update is true", () => {
+    const sourcesDir = path.resolve("sources");
+    const result = loadSection(
+      { type: "shared", source: "sections/script-usage-rule.md", params: { uses_epic_update: true } },
+      path.resolve("."),
+      sourcesDir,
+    );
+
+    // Epic-update block rendered
+    expect(result).toContain("## Script Usage Rule");
+    expect(result).toContain("node .ai-agents/scripts/epic-update.cjs");
+    expect(result).toContain("--complete-child");
+    expect(result).toContain("--epic");
+    // Pointer to full reference doc
+    expect(result).toContain(".ai-agents/scripts/epic-update.md");
+    // Plan-update block NOT rendered
+    expect(result).not.toContain("node .ai-agents/scripts/plan-update.cjs");
+    // No leftover Mustache markers
+    expect(result).not.toContain("{{#uses_epic_update}}");
+    expect(result).not.toContain("{{/uses_epic_update}}");
+    expect(result).not.toContain("{{#uses_plan_update}}");
+  });
+
+  it("renders script-usage-rule.md with both blocks when both flags are true", () => {
+    const sourcesDir = path.resolve("sources");
+    const result = loadSection(
+      { type: "shared", source: "sections/script-usage-rule.md", params: { uses_plan_update: true, uses_epic_update: true } },
+      path.resolve("."),
+      sourcesDir,
+    );
+
+    expect(result).toContain("node .ai-agents/scripts/plan-update.cjs");
+    expect(result).toContain("node .ai-agents/scripts/epic-update.cjs");
+    // General rule always present
+    expect(result).toContain("Never read");
+  });
+
+  it("renders script-usage-rule.md with only the general rule when no script flags are set", () => {
+    const sourcesDir = path.resolve("sources");
+    const result = loadSection(
+      { type: "shared", source: "sections/script-usage-rule.md", params: {} },
+      path.resolve("."),
+      sourcesDir,
+    );
+
+    expect(result).toContain("## Script Usage Rule");
+    expect(result).toContain("Never read");
+    // No script-specific blocks
+    expect(result).not.toContain("node .ai-agents/scripts/plan-update.cjs");
+    expect(result).not.toContain("node .ai-agents/scripts/epic-update.cjs");
+    // No leftover Mustache markers
+    expect(result).not.toContain("{{#uses_");
+    expect(result).not.toContain("{{/uses_");
+  });
 });

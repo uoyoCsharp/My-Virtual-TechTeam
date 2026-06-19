@@ -10,25 +10,8 @@
  * pipeline, esbuild bundles it into a zero-dependency single file that
  * gets deployed to .ai-agents/scripts/session-update.cjs.
  *
- * Usage:
- *   node .ai-agents/scripts/session-update.cjs \
- *     --skill <name> \
- *     --summary <text> \
- *     [--change-id <id>] \
- *     [--new-change <title>] \
- *     [--set-initialized] \
- *     [--update-change] \
- *     [--set-plan-path <path>] \
- *     [--close-change] \
- *     [--set-change-status <status>] \
- *     [--no-change] \
- *     [--set-synced] \
- *     [--truncate-history <n>] \
- *     [--new-epic <title> --epic-id <id>] \
- *     [--set-epic-path <path>] \
- *     [--set-epic-status <status>] \
- *     [--close-epic] \
- *     [--epic-id <id>]   (with --new-change, links sub-change to epic)
+ * Usage: see the "State Update" section in any skill that references
+ *   sections/session-update.md (rendered with per-skill flag parameters).
  *
  * Output:
  *   Success (exit 0): {"ok":true}
@@ -226,12 +209,13 @@ function main() {
       }
     }
 
-    // Now set new active_change
+    // Now set new active_change (preserve fields only when re-invoking on same change)
+    const isSameChange = session.active_change.id === args["change-id"];
     session.active_change.id = args["change-id"];
     session.active_change.title = args["new-change"];
-    session.active_change.created_at = now;
-    session.active_change.plan_path = "";
-    session.active_change.epic_id = args["epic-id"] || "";
+    session.active_change.created_at = isSameChange ? (session.active_change.created_at || now) : now;
+    session.active_change.plan_path = isSameChange ? (session.active_change.plan_path || "") : "";
+    session.active_change.epic_id = args["epic-id"] || session.active_change.epic_id || "";
   }
 
   // --set-initialized

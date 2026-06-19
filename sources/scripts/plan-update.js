@@ -19,16 +19,9 @@
  * esbuild bundles it into a zero-dependency single file deployed to
  * .ai-agents/scripts/plan-update.cjs.
  *
- * Usage:
- *   node .ai-agents/scripts/plan-update.cjs \
- *     --plan <path-to-plan.yaml> \
- *     --task <task_id> \
- *     --status <pending|in_progress|done|blocked|skipped> \
- *     [--projects "web,api"] \
- *     [--artifacts "<comma,separated,paths>"] \
- *     [--notes "<free-form text>"] \
- *     [--deliverables-pointer current] \
- *     [--mark-deliverable-stale <task_id>[,task_id2,...]]
+ * Usage: see the "Script Usage Rule" section in any skill that references
+ *   sections/script-usage-rule.md, or read the full reference at
+ *   .ai-agents/scripts/plan-update.md.
  *
  * Output:
  *   Success (exit 0): one-line JSON on stdout, e.g.

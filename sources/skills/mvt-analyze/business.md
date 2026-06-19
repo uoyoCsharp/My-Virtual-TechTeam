@@ -8,7 +8,7 @@ In this state the user is starting a new sub-change within an existing epic. Rea
 |----------|-------------|----------|
 | A | Empty | Auto-use `current_change` child's scope from `epic.yaml` as the requirement input. Proceed to Step 3. |
 | B | Supplements current child | Merge user message with `current_change` child's scope. Proceed to Step 3. |
-| C | Points to different child | Locate target in `children[]`. If `depends_on` has unfinished prerequisites → warn and ask to confirm forced reorder (y/n). If deps satisfied → confirm switch (y/n). On confirmed reorder: call `epic-update.cjs --epic <epic_path> --switch-active <target_id>`. If target not in `children[]` → offer to treat as independent change (exit epic-child mode) or `--add-child`. |
+| C | Points to different child | Locate target in `children[]`. If `depends_on` has unfinished prerequisites → warn and ask to confirm forced reorder (y/n). If deps satisfied → confirm switch (y/n). On confirmed reorder: call the Epic Update Script in `--switch-active` mode (see the **Script Usage Rule** section for the command template, or read `.ai-agents/scripts/epic-update.md` for full flag reference): `node .ai-agents/scripts/epic-update.cjs --epic <epic_path> --switch-active <target_id>`. If target not in `children[]` → offer to treat as independent change (exit epic-child mode) or use `--add-child` mode to append it as a new child. |
 
 ## Execution Flow
 

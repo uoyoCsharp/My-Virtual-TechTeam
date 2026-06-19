@@ -78,9 +78,21 @@ Write two artifacts using the `decompose-output` template for `epic.md`:
 - [ ] `current_change` matches the active child's `change_id`
 - [ ] Each child has non-empty `title` and `scope`
 
-**Optional safety net**: after writing, call `epic-update.cjs --validate` to verify:
+**Optional safety net**: after writing, validate the epic using the Epic Update Script (see the **Script Usage Rule** section for the command template, or read `.ai-agents/scripts/epic-update.md` for full flag reference):
 ```bash
 node .ai-agents/scripts/epic-update.cjs --validate .ai-agents/workspace/artifacts/{epic_id}/epic.yaml
+```
+
+If the epic needs children added later (e.g. a missed sub-change discovered during analysis), use `--add-child`:
+```bash
+node .ai-agents/scripts/epic-update.cjs --epic .ai-agents/workspace/artifacts/{epic_id}/epic.yaml \
+  --add-child <new_child_id> --child-title "<title>" --child-scope "<scope>"
+```
+
+To advance the epic after a child change completes, use `--complete-child`:
+```bash
+node .ai-agents/scripts/epic-update.cjs --epic .ai-agents/workspace/artifacts/{epic_id}/epic.yaml \
+  --complete-child <completed_child_id>
 ```
 
 ### Step 7: Update Session

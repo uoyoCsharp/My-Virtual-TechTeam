@@ -80,6 +80,11 @@ sections:
       current_skill: mvt-implement
 
   - type: shared
+    source: sections/script-usage-rule.md
+    params:
+      uses_plan_update: true
+
+  - type: shared
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-implement

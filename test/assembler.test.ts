@@ -302,4 +302,79 @@ describe("assembler", () => {
       expect(output).toContain("/mvt-plan-dev");
     });
   });
+
+  describe("script-callability sections (change 20260619)", () => {
+    it("mvt-update-plan renders Script Usage Rule with plan + epic blocks", () => {
+      const output = buildSkill("mvt-update-plan");
+      expect(output).toContain("## Script Usage Rule");
+      // Plan-update minimal command present
+      expect(output).toContain("plan-update.cjs");
+      expect(output).toContain("--plan");
+      expect(output).toContain("--task");
+      // Epic-update minimal command present
+      expect(output).toContain("epic-update.cjs");
+      expect(output).toContain("--complete-child");
+      // Pointer to full reference docs
+      expect(output).toContain(".ai-agents/scripts/plan-update.md");
+      expect(output).toContain(".ai-agents/scripts/epic-update.md");
+      // Full command template NOT inline (only minimal command + pointer)
+      expect(output).not.toContain("--child-title");
+      expect(output).not.toContain("--child-scope");
+      expect(output).not.toContain("--child-depends-on");
+    });
+
+    it("mvt-implement renders Script Usage Rule with plan-update block only", () => {
+      const output = buildSkill("mvt-implement");
+      expect(output).toContain("## Script Usage Rule");
+      expect(output).toContain("plan-update.cjs");
+      expect(output).toContain(".ai-agents/scripts/plan-update.md");
+      // Epic-update block NOT rendered
+      expect(output).not.toContain("epic-update.cjs");
+      expect(output).not.toContain(".ai-agents/scripts/epic-update.md");
+    });
+
+    it("mvt-decompose renders Script Usage Rule with epic-update block only", () => {
+      const output = buildSkill("mvt-decompose");
+      expect(output).toContain("## Script Usage Rule");
+      expect(output).toContain("epic-update.cjs");
+      expect(output).toContain(".ai-agents/scripts/epic-update.md");
+      // Plan-update block NOT rendered
+      expect(output).not.toContain("plan-update.cjs");
+      expect(output).not.toContain(".ai-agents/scripts/plan-update.md");
+    });
+
+    it("mvt-analyze renders Script Usage Rule with epic-update block only", () => {
+      const output = buildSkill("mvt-analyze");
+      expect(output).toContain("## Script Usage Rule");
+      expect(output).toContain("epic-update.cjs");
+      // Plan-update block NOT rendered
+      expect(output).not.toContain("plan-update.cjs");
+    });
+
+    it("mvt-sync-context renders Script Usage Rule with plan-update block only", () => {
+      const output = buildSkill("mvt-sync-context");
+      expect(output).toContain("## Script Usage Rule");
+      expect(output).toContain("plan-update.cjs");
+      // Epic-update block NOT rendered
+      expect(output).not.toContain("epic-update.cjs");
+    });
+
+    it("mvt-cleanup renders Script Usage Rule with session-update block", () => {
+      const output = buildSkill("mvt-cleanup");
+      expect(output).toContain("## Script Usage Rule");
+      expect(output).toContain("session-update.cjs");
+      expect(output).toContain("--close-change");
+      expect(output).toContain("--truncate-history");
+      // Plan/epic blocks NOT rendered
+      expect(output).not.toContain("plan-update.cjs");
+      expect(output).not.toContain("epic-update.cjs");
+    });
+
+    it("all script-usage skills include the general rule about never reading source files", () => {
+      for (const skill of ["mvt-update-plan", "mvt-implement", "mvt-decompose", "mvt-analyze", "mvt-sync-context", "mvt-cleanup"]) {
+        const output = buildSkill(skill);
+        expect(output).toContain("Never read");
+      }
+    });
+  });
 });

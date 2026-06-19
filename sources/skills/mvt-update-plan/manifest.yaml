@@ -109,6 +109,12 @@ sections:
       update_change: true
 
   - type: shared
+    source: sections/script-usage-rule.md
+    params:
+      uses_plan_update: true
+      uses_epic_update: true
+
+  - type: shared
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-update-plan

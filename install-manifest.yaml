@@ -17,6 +17,10 @@ generated:
     source: "bundle:sources/scripts/plan-update.js"
   - pattern: ".ai-agents/scripts/epic-update.cjs"
     source: "bundle:sources/scripts/epic-update.js"
+  - pattern: ".ai-agents/scripts/plan-update.md"
+    source: "copy:sources/scripts/plan-update.md"
+  - pattern: ".ai-agents/scripts/epic-update.md"
+    source: "copy:sources/scripts/epic-update.md"
 
 create_once:
   - path: ".ai-agents/config.yaml"

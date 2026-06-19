@@ -181,7 +181,7 @@ If user skips verification: proceed directly to Step 10 with Step 7 selections.
 ### Step 12: State Update
 Apply the State Update rules defined in the **State Update** section below.
 - The `--set-synced` parameter updates `session.last_synced_at`.
-- Pass `--projects` to plan-update.cjs when updating a plan that has project attribution.
+- When updating a plan that has project attribution, pass `--projects` to `plan-update.cjs` (see the **Script Usage Rule** section for the command template, or read `.ai-agents/scripts/plan-update.md` for full flag reference and argument value sources).
 
 ## Edge Cases & Errors
 
