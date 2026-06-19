@@ -53,12 +53,6 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/language-constraint.md
-
-  - type: shared
-    source: sections/output-format-constraint.md
-
-  - type: shared
     source: sections/activation-preflight.md
     params:
       checks:
@@ -78,6 +72,12 @@ sections:
           field: "requirements in project-context.md"
           level: "WARN"
           message: "No requirements found. Run `/mvt-analyze` first. (allow user to proceed)"
+
+  - type: shared
+    source: sections/language-constraint.md
+
+  - type: shared
+    source: sections/output-format-constraint.md
 
   - type: file
     source: ./business.md

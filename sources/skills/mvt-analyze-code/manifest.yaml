@@ -54,12 +54,6 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/language-constraint.md
-
-  - type: shared
-    source: sections/output-format-constraint.md
-
-  - type: shared
     source: sections/activation-preflight.md
     params:
       checks:
@@ -71,6 +65,12 @@ sections:
           field: "projects[] in project-context.yaml"
           level: "WARN"
           message: "No projects registered. Run `/mvt-init` first."
+
+  - type: shared
+    source: sections/language-constraint.md
+
+  - type: shared
+    source: sections/output-format-constraint.md
 
   - type: inline
     content: |

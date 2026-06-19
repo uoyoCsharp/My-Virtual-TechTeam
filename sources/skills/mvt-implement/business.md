@@ -101,7 +101,7 @@
   {Document invariants, preconditions, or side effects that downstream tasks must respect.}
   ```
 
-- **After writing deliverables**, call `plan-update.cjs` with both deliverables flags in a single invocation (see the **Script Usage Rule** section for the command template, or read `.ai-agents/scripts/plan-update.md` for full flag reference and argument value sources):
+- **After writing deliverables**, call `plan-update.cjs` with both deliverables flags in a single invocation. Use the command below as authoritative:
   ```bash
   node .ai-agents/scripts/plan-update.cjs \
     --plan "<active_change.plan_path>" \
@@ -111,7 +111,7 @@
     --mark-deliverable-stale <downstream_task_id1>[,<downstream_task_id2>,...] \
     --projects <project_list>
   ```
-  `<project_list>` is the comma-separated project names from `plan.yaml > current_tasks` keys. In a single-project workspace this is `default`. The `--status` must be the task's current status (typically `in_progress` at this point, since Step 9 has not yet run). Pass ALL downstream dependent task ids as a comma-separated list to `--mark-deliverable-stale` so that `/mvt-resume` and `/mvt-status` can surface the stale warning.
+  `<project_list>` is the comma-separated project names from `plan.yaml > current_tasks` keys. The `--status` must be the task's current status (typically `in_progress` at this point, since Step 9 has not yet run). Pass ALL downstream dependent task ids as a comma-separated list to `--mark-deliverable-stale` so that `/mvt-resume` and `/mvt-status` can surface the stale warning.
 - **On user decline**: do not write deliverables and do not call `plan-update.cjs` with the deliverables flags. The downstream tasks will not receive stale warnings, which is acceptable if the user considers the contract unchanged.
 - **Error handling**: if `plan-update.cjs` rejects (e.g., malformed freshness), surface stderr and leave `implementation.md` as written. The deliverables content is the source of truth; the pointer can be retried via `/mvt-update-plan`.
 

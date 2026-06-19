@@ -2,9 +2,9 @@ session:
   initialized_at: 2026-06-05T08:12:06.624Z
   last_synced_at: 2026-06-08T02:44:34.674Z
 active_change:
-  id: 20260619-script-callability
-  title: Script Callability — Eliminate AI Reading Script Source
-  created_at: 2026-06-19T03:23:47.630Z
+  id: 20260619-script-call-prompt-optimization
+  title: Script Call Prompt Optimization
+  created_at: 2026-06-19T13:49:40.019Z
   plan_path: ""
   epic_id: ""
 changes:
@@ -35,33 +35,15 @@ changes:
     title: Script Callability — Eliminate AI Reading Script Source
     plan_path: ""
     status: active
-    updated_at: 2026-06-19T03:52:02.895Z
+    updated_at: 2026-06-19T06:36:41.745Z
+    epic_id: ""
+  - id: 20260619-shared-section-prompt-optimization
+    title: Shared Section Prompt Quality Optimization
+    plan_path: ""
+    status: active
+    updated_at: 2026-06-19T13:49:40.019Z
     epic_id: ""
 history:
-  - skill: /mvt-fix
-    completed_at: 2026-06-09T02:52:40.328Z
-    summary: 完成 follow-up 1+2：删 mvt-analyze 冗余 epic-id 提示；修 mvt-decompose 单项目 project 指引；plan-update.js + epic-update.js 加 project-context.yaml 自动检测，hardcoded default 保留作兜底。232 测试全绿，端到端验证 OK。
-    change_id: 20260608-regular
-  - skill: /mvt-quick-dev
-    completed_at: 2026-06-09T06:05:47.313Z
-    summary: Analyzed why mvtt install only outputs to .claude platform - root cause is hardcoded output paths in manifest.yaml files
-    change_id: ""
-  - skill: /mvt-quick-dev
-    completed_at: 2026-06-09T06:26:06.855Z
-    summary: Implemented multi-platform skill output support (claude + qoder) with interactive platform selection during install
-    change_id: ""
-  - skill: /mvt-quick-dev
-    completed_at: 2026-06-09T06:35:45.957Z
-    summary: Moved platform storage from config.yaml to .mvtt-manifest.json (installation metadata)
-    change_id: ""
-  - skill: /mvt-review
-    completed_at: 2026-06-09T06:40:22.748Z
-    summary: "Multi-platform skill output code review: 0 critical, 2 warnings (stale comment, double manifest read), 3 suggestions. Verdict: Approve with comments."
-    change_id: 20260608-regular
-  - skill: /mvt-quick-dev
-    completed_at: 2026-06-09T14:38:36.128Z
-    summary: 在 config.yaml 注释和 mvt-config skill 中加入 code→name 映射,AI 可从裸 code 确认语言
-    change_id: ""
   - skill: /mvt-analyze
     completed_at: 2026-06-09T14:43:18.071Z
     summary: 分析了 registry.yaml 中 agent 字段的使用情况,确认是死字段,无代码/脚本/模板读取
@@ -119,6 +101,30 @@ history:
     completed_at: 2026-06-19T04:54:45.527Z
     summary: "Completed code review for 20260619-script-callability: 1 Critical (undocumented session-update.js behavioral change), 3 Warnings, 2 Suggestions. Verdict: Request changes."
     change_id: 20260619-script-callability
+  - skill: /mvt-analyze
+    completed_at: 2026-06-19T06:36:41.745Z
+    summary: 分析公共 section prompt 质量优化需求：7 skill 实测公共占比 45-68%，分类三类优化策略（就地压缩/参考按需提取），4 项歧义待澄清
+    change_id: 20260619-shared-section-prompt-optimization
+  - skill: /mvt-design
+    completed_at: 2026-06-19T06:42:35.706Z
+    summary: 设计公共 section prompt 优化方案：双策略（就地压缩+参考按需提取），6 ADR，7 源文件改动，预计每 skill 省 ~5000 字符（>=30%）
+    change_id: 20260619-shared-section-prompt-optimization
+  - skill: /mvt-implement
+    completed_at: 2026-06-19T08:12:49.438Z
+    summary: 压缩共享 section prompt：内联压缩 State Update 和关键约束，更新测试与生成产物，253 测试通过
+    change_id: 20260619-shared-section-prompt-optimization
+  - skill: /mvt-design
+    completed_at: 2026-06-19T13:49:40.019Z
+    summary: 设计脚本调用 prompt 优化方案：新增独立 change，采用布尔模式开关压缩 script-usage-rule，避免引擎改动
+    change_id: 20260619-script-call-prompt-optimization
+  - skill: /mvt-implement
+    completed_at: 2026-06-19T13:57:54.494Z
+    summary: 实现脚本调用 prompt 优化：新增布尔指导模式，迁移6个相关skill，补充渲染测试并刷新生成产物
+    change_id: 20260619-script-call-prompt-optimization
+  - skill: /mvt-review
+    completed_at: 2026-06-19T14:04:48.045Z
+    summary: 审查脚本调用 prompt 优化变更：0 Critical、1 Warning（无倒装包裹器）、2 Suggestion；设计合规性全部通过，生成产物验证全部正确，257 测试通过。裁决：Approve with comments。
+    change_id: 20260619-script-call-prompt-optimization
 active_epic:
   id: epic-20260608-my
   title: My Epic

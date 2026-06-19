@@ -39,12 +39,6 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/language-constraint.md
-
-  - type: shared
-    source: sections/output-format-constraint.md
-
-  - type: shared
     source: sections/activation-preflight.md
     params:
       checks:
@@ -60,6 +54,12 @@ sections:
           field: "active_change.id"
           level: "WARN"
           message: 'An active change already exists. Decomposing will create a new epic alongside it. Continue? (y/n)'
+
+  - type: shared
+    source: sections/language-constraint.md
+
+  - type: shared
+    source: sections/output-format-constraint.md
 
   - type: file
     source: ./business.md
@@ -110,7 +110,7 @@ sections:
   - type: shared
     source: sections/script-usage-rule.md
     params:
-      uses_epic_update: true
+      epic_update_fallback_for_unrendered_modes: true
 
   - type: shared
     source: sections/footer-next-steps.md

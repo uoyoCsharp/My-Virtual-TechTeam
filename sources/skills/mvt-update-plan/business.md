@@ -70,7 +70,7 @@ After the Step 3 script reports `plan_status: "done"`:
    > - **(defer)** Mark child done but don't advance yet
 
 4. On **y**:
-   - Call the Epic Update Script in `--complete-child` mode (see the **Script Usage Rule** section for the command template, or read `.ai-agents/scripts/epic-update.md` for full flag reference):
+  - Call the Epic Update Script in `--complete-child` mode using the command below:
      ```bash
      node .ai-agents/scripts/epic-update.cjs --epic "<active_epic.epic_path>" --complete-child <active_change.id>
      ```
@@ -80,7 +80,7 @@ After the Step 3 script reports `plan_status: "done"`:
 5. On **n**: No action. Display reminder: "Change remains open. Run other skills (e.g., `/mvt-review`, `/mvt-test`, `/mvt-fix`) as needed; run `/mvt-update-plan` again when ready to advance the epic."
 
 6. On **defer**:
-   - Call the Epic Update Script in `--set-child-status` mode (see the **Script Usage Rule** section, or read `.ai-agents/scripts/epic-update.md` for full flag reference):
+  - Call the Epic Update Script in `--set-child-status` mode using the command below:
      ```bash
      node .ai-agents/scripts/epic-update.cjs --epic "<active_epic.epic_path>" --set-child-status <active_change.id> --child-status done
      ```

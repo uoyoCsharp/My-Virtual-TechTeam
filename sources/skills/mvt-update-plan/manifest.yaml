@@ -44,12 +44,6 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/language-constraint.md
-
-  - type: shared
-    source: sections/output-format-constraint.md
-
-  - type: shared
     source: sections/activation-preflight.md
     params:
       checks:
@@ -61,6 +55,12 @@ sections:
           field: "active_change.plan_path"
           level: "BLOCK"
           message: 'No active plan. Run `/mvt-plan-dev` to create one.'
+
+  - type: shared
+    source: sections/language-constraint.md
+
+  - type: shared
+    source: sections/output-format-constraint.md
 
   - type: inline
     content: |
@@ -112,7 +112,7 @@ sections:
     source: sections/script-usage-rule.md
     params:
       uses_plan_update: true
-      uses_epic_update: true
+      epic_update_inline_modes_only: true
 
   - type: shared
     source: sections/footer-next-steps.md

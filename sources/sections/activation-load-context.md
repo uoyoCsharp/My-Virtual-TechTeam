@@ -1,6 +1,6 @@
 ## Activation Protocol
 
-### Step 1: Load Context
+### Stage 1: Load Context
 Load foundational context:
 - `.ai-agents/workspace/project-context.yaml` -- Project index (structural info)
 - `.ai-agents/registry.yaml` -- Available skills registry and knowledge declarations
@@ -12,7 +12,7 @@ Extended context for this skill:
 - {{.}}
 {{/extended_context}}
 
-### Step 2: Resolve Project Scope (PS)
+### Stage 2: Resolve Project Scope (PS)
 
 Read `project-context.yaml > projects[]`.
 
@@ -25,9 +25,9 @@ Read `project-context.yaml > projects[]`.
 3. **Prompt**: If unresolved, list candidates and ask user. Never silently load all projects.
 
 **Mode B -- Non-plan** (no active plan or ad-hoc changes):
-Defer PS to execution: identify change target, match against `projects[].path` and `source_paths`, load project-specific knowledge on demand (Step 3).
+Defer PS to execution: identify change target, match against `projects[].path` and `source_paths`, load project-specific knowledge on demand (Stage 3).
 
-### Step 3: Load Knowledge
+### Stage 3: Load Knowledge
 
 Registry knowledge maps are project-keyed; `_all` is reserved for all projects. This applies to top-level `knowledge` and `skills.<name>.knowledge`.
 

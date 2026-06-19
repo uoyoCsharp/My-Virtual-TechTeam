@@ -391,11 +391,10 @@ describe("loadSection", () => {
 
     expect(result).toContain("node .ai-agents/scripts/plan-update.cjs");
     expect(result).toContain("node .ai-agents/scripts/epic-update.cjs");
-    // General rule always present
-    expect(result).toContain("Never read");
+    expect(result).toContain("Do NOT read `.cjs`/`.js` source");
   });
 
-  it("renders script-usage-rule.md with only the general rule when no script flags are set", () => {
+  it("renders script-usage-rule.md with no script-specific guidance when no script flags are set", () => {
     const sourcesDir = path.resolve("sources");
     const result = loadSection(
       { type: "shared", source: "sections/script-usage-rule.md", params: {} },
@@ -404,13 +403,66 @@ describe("loadSection", () => {
     );
 
     expect(result).toContain("## Script Usage Rule");
-    expect(result).toContain("Never read");
-    // No script-specific blocks
     expect(result).not.toContain("node .ai-agents/scripts/plan-update.cjs");
     expect(result).not.toContain("node .ai-agents/scripts/epic-update.cjs");
+    expect(result).not.toContain(".ai-agents/scripts/plan-update.md");
+    expect(result).not.toContain(".ai-agents/scripts/epic-update.md");
     // No leftover Mustache markers
     expect(result).not.toContain("{{#uses_");
     expect(result).not.toContain("{{/uses_");
+  });
+
+  it("renders plan inline-command-only guidance without generic command or docs pointer", () => {
+    const sourcesDir = path.resolve("sources");
+    const result = loadSection(
+      { type: "shared", source: "sections/script-usage-rule.md", params: { plan_update_inline_command_only: true } },
+      path.resolve("."),
+      sourcesDir,
+    );
+
+    expect(result).toContain("exact `plan-update.cjs` command rendered in this skill's workflow");
+    expect(result).toContain("Do NOT hand-edit `plan.yaml`");
+    expect(result).not.toContain("--status <new_status>");
+    expect(result).not.toContain(".ai-agents/scripts/plan-update.md");
+    expect(result).not.toContain("{{#plan_update_inline_command_only}}");
+  });
+
+  it("renders plan project-reminder guidance without a generic command", () => {
+    const sourcesDir = path.resolve("sources");
+    const result = loadSection(
+      { type: "shared", source: "sections/script-usage-rule.md", params: { plan_update_project_reminder: true } },
+      path.resolve("."),
+      sourcesDir,
+    );
+
+    expect(result).toContain("pass `--projects`");
+    expect(result).toContain(".ai-agents/scripts/plan-update.md");
+    expect(result).not.toContain("--status <new_status>");
+  });
+
+  it("renders epic inline-modes-only guidance without docs pointer", () => {
+    const sourcesDir = path.resolve("sources");
+    const result = loadSection(
+      { type: "shared", source: "sections/script-usage-rule.md", params: { epic_update_inline_modes_only: true } },
+      path.resolve("."),
+      sourcesDir,
+    );
+
+    expect(result).toContain("exact `epic-update.cjs` mode commands rendered in this skill's workflow");
+    expect(result).not.toContain(".ai-agents/scripts/epic-update.md");
+    expect(result).not.toContain("--complete-child <active_change.id>");
+  });
+
+  it("renders epic fallback guidance with docs pointer but no generic command", () => {
+    const sourcesDir = path.resolve("sources");
+    const result = loadSection(
+      { type: "shared", source: "sections/script-usage-rule.md", params: { epic_update_fallback_for_unrendered_modes: true } },
+      path.resolve("."),
+      sourcesDir,
+    );
+
+    expect(result).toContain("For modes or flags not rendered here, read `.ai-agents/scripts/epic-update.md`");
+    expect(result).not.toContain("--complete-child <active_change.id>");
   });
 
   it("renders compressed session-update.md as self-sufficient guidance", () => {

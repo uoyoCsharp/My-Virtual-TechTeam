@@ -55,12 +55,6 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/language-constraint.md
-
-  - type: shared
-    source: sections/output-format-constraint.md
-
-  - type: shared
     source: sections/activation-preflight.md
     params:
       checks:
@@ -72,6 +66,12 @@ sections:
           field: "implementation files (user args, implementation.md, or source tree)"
           level: "WARN"
           message: "No implementation found. Run `/mvt-implement` first."
+
+  - type: shared
+    source: sections/language-constraint.md
+
+  - type: shared
+    source: sections/output-format-constraint.md
 
   - type: inline
     content: |

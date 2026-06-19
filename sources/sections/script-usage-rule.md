@@ -1,22 +1,32 @@
 ## Script Usage Rule
 
-{{#uses_plan_update}}To mutate `plan.yaml`, call the deterministic plan update script. Do NOT hand-edit `plan.yaml` or choose `current_tasks` yourself.
+{{#uses_plan_update}}To mutate `plan.yaml`, call `plan-update.cjs`. Do NOT hand-edit `plan.yaml` or choose `current_tasks`.
 
 **Minimal command** (always required flags):
 ```bash
 node .ai-agents/scripts/plan-update.cjs --plan "<active_change.plan_path>" --task <task_id> --status <new_status> --projects "<project_list>"
 ```
-For optional flags (`--artifacts`, `--notes`, `--deliverables-pointer`, `--mark-deliverable-stale`), read `.ai-agents/scripts/plan-update.md`. Do NOT read `.cjs` or `.js` source.
+For flags, argument sources, or output not rendered here, read `.ai-agents/scripts/plan-update.md`. Do NOT read `.cjs`/`.js` source.
 
-{{/uses_plan_update}}{{#uses_epic_update}}To mutate `epic.yaml` (complete a child, set child status, switch active, add children, or validate), call the deterministic epic update script. Do NOT hand-edit `epic.yaml` or advance `current_change` yourself.
+{{/uses_plan_update}}
+{{#plan_update_inline_command_only}}To mutate `plan.yaml`, use the exact `plan-update.cjs` command rendered in this skill's workflow. Do NOT hand-edit `plan.yaml`, choose `current_tasks`, or read `.cjs`/`.js` source.
+
+{{/plan_update_inline_command_only}}
+{{#plan_update_project_reminder}}When calling `plan-update.cjs` for a project-attributed plan, pass `--projects` with the relevant project list. Do NOT hand-edit `plan.yaml` or read `.cjs`/`.js` source. For flags or value sources not rendered here, read `.ai-agents/scripts/plan-update.md`.
+
+{{/plan_update_project_reminder}}
+{{#uses_epic_update}}To mutate `epic.yaml` (complete a child, set child status, switch active, add children, or validate), call `epic-update.cjs`. Do NOT hand-edit `epic.yaml` or advance `current_change`.
 
 **Minimal command** (most common mode — complete child):
 ```bash
 node .ai-agents/scripts/epic-update.cjs --epic "<active_epic.epic_path>" --complete-child <active_change.id>
 ```
-For all modes (`--complete-child`, `--set-child-status`, `--switch-active`, `--add-child`, `--validate`), read `.ai-agents/scripts/epic-update.md`. Do NOT read `.cjs` or `.js` source.
+For modes not rendered here, read `.ai-agents/scripts/epic-update.md`. Do NOT read `.cjs`/`.js` source.
 
-{{/uses_epic_update}}{{#uses_session_update}}To update session state, call the deterministic session update script using the exact command in State Update. Do NOT read `.cjs` or `.js` source; all applicable flags are already rendered there.
+{{/uses_epic_update}}
+{{#epic_update_inline_modes_only}}To mutate `epic.yaml`, use the exact `epic-update.cjs` mode commands rendered in this skill's workflow. Do NOT hand-edit `epic.yaml`, advance `current_change`, or read `.cjs`/`.js` source.
 
-{{/uses_session_update}}
-**General rule**: Never read `.js` or `.cjs` source to learn script usage. For non-session scripts, read `.ai-agents/scripts/{name}.md` when optional flags or modes are needed.
+{{/epic_update_inline_modes_only}}
+{{#epic_update_fallback_for_unrendered_modes}}To mutate `epic.yaml`, use the `epic-update.cjs` mode commands rendered in this skill's workflow. Do NOT hand-edit `epic.yaml`, advance `current_change`, or read `.cjs`/`.js` source. For modes or flags not rendered here, read `.ai-agents/scripts/epic-update.md`.
+
+{{/epic_update_fallback_for_unrendered_modes}}

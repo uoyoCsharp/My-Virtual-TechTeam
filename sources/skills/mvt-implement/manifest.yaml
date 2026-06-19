@@ -41,12 +41,6 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/language-constraint.md
-
-  - type: shared
-    source: sections/output-format-constraint.md
-
-  - type: shared
     source: sections/activation-preflight.md
     params:
       checks:
@@ -62,6 +56,12 @@ sections:
           field: "modules in project-context.md"
           level: "WARN"
           message: "No architecture defined. Run `/mvt-design` first. (allow user to proceed)"
+
+  - type: shared
+    source: sections/language-constraint.md
+
+  - type: shared
+    source: sections/output-format-constraint.md
 
   - type: file
     source: ./business.md
@@ -82,7 +82,7 @@ sections:
   - type: shared
     source: sections/script-usage-rule.md
     params:
-      uses_plan_update: true
+      plan_update_inline_command_only: true
 
   - type: shared
     source: sections/footer-next-steps.md

@@ -1,4 +1,4 @@
-### Step 4: Load Config & Apply Preferences (Config Foundation)
+### Stage 4: Load Config & Apply Preferences (Config Foundation)
 Read `.ai-agents/config.yaml` and enforce it for the whole session:
 
 - `preferences.interaction_language`: language for chat, prompts, status lines, tables, and summaries.

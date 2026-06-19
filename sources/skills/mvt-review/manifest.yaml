@@ -60,12 +60,6 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/language-constraint.md
-
-  - type: shared
-    source: sections/output-format-constraint.md
-
-  - type: shared
     source: sections/activation-preflight.md
     params:
       checks:
@@ -77,6 +71,12 @@ sections:
           field: "review target (user args, implementation.md, or git diff)"
           level: "WARN"
           message: "No code to review. Run `/mvt-implement` first or specify files."
+
+  - type: shared
+    source: sections/language-constraint.md
+
+  - type: shared
+    source: sections/output-format-constraint.md
 
   - type: file
     source: ./business.md

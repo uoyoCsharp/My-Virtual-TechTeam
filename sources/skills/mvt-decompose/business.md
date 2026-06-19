@@ -78,7 +78,7 @@ Write two artifacts using the `decompose-output` template for `epic.md`:
 - [ ] `current_change` matches the active child's `change_id`
 - [ ] Each child has non-empty `title` and `scope`
 
-**Optional safety net**: after writing, validate the epic using the Epic Update Script (see the **Script Usage Rule** section for the command template, or read `.ai-agents/scripts/epic-update.md` for full flag reference):
+**Optional safety net**: after writing, validate the epic using the Epic Update Script command below:
 ```bash
 node .ai-agents/scripts/epic-update.cjs --validate .ai-agents/workspace/artifacts/{epic_id}/epic.yaml
 ```
