@@ -412,4 +412,32 @@ describe("loadSection", () => {
     expect(result).not.toContain("{{#uses_");
     expect(result).not.toContain("{{/uses_");
   });
+
+  it("renders compressed session-update.md as self-sufficient guidance", () => {
+    const sourcesDir = path.resolve("sources");
+    const result = loadSection(
+      {
+        type: "shared",
+        source: "sections/session-update.md",
+        params: {
+          current_skill: "mvt-implement",
+          update_active_change: true,
+          set_plan_path: true,
+          update_change: true,
+        },
+      },
+      path.resolve("."),
+      sourcesDir,
+    );
+
+    expect(result).toContain("--skill mvt-implement");
+    expect(result).toContain("--new-change");
+    expect(result).toContain("--set-plan-path");
+    expect(result).toContain("Critical flag semantics");
+    expect(result).toContain("Use only the flags rendered in the command above");
+    expect(result).not.toContain("Argument values");
+    expect(result).not.toContain("Parameter semantics");
+    expect(result).not.toContain(".ai-agents/scripts/session-update.md");
+    expect(result).not.toContain("{{current_skill}}");
+  });
 });

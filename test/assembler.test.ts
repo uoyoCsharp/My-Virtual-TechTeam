@@ -145,8 +145,10 @@ describe("assembler", () => {
     it("session-update section uses script call", () => {
       const output = buildSkill("mvt-implement");
       expect(output).toContain("session-update.cjs");
-      expect(output).toContain("--skill <skill_command_name>");
-      expect(output).toContain("Argument values");
+      expect(output).toContain("--skill mvt-implement");
+      expect(output).toContain("Critical flag semantics");
+      expect(output).not.toContain("Argument values");
+      expect(output).not.toContain(".ai-agents/scripts/session-update.md");
     });
   });
 
