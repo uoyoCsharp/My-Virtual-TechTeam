@@ -89,11 +89,6 @@ sections:
       set_synced: true
 
   - type: shared
-    source: sections/script-usage-rule.md
-    params:
-      plan_update_project_reminder: true
-
-  - type: shared
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-sync-context

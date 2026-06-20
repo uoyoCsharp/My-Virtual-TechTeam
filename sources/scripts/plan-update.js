@@ -119,8 +119,15 @@ function parseArgs(argv) {
 function validateArgs(args) {
   if (!args.plan || args.plan === true) return ERRORS.MISSING_PLAN();
   if (!args.task || args.task === true) return ERRORS.MISSING_TASK();
-  if (!args.status || args.status === true) return ERRORS.MISSING_STATUS();
-  if (!VALID_STATUSES.includes(args.status)) return ERRORS.INVALID_STATUS(args.status);
+  const hasStatus = args.status && args.status !== true;
+  const hasMutation = hasStatus ||
+    (args.artifacts && args.artifacts !== true) ||
+    (args.notes && args.notes !== true) ||
+    (args["deliverables-pointer"] && args["deliverables-pointer"] !== true) ||
+    (args["mark-deliverable-stale"] && args["mark-deliverable-stale"] !== true);
+  if (!hasMutation) return ERRORS.MISSING_STATUS();
+  if (args.status === true) return ERRORS.MISSING_STATUS();
+  if (hasStatus && !VALID_STATUSES.includes(args.status)) return ERRORS.INVALID_STATUS(args.status);
   return null;
 }
 
@@ -129,7 +136,9 @@ function applyUpdate(plan, args, now) {
   const task = plan.tasks.find((t) => t.id === args.task);
 
   const oldStatus = task.status;
-  task.status = args.status;
+  if (args.status && args.status !== true) {
+    task.status = args.status;
+  }
 
   if (args.artifacts && args.artifacts !== true) {
     const incoming = args.artifacts
@@ -157,11 +166,13 @@ function applyUpdate(plan, args, now) {
     task.notes = args.notes;
   }
 
-  // completed_at consistency: set only on first transition to done, else null.
-  if (args.status === "done" && !task.completed_at) {
-    task.completed_at = now;
-  } else if (args.status !== "done") {
-    task.completed_at = null;
+  // completed_at consistency: set only on status updates.
+  if (args.status && args.status !== true) {
+    if (args.status === "done" && !task.completed_at) {
+      task.completed_at = now;
+    } else if (args.status !== "done") {
+      task.completed_at = null;
+    }
   }
 
   // --deliverables-pointer current
@@ -194,7 +205,7 @@ function applyUpdate(plan, args, now) {
 
   plan.updated_at = now;
 
-  return { id: task.id, title: task.title || "", old_status: oldStatus, new_status: args.status };
+  return { id: task.id, title: task.title || "", old_status: oldStatus, new_status: task.status };
 }
 
 // -- current_tasks recomputation (per-project independent advancement) --
@@ -569,7 +580,13 @@ function main() {
     process.stderr.write(taskChange.error + "\n");
     process.exit(1);
   }
-  const { warning, project_switch: switchNotif } = recomputeCurrentTasks(plan, args.task, projectList);
+  let warning = null;
+  let switchNotif = null;
+  if (args.status && args.status !== true) {
+    const recomputed = recomputeCurrentTasks(plan, args.task, projectList);
+    warning = recomputed.warning;
+    switchNotif = recomputed.project_switch;
+  }
 
   const validationErrors = validatePlan(plan, projectList);
   if (validationErrors.length) {

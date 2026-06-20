@@ -322,40 +322,45 @@ describe("assembler", () => {
       expect(output).not.toContain("--child-depends-on");
     });
 
-    it("mvt-implement renders inline-only plan guidance without generic command or docs pointer", () => {
+    it("mvt-implement omits Script Usage Rule while keeping authoritative deliverables command", () => {
       const output = buildSkill("mvt-implement");
-      expect(output).toContain("## Script Usage Rule");
+      expect(output).not.toContain("## Script Usage Rule");
       expect(output).toContain("plan-update.cjs");
-      expect(output).toContain("--status <current_status>");
+      expect(output).toContain("Use this exact metadata-only command");
+      expect(output).toContain("Do NOT add `--status`");
       expect(output).not.toContain("--status <new_status>");
       expect(output).not.toContain(".ai-agents/scripts/plan-update.md");
       expect(output).not.toContain("epic-update.cjs");
       expect(output).not.toContain(".ai-agents/scripts/epic-update.md");
     });
 
-    it("mvt-decompose renders epic fallback guidance without generic command", () => {
+    it("mvt-decompose omits Script Usage Rule while keeping rendered epic commands", () => {
       const output = buildSkill("mvt-decompose");
-      expect(output).toContain("## Script Usage Rule");
+      expect(output).not.toContain("## Script Usage Rule");
       expect(output).toContain("epic-update.cjs");
-      expect(output).toContain(".ai-agents/scripts/epic-update.md");
-      expect(output).toContain("For modes or flags not rendered here, read `.ai-agents/scripts/epic-update.md`");
+      expect(output).toContain("--validate");
+      expect(output).toContain("--add-child");
+      expect(output).toContain("--complete-child");
+      expect(output).toContain("Do NOT hand-edit `epic.yaml`");
       expect(output).not.toContain("plan-update.cjs");
       expect(output).not.toContain(".ai-agents/scripts/plan-update.md");
     });
 
-    it("mvt-analyze renders Script Usage Rule with epic-update block only", () => {
+    it("mvt-analyze omits Script Usage Rule while keeping epic switch guidance", () => {
       const output = buildSkill("mvt-analyze");
-      expect(output).toContain("## Script Usage Rule");
+      expect(output).not.toContain("## Script Usage Rule");
       expect(output).toContain("epic-update.cjs");
-      // Plan-update block NOT rendered
+      expect(output).toContain("--switch-active");
+      expect(output).toContain("Do NOT hand-edit `epic.yaml`");
       expect(output).not.toContain("plan-update.cjs");
     });
 
-    it("mvt-sync-context renders Script Usage Rule with plan-update block only", () => {
+    it("mvt-sync-context omits Script Usage Rule while keeping project plan reminder", () => {
       const output = buildSkill("mvt-sync-context");
-      expect(output).toContain("## Script Usage Rule");
+      expect(output).not.toContain("## Script Usage Rule");
       expect(output).toContain("plan-update.cjs");
       expect(output).toContain("pass `--projects`");
+      expect(output).toContain("Do NOT hand-edit `plan.yaml`");
       expect(output).not.toContain("--status <new_status>");
       expect(output).not.toContain("epic-update.cjs");
     });
@@ -373,7 +378,7 @@ describe("assembler", () => {
     it("script-usage skills still prohibit reading script source files", () => {
       for (const skill of ["mvt-update-plan", "mvt-implement", "mvt-decompose", "mvt-analyze", "mvt-sync-context"]) {
         const output = buildSkill(skill);
-        expect(output).toMatch(/Do NOT (?:read `\.cjs` or `\.js` source|hand-edit|read `.cjs`\/`.js` source)/);
+        expect(output).toMatch(/Do NOT [^\n]*(?:hand-edit|read `\.cjs`\/`\.js` source|read `\.cjs` or `\.js` source)/);
       }
     });
   });

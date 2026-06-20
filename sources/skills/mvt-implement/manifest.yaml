@@ -52,10 +52,6 @@ sections:
           field: "projects[] in project-context.yaml"
           level: "BLOCK"
           message: "Project not initialized. Run `/mvt-init` first."
-        - order: "3"
-          field: "modules in project-context.md"
-          level: "WARN"
-          message: "No architecture defined. Run `/mvt-design` first. (allow user to proceed)"
 
   - type: shared
     source: sections/language-constraint.md
@@ -69,20 +65,13 @@ sections:
   - type: inline
     content: |
       ## Artifact Structure
-      Read the document structure template from: `.ai-agents/skills/_templates/implement-output.md`
-      If a custom version exists at `.ai-agents/skills/_templates/custom/implement-output.md`, use the custom version instead.
-      The template defines section headings only. Generate content for each section based on implementation results.
-      Write the artifact to: `.ai-agents/workspace/artifacts/{change-id}/implementation.md`
+      Template location: `.ai-agents/skills/_templates/implement-output.md`
+      Custom override: `.ai-agents/skills/_templates/custom/implement-output.md` (takes precedence if present)
 
   - type: shared
     source: sections/session-update.md
     params:
       current_skill: mvt-implement
-
-  - type: shared
-    source: sections/script-usage-rule.md
-    params:
-      plan_update_inline_command_only: true
 
   - type: shared
     source: sections/footer-next-steps.md

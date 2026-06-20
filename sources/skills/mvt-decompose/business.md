@@ -95,6 +95,8 @@ node .ai-agents/scripts/epic-update.cjs --epic .ai-agents/workspace/artifacts/{e
   --complete-child <completed_child_id>
 ```
 
+For post-write epic mutations, use the rendered `epic-update.cjs` commands. Do NOT hand-edit `epic.yaml`, advance `current_change`, or read `.cjs`/`.js` source.
+
 ### Step 7: Update Session
 Run the session update command (see State Update section) to:
 1. Create a new `active_epic` in session.yaml

@@ -79,11 +79,6 @@ sections:
       link_subchange_to_epic: true
 
   - type: shared
-    source: sections/script-usage-rule.md
-    params:
-      epic_update_fallback_for_unrendered_modes: true
-
-  - type: shared
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-analyze

@@ -11,10 +11,12 @@
 - **What**: produce an ordered file list with the smallest possible commit boundary per group.
 - **How**:
   1. Take `Change Tracking` from `design.md` as the source of truth for which files are in scope.
-  2. Topologically order files by dependency: domain entities -> repositories/adapters -> use-case/services -> controllers/UI.
-  3. Group consecutive files that share a single conceptual change into one commit boundary.
-  4. For each file, decide: `create | modify | delete`, and write a one-line intent.
-- **Plan-aware behavior**: if `plan.yaml` is present, identify the active task from `current_tasks` (the entry matching the current project, or the sole entry in single-project mode), then treat that task's `artifacts.files` (cross-reference `plan.tasks[*].artifacts.files`) as a **starting-scope hint, not a hard ceiling**. The source of truth for scope remains `design.md`'s `Change Tracking` (per Step 2.1). When `artifacts.files` is `null` or empty, derive scope entirely from `Change Tracking`. If implementation reveals files beyond this hint are genuinely required, do NOT silently expand — surface them via Step 3 confirmation and never absorb files that clearly belong to a different task.
+  2. Derive dependencies from `Module Design`, `Key Interfaces`, and `Data Flow`.
+  3. Order files dependency-first: shared types/contracts -> dependency-free internals -> dependents -> entry points/controllers/routes/UI shells.
+  4. For async/event flows: event schemas first; then producers and consumers after shared contracts. Put producers before consumers only when consumers import producer-side types.
+  5. Group consecutive files that share a single conceptual change into one commit boundary.
+  6. For each file, decide: `create | modify | delete`, and write a one-line intent.
+- **Plan-aware behavior**: if `plan.yaml` exists, resolve one active task before planning. Candidate task ids come from deduplicated `current_tasks`; if one remains, use it. If several remain, prefer an explicit user task id, then match current paths against each candidate's `artifacts.files` and project paths; if still ambiguous, ask the user. Treat the resolved task's `artifacts.files` as a starting-scope hint only; `design.md` Change Tracking remains authoritative. Confirm Step 3 before touching files beyond the hint, and never absorb files that belong to another task.
 - **Output of this step**: an in-conversation list shown to user as a preview, with no write yet.
 
 ### Step 3: Confirm Scope (when needed)
@@ -39,18 +41,19 @@
 
 ### Step 5: Verify Design Compliance
 - **What**: confirm the implementation matches the design before writing the artifact.
-- **How**: run the checks below. Each is either Auto (mechanical / scriptable / type-checker) or Manual (read the design + diff).
+- **How**: run the checks below and record the result in `implementation.md > Design Compliance`. `mvt-review` will use this section as an input and independently verify claimed passes or undocumented deviations.
 
-  | Check | Mode | Action on failure |
-  |-------|------|-------------------|
-  | Files touched == Change Tracking ± deviation noted | Auto (compare lists) | Update artifact's deviation log OR revert extras |
-  | Each file lives in the module/layer assigned by `Module Design` | Auto (path match against design table) | Move file or mark deliberate exception with rationale |
-  | Public interfaces match `Key Interfaces` (signatures, endpoints) | Auto (grep for declarations) | Adjust to match OR raise as deliberate change requiring `/mvt-design` re-run |
-  | Forbidden cross-layer imports absent | Auto (grep import paths against `project-context.md` rules) | BLOCK -- must fix before artifact write |
-  | Error handling lives only at boundaries listed in design | Manual (read code) | Refactor or document why an interior catch was needed |
-  | No new external deps not listed in `design.md` ADRs | Auto (diff package manifests) | Either remove or add an ADR via `/mvt-design` |
+  | Check | Mode | Failure level | Action on failure |
+  |-------|------|---------------|-------------------|
+  | Files touched == Change Tracking ± deviation noted | Auto (mechanical list compare) | WARN-and-document | Update `Deviations from Design` OR revert extras |
+  | Each file lives in the module/layer assigned by `Module Design` | Semi-auto (path heuristic; downgrade to Manual if design tables lack path/module mapping) | WARN-and-document | Move file or mark deliberate exception with rationale |
+  | Public interfaces match `Key Interfaces` (signatures, endpoints) | Semi-auto (grep can find declarations; signature compatibility is Manual) | BLOCK | Adjust to match OR stop and require `/mvt-design` re-run for a deliberate contract change |
+  | Forbidden cross-layer imports absent | Auto (mechanical grep against `project-context.md` rules) | BLOCK | Fix before artifact write |
+  | Error handling lives only at boundaries listed in design | Manual (read code) | FIX-in-place | Refactor or document why an interior catch was needed |
+  | No new external deps not listed in `design.md` ADRs | Auto (mechanical manifest diff; Manual if no manifest exists) | BLOCK | Remove the dependency OR stop and add an ADR via `/mvt-design` |
 
 - **On any BLOCK failure**: stop, fix, re-run Step 5. Do not proceed to Step 6.
+- **If `design.md` is missing**: skip only the checks that require design (`Change Tracking`, `Module Design`, `Key Interfaces`, boundary error-handling list, external-dependency ADRs). Still run forbidden import checks when `project-context.md` contains layer or import rules.
 
 ### Step 6: Run Quick Self-Check
 - **What**: light-weight verification before handing off to `/mvt-review` or `/mvt-test`.
@@ -60,20 +63,11 @@
   3. UI/frontend changes: per project rules, ask user to verify in browser; do NOT claim "tested" if you only ran type-check.
 
 ### Step 7: Write Artifact
-- **Path and template**: as defined in the **Artifact Structure** section below. The artifact filename is ALWAYS `implementation.md` — one file per change, never per task. Do NOT invent task-suffixed names like `implementation-t1.md`.
-- **Multi-task plans (single-file accumulation)**: when `plan.yaml` drives the change and you implement tasks across separate invocations, all task implementations accumulate into the **same** `implementation.md`:
-  1. If `implementation.md` does not yet exist -> create it from the template.
-  2. If it already exists -> read it, then **append** a new `## Task: {current_task_id} — {task_title}` section for this task. Do NOT overwrite prior tasks' sections.
-  3. Under that task section, place this invocation's required content (the headings below). Keep earlier tasks' sections intact.
-  4. For single-task or plan-less changes, write the content at the top level without a per-task wrapper (existing behavior).
-- **Required content** (mapped to template headings):
-  - `Implementation Summary` -- one paragraph: what was built, scope.
-  - `Files Touched` -- table: path | create/modify/delete | one-line intent.
-  - `Design Compliance` -- summary of Step 5 checks (passed / deviated, with reasons).
-  - `Deviations from Design` -- empty list is acceptable; otherwise list each deviation with rationale.
-  - `Self-Check Results` -- type-check status, suggested test commands (Step 6).
-  - `Open TODOs` -- anything deferred for `/mvt-review`, `/mvt-test`, or follow-up changes.
-- The actual source code goes to the project tree; the artifact is a record, not the code itself.
+- **Path**: `.ai-agents/workspace/artifacts/{change-id}/implementation.md` — always this filename, one file per change. Never per-task suffixed names.
+- **Template**: load from the **Artifact Structure** section below. Follow the HTML comments for what each section should contain; strip comments from the final artifact.
+- **Multi-task accumulation**: if `plan.yaml` drives implementation across separate invocations, append a `## Task: {id} — {title}` section per task — never overwrite a *different* task's section. If `## Task: {id}` for the *same* task already exists (re-implementation after `blocked` or rescope), replace that section's content in place — preserve any `### Deliverables` subsection within it. Single-task or plan-less: write at top level without a task wrapper.
+- **Semantic content floor**: regardless of template customisation, the artifact must cover — what was built, files touched, design compliance (Step 5; `mvt-review` reads this), deviations, self-check results (Step 6), open TODOs. If a custom template removed a section, fold its content into the closest remaining section.
+- The artifact is a record, not the code. Reference file paths and summarise intent — do NOT paste source listings.
 
 ### Step 8: Deliverables Handoff (if applicable)
 
@@ -106,12 +100,11 @@
   node .ai-agents/scripts/plan-update.cjs \
     --plan "<active_change.plan_path>" \
     --task <current_task_id> \
-    --status <current_status> \
     --deliverables-pointer current \
-    --mark-deliverable-stale <downstream_task_id1>[,<downstream_task_id2>,...] \
-    --projects <project_list>
+    --mark-deliverable-stale <downstream_task_id1>[,<downstream_task_id2>,...]
   ```
-  `<project_list>` is the comma-separated project names from `plan.yaml > current_tasks` keys. The `--status` must be the task's current status (typically `in_progress` at this point, since Step 9 has not yet run). Pass ALL downstream dependent task ids as a comma-separated list to `--mark-deliverable-stale` so that `/mvt-resume` and `/mvt-status` can surface the stale warning.
+  Use this exact metadata-only command. Do NOT add `--status`, hand-edit `plan.yaml`, choose `current_tasks`, or read `.cjs`/`.js` source.
+  Pass ALL downstream dependent task ids as a comma-separated list to `--mark-deliverable-stale` so that `/mvt-resume` and `/mvt-status` can surface the stale warning.
 - **On user decline**: do not write deliverables and do not call `plan-update.cjs` with the deliverables flags. The downstream tasks will not receive stale warnings, which is acceptable if the user considers the contract unchanged.
 - **Error handling**: if `plan-update.cjs` rejects (e.g., malformed freshness), surface stderr and leave `implementation.md` as written. The deliverables content is the source of truth; the pointer can be retried via `/mvt-update-plan`.
 
@@ -125,7 +118,7 @@
 
 | Case | Handling |
 |------|----------|
-| `design.md` missing | WARN, ask user; if they proceed, mark artifact "Source: conversation only" and skip Step 5 design-match checks |
+| `design.md` missing | WARN, ask user; if they proceed, mark artifact "Source: conversation only"; in Step 5 skip checks that require design.md but still run forbidden import checks from `project-context.md` when rules exist |
 | Implementation reveals the design is infeasible | STOP at Step 4, document the blocker in conversation, recommend `/mvt-design` re-run -- do not silently improvise an alternative |
 | Type-checker fails on pre-existing errors unrelated to the change | Note in artifact, do not attempt blanket fixes outside scope |
 | User aborts at Step 3 confirmation | Do not write any source files or artifact |
@@ -134,3 +127,4 @@
 | Plan task is `blocked` or `done` already | Refuse to implement that task; ask user to pick another task from `current_tasks` or run `/mvt-update-plan` |
 | Deliverables already exist and user declines to update | Leave existing deliverables in place; do not call `plan-update.cjs` with deliverables flags |
 | `plan-update.cjs` rejects deliverables pointer | Surface error; leave `implementation.md` as written (content is source of truth, pointer can be retried) |
+| Re-implementing a task whose `## Task: {id}` section already exists in `implementation.md` | Replace that section's content in place; preserve any `### Deliverables` subsection within it. Do NOT create a second `## Task: {id}` section |

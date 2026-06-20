@@ -9,8 +9,8 @@
 node .ai-agents/scripts/plan-update.cjs \
   --plan "<active_change.plan_path>" \
   --task <task_id> \
-  --status <pending|in_progress|done|blocked|skipped> \
   --projects "<comma,separated,project,names>" \
+  [--status <pending|in_progress|done|blocked|skipped>] \
   [--artifacts "<comma,separated,paths>"] \
   [--notes "<free-form text>"] \
   [--deliverables-pointer current] \
@@ -25,7 +25,7 @@ Include `--artifacts`, `--notes`, `--deliverables-pointer`, and `--mark-delivera
 |----------|-------------|---------|
 | `--plan` | `active_change.plan_path` resolved from session.yaml | `".ai-agents/workspace/artifacts/chg-001/plan.yaml"` |
 | `--task` | the `task_id` being updated (resolved by the skill's Step 1) | `t1` |
-| `--status` | the new status: `pending` / `in_progress` / `done` / `blocked` / `skipped` | `done` |
+| `--status` | optional; the new status: `pending` / `in_progress` / `done` / `blocked` / `skipped` | `done` |
 | `--projects` | comma-separated project names from `project-context.yaml > projects[].name` (single-project: the sole project name) | `"web,api"` |
 | `--artifacts` | optional; comma-separated paths to append (the script de-duplicates) | `"src/auth.ts,src/auth.test.ts"` |
 | `--notes` | optional; overwrites the task's `notes` | `"blocked on API spec"` |
@@ -36,7 +36,7 @@ Include `--artifacts`, `--notes`, `--deliverables-pointer`, and `--mark-delivera
 
 | Argument | When to use | Effect on `plan.yaml` |
 |----------|-------------|------------------------|
-| `--task` + `--status` | Always (core mutation) | Sets the task status; sets `completed_at` to now when `done`, else `null`; refreshes `plan.updated_at`. |
+| `--task` + optional `--status` | Use `--status` for status transitions; omit it for metadata-only updates such as deliverables freshness | When present, sets the task status; sets `completed_at` to now when `done`, else `null`; refreshes `plan.updated_at`. When omitted, status, `completed_at`, DAG advancement, and `current_tasks` are left unchanged. |
 | `--projects` | Always (per-project validation) | Drives per-project DAG advancement of `current_tasks` and per-project validation. Required for correct multi-project plans. |
 | `--artifacts` | Task produced or touched files | Appends + de-duplicates paths into the task's `artifacts.files`; handles `artifacts: null`. |
 | `--notes` | Task needs a free-form note | Overwrites the task's existing `notes`. |
@@ -44,8 +44,8 @@ Include `--artifacts`, `--notes`, `--deliverables-pointer`, and `--mark-delivera
 
 ## What the script does (deterministically)
 
-1. **Apply**: sets the task status; appends + de-duplicates `--artifacts`; overwrites `--notes`; sets `completed_at` when `done`; refreshes `plan.updated_at`.
-2. **Recompute `current_tasks`** (per-project independent advancement): for each project, finds the `in_progress` task or advances the first `pending` task whose `depends_on` are all in `resolvedIds` (done + skipped; blocked does NOT satisfy). Detects `project_switch` when advancement crosses a project boundary. Plan done -> `current_tasks = {}`.
+1. **Apply**: when `--status` is present, sets the task status and `completed_at`; appends + de-duplicates `--artifacts`; overwrites `--notes`; refreshes `plan.updated_at`.
+2. **Recompute `current_tasks`** only when `--status` is present (per-project independent advancement): for each project, finds the `in_progress` task or advances the first `pending` task whose `depends_on` are all in `resolvedIds` (done + skipped; blocked does NOT satisfy). Detects `project_switch` when advancement crosses a project boundary. Plan done -> `current_tasks = {}`.
 3. **Validate** the mutated plan (unique ids, valid `depends_on` references, DAG/no-cycle per project, one `in_progress` per project, every task has acceptance, `completed_at` consistency, `current_tasks` validity, project naming constraint, task project membership).
 4. **Write atomically** (temp + rename) only if validation passes.
 

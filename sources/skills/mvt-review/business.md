@@ -47,6 +47,7 @@ This step applies only when the workspace has multiple projects (`projects.lengt
 - **How**: walk the checklist below. Skip any group whose inputs were missing per Step 1 fallback notes.
 
   **Group A -- Design / Layer Compliance** (requires design.md OR project-context.md)
+  - If `implementation.md > Design Compliance` exists, use it as the implementer's self-check claim set. Independently verify claimed passes and investigate any skipped, deviated, or undocumented item; do not repeat every mechanical self-check when the claim is already supported.
   - Each file is in the module/layer assigned by design or project-context.
   - Dependency direction respects layer rules (no upward imports, no forbidden cross-module reaches).
   - Public interfaces match `Key Interfaces` from design.
