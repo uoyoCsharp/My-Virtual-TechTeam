@@ -71,7 +71,7 @@ sections:
       **epic.md** (narrative):
       Read the document structure template from: `.ai-agents/skills/_templates/decompose-output.md`
       If a custom version exists at `.ai-agents/skills/_templates/custom/decompose-output.md`, use the custom version instead.
-      The template defines section headings only. Generate content for each section based on decomposition results.
+      The template defines section structure and guidance comments. Generate applicable content based on decomposition results.
       Write to: `.ai-agents/workspace/artifacts/{epic_id}/epic.md`
 
       **epic.yaml** (structured):

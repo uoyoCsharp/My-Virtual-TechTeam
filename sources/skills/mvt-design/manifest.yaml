@@ -87,7 +87,7 @@ sections:
       ## Artifact Structure
       Read the document structure template from: `.ai-agents/skills/_templates/design-output.md`
       If a custom version exists at `.ai-agents/skills/_templates/custom/design-output.md`, use the custom version instead.
-      The template defines section headings only. Generate content for each section based on design results.
+      The template defines section structure and guidance comments. Generate applicable content based on design results.
       Write the artifact to: `.ai-agents/workspace/artifacts/{change-id}/design.md`
 
   - type: shared

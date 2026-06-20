@@ -5,13 +5,6 @@
   Each section below includes a guidance comment explaining what to write.
   Replace {Feature Name} with the actual feature/change name.
   Remove these HTML comments in the final artifact.
-
-  Customization: users may override this file at
-  .ai-agents/skills/_templates/custom/implement-output.md
-  When sections are added, removed, or renamed, the AI will adapt to the
-  custom structure. However, the semantic content floor defined in the
-  mvt-implement prompt (Step 7) must still be covered — if a section is
-  removed, fold its content into the most relevant remaining section.
 -->
 
 ## Implementation Summary

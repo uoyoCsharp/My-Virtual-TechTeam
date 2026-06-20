@@ -66,7 +66,7 @@
 - **Path**: `.ai-agents/workspace/artifacts/{change-id}/implementation.md` — always this filename, one file per change. Never per-task suffixed names.
 - **Template**: load from the **Artifact Structure** section below. Follow the HTML comments for what each section should contain; strip comments from the final artifact.
 - **Multi-task accumulation**: if `plan.yaml` drives implementation across separate invocations, append a `## Task: {id} — {title}` section per task — never overwrite a *different* task's section. If `## Task: {id}` for the *same* task already exists (re-implementation after `blocked` or rescope), replace that section's content in place — preserve any `### Deliverables` subsection within it. Single-task or plan-less: write at top level without a task wrapper.
-- **Semantic content floor**: regardless of template customisation, the artifact must cover — what was built, files touched, design compliance (Step 5; `mvt-review` reads this), deviations, self-check results (Step 6), open TODOs. If a custom template removed a section, fold its content into the closest remaining section.
+- **Required coverage**: cover only content that is applicable to this implementation. Preserve enough information for downstream skills to understand what changed, files touched, design compliance, deviations, validation results, and open TODOs. Do not create empty or artificial sections just because an item is named here; if the template omits or renames a section, place applicable content in the closest relevant section.
 - The artifact is a record, not the code. Reference file paths and summarise intent — do NOT paste source listings.
 
 ### Step 8: Deliverables Handoff (if applicable)

@@ -54,16 +54,11 @@
 - **On confirmation**: proceed to Step 6.
 
 ### Step 6: Write Artifacts
-Write two artifacts using the `decompose-output` template for `epic.md`:
+Write two artifacts:
 
 1. **epic.md** (narrative) -- `.ai-agents/workspace/artifacts/{epic_id}/epic.md`
-   - Uses the `decompose-output` template.
-   - **Child Stories**: Markdown table mirroring `epic.yaml.children[]`
-
-     | # | Child | Scope | Status | Depends On |
-     |---|-------|-------|--------|------------|
-
-   - **Dependency Map**: Mermaid flowchart showing child dependencies
+   - Uses the `decompose-output` template. Follow the HTML comments in the template for what each section should contain (including the Child Stories table format and the Dependency Map mermaid flowchart); strip comments from the final artifact.
+  - **Required coverage**: cover only content that is applicable to this decomposition. Preserve enough information for the user to understand the epic vision, boundaries, cross-cutting concerns, child stories, dependencies, and unresolved questions. Do not create empty or artificial sections just because an item is named here; if the template omits or renames a section, place applicable content in the closest relevant section.
 
 2. **epic.yaml** (structured) -- `.ai-agents/workspace/artifacts/{epic_id}/epic.yaml`
    - Follows the schema defined in Artifact Structure

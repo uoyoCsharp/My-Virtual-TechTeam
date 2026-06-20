@@ -97,15 +97,8 @@ This step applies only when the workspace has multiple projects (`projects.lengt
 - Each finding must include: file, line range, severity, observation, recommendation.
 
 ### Step 7: Write Artifact
-- **Path and template**: as defined in the **Artifact Structure** section below. If no `active_change` exists, use `.ai-agents/workspace/artifacts/_ad-hoc-review-{YYYY-MM-DD-HHMM}/review.md`.
-- **Required content** (mapped to template headings):
-  - `Review Scope` -- file list, depth, aspect filter, fallbacks applied (e.g., "design.md missing -> Group A skipped").
-  - `Summary` -- counts per severity + one-paragraph overall verdict (Approve / Approve with comments / Request changes / Block).
-  - `Critical Findings` -- one entry per finding.
-  - `Warnings`.
-  - `Suggestions`.
-  - `Skipped Checks` -- groups skipped because inputs were missing, with reason.
-  - `Recommended Next Skill` -- e.g., `/mvt-fix` for Critical, `/mvt-test` if Group E gaps, `/mvt-refactor` if Group B is dominant.
+- **Path and template**: as defined in the **Artifact Structure** section below. If no `active_change` exists, use `.ai-agents/workspace/artifacts/_ad-hoc-review-{YYYY-MM-DD-HHMM}/review.md`. Follow the HTML comments in the template for what each section should contain; strip comments from the final artifact.
+- **Required coverage**: cover only content that is applicable to this review. Preserve enough information for the user to understand what was reviewed, the verdict, material findings, skipped checks, and the recommended next step. Do not create empty or artificial sections just because an item is named here; if the template omits or renames a section, place applicable content in the closest relevant section.
 
 ### Step 8: Verdict Rule
 - Critical > 0 -> verdict is `Request changes`. Suggest `/mvt-fix`.

@@ -81,16 +81,8 @@
 - **Confirmation format**: present a one-screen summary -- module boundary changes, deployment/runtime boundary changes, ADRs requiring review, external dependencies, and a single yes/no prompt. Do not dump the full artifact.
 
 ### Step 7: Write Artifact
-- **Path and template**: as defined in the **Artifact Structure** section below.
-- **Required sections** (filled per template headings, but content must include):
-  - `Overview` -- the problem statement (Step 2).
-  - `Architecture Decision Records` -- every ADR from Step 5.
-  - `Module Design` -- table of modules from Step 3.
-  - `Key Interfaces` -- explicit signatures/endpoints.
-  - `Data Flow` -- sequences from Step 4, including error paths.
-  - `File Structure` -- mapping of modules to file/directory paths in this repo.
-  - `Implementation Guidelines` -- ordering hints for `/mvt-implement` and `/mvt-plan-dev`.
-  - `Change Tracking` -- list of files expected to be created/modified/deleted.
+- **Path and template**: as defined in the **Artifact Structure** section below. Follow the HTML comments in the template for what each section should contain; strip comments from the final artifact.
+- **Required coverage**: cover only content that is applicable to this design. Preserve enough information for downstream skills to understand the problem, decisions made, module/interface/data-flow impacts, expected file changes, and implementation guidance. Do not create empty or artificial sections just because an item is named here; if the template omits or renames a section, place applicable content in the closest relevant section.
 - Do NOT modify `project-context.yaml` or `project-context.md` here.
 
 ### Step 8: Suggest Plan Decomposition
