@@ -44,14 +44,6 @@ changes:
     updated_at: 2026-06-19T13:49:40.019Z
     epic_id: ""
 history:
-  - skill: /mvt-analyze
-    completed_at: 2026-06-09T14:43:18.071Z
-    summary: 分析了 registry.yaml 中 agent 字段的使用情况,确认是死字段,无代码/脚本/模板读取
-    change_id: 20260608-regular
-  - skill: /mvt-quick-dev
-    completed_at: 2026-06-09T15:16:24.561Z
-    summary: 从 registry.yaml 移除 agent/template/category 三个死字段,同步 TS 类型、mvt-help/mvt-create-skill 模板、测试夹具、物化副本
-    change_id: ""
   - skill: /mvt-bug-detect
     completed_at: 2026-06-11T09:38:34.580Z
     summary: 确认交互语言间歇输出英文的根因:interaction_language 约束远弱于 document_output_language,缺少对等强制 section
@@ -124,6 +116,14 @@ history:
   - skill: /mvt-review
     completed_at: 2026-06-19T14:04:48.045Z
     summary: 审查脚本调用 prompt 优化变更：0 Critical、1 Warning（无倒装包裹器）、2 Suggestion；设计合规性全部通过，生成产物验证全部正确，257 测试通过。裁决：Approve with comments。
+    change_id: 20260619-script-call-prompt-optimization
+  - skill: /mvt-bug-detect
+    completed_at: 2026-06-20T13:48:33.876Z
+    summary: 复核 mvt-help 提示词问题报告：确认多数问题存在，评估修复方案并提出更优收敛路径
+    change_id: 20260619-script-call-prompt-optimization
+  - skill: /mvt-fix
+    completed_at: 2026-06-20T13:59:47.242Z
+    summary: 修复 mvt-help 提示词一致性与运行时推荐问题，补充回归测试并刷新生成产物
     change_id: 20260619-script-call-prompt-optimization
 active_epic:
   id: epic-20260608-my

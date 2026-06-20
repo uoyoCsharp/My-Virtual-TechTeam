@@ -303,6 +303,39 @@ describe("assembler", () => {
       expect(output).toContain("change is large");
       expect(output).toContain("/mvt-plan-dev");
     });
+
+    it("renders a flat skills catalog instruction without category grouping", () => {
+      const output = buildSkill("mvt-help");
+      expect(output).toContain("Display all skills as a single flat table");
+      expect(output).toContain("Single flat skills table, sorted by registry declaration order");
+      expect(output).not.toContain("Skills tables grouped by category");
+      expect(output).not.toContain("section comment headers in `registry.yaml`");
+    });
+
+    it("defines evidence and runtime recommendation reuse", () => {
+      const output = buildSkill("mvt-help");
+      expect(output).toContain("**Evidence conventions**");
+      expect(output).toContain("`.ai-agents/workspace/artifacts/{active_change.id}/`");
+      expect(output).toContain("primary runtime recommendation");
+      expect(output).toContain("Use that same recommendation in Current Status");
+    });
+
+    it("documents mermaid styling and textual fallback status markers", () => {
+      const output = buildSkill("mvt-help");
+      expect(output).toContain("classDef done");
+      expect(output).toContain("classDef current");
+      expect(output).toContain("classDef pending");
+      expect(output).toContain("[done]`, `[current]`, or `[pending]");
+    });
+
+    it("omits static conditional suggestions so runtime state drives next steps", () => {
+      const output = buildSkill("mvt-help");
+      expect(output).toContain("### Resolution order");
+      expect(output).toContain("Skill names and `description` fields in `registry.yaml`");
+      expect(output).not.toContain("`category` and `description`");
+      expect(output).not.toContain("### Conditional Recommendations");
+      expect(output).not.toContain("active change in progress");
+    });
   });
 
   describe("script-callability sections (change 20260619)", () => {

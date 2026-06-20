@@ -24,7 +24,7 @@ Match the current state to one of the conditions below. If none match, use `defa
 
 Infer 2-3 suggestions, choosing **only** from the skills declared under `skills` in `registry.yaml`:
 - `history` in `session.yaml`
-- `category` and `description` of each skill in `registry.yaml`
+- Skill names and `description` fields in `registry.yaml`
 - The current `active_change` state (if in progress)
 - The standard workflow order (analyze → design → implement → review → test)
 {{/conditional_suggestions}}

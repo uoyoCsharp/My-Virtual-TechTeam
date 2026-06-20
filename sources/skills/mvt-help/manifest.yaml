@@ -40,15 +40,15 @@ sections:
       ## MVT Help
 
       ### Current Status
-      - **Project**: {name} ({initialized/not initialized})
+      - **Project**: {project names from `project-context.yaml > projects[]`, comma-separated} ({initialized/not initialized from `session.yaml > session.initialized_at`})
       - **Last Skill**: {last command from history}
-      - **Recommended Next**: `/mvt-{next}` -- {description}
+      - **Recommended Next**: {primary runtime recommendation from Step 2}
 
       ### Workflow
       {Mermaid flowchart with current position highlighted}
 
       ### Available Skills
-      {Skills tables grouped by category, as defined in Step 3}
+      {Single flat skills table, sorted by registry declaration order}
       ```
 
   - type: shared
@@ -60,14 +60,3 @@ sections:
     source: sections/footer-next-steps.md
     params:
       current_skill: mvt-help
-      conditional_suggestions:
-        conditions:
-          - condition: "project not initialized"
-            primary: mvt-init
-            primary_desc: "Initialize the project"
-          - condition: "project initialized, no active change"
-            primary: mvt-analyze
-            primary_desc: "Start analyzing requirements for a new feature"
-          - condition: "active change in progress"
-            primary: mvt-resume
-            primary_desc: "Resume work on the active change"
