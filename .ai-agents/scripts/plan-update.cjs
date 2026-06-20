@@ -7396,14 +7396,19 @@ function parseArgs(argv) {
 function validateArgs(args2) {
   if (!args2.plan || args2.plan === true) return ERRORS.MISSING_PLAN();
   if (!args2.task || args2.task === true) return ERRORS.MISSING_TASK();
-  if (!args2.status || args2.status === true) return ERRORS.MISSING_STATUS();
-  if (!VALID_STATUSES.includes(args2.status)) return ERRORS.INVALID_STATUS(args2.status);
+  const hasStatus = args2.status && args2.status !== true;
+  const hasMutation = hasStatus || args2.artifacts && args2.artifacts !== true || args2.notes && args2.notes !== true || args2["deliverables-pointer"] && args2["deliverables-pointer"] !== true || args2["mark-deliverable-stale"] && args2["mark-deliverable-stale"] !== true;
+  if (!hasMutation) return ERRORS.MISSING_STATUS();
+  if (args2.status === true) return ERRORS.MISSING_STATUS();
+  if (hasStatus && !VALID_STATUSES.includes(args2.status)) return ERRORS.INVALID_STATUS(args2.status);
   return null;
 }
 function applyUpdate(plan, args2, now) {
   const task = plan.tasks.find((t) => t.id === args2.task);
   const oldStatus = task.status;
-  task.status = args2.status;
+  if (args2.status && args2.status !== true) {
+    task.status = args2.status;
+  }
   if (args2.artifacts && args2.artifacts !== true) {
     const incoming = args2.artifacts.split(",").map((s) => s.trim()).filter(Boolean);
     if (incoming.length) {
@@ -7425,10 +7430,12 @@ function applyUpdate(plan, args2, now) {
   if (args2.notes && args2.notes !== true) {
     task.notes = args2.notes;
   }
-  if (args2.status === "done" && !task.completed_at) {
-    task.completed_at = now;
-  } else if (args2.status !== "done") {
-    task.completed_at = null;
+  if (args2.status && args2.status !== true) {
+    if (args2.status === "done" && !task.completed_at) {
+      task.completed_at = now;
+    } else if (args2.status !== "done") {
+      task.completed_at = null;
+    }
   }
   if (args2["deliverables-pointer"] && args2["deliverables-pointer"] !== true) {
     if (args2["deliverables-pointer"] !== "current") {
@@ -7450,7 +7457,7 @@ function applyUpdate(plan, args2, now) {
     }
   }
   plan.updated_at = now;
-  return { id: task.id, title: task.title || "", old_status: oldStatus, new_status: args2.status };
+  return { id: task.id, title: task.title || "", old_status: oldStatus, new_status: task.status };
 }
 function recomputeCurrentTasks(plan, changedTaskId, projectList) {
   let warning = null;
@@ -7717,7 +7724,13 @@ function main() {
     process.stderr.write(taskChange.error + "\n");
     process.exit(1);
   }
-  const { warning, project_switch: switchNotif } = recomputeCurrentTasks(plan, args2.task, projectList);
+  let warning = null;
+  let switchNotif = null;
+  if (args2.status && args2.status !== true) {
+    const recomputed = recomputeCurrentTasks(plan, args2.task, projectList);
+    warning = recomputed.warning;
+    switchNotif = recomputed.project_switch;
+  }
   const validationErrors = validatePlan(plan, projectList);
   if (validationErrors.length) {
     process.stderr.write(ERRORS.VALIDATION_FAILED(validationErrors) + "\n");

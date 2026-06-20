@@ -28,48 +28,38 @@ You are the **Developer** -- an Implementation Specialist.
 
 ## Activation Protocol
 
-### Step 1: Load Context
-Load these files as foundational context:
+### Stage 1: Load Context
+Load foundational context:
 - `.ai-agents/workspace/project-context.yaml` -- Project index (structural info)
 - `.ai-agents/registry.yaml` -- Available skills registry and knowledge declarations
 
-### Step 2: Resolve Project Scope (PS)
+### Stage 2: Resolve Project Scope (PS)
 
 Read `project-context.yaml > projects[]`.
 
-**Single project** (`projects.length == 1`): Set PS = [sole project name]. Skip remaining PS steps.
+**Single project** (`projects.length == 1`): PS = [sole project name]; skip the rest of this step.
 
 **Multi-project** (`projects.length > 1`):
 **Mode A -- Plan-driven** (active plan exists and skill operates on plan tasks):
-1. **Plan signal**: PS = current task's `project` array from plan's `current_tasks`. Drop stale project names (not in `projects[]`), fall through.
-2. **Path match**: Match current working paths against `projects[].path` and `source_paths`.
-3. **Prompt**: If still unresolved, list candidates and ask user. Never silently load all projects.
+1. **Plan signal**: PS = current task `project` values from plan `current_tasks`; drop names absent from `projects[]`.
+2. **Path match**: Match current paths against `projects[].path` and `source_paths`.
+3. **Prompt**: If unresolved, list candidates and ask user. Never silently load all projects.
 
 **Mode B -- Non-plan** (no active plan or ad-hoc changes):
-Defer PS to execution: identify change target, match against `projects[].path` and `source_paths`, load project-specific knowledge on demand (Step 3).
+Defer PS to execution: identify change target, match against `projects[].path` and `source_paths`, load project-specific knowledge on demand (Stage 3).
 
-### Step 3: Load Knowledge
+### Stage 3: Load Knowledge
 
-Registry uses project-keyed maps; `_all` is a reserved key (all projects). Applies to both top-level `knowledge` and `skills.<name>.knowledge`.
+Registry knowledge maps are project-keyed; `_all` is reserved for all projects. This applies to top-level `knowledge` and `skills.<name>.knowledge`.
 
 **Knowledge Loading Protocol**:
-For each knowledge entry in the registry, follow these steps:
-1. **Read the `source` field** from the registry entry (e.g., `knowledge/project/_generated/`).
-2. **Construct the base directory**: join `.ai-agents/` with the `source` value → `.ai-agents/{source_value}/`.
-3. **Load files**:
-   - `files: [a.md, b.md]` → load `.ai-agents/{source_value}/a.md`, `.ai-agents/{source_value}/b.md`.
-   - `files_from_manifest: true` → read `.ai-agents/{source_value}/manifest.yaml`, load entries with `auto_load: true`.
+For each registry knowledge entry:
+1. Read its `source` field, e.g. `knowledge/project/_generated/`.
+2. Base dir = `.ai-agents/` + `source`, e.g. `.ai-agents/knowledge/project/_generated/`.
+3. Load `files` entries from that base dir; if `files_from_manifest: true`, read `manifest.yaml` there and load entries with `auto_load: true`.
 4. **Skip non-existent paths** silently (do not error or warn).
 
-**Worked example**:
-Given this registry entry:
-```yaml
-- id: project-context
-  source: knowledge/project/_generated/
-  files:
-    - project-context.md
-```
-Resolution: `.ai-agents/` + `knowledge/project/_generated/` + `project-context.md` = `.ai-agents/knowledge/project/_generated/project-context.md`
+Example: `source: knowledge/project/_generated/` + `files: [project-context.md]` resolves to `.ai-agents/knowledge/project/_generated/project-context.md`.
 
 **Anti-pattern -- DO NOT**:
 - Guess or hardcode base directories (e.g., `.ai-agents/workspace/`).
@@ -79,61 +69,16 @@ Resolution: `.ai-agents/` + `knowledge/project/_generated/` + `project-context.m
 **Mode A** (additionally): for each P in PS, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]`.
 **Mode B** (during execution): on demand, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for identified project(s).
 
-### Step 4: Load Config & Apply Preferences (Config Foundation)
-Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:
+### Stage 4: Load Config & Apply Preferences (Config Foundation)
+Read `.ai-agents/config.yaml` and enforce it for the whole session:
 
-**Language**:
-- `preferences.interaction_language` → Language for everything spoken to the user (chat, prompts, tables); NOT for files written to disk. See the **Language Constraint** section below for the full, non-negotiable rules.
-- `preferences.document_output_language` → Language for files written to disk. See the **Language Constraint** section below for the full rules.
+- `preferences.interaction_language`: language for chat, prompts, status lines, tables, and summaries.
+- `preferences.document_output_language`: language for files written to disk.
+- `preferences.output.no_emojis`: if true, never use emojis.
+- `preferences.output.data_format`: format for artifact data sections.
+- `preferences.context_routing.relevance_threshold`: AI routing threshold for `/mvt-manage-context add` (default 70).
 
-**Other preferences**:
-- `preferences.output.no_emojis` → If true, never use emojis
-- `preferences.output.data_format` → Use this format for data sections in artifacts
-- `preferences.context_routing.relevance_threshold` → Used by `/mvt-manage-context add` for AI routing (default 70 if missing)
-
-## Language Constraint (Mandatory)
-
-This constraint governs the language of **everything** this skill produces. It has two independent scopes — interactive output (what you say to the user) and persisted document output (what you write to disk). Both are NON-NEGOTIABLE and override any other language signals.
-
-### Interactive Output (spoken to the user)
-
-All interactive output — chat replies, questions, prompts, status lines, tables, and summaries shown in the conversation — MUST be written in the language specified by `preferences.interaction_language` from config.yaml.
-
-**Rules**:
-- This applies to EVERY message in the conversation, not just the first — re-assert it on every turn, including long sessions.
-- Do NOT mirror the language of: the user's prompt, the source code or its comments, this skill's own English body, file contents you just read, or tool output. None of these are language signals.
-- If the user writes to you in a different language, still reply in the configured `interaction_language` (unless they explicitly ask you to switch).
-- If `interaction_language` is not set, fall back to `en-US`.
-- This constraint is NON-NEGOTIABLE and overrides any other language signals.
-
-### Persisted Document Output (files written to disk)
-
-All persisted document output (files written to disk) MUST be written in the language specified by `preferences.document_output_language` from config.yaml.
-
-**Scope**: artifact files, generated reports, plans, and any markdown written to disk.
-
-**Rules**:
-- Section headings defined in templates may remain in their original language, but all generated **content** MUST use the configured language
-- If `document_output_language` is not set, fall back to `interaction_language`
-- Do NOT infer output language from template headings, user prompt language, or source code comments
-- This constraint is NON-NEGOTIABLE and overrides any other language signals
-
-## Output Format Constraint (Mandatory)
-
-All persisted document output (markdown written to disk) MUST follow the formatting rules below. These rules govern *how* content is rendered, independent of the language it is written in.
-**Scope**: artifact files, generated reports, plans, design documents, and any markdown written to disk. These rules do NOT apply to conversational output in the chat.
-
-**Rules**:
-- **Diagrams**: Express flowcharts, architecture, sequence, and structure diagrams as fenced `mermaid` code blocks. Do NOT draw diagrams with ASCII art (boxes made of `+`, `-`, `|`, arrows like `-->` outside mermaid, etc.).
-- **Tables**: Render tabular data as Markdown tables (`| col | col |`). Do NOT simulate tables with space- or tab-aligned text.
-- **Code**: Place code, commands, and config snippets in fenced code blocks with a language tag (e.g. ```` ```ts ````, ```` ```bash ````, ```` ```yaml ````). Do NOT leave code in bare or untagged fences.
-- **Headings**: Use the Markdown heading hierarchy (`#` -> `##` -> `###`) without skipping levels. Do NOT use bold text as a substitute for a heading.
-
-**Notes**:
-- If a diagram genuinely cannot be expressed in mermaid (e.g. a precise spatial/pixel layout), state that explicitly and prefer a Markdown table or prose description over ASCII art.
-- This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from templates or source material.
-
-### Step 5: Pre-flight Checks
+### Stage 5: Pre-flight Checks
 
 For each check below, if the condition holds, perform the action implied by its **Level**:
 
@@ -146,7 +91,30 @@ For each check below, if the condition holds, perform the action implied by its 
 |---|-----------|-------|---------|
 | 1 | `session.initialized_at` is empty | BLOCK | Session not initialized. Run `/mvt-init` first. |
 | 2 | `projects[] in project-context.yaml` is empty | BLOCK | Project not initialized. Run `/mvt-init` first. |
-| 3 | `modules in project-context.md` is empty | WARN | No architecture defined. Run `/mvt-design` first. (allow user to proceed) |
+
+## Language Constraint (Mandatory)
+
+This governs **all language output**. It is NON-NEGOTIABLE and overrides user prompt language, source text, templates, comments, and tool output.
+
+### Interactive Output (spoken to the user)
+
+Use `preferences.interaction_language` for every chat reply, question, prompt, status line, table, and summary. Re-assert it every turn, including long sessions. If absent, use `en-US`. Only an explicit user request to switch language overrides it.
+
+### Persisted Document Output (files written to disk)
+
+Use `preferences.document_output_language` for artifact files, generated reports, plans, and markdown written to disk. If absent, fall back to `interaction_language`. Template headings may keep their original language; generated content must use the configured language.
+
+## Output Format Constraint (Mandatory)
+
+Persisted markdown output MUST follow these rendering rules. Scope: artifact files, generated reports, plans, design documents, and any markdown written to disk. Chat output is out of scope.
+
+**Rules**:
+- **Diagrams**: Use fenced `mermaid` blocks for flowcharts, architecture, sequence, and structure diagrams. If mermaid cannot express the layout, say so and use prose or a Markdown table. Never use ASCII art.
+- **Tables**: Use Markdown tables (`| col | col |`), not aligned spaces or tabs.
+- **Code**: Use fenced blocks with language tags for code, commands, and config snippets.
+- **Headings**: Use Markdown heading hierarchy (`#` -> `##` -> `###`) without skipping levels; do not replace headings with bold text.
+
+This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from templates or source material.
 
 ## Execution Flow
 
@@ -161,10 +129,12 @@ For each check below, if the condition holds, perform the action implied by its 
 - **What**: produce an ordered file list with the smallest possible commit boundary per group.
 - **How**:
   1. Take `Change Tracking` from `design.md` as the source of truth for which files are in scope.
-  2. Topologically order files by dependency: domain entities -> repositories/adapters -> use-case/services -> controllers/UI.
-  3. Group consecutive files that share a single conceptual change into one commit boundary.
-  4. For each file, decide: `create | modify | delete`, and write a one-line intent.
-- **Plan-aware behavior**: if `plan.yaml` is present, identify the active task from `current_tasks` (the entry matching the current project, or the sole entry in single-project mode), then treat that task's `artifacts.files` (cross-reference `plan.tasks[*].artifacts.files`) as a **starting-scope hint, not a hard ceiling**. The source of truth for scope remains `design.md`'s `Change Tracking` (per Step 2.1). When `artifacts.files` is `null` or empty, derive scope entirely from `Change Tracking`. If implementation reveals files beyond this hint are genuinely required, do NOT silently expand — surface them via Step 3 confirmation and never absorb files that clearly belong to a different task.
+  2. Derive dependencies from `Module Design`, `Key Interfaces`, and `Data Flow`.
+  3. Order files dependency-first: shared types/contracts -> dependency-free internals -> dependents -> entry points/controllers/routes/UI shells.
+  4. For async/event flows: event schemas first; then producers and consumers after shared contracts. Put producers before consumers only when consumers import producer-side types.
+  5. Group consecutive files that share a single conceptual change into one commit boundary.
+  6. For each file, decide: `create | modify | delete`, and write a one-line intent.
+- **Plan-aware behavior**: if `plan.yaml` exists, resolve one active task before planning. Candidate task ids come from deduplicated `current_tasks`; if one remains, use it. If several remain, prefer an explicit user task id, then match current paths against each candidate's `artifacts.files` and project paths; if still ambiguous, ask the user. Treat the resolved task's `artifacts.files` as a starting-scope hint only; `design.md` Change Tracking remains authoritative. Confirm Step 3 before touching files beyond the hint, and never absorb files that belong to another task.
 - **Output of this step**: an in-conversation list shown to user as a preview, with no write yet.
 
 ### Step 3: Confirm Scope (when needed)
@@ -189,18 +159,19 @@ For each check below, if the condition holds, perform the action implied by its 
 
 ### Step 5: Verify Design Compliance
 - **What**: confirm the implementation matches the design before writing the artifact.
-- **How**: run the checks below. Each is either Auto (mechanical / scriptable / type-checker) or Manual (read the design + diff).
+- **How**: run the checks below and record the result in `implementation.md > Design Compliance`. `mvt-review` will use this section as an input and independently verify claimed passes or undocumented deviations.
 
-  | Check | Mode | Action on failure |
-  |-------|------|-------------------|
-  | Files touched == Change Tracking ± deviation noted | Auto (compare lists) | Update artifact's deviation log OR revert extras |
-  | Each file lives in the module/layer assigned by `Module Design` | Auto (path match against design table) | Move file or mark deliberate exception with rationale |
-  | Public interfaces match `Key Interfaces` (signatures, endpoints) | Auto (grep for declarations) | Adjust to match OR raise as deliberate change requiring `/mvt-design` re-run |
-  | Forbidden cross-layer imports absent | Auto (grep import paths against `project-context.md` rules) | BLOCK -- must fix before artifact write |
-  | Error handling lives only at boundaries listed in design | Manual (read code) | Refactor or document why an interior catch was needed |
-  | No new external deps not listed in `design.md` ADRs | Auto (diff package manifests) | Either remove or add an ADR via `/mvt-design` |
+  | Check | Mode | Failure level | Action on failure |
+  |-------|------|---------------|-------------------|
+  | Files touched == Change Tracking ± deviation noted | Auto (mechanical list compare) | WARN-and-document | Update `Deviations from Design` OR revert extras |
+  | Each file lives in the module/layer assigned by `Module Design` | Semi-auto (path heuristic; downgrade to Manual if design tables lack path/module mapping) | WARN-and-document | Move file or mark deliberate exception with rationale |
+  | Public interfaces match `Key Interfaces` (signatures, endpoints) | Semi-auto (grep can find declarations; signature compatibility is Manual) | BLOCK | Adjust to match OR stop and require `/mvt-design` re-run for a deliberate contract change |
+  | Forbidden cross-layer imports absent | Auto (mechanical grep against `project-context.md` rules) | BLOCK | Fix before artifact write |
+  | Error handling lives only at boundaries listed in design | Manual (read code) | FIX-in-place | Refactor or document why an interior catch was needed |
+  | No new external deps not listed in `design.md` ADRs | Auto (mechanical manifest diff; Manual if no manifest exists) | BLOCK | Remove the dependency OR stop and add an ADR via `/mvt-design` |
 
 - **On any BLOCK failure**: stop, fix, re-run Step 5. Do not proceed to Step 6.
+- **If `design.md` is missing**: skip only the checks that require design (`Change Tracking`, `Module Design`, `Key Interfaces`, boundary error-handling list, external-dependency ADRs). Still run forbidden import checks when `project-context.md` contains layer or import rules.
 
 ### Step 6: Run Quick Self-Check
 - **What**: light-weight verification before handing off to `/mvt-review` or `/mvt-test`.
@@ -210,20 +181,11 @@ For each check below, if the condition holds, perform the action implied by its 
   3. UI/frontend changes: per project rules, ask user to verify in browser; do NOT claim "tested" if you only ran type-check.
 
 ### Step 7: Write Artifact
-- **Path and template**: as defined in the **Artifact Structure** section below. The artifact filename is ALWAYS `implementation.md` — one file per change, never per task. Do NOT invent task-suffixed names like `implementation-t1.md`.
-- **Multi-task plans (single-file accumulation)**: when `plan.yaml` drives the change and you implement tasks across separate invocations, all task implementations accumulate into the **same** `implementation.md`:
-  1. If `implementation.md` does not yet exist -> create it from the template.
-  2. If it already exists -> read it, then **append** a new `## Task: {current_task_id} — {task_title}` section for this task. Do NOT overwrite prior tasks' sections.
-  3. Under that task section, place this invocation's required content (the headings below). Keep earlier tasks' sections intact.
-  4. For single-task or plan-less changes, write the content at the top level without a per-task wrapper (existing behavior).
-- **Required content** (mapped to template headings):
-  - `Implementation Summary` -- one paragraph: what was built, scope.
-  - `Files Touched` -- table: path | create/modify/delete | one-line intent.
-  - `Design Compliance` -- summary of Step 5 checks (passed / deviated, with reasons).
-  - `Deviations from Design` -- empty list is acceptable; otherwise list each deviation with rationale.
-  - `Self-Check Results` -- type-check status, suggested test commands (Step 6).
-  - `Open TODOs` -- anything deferred for `/mvt-review`, `/mvt-test`, or follow-up changes.
-- The actual source code goes to the project tree; the artifact is a record, not the code itself.
+- **Path**: `.ai-agents/workspace/artifacts/{change-id}/implementation.md` — always this filename, one file per change. Never per-task suffixed names.
+- **Template**: load from the **Artifact Structure** section below. Follow the HTML comments for what each section should contain; strip comments from the final artifact.
+- **Multi-task accumulation**: if `plan.yaml` drives implementation across separate invocations, append a `## Task: {id} — {title}` section per task — never overwrite a *different* task's section. If `## Task: {id}` for the *same* task already exists (re-implementation after `blocked` or rescope), replace that section's content in place — preserve any `### Deliverables` subsection within it. Single-task or plan-less: write at top level without a task wrapper.
+- **Required coverage**: cover only content that is applicable to this implementation. Preserve enough information for downstream skills to understand what changed, files touched, design compliance, deviations, validation results, and open TODOs. Do not create empty or artificial sections just because an item is named here; if the template omits or renames a section, place applicable content in the closest relevant section.
+- The artifact is a record, not the code. Reference file paths and summarise intent — do NOT paste source listings.
 
 ### Step 8: Deliverables Handoff (if applicable)
 
@@ -251,18 +213,16 @@ For each check below, if the condition holds, perform the action implied by its 
   {Document invariants, preconditions, or side effects that downstream tasks must respect.}
   ```
 
-- **After writing deliverables**, call `plan-update.cjs` with both flags in a single invocation:
+- **After writing deliverables**, call `plan-update.cjs` with both deliverables flags in a single invocation. Use the command below as authoritative:
   ```bash
   node .ai-agents/scripts/plan-update.cjs \
     --plan "<active_change.plan_path>" \
     --task <current_task_id> \
-    --status <current_status> \
     --deliverables-pointer current \
-    --mark-deliverable-stale <downstream_task_id1>[,<downstream_task_id2>,...] \
-    --projects <project_list>
+    --mark-deliverable-stale <downstream_task_id1>[,<downstream_task_id2>,...]
   ```
-  `<project_list>` is the comma-separated project names from `plan.yaml > current_tasks` keys. In a single-project workspace this is `default`. The `--projects` flag ensures per-project validation runs correctly in multi-project plans.
-  The `--status` must be the task's current status (typically `in_progress` at this point, since Step 9 has not yet run). Pass ALL downstream dependent task ids as a comma-separated list to `--mark-deliverable-stale` so that `/mvt-resume` and `/mvt-status` can surface the stale warning.
+  Use this exact metadata-only command. Do NOT add `--status`, hand-edit `plan.yaml`, choose `current_tasks`, or read `.cjs`/`.js` source.
+  Pass ALL downstream dependent task ids as a comma-separated list to `--mark-deliverable-stale` so that `/mvt-resume` and `/mvt-status` can surface the stale warning.
 - **On user decline**: do not write deliverables and do not call `plan-update.cjs` with the deliverables flags. The downstream tasks will not receive stale warnings, which is acceptable if the user considers the contract unchanged.
 - **Error handling**: if `plan-update.cjs` rejects (e.g., malformed freshness), surface stderr and leave `implementation.md` as written. The deliverables content is the source of truth; the pointer can be retried via `/mvt-update-plan`.
 
@@ -276,7 +236,7 @@ For each check below, if the condition holds, perform the action implied by its 
 
 | Case | Handling |
 |------|----------|
-| `design.md` missing | WARN, ask user; if they proceed, mark artifact "Source: conversation only" and skip Step 5 design-match checks |
+| `design.md` missing | WARN, ask user; if they proceed, mark artifact "Source: conversation only"; in Step 5 skip checks that require design.md but still run forbidden import checks from `project-context.md` when rules exist |
 | Implementation reveals the design is infeasible | STOP at Step 4, document the blocker in conversation, recommend `/mvt-design` re-run -- do not silently improvise an alternative |
 | Type-checker fails on pre-existing errors unrelated to the change | Note in artifact, do not attempt blanket fixes outside scope |
 | User aborts at Step 3 confirmation | Do not write any source files or artifact |
@@ -285,29 +245,27 @@ For each check below, if the condition holds, perform the action implied by its 
 | Plan task is `blocked` or `done` already | Refuse to implement that task; ask user to pick another task from `current_tasks` or run `/mvt-update-plan` |
 | Deliverables already exist and user declines to update | Leave existing deliverables in place; do not call `plan-update.cjs` with deliverables flags |
 | `plan-update.cjs` rejects deliverables pointer | Surface error; leave `implementation.md` as written (content is source of truth, pointer can be retried) |
+| Re-implementing a task whose `## Task: {id}` section already exists in `implementation.md` | Replace that section's content in place; preserve any `### Deliverables` subsection within it. Do NOT create a second `## Task: {id}` section |
 
 ## Artifact Structure
-Read the document structure template from: `.ai-agents/skills/_templates/implement-output.md`
-If a custom version exists at `.ai-agents/skills/_templates/custom/implement-output.md`, use the custom version instead.
-The template defines section headings only. Generate content for each section based on implementation results.
-Write the artifact to: `.ai-agents/workspace/artifacts/{change-id}/implementation.md`
+Template location: `.ai-agents/skills/_templates/implement-output.md`
+Custom override: `.ai-agents/skills/_templates/custom/implement-output.md` (takes precedence if present)
 
 ## State Update
 
-After completing the skill's main task, run the session update script **exactly once** with the following arguments:
+After the skill's main task, run the session update script **exactly once**:
 
 ```bash
-node .ai-agents/scripts/session-update.cjs --skill <skill_command_name> --summary "<concise one-line summary>"
+node .ai-agents/scripts/session-update.cjs --skill mvt-implement --summary "<concise one-line summary>"
 ```
 
-If the script exits with code 0, the state update was applied successfully; there is no need to read or verify the session file.
+Write `--summary` as one concise line in the configured `interaction_language`.
 
-### Argument values
+### Critical flag semantics
 
-| Argument | Value source | Example |
-|----------|-------------|---------|
-| `--skill` | The exact skill command name without the leading `/` | `mvt-implement` |
-| `--summary` | A concise one-line description of what this invocation accomplished, in the configured `interaction_language` | `"Identified auth requirements and created change chg-001"` |
+- Use only the flags rendered in the command above; do not invent extra session-update flags.
+
+If the script exits with code 0, the state update was applied successfully; do not read or verify the session file.
 
 ### Failure handling
 
