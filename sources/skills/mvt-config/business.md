@@ -61,6 +61,7 @@
   | 4 | `preferences.output.data_format` | Default `yaml`; allowed: `yaml`, `json` |
   | 5 | `preferences.context_routing.relevance_threshold` | Default `70`; allowed: 0-100 |
   | 6 | `preferences.history_limits.*` | Show each limit with current value; accept new int or Enter to keep |
+  | 7 | `preferences.planning.granularity` | Default `medium`; allowed: `coarse`, `medium`, `fine` |
 
 - After all stages, render a Summary Preview table: `key | from | to`, then a single confirmation prompt to apply ALL changes atomically.
 - If the user aborts at the summary, discard all in-progress values; do not write anything.

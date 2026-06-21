@@ -172,10 +172,12 @@ describe("assembler", () => {
       expect(output).toContain("changes[]");
     });
 
-    it("enforces granularity constraint of 3-10 tasks", () => {
+    it("includes config-driven granularity guidance", () => {
       const output = buildSkill("mvt-plan-dev");
-      expect(output).toContain("3");
-      expect(output).toContain("10");
+      expect(output).toContain("preferences.planning.granularity");
+      expect(output).toContain("coarse");
+      expect(output).toContain("medium");
+      expect(output).toContain("fine");
     });
 
     it("preflight blocks when active_change is missing", () => {

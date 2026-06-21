@@ -21,17 +21,27 @@ If `active_change.plan_path is non-empty` AND `.ai-agents/workspace/artifacts/{a
 
 ### Step 3: Decompose Into Tasks
 
-Decompose the change with the following constraints. These constraints are AI-friendly granularity rules — too coarse leaves a task uncompletable in a single skill invocation; too fine turns the plan into noise.
+Decompose the change with the following constraints. These constraints are AI-friendly decomposition rules.
+
+**Granularity guidance** — read from `preferences.planning.granularity` in `.ai-agents/config.yaml`. Default: `medium`.
+
+| Level | Decomposition style |
+|-------|---------------------|
+| `coarse` | Prefer fewer, larger tasks — combine related work into broader task boundaries |
+| `medium` | Balanced — each task maps to one focused skill invocation |
+| `fine` | Prefer more, smaller tasks — split work into narrower, focused units |
+
+This is **qualitative AI guidance**, not a hard task count constraint. A complex change may produce many tasks; a simple one may produce few — both are valid at any granularity level.
 
 | Rule | Detail |
 |------|--------|
-| Count | Aim for 3–10 tasks at the top level. If the change clearly needs more, stop and propose phasing into multiple plans (one per phase). |
 | Single responsibility | Each task should map to one focused skill invocation (e.g., one `/mvt-implement` for one feature slice). |
 | Independently verifiable | Each task must have at least one acceptance criterion that a human or test can check. |
 | Explicit dependencies | If task B requires output from task A, list `A` in B's `depends_on`. Avoid hidden ordering. Tasks that can run in parallel should have no dependency between them. |
 | No cycles | Dependency graph must be a DAG. Validation will reject cycles. |
 | Skill hint | Set `skill_hint` to the skill best suited to execute the task (without `/` prefix): `mvt-implement`, `mvt-test`, `mvt-fix`, `mvt-design`, `mvt-review`, `mvt-refactor`, etc. |
 | Project attribution | Each task must have a `project` array listing which projects it belongs to. In a single-project workspace (`projects.length == 1`), set `project: ["default"]` (or the sole project's name). In a multi-project workspace, auto-infer from the task's file paths matching `projects[].path` and `projects[].source_paths`; if ambiguous, prompt the user. Cross-project tasks list multiple project names. |
+| Invalid value handling | If `granularity` contains a value other than `coarse`, `medium`, `fine`, warn the user and fall back to `medium`. |
 
 ### Step 4: Assemble plan.yaml
 
