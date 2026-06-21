@@ -131,7 +131,7 @@ Use `preferences.document_output_language` for artifact files, generated reports
 
   | Condition | Action |
   |-----------|--------|
-  | No plans found anywhere | Skip the Changes Overview section entirely; render "No active changes." |
+  | No plans found anywhere | Skip the Changes Overview section entirely; render "No active plans." |
   | One plan found | Render Changes Overview with one row |
   | Multiple plans found | Render Changes Overview sorted: `in_progress` desc by `updated_at` first, then `done` desc by `updated_at`, then `abandoned` last |
   | Any plan over the cap (more than ~12 rows) | Show top 10 rows; print a `+N older changes hidden -- see artifacts/` line |
@@ -139,7 +139,7 @@ Use `preferences.document_output_language` for artifact files, generated reports
 ### Step 4: Build the Status Report
 - Render in this order, omitting any section whose inputs were unavailable:
 
-  1. **Header** -- one-line summary: project name (from `project-context.yaml`), framework version, last synced timestamp.
+  1. **Header** -- one-line summary: project name (from `project-context.yaml`), last synced timestamp.
   2. **Projects** -- table: name | type | tech stack (truncated). Cap at 10 rows; collapse the rest into `+N more`.
   3. **Semantic Context** -- one line: `project-context.md present` / `missing -- run /mvt-analyze-code`.
   4. **Active Change** -- if `active_change` exists: id, title, start time. Else: `none`.
@@ -169,19 +169,9 @@ Use `preferences.document_output_language` for artifact files, generated reports
      |-----------|-------|--------|----------|---------------|---------|------------|
 
      For `current_tasks`, display as a compact representation: if single-project, show the task id only; if multi-project, show `web: t2, api: t1` format. The `project` column lists the distinct projects across all tasks in the plan.
-
-     If any task has `deliverables.freshness == "stale"`, append a warning row: "Stale deliverables: {task_ids} -- run `/mvt-implement` to refresh"
   6. **Skill History** -- last 5 rows of the timeline from Step 2.
 
 - Hard cap: total rendered output should not exceed ~120 lines. If it would, truncate Skill History first; never truncate the active change or Changes Overview header rows.
-
-### Step 5: Suggest Next Step
-- Resolution order (first match wins):
-  1. `active_change` has a plan in `in_progress`, `current_tasks` has entries -> suggest the relevant task's `skill_hint` (or, if missing, recommend `/mvt-update-plan` to set `current_tasks`).
-  2. `active_epic.id` non-empty AND `active_change.id` empty (epic-pending state) -> suggest `/mvt-analyze` -- Start the next sub-change in the epic.
-  3. `project-context.md` is missing -> suggest `/mvt-analyze-code`.
-  4. No `active_change` or no active plan -> suggest `/mvt-analyze` to start a new feature OR `/mvt-help` to browse the catalog.
-- The suggestion must be a single line: skill command + one-clause reason.
 
 ## Edge Cases & Errors
 
