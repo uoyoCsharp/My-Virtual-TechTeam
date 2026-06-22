@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, afterEach } from "vitest";
 import {
+  mkdirSync,
   mkdtempSync,
   rmSync,
   writeFileSync,
@@ -80,10 +81,14 @@ function baseEpic(overrides: Partial<Epic> = {}): Epic {
 describe("epic-update.cjs", () => {
   let tmpDir: string;
   let epicPath: string;
+  let sessionPath: string;
 
   beforeEach(() => {
     tmpDir = mkdtempSync(path.join(os.tmpdir(), "mvtt-epic-update-"));
-    epicPath = path.join(tmpDir, "epic.yaml");
+    const workspaceDir = path.join(tmpDir, ".ai-agents", "workspace");
+    mkdirSync(workspaceDir, { recursive: true });
+    epicPath = path.join(workspaceDir, "epic.yaml");
+    sessionPath = path.join(workspaceDir, "session.yaml");
   });
 
   afterEach(() => {
@@ -96,6 +101,26 @@ describe("epic-update.cjs", () => {
 
   function readEpic(): Epic {
     return parseYaml(readFileSync(epicPath, "utf-8")) as Epic;
+  }
+
+  function writeSession(session: any): void {
+    writeFileSync(sessionPath, stringifyYaml(session), "utf-8");
+  }
+
+  function readSession(): any {
+    return parseYaml(readFileSync(sessionPath, "utf-8"));
+  }
+
+  function baseSession(overrides: any = {}): any {
+    return {
+      session: { initialized_at: "2026-06-08T10:00:00Z", last_synced_at: "" },
+      active_epic: { id: "", title: "", created_at: "", epic_path: "" },
+      epics: [],
+      active_change: { id: "", title: "", created_at: "", plan_path: "", epic_id: "" },
+      changes: [],
+      history: [],
+      ...overrides,
+    };
   }
 
   function run(args: string[]): { status: number; stdout: string; stderr: string } {
@@ -607,6 +632,155 @@ describe("epic-update.cjs", () => {
       const res = op(["--complete-child", "c1"]);
       expect(res.status).toBe(1);
       // File should not have been modified by the failing operation
+    });
+  });
+
+  // ── session sync on epic close ──────────────────────────────────────────
+  // When an epic transitions to status: done, epic-update.cjs must clear
+  // session.active_epic so the cursor doesn't linger after all children are
+  // complete. Scoped: only acts when active_epic.id matches the epic being
+  // closed. Best-effort: session-side failures do not roll back the epic.
+
+  describe("session sync on epic close", () => {
+    function writeEpicAllDone(): Epic {
+      const epic = baseEpic();
+      epic.children[0].status = "done";
+      epic.children[0].completed_at = "2026-06-08T10:00:00Z";
+      epic.children[1].status = "done";
+      epic.children[1].completed_at = "2026-06-08T10:00:00Z";
+      epic.children[2].status = "active";
+      epic.children[2].depends_on = [];
+      epic.current_change = "c3";
+      return epic;
+    }
+
+    it("clears active_epic and marks epics[] snapshot done when last child completes", () => {
+      writeEpic(writeEpicAllDone());
+      writeSession(
+        baseSession({
+          active_epic: {
+            id: "epic-20260608-demo",
+            title: "Demo Epic",
+            created_at: "2026-06-08T10:00:00Z",
+            epic_path: "/path/to/epic.yaml",
+          },
+          epics: [
+            {
+              id: "epic-20260608-demo",
+              title: "Demo Epic",
+              epic_path: "/path/to/epic.yaml",
+              status: "active",
+              updated_at: "2026-06-08T10:00:00Z",
+            },
+          ],
+        })
+      );
+
+      const res = op(["--complete-child", "c3"]);
+      expect(res.status).toBe(0);
+      const out = JSON.parse(res.stdout);
+      expect(out.ok).toBe(true);
+      expect(out.epic_status).toBe("done");
+      expect(out.session_sync).toMatchObject({ ok: true, applied: true, epic_id: "epic-20260608-demo" });
+
+      const s = readSession();
+      expect(s.active_epic.id).toBe("");
+      expect(s.active_epic.title).toBe("");
+      expect(s.active_epic.epic_path).toBe("");
+      expect(s.epics[0].status).toBe("done");
+      expect(s.epics[0].updated_at).not.toBe("2026-06-08T10:00:00Z");
+    });
+
+    it("is scoped: leaves active_epic alone when session points at a different epic", () => {
+      writeEpic(writeEpicAllDone());
+      writeSession(
+        baseSession({
+          active_epic: {
+            id: "epic-OTHER",
+            title: "Other",
+            created_at: "2026-06-08T10:00:00Z",
+            epic_path: "/other",
+          },
+        })
+      );
+
+      const res = op(["--complete-child", "c3"]);
+      expect(res.status).toBe(0);
+      const out = JSON.parse(res.stdout);
+      expect(out.session_sync).toMatchObject({ ok: true, applied: false });
+
+      const s = readSession();
+      expect(s.active_epic.id).toBe("epic-OTHER");
+    });
+
+    it("is a no-op when epic transitions away from done (incomplete children)", () => {
+      writeEpic(baseEpic()); // 3 children, only c1 will complete
+      writeSession(
+        baseSession({
+          active_epic: {
+            id: "epic-20260608-demo",
+            title: "Demo Epic",
+            created_at: "2026-06-08T10:00:00Z",
+            epic_path: "/path",
+          },
+        })
+      );
+
+      const res = op(["--complete-child", "c1"]);
+      expect(res.status).toBe(0);
+      const out = JSON.parse(res.stdout);
+      expect(out.epic_status).toBe("in_progress");
+      // session_sync is null because epic is not yet done
+      expect(out.session_sync).toBeNull();
+
+      const s = readSession();
+      expect(s.active_epic.id).toBe("epic-20260608-demo");
+    });
+
+    it("returns ok=false with reason when session.yaml is missing", () => {
+      writeEpic(writeEpicAllDone());
+      // Intentionally do NOT call writeSession -- file does not exist
+      // (the bare .ai-agents/workspace/ skeleton is in place but no session.yaml)
+
+      const res = op(["--complete-child", "c3"]);
+      // The epic write itself must still succeed (best-effort session sync)
+      expect(res.status).toBe(0);
+      const out = JSON.parse(res.stdout);
+      expect(out.epic_status).toBe("done");
+      expect(out.session_sync).toMatchObject({ ok: false, reason: "session-missing" });
+    });
+
+    it("is idempotent: re-running on already-done epic does not re-clear (active_epic already empty)", () => {
+      writeEpic(writeEpicAllDone());
+      writeSession(
+        baseSession({
+          active_epic: { id: "", title: "", created_at: "", epic_path: "" },
+        })
+      );
+
+      const res = op(["--complete-child", "c3"]);
+      expect(res.status).toBe(0);
+      const out = JSON.parse(res.stdout);
+      // applied=false because active_epic.id is empty (doesn't match the
+      // closing epic's id), but the side-effect is harmless.
+      expect(out.session_sync.applied).toBe(false);
+    });
+
+    it("does not roll back epic.yaml write when session write fails", () => {
+      writeEpic(writeEpicAllDone());
+      // Malformed session.yaml that will fail to parse
+      writeFileSync(sessionPath, "{{{{invalid yaml", "utf-8");
+
+      const res = op(["--complete-child", "c3"]);
+      expect(res.status).toBe(0);
+      const out = JSON.parse(res.stdout);
+      expect(out.epic_status).toBe("done");
+      expect(out.session_sync.ok).toBe(false);
+      expect(out.session_sync.reason).toBe("parse-failed");
+
+      // epic.yaml must still be in the done state
+      const e = readEpic();
+      expect(e.status).toBe("done");
     });
   });
 });

@@ -488,7 +488,76 @@ function main() {
     process.exit(1);
   }
 
-  process.stdout.write(JSON.stringify({ ok: true, ...result }) + "\n");
+  // Best-effort session sync when epic closes (does not affect epic.yaml write).
+  let sessionSync = null;
+  if (epic.status === "done") {
+    sessionSync = syncSessionOnEpicClose(epic, epicPath, now);
+  }
+
+  process.stdout.write(
+    JSON.stringify({ ok: true, ...result, session_sync: sessionSync }) + "\n"
+  );
+}
+
+// ── Session Sync ────────────────────────────────────────────────────────────
+// Best-effort: clears session.active_epic and updates epics[] snapshot when
+// the active epic transitions to "done". Failures are reported in the result
+// but never roll back the epic.yaml write.
+function syncSessionOnEpicClose(epic, epicPath, now) {
+  const projectRoot = findProjectRootFromPath(epicPath);
+  if (!projectRoot) {
+    return { ok: false, reason: "no-project-root" };
+  }
+
+  const sessionPath = join(projectRoot, ".ai-agents", "workspace", "session.yaml");
+  if (!existsSync(sessionPath)) {
+    return { ok: false, reason: "session-missing" };
+  }
+
+  let session;
+  try {
+    session = parseYaml(readFileSync(sessionPath, "utf-8"));
+  } catch (e) {
+    return { ok: false, reason: "parse-failed", detail: e.message };
+  }
+
+  if (!session || typeof session !== "object") {
+    return { ok: false, reason: "session-not-object" };
+  }
+
+  const epicId = epic.epic_id;
+  if (session.active_epic?.id !== epicId) {
+    return { ok: true, applied: false, reason: "active_epic-not-matching" };
+  }
+
+  session.epics = session.epics || [];
+  const epicIdx = session.epics.findIndex((e) => e.id === epicId);
+  if (epicIdx >= 0) {
+    session.epics[epicIdx].status = "done";
+    session.epics[epicIdx].updated_at = now;
+  }
+
+  session.active_epic = {
+    id: "",
+    title: "",
+    created_at: "",
+    epic_path: "",
+  };
+
+  const sessionTmp = sessionPath + ".tmp";
+  try {
+    writeFileSync(sessionTmp, stringifyYaml(session, { lineWidth: 200 }), "utf-8");
+    renameSync(sessionTmp, sessionPath);
+  } catch (e) {
+    try {
+      if (existsSync(sessionTmp)) unlinkSync(sessionTmp);
+    } catch {
+      // best-effort cleanup — temp file overwritten next run
+    }
+    return { ok: false, reason: "write-failed", detail: e.message };
+  }
+
+  return { ok: true, applied: true, epic_id: epicId };
 }
 
 main();

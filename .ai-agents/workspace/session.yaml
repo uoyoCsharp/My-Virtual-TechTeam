@@ -44,22 +44,6 @@ changes:
     updated_at: 2026-06-19T13:49:40.019Z
     epic_id: ""
 history:
-  - skill: /mvt-bug-detect
-    completed_at: 2026-06-11T09:38:34.580Z
-    summary: 确认交互语言间歇输出英文的根因:interaction_language 约束远弱于 document_output_language,缺少对等强制 section
-    change_id: 20260608-regular
-  - skill: /mvt-fix
-    completed_at: 2026-06-11T09:50:32.949Z
-    summary: 将 output-language-constraint 重命名为 language-constraint 并补齐交互语言强约束+反镜像指令,同步17个manifest与引用,重建产物,237测试通过
-    change_id: 20260608-regular
-  - skill: /mvt-bug-detect
-    completed_at: 2026-06-19T02:36:05.228Z
-    summary: 定位epic_id为空根因：/mvt-plan-dev的session-update调用中--new-change会覆写epic_id为空串，因为该skill缺少link_subchange_to_epic参数
-    change_id: 20260608-regular
-  - skill: /mvt-review
-    completed_at: 2026-06-19T02:41:11.741Z
-    summary: 审核 epic-change 关联机制：1 Critical（--new-change 无条件覆写 epic_id）、3 Warning（plan-dev manifest、缺失回归测试、字段重置副作用）、2 Suggestion
-    change_id: 20260608-regular
   - skill: /mvt-fix
     completed_at: 2026-06-19T02:46:42.916Z
     summary: 修复C1+W3：session-update.js --new-change 保留已有 epic_id/created_at/plan_path；补充2个回归测试，240测试全绿
@@ -124,6 +108,22 @@ history:
   - skill: /mvt-fix
     completed_at: 2026-06-20T13:59:47.242Z
     summary: 修复 mvt-help 提示词一致性与运行时推荐问题，补充回归测试并刷新生成产物
+    change_id: 20260619-script-call-prompt-optimization
+  - skill: /mvt-bug-detect
+    completed_at: 2026-06-22T09:25:11.578Z
+    summary: "Verified mvt-help-prompt-review.md: 10 of 12 claims are fabricated/false; only P3-1 (registry present but skills empty) is a real gap."
+    change_id: 20260619-script-call-prompt-optimization
+  - skill: /mvt-fix
+    completed_at: 2026-06-22T10:04:03.088Z
+    summary: 在 epic-update.cjs 中实现 epic 变 done 时自动清 active_epic,session-update --close-epic 降级为手工修复
+    change_id: 20260619-script-call-prompt-optimization
+  - skill: /mvt-review
+    completed_at: 2026-06-22T10:42:07.294Z
+    summary: 审查 epic-update.js session_sync 实现：0 Critical、1 Warning、2 Suggestion，裁决 Approve with comments
+    change_id: 20260619-script-call-prompt-optimization
+  - skill: /mvt-fix
+    completed_at: 2026-06-22T10:45:59.473Z
+    summary: '"清理审查发现的3个代码质量项：移除epic.id回退(catch空块注释)",'
     change_id: 20260619-script-call-prompt-optimization
 active_epic:
   id: epic-20260608-my
