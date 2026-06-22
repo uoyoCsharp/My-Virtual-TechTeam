@@ -29,7 +29,9 @@ The mechanical work — mutating the task, recomputing `current_tasks` via the p
 rules, validating the result, and writing back atomically — is performed by a
 deterministic script. Do NOT hand-edit `plan.yaml` or reason through the
 `current_tasks` selection yourself; call the script with the resolved arguments
-from Step 1–2:
+from Step 1–2. See the **Script Usage Rule** section for the command template,
+or read `.ai-agents/scripts/plan-update.md` for argument value sources,
+parameter semantics, and output interpretation.
 
 ```bash
 node .ai-agents/scripts/plan-update.cjs --plan "<active_change.plan_path>" --task <task_id> --status <new_status> --projects "<comma,separated,project,names>" [--artifacts "<comma,separated,paths>"] [--notes "<note text>"]
@@ -37,30 +39,7 @@ node .ai-agents/scripts/plan-update.cjs --plan "<active_change.plan_path>" --tas
 
 Include `--artifacts` only if artifacts were provided, and `--notes` only if a note was provided; omit each flag otherwise.
 
-| Argument | Value source |
-|----------|-------------|
-| `--plan` | `active_change.plan_path` resolved from session.yaml |
-| `--task` | the `task_id` resolved in Step 1 |
-| `--status` | the `new_status` resolved in Step 1 (`pending`/`in_progress`/`done`/`blocked`/`skipped`) |
-| `--projects` | comma-separated project names read from `project-context.yaml > projects[].name` |
-| `--artifacts` | optional; comma-separated paths to append (the script de-duplicates) |
-| `--notes` | optional; overwrites the task's `notes` |
-
-The script performs, deterministically:
-
-1. **Apply**: sets the task status; appends + de-duplicates `--artifacts` (handles `artifacts: null`); overwrites `--notes`; sets `completed_at` to now when status is `done`, else `null`; refreshes `plan.updated_at`.
-2. **Recompute `current_tasks`** (per-project independent advancement): for each project, finds the `in_progress` task or advances the first `pending` task whose `depends_on` are all in `resolvedIds` (done + skipped; blocked does NOT satisfy). Detects `project_switch` when advancement crosses a project boundary. Plan done -> `current_tasks = {}`.
-3. **Validate** the mutated plan (unique ids, valid `depends_on` references, DAG/no-cycle per project, one `in_progress` per project, every task has acceptance, `completed_at` consistency, `current_tasks` validity, project naming constraint, task project membership).
-4. **Write atomically** (temp + rename) only if validation passes.
-
-**Interpreting the result:**
-
-- **Exit 0**: success. stdout is a single-line JSON object:
-  ```json
-  {"ok":true,"task":{"id":"t1","title":"...","old_status":"in_progress","new_status":"done"},"current_tasks":{"default":"t2"},"plan_status":"in_progress","progress":{"done":1,"total":4},"warning":null,"project_switch":null}
-  ```
-  Use these fields directly to render the Output Format block. The file is already written — do NOT read it back to verify. If `warning` is non-null, surface it. If `project_switch` is non-null, note the project boundary crossing.
-- **Exit 1**: failure. stderr carries the error (invalid status, task not found, validation failure, parse/write error). The file was **not** modified. Report the error to the user and do not fabricate a success summary.
+**Interpreting the result:** See `.ai-agents/scripts/plan-update.md` "Output interpretation" for the exit-0 / exit-1 protocol. On exit 0, use the JSON fields directly to render the Output Format block. On exit 1, report stderr and do not fabricate a success summary.
 
 ### Step 4: Output
 
@@ -91,14 +70,20 @@ After the Step 3 script reports `plan_status: "done"`:
    > - **(defer)** Mark child done but don't advance yet
 
 4. On **y**:
-   - `epic-update.cjs --epic <active_epic.epic_path> --complete-child <active_change.id>`
+  - Call the Epic Update Script in `--complete-child` mode using the command below:
+     ```bash
+     node .ai-agents/scripts/epic-update.cjs --epic "<active_epic.epic_path>" --complete-child <active_change.id>
+     ```
    - `session-update.cjs --skill mvt-update-plan --summary "..." --close-change`
    - Display: next child info from epic-update stdout. Suggest `/mvt-analyze` to start the next sub-change.
 
 5. On **n**: No action. Display reminder: "Change remains open. Run other skills (e.g., `/mvt-review`, `/mvt-test`, `/mvt-fix`) as needed; run `/mvt-update-plan` again when ready to advance the epic."
 
 6. On **defer**:
-   - `epic-update.cjs --epic <active_epic.epic_path> --set-child-status <active_change.id> done`
+  - Call the Epic Update Script in `--set-child-status` mode using the command below:
+     ```bash
+     node .ai-agents/scripts/epic-update.cjs --epic "<active_epic.epic_path>" --set-child-status <active_change.id> --child-status done
+     ```
    - `session-update.cjs --skill mvt-update-plan --summary "..." --close-change`
    - Display: "Child marked done, current_change unchanged."
 

@@ -1,11 +1,8 @@
-### Step 4: Load Config & Apply Preferences (Config Foundation)
-Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:
+### Stage 4: Load Config & Apply Preferences (Config Foundation)
+Read `.ai-agents/config.yaml` and enforce it for the whole session:
 
-**Language**:
-- `preferences.interaction_language` → Language for everything spoken to the user (chat, prompts, tables); NOT for files written to disk. See the **Language Constraint** section below for the full, non-negotiable rules.
-- `preferences.document_output_language` → Language for files written to disk. See the **Language Constraint** section below for the full rules.
-
-**Other preferences**:
-- `preferences.output.no_emojis` → If true, never use emojis
-- `preferences.output.data_format` → Use this format for data sections in artifacts
-- `preferences.context_routing.relevance_threshold` → Used by `/mvt-manage-context add` for AI routing (default 70 if missing)
+- `preferences.interaction_language`: language for chat, prompts, status lines, tables, and summaries.
+- `preferences.document_output_language`: language for files written to disk.
+- `preferences.output.no_emojis`: if true, never use emojis.
+- `preferences.output.data_format`: format for artifact data sections.
+- `preferences.context_routing.relevance_threshold`: AI routing threshold for `/mvt-manage-context add` (default 70).

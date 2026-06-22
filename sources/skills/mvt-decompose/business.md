@@ -54,16 +54,11 @@
 - **On confirmation**: proceed to Step 6.
 
 ### Step 6: Write Artifacts
-Write two artifacts using the `decompose-output` template for `epic.md`:
+Write two artifacts:
 
 1. **epic.md** (narrative) -- `.ai-agents/workspace/artifacts/{epic_id}/epic.md`
-   - Uses the `decompose-output` template.
-   - **Child Stories**: Markdown table mirroring `epic.yaml.children[]`
-
-     | # | Child | Scope | Status | Depends On |
-     |---|-------|-------|--------|------------|
-
-   - **Dependency Map**: Mermaid flowchart showing child dependencies
+   - Uses the `decompose-output` template. Follow the HTML comments in the template for what each section should contain (including the Child Stories table format and the Dependency Map mermaid flowchart); strip comments from the final artifact.
+  - **Required coverage**: cover only content that is applicable to this decomposition. Preserve enough information for the user to understand the epic vision, boundaries, cross-cutting concerns, child stories, dependencies, and unresolved questions. Do not create empty or artificial sections just because an item is named here; if the template omits or renames a section, place applicable content in the closest relevant section.
 
 2. **epic.yaml** (structured) -- `.ai-agents/workspace/artifacts/{epic_id}/epic.yaml`
    - Follows the schema defined in Artifact Structure
@@ -78,10 +73,24 @@ Write two artifacts using the `decompose-output` template for `epic.md`:
 - [ ] `current_change` matches the active child's `change_id`
 - [ ] Each child has non-empty `title` and `scope`
 
-**Optional safety net**: after writing, call `epic-update.cjs --validate` to verify:
+**Optional safety net**: after writing, validate the epic using the Epic Update Script command below:
 ```bash
 node .ai-agents/scripts/epic-update.cjs --validate .ai-agents/workspace/artifacts/{epic_id}/epic.yaml
 ```
+
+If the epic needs children added later (e.g. a missed sub-change discovered during analysis), use `--add-child`:
+```bash
+node .ai-agents/scripts/epic-update.cjs --epic .ai-agents/workspace/artifacts/{epic_id}/epic.yaml \
+  --add-child <new_child_id> --child-title "<title>" --child-scope "<scope>"
+```
+
+To advance the epic after a child change completes, use `--complete-child`:
+```bash
+node .ai-agents/scripts/epic-update.cjs --epic .ai-agents/workspace/artifacts/{epic_id}/epic.yaml \
+  --complete-child <completed_child_id>
+```
+
+For post-write epic mutations, use the rendered `epic-update.cjs` commands. Do NOT hand-edit `epic.yaml`, advance `current_change`, or read `.cjs`/`.js` source.
 
 ### Step 7: Update Session
 Run the session update command (see State Update section) to:

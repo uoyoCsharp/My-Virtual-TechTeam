@@ -54,12 +54,6 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/language-constraint.md
-
-  - type: shared
-    source: sections/output-format-constraint.md
-
-  - type: shared
     source: sections/activation-preflight.md
     params:
       checks:
@@ -71,6 +65,12 @@ sections:
           field: "projects[] in project-context.yaml"
           level: "WARN"
           message: "No projects registered. Run `/mvt-init` first."
+
+  - type: shared
+    source: sections/language-constraint.md
+
+  - type: shared
+    source: sections/output-format-constraint.md
 
   - type: inline
     content: |
@@ -88,7 +88,7 @@ sections:
       ## Artifact Structure
       Read the document structure template from: `.ai-agents/skills/_templates/project-context.md`
       If a custom version exists at `.ai-agents/skills/_templates/custom/project-context.md`, use the custom version instead.
-      The template defines section headings only. Generate content for each section based on code analysis results.
+      The template defines section structure and guidance comments. Generate applicable content based on code analysis results.
       Write the artifact to: `.ai-agents/knowledge/project/_generated/project-context.md`
 
   - type: shared

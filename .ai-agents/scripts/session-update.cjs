@@ -7474,11 +7474,12 @@ function main() {
         session.changes = session.changes.slice(-limits.changes);
       }
     }
+    const isSameChange = session.active_change.id === args["change-id"];
     session.active_change.id = args["change-id"];
     session.active_change.title = args["new-change"];
-    session.active_change.created_at = now;
-    session.active_change.plan_path = "";
-    session.active_change.epic_id = args["epic-id"] || "";
+    session.active_change.created_at = isSameChange ? session.active_change.created_at || now : now;
+    session.active_change.plan_path = isSameChange ? session.active_change.plan_path || "" : "";
+    session.active_change.epic_id = args["epic-id"] || session.active_change.epic_id || "";
   }
   if (args["set-initialized"]) {
     session.session = session.session || {};

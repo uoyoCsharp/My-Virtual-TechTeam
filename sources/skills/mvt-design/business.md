@@ -5,7 +5,7 @@
   - Existing design artifacts of related prior changes (`artifacts/*/design.md`) -- to stay consistent.
 - **Fallback**:
   - If `analysis.md` is missing, surface a WARN and accept the user's free-text intent as the requirement input.
-  - If `project-context.md` is missing, proceed but mark the design as "context-light" and skip the layer-compliance check in Step 4.
+  - If `project-context.md` is missing, proceed but mark the design as "context-light" and skip the layer-compliance check in Step 3.
 
 ### Step 2: Frame the Problem
 - **What**: produce a one-paragraph problem statement plus a list of explicit architectural concerns (3-7 items).
@@ -15,36 +15,35 @@
   3. Drop any concern that is not actually exercised by the requirements -- do not invent NFRs.
 - **Output of this step**: a Concerns Table with columns `concern | source-of-evidence | priority(must/should/nice)`.
 
-### Step 3: Choose Architecture Style
-- **What**: select the smallest viable architecture style for this change. Escalate only when concerns force it.
-- **How**: pick the row that matches the dominant concerns; multiple changes within the same project should normally pick the same style unless requirements force otherwise.
-
-  | Style | Use when | Avoid when |
-  |-------|----------|------------|
-  | Plain CRUD / 3-layer | Single resource flow, no domain rules beyond validation | Complex business invariants, multi-step workflows |
-  | Service-oriented within a module | Multiple use cases sharing entities, transactions across them | Cross-team boundaries, independent deployment needs |
-  | Domain-driven (aggregates, domain services) | Rich business rules, invariants, multiple actors per workflow | Simple read-mostly resources |
-  | Event-driven / async | Long-running flows, decoupled side-effects, retry/back-pressure | Strong synchronous contracts, immediate-consistency reads |
-  | Multi-service / boundary split | Independent scaling or deployment, separate teams | Single team, single deployment pipeline -- DEFER |
-
-- If the requirements suggest "multi-service" but project is currently single-service: STOP and ask user to confirm scope expansion before designing across services.
-
-### Step 4: Design Module Structure
+### Step 3: Design Module Structure
 - **What**: list modules (new and modified), their responsibilities, owned entities, and interfaces.
 - **How**:
-  1. Map each Concern (Step 2) to one owning module.
-  2. For every module, write: name, responsibility (one sentence), owned entities, public interface (function/class signatures or HTTP endpoints), dependencies on other modules.
-  3. Validate dependency direction against `project-context.md` layer rules (e.g., domain -> infra forbidden). If violation found, redesign or flag it as an explicit ADR (Step 6).
-  4. Use the existing module names from `project-context.md` whenever possible -- introduce a new module only when no existing one fits.
+  1. Follow existing project architecture first: `project-context.md`, accepted ADRs, framework constraints, and domain rules override the examples below.
+  2. Start simple. Add a boundary, abstraction, async flow, dependency, or new module only when a must/should concern requires it.
+  3. For each must/should Concern (Step 2), choose the smallest response that satisfies it. Use the table as examples, not a closed list; if no row fits, derive a response from the concern itself.
+
+     | Concern signal (example) | Smallest architectural response | Module consequence |
+     |---------------------------|----------------------------------|--------------------|
+     | Simple data lifecycle | CRUD-oriented service/repository shape | Resource module with validation and persistence boundary |
+     | Rich business invariant | Domain model or aggregate boundary | Entity or aggregate module owns invariant enforcement |
+     | Shared multi-step workflow | Application service or use-case coordinator | Workflow module coordinates existing modules |
+     | Async side effect or retry need | Event handler or queue boundary | Producer/consumer or handler module; mark event boundary |
+     | Independent deployment, scaling, or team ownership | Service boundary candidate | STOP if it implies a new deployable service, runtime, or cross-service contract |
+
+  4. Output the concern mapping as `concern | response | owning module | boundary impact`.
+  5. For every module, write: name, responsibility (one sentence), owned entities, public interface (function/class signatures or HTTP endpoints), dependencies on other modules.
+  6. Reuse existing module names from `project-context.md` whenever possible. Add a new module only when no existing module fits.
+  7. Validate dependency direction against `project-context.md` layer rules (e.g., domain -> infra forbidden). If violation found, redesign or flag it as an explicit ADR (Step 5).
 - **Branches**:
 
   | Condition | Action |
   |-----------|--------|
   | Layer-compliance check passes | Proceed |
   | Single layer violation, fix is local | Adjust module placement, document in change tracking |
-  | Systemic violation (style mismatch with existing project) | STOP, raise ADR (Step 6) and ask user to confirm direction before continuing |
+  | Architectural response implies a new deployable service, runtime, or cross-service contract | STOP, ask user to confirm scope expansion before designing across boundaries |
+  | Systemic violation (mismatch with existing project architecture) | STOP, raise ADR (Step 5) and ask user to confirm direction before continuing |
 
-### Step 5: Define Data Flow
+### Step 4: Define Data Flow
 - **What**: for each primary use case, produce a sequence of module interactions.
 - **How**:
   1. For each use case (from Step 2 / analysis.md), list the trigger, the modules involved, the call order, and the persistence/event boundaries.
@@ -52,7 +51,7 @@
   3. Mark transactional boundaries explicitly (`-- transaction begin/end`).
   4. Identify error paths for each flow: what happens if step N fails? Document fallback behavior (retry, compensating action, user-visible error).
 
-### Step 6: Document Decisions (ADRs)
+### Step 5: Document Decisions (ADRs)
 - **What**: capture every non-obvious choice as an Architecture Decision Record.
 - **How**: write one ADR per decision with these fields:
 
@@ -66,39 +65,31 @@
   | Consequences | Positive and negative impacts; which downstream skills/modules pay the cost |
 
 - Decisions that MUST be ADRs (do not skip):
-  - Choice of architecture style (Step 3) when more than one row was viable.
+  - Any architectural response that changes module boundaries, deployment/runtime boundaries, persistence boundaries, async/event boundaries, or public contracts.
   - Any layer-rule violation accepted as a deliberate exception.
   - Introduction of a new external dependency (DB, queue, library category).
   - Breaking change to an existing public interface.
 
-### Step 7: User Confirmation Before Write
+### Step 6: User Confirmation Before Write
 - **When to confirm before writing the artifact**:
-  - Step 3 escalated to multi-service.
-  - Step 4 raised a systemic layer violation.
-  - Step 6 contains any ADR with `status: proposed` for a breaking change.
+  - Step 3 identified a new deployable service, runtime, or cross-service contract.
+  - Step 3 raised a systemic layer violation.
+  - Step 5 contains any ADR with `status: proposed` for a breaking change.
   - The design adds a new external dependency.
 - **When to write silently**:
   - Single-module addition that fits existing layers, no ADR escalations, no breaking change.
-- **Confirmation format**: present a one-screen summary -- style chosen, modules added/changed, ADRs requiring review, a single yes/no prompt. Do not dump the full artifact.
+- **Confirmation format**: present a one-screen summary -- module boundary changes, deployment/runtime boundary changes, ADRs requiring review, external dependencies, and a single yes/no prompt. Do not dump the full artifact.
 
-### Step 8: Write Artifact
-- **Path and template**: as defined in the **Artifact Structure** section below.
-- **Required sections** (filled per template headings, but content must include):
-  - `Overview` -- the problem statement (Step 2).
-  - `Architecture Decision Records` -- every ADR from Step 6.
-  - `Module Design` -- table of modules from Step 4.
-  - `Key Interfaces` -- explicit signatures/endpoints.
-  - `Data Flow` -- sequences from Step 5, including error paths.
-  - `File Structure` -- mapping of modules to file/directory paths in this repo.
-  - `Implementation Guidelines` -- ordering hints for `/mvt-implement` and `/mvt-plan-dev`.
-  - `Change Tracking` -- list of files expected to be created/modified/deleted.
+### Step 7: Write Artifact
+- **Path and template**: as defined in the **Artifact Structure** section below. Follow the HTML comments in the template for what each section should contain; strip comments from the final artifact.
+- **Required coverage**: cover only content that is applicable to this design. Preserve enough information for downstream skills to understand the problem, decisions made, module/interface/data-flow impacts, expected file changes, and implementation guidance. Do not create empty or artificial sections just because an item is named here; if the template omits or renames a section, place applicable content in the closest relevant section.
 - Do NOT modify `project-context.yaml` or `project-context.md` here.
 
-### Step 9: Suggest Plan Decomposition
+### Step 8: Suggest Plan Decomposition
 - If `Change Tracking` lists more than ~5 files OR Module Design adds more than 1 new module OR ADRs include any breaking change, recommend `/mvt-plan-dev` as the next step.
 - Otherwise recommend `/mvt-implement` directly.
 
-### Step 10: State Update
+### Step 9: State Update
 Apply the State Update rules defined in the **State Update** section below.
 
 ## Edge Cases & Errors

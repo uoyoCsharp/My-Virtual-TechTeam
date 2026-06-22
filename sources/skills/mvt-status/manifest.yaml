@@ -41,9 +41,6 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/language-constraint.md
-
-  - type: shared
     source: sections/activation-preflight.md
     params:
       checks:
@@ -51,6 +48,9 @@ sections:
           field: "session.initialized_at"
           level: "WARN"
           message: "Session not initialized. Run `/mvt-init` first."
+
+  - type: shared
+    source: sections/language-constraint.md
 
   - type: file
     source: ./business.md

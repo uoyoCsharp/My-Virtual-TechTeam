@@ -56,12 +56,6 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/language-constraint.md
-
-  - type: shared
-    source: sections/output-format-constraint.md
-
-  - type: shared
     source: sections/activation-preflight.md
     params:
       checks:
@@ -69,6 +63,12 @@ sections:
           field: "session and project-context both empty"
           level: "INFO"
           message: "This is a first-time init, proceed normally."
+
+  - type: shared
+    source: sections/language-constraint.md
+
+  - type: shared
+    source: sections/output-format-constraint.md
 
   - type: file
     source: ./business.md

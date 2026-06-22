@@ -20,3 +20,8 @@ preferences:
   history_limits:
     history: 10
     changes: 10
+
+  # Planning granularity for /mvt-plan-dev
+  # Options: coarse (fewer, larger tasks) | medium (balanced) | fine (more, smaller tasks)
+  planning:
+    granularity: medium

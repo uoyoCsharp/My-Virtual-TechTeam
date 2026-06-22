@@ -369,6 +369,71 @@ describe("session-update.cjs (epic flags)", () => {
       const s = readSession();
       expect(s.active_change.epic_id).toBe("");
     });
+
+    it("preserves existing epic_id when --new-change omits --epic-id", () => {
+      const session = baseSession();
+      session.active_change = {
+        id: "20260608-sub",
+        title: "Sub-change",
+        created_at: "2026-06-08T10:00:00Z",
+        plan_path: "",
+        epic_id: "epic-20260608-demo",
+      };
+      writeSession(session);
+
+      update([
+        "--new-change", "Sub-change",
+        "--change-id", "20260608-sub",
+      ]);
+
+      const s = readSession();
+      expect(s.active_change.epic_id).toBe("epic-20260608-demo");
+    });
+
+    it("preserves created_at when --new-change re-invoked on same change", () => {
+      const session = baseSession();
+      const originalCreatedAt = "2026-06-08T10:00:00Z";
+      session.active_change = {
+        id: "20260608-sub",
+        title: "Sub-change",
+        created_at: originalCreatedAt,
+        plan_path: "/path/plan.yaml",
+        epic_id: "epic-20260608-demo",
+      };
+      writeSession(session);
+
+      update([
+        "--new-change", "Sub-change",
+        "--change-id", "20260608-sub",
+      ]);
+
+      const s = readSession();
+      expect(s.active_change.created_at).toBe(originalCreatedAt);
+      expect(s.active_change.plan_path).toBe("/path/plan.yaml");
+    });
+
+    it("resets created_at and plan_path when switching to a different change", () => {
+      const session = baseSession();
+      session.active_change = {
+        id: "20260608-old",
+        title: "Old Change",
+        created_at: "2026-06-08T10:00:00Z",
+        plan_path: "/path/old/plan.yaml",
+        epic_id: "",
+      };
+      writeSession(session);
+
+      update([
+        "--new-change", "New Change",
+        "--change-id", "20260608-new",
+      ]);
+
+      const s = readSession();
+      expect(s.active_change.id).toBe("20260608-new");
+      expect(s.active_change.created_at).not.toBe("2026-06-08T10:00:00Z");
+      expect(s.active_change.plan_path).toBe("");
+      expect(s.active_change.epic_id).toBe("");
+    });
   });
 
   // ── Backward compatibility ────────────────────────────────────────────────

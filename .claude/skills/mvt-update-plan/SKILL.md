@@ -27,51 +27,41 @@ You are the **Architect** -- a Development Planner.
 
 ## Activation Protocol
 
-### Step 1: Load Context
-Load these files as foundational context:
+### Stage 1: Load Context
+Load foundational context:
 - `.ai-agents/workspace/project-context.yaml` -- Project index (structural info)
 - `.ai-agents/registry.yaml` -- Available skills registry and knowledge declarations
 
 Extended context for this skill:
 - {active_change.plan_path} -- The plan to update (resolved from session.yaml)
 
-### Step 2: Resolve Project Scope (PS)
+### Stage 2: Resolve Project Scope (PS)
 
 Read `project-context.yaml > projects[]`.
 
-**Single project** (`projects.length == 1`): Set PS = [sole project name]. Skip remaining PS steps.
+**Single project** (`projects.length == 1`): PS = [sole project name]; skip the rest of this step.
 
 **Multi-project** (`projects.length > 1`):
 **Mode A -- Plan-driven** (active plan exists and skill operates on plan tasks):
-1. **Plan signal**: PS = current task's `project` array from plan's `current_tasks`. Drop stale project names (not in `projects[]`), fall through.
-2. **Path match**: Match current working paths against `projects[].path` and `source_paths`.
-3. **Prompt**: If still unresolved, list candidates and ask user. Never silently load all projects.
+1. **Plan signal**: PS = current task `project` values from plan `current_tasks`; drop names absent from `projects[]`.
+2. **Path match**: Match current paths against `projects[].path` and `source_paths`.
+3. **Prompt**: If unresolved, list candidates and ask user. Never silently load all projects.
 
 **Mode B -- Non-plan** (no active plan or ad-hoc changes):
-Defer PS to execution: identify change target, match against `projects[].path` and `source_paths`, load project-specific knowledge on demand (Step 3).
+Defer PS to execution: identify change target, match against `projects[].path` and `source_paths`, load project-specific knowledge on demand (Stage 3).
 
-### Step 3: Load Knowledge
+### Stage 3: Load Knowledge
 
-Registry uses project-keyed maps; `_all` is a reserved key (all projects). Applies to both top-level `knowledge` and `skills.<name>.knowledge`.
+Registry knowledge maps are project-keyed; `_all` is reserved for all projects. This applies to top-level `knowledge` and `skills.<name>.knowledge`.
 
 **Knowledge Loading Protocol**:
-For each knowledge entry in the registry, follow these steps:
-1. **Read the `source` field** from the registry entry (e.g., `knowledge/project/_generated/`).
-2. **Construct the base directory**: join `.ai-agents/` with the `source` value → `.ai-agents/{source_value}/`.
-3. **Load files**:
-   - `files: [a.md, b.md]` → load `.ai-agents/{source_value}/a.md`, `.ai-agents/{source_value}/b.md`.
-   - `files_from_manifest: true` → read `.ai-agents/{source_value}/manifest.yaml`, load entries with `auto_load: true`.
+For each registry knowledge entry:
+1. Read its `source` field, e.g. `knowledge/project/_generated/`.
+2. Base dir = `.ai-agents/` + `source`, e.g. `.ai-agents/knowledge/project/_generated/`.
+3. Load `files` entries from that base dir; if `files_from_manifest: true`, read `manifest.yaml` there and load entries with `auto_load: true`.
 4. **Skip non-existent paths** silently (do not error or warn).
 
-**Worked example**:
-Given this registry entry:
-```yaml
-- id: project-context
-  source: knowledge/project/_generated/
-  files:
-    - project-context.md
-```
-Resolution: `.ai-agents/` + `knowledge/project/_generated/` + `project-context.md` = `.ai-agents/knowledge/project/_generated/project-context.md`
+Example: `source: knowledge/project/_generated/` + `files: [project-context.md]` resolves to `.ai-agents/knowledge/project/_generated/project-context.md`.
 
 **Anti-pattern -- DO NOT**:
 - Guess or hardcode base directories (e.g., `.ai-agents/workspace/`).
@@ -81,61 +71,16 @@ Resolution: `.ai-agents/` + `knowledge/project/_generated/` + `project-context.m
 **Mode A** (additionally): for each P in PS, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]`.
 **Mode B** (during execution): on demand, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for identified project(s).
 
-### Step 4: Load Config & Apply Preferences (Config Foundation)
-Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:
+### Stage 4: Load Config & Apply Preferences (Config Foundation)
+Read `.ai-agents/config.yaml` and enforce it for the whole session:
 
-**Language**:
-- `preferences.interaction_language` → Language for everything spoken to the user (chat, prompts, tables); NOT for files written to disk. See the **Language Constraint** section below for the full, non-negotiable rules.
-- `preferences.document_output_language` → Language for files written to disk. See the **Language Constraint** section below for the full rules.
+- `preferences.interaction_language`: language for chat, prompts, status lines, tables, and summaries.
+- `preferences.document_output_language`: language for files written to disk.
+- `preferences.output.no_emojis`: if true, never use emojis.
+- `preferences.output.data_format`: format for artifact data sections.
+- `preferences.context_routing.relevance_threshold`: AI routing threshold for `/mvt-manage-context add` (default 70).
 
-**Other preferences**:
-- `preferences.output.no_emojis` → If true, never use emojis
-- `preferences.output.data_format` → Use this format for data sections in artifacts
-- `preferences.context_routing.relevance_threshold` → Used by `/mvt-manage-context add` for AI routing (default 70 if missing)
-
-## Language Constraint (Mandatory)
-
-This constraint governs the language of **everything** this skill produces. It has two independent scopes — interactive output (what you say to the user) and persisted document output (what you write to disk). Both are NON-NEGOTIABLE and override any other language signals.
-
-### Interactive Output (spoken to the user)
-
-All interactive output — chat replies, questions, prompts, status lines, tables, and summaries shown in the conversation — MUST be written in the language specified by `preferences.interaction_language` from config.yaml.
-
-**Rules**:
-- This applies to EVERY message in the conversation, not just the first — re-assert it on every turn, including long sessions.
-- Do NOT mirror the language of: the user's prompt, the source code or its comments, this skill's own English body, file contents you just read, or tool output. None of these are language signals.
-- If the user writes to you in a different language, still reply in the configured `interaction_language` (unless they explicitly ask you to switch).
-- If `interaction_language` is not set, fall back to `en-US`.
-- This constraint is NON-NEGOTIABLE and overrides any other language signals.
-
-### Persisted Document Output (files written to disk)
-
-All persisted document output (files written to disk) MUST be written in the language specified by `preferences.document_output_language` from config.yaml.
-
-**Scope**: artifact files, generated reports, plans, and any markdown written to disk.
-
-**Rules**:
-- Section headings defined in templates may remain in their original language, but all generated **content** MUST use the configured language
-- If `document_output_language` is not set, fall back to `interaction_language`
-- Do NOT infer output language from template headings, user prompt language, or source code comments
-- This constraint is NON-NEGOTIABLE and overrides any other language signals
-
-## Output Format Constraint (Mandatory)
-
-All persisted document output (markdown written to disk) MUST follow the formatting rules below. These rules govern *how* content is rendered, independent of the language it is written in.
-**Scope**: artifact files, generated reports, plans, design documents, and any markdown written to disk. These rules do NOT apply to conversational output in the chat.
-
-**Rules**:
-- **Diagrams**: Express flowcharts, architecture, sequence, and structure diagrams as fenced `mermaid` code blocks. Do NOT draw diagrams with ASCII art (boxes made of `+`, `-`, `|`, arrows like `-->` outside mermaid, etc.).
-- **Tables**: Render tabular data as Markdown tables (`| col | col |`). Do NOT simulate tables with space- or tab-aligned text.
-- **Code**: Place code, commands, and config snippets in fenced code blocks with a language tag (e.g. ```` ```ts ````, ```` ```bash ````, ```` ```yaml ````). Do NOT leave code in bare or untagged fences.
-- **Headings**: Use the Markdown heading hierarchy (`#` -> `##` -> `###`) without skipping levels. Do NOT use bold text as a substitute for a heading.
-
-**Notes**:
-- If a diagram genuinely cannot be expressed in mermaid (e.g. a precise spatial/pixel layout), state that explicitly and prefer a Markdown table or prose description over ASCII art.
-- This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from templates or source material.
-
-### Step 5: Pre-flight Checks
+### Stage 5: Pre-flight Checks
 
 For each check below, if the condition holds, perform the action implied by its **Level**:
 
@@ -148,6 +93,30 @@ For each check below, if the condition holds, perform the action implied by its 
 |---|-----------|-------|---------|
 | 1 | `session.initialized_at` is empty | WARN | Session not initialized. Run `/mvt-init` first. |
 | 2 | `active_change.plan_path` is empty | BLOCK | No active plan. Run `/mvt-plan-dev` to create one. |
+
+## Language Constraint (Mandatory)
+
+This governs **all language output**. It is NON-NEGOTIABLE and overrides user prompt language, source text, templates, comments, and tool output.
+
+### Interactive Output (spoken to the user)
+
+Use `preferences.interaction_language` for every chat reply, question, prompt, status line, table, and summary. Re-assert it every turn, including long sessions. If absent, use `en-US`. Only an explicit user request to switch language overrides it.
+
+### Persisted Document Output (files written to disk)
+
+Use `preferences.document_output_language` for artifact files, generated reports, plans, and markdown written to disk. If absent, fall back to `interaction_language`. Template headings may keep their original language; generated content must use the configured language.
+
+## Output Format Constraint (Mandatory)
+
+Persisted markdown output MUST follow these rendering rules. Scope: artifact files, generated reports, plans, design documents, and any markdown written to disk. Chat output is out of scope.
+
+**Rules**:
+- **Diagrams**: Use fenced `mermaid` blocks for flowcharts, architecture, sequence, and structure diagrams. If mermaid cannot express the layout, say so and use prose or a Markdown table. Never use ASCII art.
+- **Tables**: Use Markdown tables (`| col | col |`), not aligned spaces or tabs.
+- **Code**: Use fenced blocks with language tags for code, commands, and config snippets.
+- **Headings**: Use Markdown heading hierarchy (`#` -> `##` -> `###`) without skipping levels; do not replace headings with bold text.
+
+This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from templates or source material.
 
 ## Operation Mode: Shortcut
 
@@ -186,7 +155,9 @@ The mechanical work — mutating the task, recomputing `current_tasks` via the p
 rules, validating the result, and writing back atomically — is performed by a
 deterministic script. Do NOT hand-edit `plan.yaml` or reason through the
 `current_tasks` selection yourself; call the script with the resolved arguments
-from Step 1–2:
+from Step 1–2. See the **Script Usage Rule** section for the command template,
+or read `.ai-agents/scripts/plan-update.md` for argument value sources,
+parameter semantics, and output interpretation.
 
 ```bash
 node .ai-agents/scripts/plan-update.cjs --plan "<active_change.plan_path>" --task <task_id> --status <new_status> --projects "<comma,separated,project,names>" [--artifacts "<comma,separated,paths>"] [--notes "<note text>"]
@@ -194,30 +165,7 @@ node .ai-agents/scripts/plan-update.cjs --plan "<active_change.plan_path>" --tas
 
 Include `--artifacts` only if artifacts were provided, and `--notes` only if a note was provided; omit each flag otherwise.
 
-| Argument | Value source |
-|----------|-------------|
-| `--plan` | `active_change.plan_path` resolved from session.yaml |
-| `--task` | the `task_id` resolved in Step 1 |
-| `--status` | the `new_status` resolved in Step 1 (`pending`/`in_progress`/`done`/`blocked`/`skipped`) |
-| `--projects` | comma-separated project names read from `project-context.yaml > projects[].name` |
-| `--artifacts` | optional; comma-separated paths to append (the script de-duplicates) |
-| `--notes` | optional; overwrites the task's `notes` |
-
-The script performs, deterministically:
-
-1. **Apply**: sets the task status; appends + de-duplicates `--artifacts` (handles `artifacts: null`); overwrites `--notes`; sets `completed_at` to now when status is `done`, else `null`; refreshes `plan.updated_at`.
-2. **Recompute `current_tasks`** (per-project independent advancement): for each project, finds the `in_progress` task or advances the first `pending` task whose `depends_on` are all in `resolvedIds` (done + skipped; blocked does NOT satisfy). Detects `project_switch` when advancement crosses a project boundary. Plan done -> `current_tasks = {}`.
-3. **Validate** the mutated plan (unique ids, valid `depends_on` references, DAG/no-cycle per project, one `in_progress` per project, every task has acceptance, `completed_at` consistency, `current_tasks` validity, project naming constraint, task project membership).
-4. **Write atomically** (temp + rename) only if validation passes.
-
-**Interpreting the result:**
-
-- **Exit 0**: success. stdout is a single-line JSON object:
-  ```json
-  {"ok":true,"task":{"id":"t1","title":"...","old_status":"in_progress","new_status":"done"},"current_tasks":{"default":"t2"},"plan_status":"in_progress","progress":{"done":1,"total":4},"warning":null,"project_switch":null}
-  ```
-  Use these fields directly to render the Output Format block. The file is already written — do NOT read it back to verify. If `warning` is non-null, surface it. If `project_switch` is non-null, note the project boundary crossing.
-- **Exit 1**: failure. stderr carries the error (invalid status, task not found, validation failure, parse/write error). The file was **not** modified. Report the error to the user and do not fabricate a success summary.
+**Interpreting the result:** See `.ai-agents/scripts/plan-update.md` "Output interpretation" for the exit-0 / exit-1 protocol. On exit 0, use the JSON fields directly to render the Output Format block. On exit 1, report stderr and do not fabricate a success summary.
 
 ### Step 4: Output
 
@@ -248,14 +196,20 @@ After the Step 3 script reports `plan_status: "done"`:
    > - **(defer)** Mark child done but don't advance yet
 
 4. On **y**:
-   - `epic-update.cjs --epic <active_epic.epic_path> --complete-child <active_change.id>`
+  - Call the Epic Update Script in `--complete-child` mode using the command below:
+     ```bash
+     node .ai-agents/scripts/epic-update.cjs --epic "<active_epic.epic_path>" --complete-child <active_change.id>
+     ```
    - `session-update.cjs --skill mvt-update-plan --summary "..." --close-change`
    - Display: next child info from epic-update stdout. Suggest `/mvt-analyze` to start the next sub-change.
 
 5. On **n**: No action. Display reminder: "Change remains open. Run other skills (e.g., `/mvt-review`, `/mvt-test`, `/mvt-fix`) as needed; run `/mvt-update-plan` again when ready to advance the epic."
 
 6. On **defer**:
-   - `epic-update.cjs --epic <active_epic.epic_path> --set-child-status <active_change.id> done`
+  - Call the Epic Update Script in `--set-child-status` mode using the command below:
+     ```bash
+     node .ai-agents/scripts/epic-update.cjs --epic "<active_epic.epic_path>" --set-child-status <active_change.id> --child-status done
+     ```
    - `session-update.cjs --skill mvt-update-plan --summary "..." --close-change`
    - Display: "Child marked done, current_change unchanged."
 
@@ -299,31 +253,36 @@ Every response MUST end with a Suggested Next Steps section.
 
 ## State Update
 
-After completing the skill's main task, run the session update script **exactly once** with the following arguments:
+After the skill's main task, run the session update script **exactly once**:
 
 ```bash
-node .ai-agents/scripts/session-update.cjs --skill <skill_command_name> --summary "<concise one-line summary>" --update-change
+node .ai-agents/scripts/session-update.cjs --skill mvt-update-plan --summary "<concise one-line summary>" --update-change
 ```
 
-If the script exits with code 0, the state update was applied successfully; there is no need to read or verify the session file.
+Write `--summary` as one concise line in the configured `interaction_language`.
 
-### Argument values
+### Critical flag semantics
 
-| Argument | Value source | Example |
-|----------|-------------|---------|
-| `--skill` | The exact skill command name without the leading `/` | `mvt-update-plan` |
-| `--summary` | A concise one-line description of what this invocation accomplished, in the configured `interaction_language` | `"Identified auth requirements and created change chg-001"` |
-| `--update-change` | Flag only, no value. Upserts the current `active_change` into `changes[]`. | — |
+- Use only the flags rendered in the command above; do not invent extra session-update flags.
+- `--update-change` upserts the current `active_change` into `changes[]`, refreshes `updated_at`, and preserves the configured change-history limit.
 
-### Parameter semantics
-
-| Argument | When to use | Effect on `session.yaml` |
-|----------|-------------|--------------------------|
-| `--update-change` | Skill modifies a plan (i.e., after `plan.yaml` is updated) | Upserts current `active_change` into `changes[]` (with `status: active`), sets `updated_at`, sorts ascending, truncates to configured limit. |
+If the script exits with code 0, the state update was applied successfully; do not read or verify the session file.
 
 ### Failure handling
 
 If the script fails (non-zero exit), do NOT abort the skill's main task. Continue execution and add a brief note at the end of your response that the session could not be updated.
+
+## Script Usage Rule
+
+To mutate `plan.yaml`, call `plan-update.cjs`. Do NOT hand-edit `plan.yaml` or choose `current_tasks`.
+
+**Minimal command** (always required flags):
+```bash
+node .ai-agents/scripts/plan-update.cjs --plan "<active_change.plan_path>" --task <task_id> --status <new_status> --projects "<project_list>"
+```
+For flags, argument sources, or output not rendered here, read `.ai-agents/scripts/plan-update.md`. Do NOT read `.cjs`/`.js` source.
+
+To mutate `epic.yaml`, use the exact `epic-update.cjs` mode commands rendered in this skill's workflow. Do NOT hand-edit `epic.yaml`, advance `current_change`, or read `.cjs`/`.js` source.
 
 ## Suggested Next Steps
 

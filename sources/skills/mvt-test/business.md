@@ -91,16 +91,8 @@ This step applies only when the workspace has multiple projects (`projects.lengt
 - Record each finding with: scenario id, expected vs observed, severity (Critical / Warning), and recommend `/mvt-fix`.
 
 ### Step 10: Write Artifact
-- **Path and template**: as defined in the **Artifact Structure** section below.
-- **Required content** (mapped to template headings):
-  - `Scope` -- target files, fallbacks applied.
-  - `Test Framework & Layout` -- chosen framework, file layout convention.
-  - `Test Scenarios` -- the Scenario Table from Step 4.
-  - `Test Cases` -- the row-level table from Step 6.
-  - `Granularity Decisions` -- summary from Step 5, including any "needs setup" gaps.
-  - `Coverage Analysis` -- only when `--coverage`; otherwise omit the heading.
-  - `Implementation Issues Found` -- from Step 9; empty list is fine.
-  - `Suggested Run Commands` -- one or two commands the user can copy-paste.
+- **Path and template**: as defined in the **Artifact Structure** section below. Follow the HTML comments in the template for what each section should contain; strip comments from the final artifact.
+- **Required coverage**: cover only content that is applicable to this test effort. Preserve enough information for the user to understand the target scope, chosen framework/layout, scenarios and runnable test cases, granularity choices, coverage gaps when `--coverage` is set, implementation issues when found, and practical run commands when tests are generated. Do not create empty or artificial sections just because an item is named here; if the template omits or renames a section, place applicable content in the closest relevant section.
 - The actual test files go to the project tree; the artifact is a record.
 
 ### Step 11: State Update

@@ -60,11 +60,11 @@ describe("assembler", () => {
     it("includes Activation Protocol", () => {
       const output = buildSkill("mvt-analyze");
       expect(output).toContain("## Activation Protocol");
-      expect(output).toContain("### Step 1: Load Context");
-      expect(output).toContain("### Step 2: Resolve Project Scope");
-      expect(output).toContain("### Step 3: Load Knowledge");
-      expect(output).toContain("### Step 4: Load Config");
-      expect(output).toContain("### Step 5: Pre-flight Checks");
+      expect(output).toContain("### Stage 1: Load Context");
+      expect(output).toContain("### Stage 2: Resolve Project Scope");
+      expect(output).toContain("### Stage 3: Load Knowledge");
+      expect(output).toContain("### Stage 4: Load Config");
+      expect(output).toContain("### Stage 5: Pre-flight Checks");
     });
 
     it("includes Execution Flow from business.md", () => {
@@ -145,8 +145,10 @@ describe("assembler", () => {
     it("session-update section uses script call", () => {
       const output = buildSkill("mvt-implement");
       expect(output).toContain("session-update.cjs");
-      expect(output).toContain("--skill <skill_command_name>");
-      expect(output).toContain("Argument values");
+      expect(output).toContain("--skill mvt-implement");
+      expect(output).toContain("Critical flag semantics");
+      expect(output).not.toContain("Argument values");
+      expect(output).not.toContain(".ai-agents/scripts/session-update.md");
     });
   });
 
@@ -170,10 +172,12 @@ describe("assembler", () => {
       expect(output).toContain("changes[]");
     });
 
-    it("enforces granularity constraint of 3-10 tasks", () => {
+    it("includes config-driven granularity guidance", () => {
       const output = buildSkill("mvt-plan-dev");
-      expect(output).toContain("3");
-      expect(output).toContain("10");
+      expect(output).toContain("preferences.planning.granularity");
+      expect(output).toContain("coarse");
+      expect(output).toContain("medium");
+      expect(output).toContain("fine");
     });
 
     it("preflight blocks when active_change is missing", () => {
@@ -300,6 +304,117 @@ describe("assembler", () => {
       const output = buildSkill("mvt-help");
       expect(output).toContain("change is large");
       expect(output).toContain("/mvt-plan-dev");
+    });
+
+    it("renders a flat skills catalog instruction without category grouping", () => {
+      const output = buildSkill("mvt-help");
+      expect(output).toContain("Display all skills as a single flat table");
+      expect(output).toContain("Single flat skills table, sorted by registry declaration order");
+      expect(output).not.toContain("Skills tables grouped by category");
+      expect(output).not.toContain("section comment headers in `registry.yaml`");
+    });
+
+    it("defines evidence and runtime recommendation reuse", () => {
+      const output = buildSkill("mvt-help");
+      expect(output).toContain("**Evidence conventions**");
+      expect(output).toContain("`.ai-agents/workspace/artifacts/{active_change.id}/`");
+      expect(output).toContain("primary runtime recommendation");
+      expect(output).toContain("Use that same recommendation in Current Status");
+    });
+
+    it("documents mermaid styling and textual fallback status markers", () => {
+      const output = buildSkill("mvt-help");
+      expect(output).toContain("classDef done");
+      expect(output).toContain("classDef current");
+      expect(output).toContain("classDef pending");
+      expect(output).toContain("[done]`, `[current]`, or `[pending]");
+    });
+
+    it("omits static conditional suggestions so runtime state drives next steps", () => {
+      const output = buildSkill("mvt-help");
+      expect(output).toContain("### Resolution order");
+      expect(output).toContain("Skill names and `description` fields in `registry.yaml`");
+      expect(output).not.toContain("`category` and `description`");
+      expect(output).not.toContain("### Conditional Recommendations");
+      expect(output).not.toContain("active change in progress");
+    });
+  });
+
+  describe("script-callability sections (change 20260619)", () => {
+    it("mvt-update-plan keeps generic plan guidance and inline epic-mode guidance", () => {
+      const output = buildSkill("mvt-update-plan");
+      expect(output).toContain("## Script Usage Rule");
+      expect(output).toContain("plan-update.cjs");
+      expect(output).toContain("--plan");
+      expect(output).toContain("--task");
+      expect(output).toContain("epic-update.cjs");
+      expect(output).toContain("--complete-child");
+      expect(output).toContain(".ai-agents/scripts/plan-update.md");
+      expect(output).not.toContain(".ai-agents/scripts/epic-update.md");
+      expect(output).toContain("exact `epic-update.cjs` mode commands rendered in this skill's workflow");
+      expect(output).not.toContain("--child-title");
+      expect(output).not.toContain("--child-scope");
+      expect(output).not.toContain("--child-depends-on");
+    });
+
+    it("mvt-implement omits Script Usage Rule while keeping authoritative deliverables command", () => {
+      const output = buildSkill("mvt-implement");
+      expect(output).not.toContain("## Script Usage Rule");
+      expect(output).toContain("plan-update.cjs");
+      expect(output).toContain("Use this exact metadata-only command");
+      expect(output).toContain("Do NOT add `--status`");
+      expect(output).not.toContain("--status <new_status>");
+      expect(output).not.toContain(".ai-agents/scripts/plan-update.md");
+      expect(output).not.toContain("epic-update.cjs");
+      expect(output).not.toContain(".ai-agents/scripts/epic-update.md");
+    });
+
+    it("mvt-decompose omits Script Usage Rule while keeping rendered epic commands", () => {
+      const output = buildSkill("mvt-decompose");
+      expect(output).not.toContain("## Script Usage Rule");
+      expect(output).toContain("epic-update.cjs");
+      expect(output).toContain("--validate");
+      expect(output).toContain("--add-child");
+      expect(output).toContain("--complete-child");
+      expect(output).toContain("Do NOT hand-edit `epic.yaml`");
+      expect(output).not.toContain("plan-update.cjs");
+      expect(output).not.toContain(".ai-agents/scripts/plan-update.md");
+    });
+
+    it("mvt-analyze omits Script Usage Rule while keeping epic switch guidance", () => {
+      const output = buildSkill("mvt-analyze");
+      expect(output).not.toContain("## Script Usage Rule");
+      expect(output).toContain("epic-update.cjs");
+      expect(output).toContain("--switch-active");
+      expect(output).toContain("Do NOT hand-edit `epic.yaml`");
+      expect(output).not.toContain("plan-update.cjs");
+    });
+
+    it("mvt-sync-context omits Script Usage Rule while keeping project plan reminder", () => {
+      const output = buildSkill("mvt-sync-context");
+      expect(output).not.toContain("## Script Usage Rule");
+      expect(output).toContain("plan-update.cjs");
+      expect(output).toContain("pass `--projects`");
+      expect(output).toContain("Do NOT hand-edit `plan.yaml`");
+      expect(output).not.toContain("--status <new_status>");
+      expect(output).not.toContain("epic-update.cjs");
+    });
+
+    it("mvt-cleanup omits session-only Script Usage Rule", () => {
+      const output = buildSkill("mvt-cleanup");
+      expect(output).toContain("session-update.cjs");
+      expect(output).toContain("--close-change");
+      expect(output).toContain("--truncate-history");
+      expect(output).not.toContain("## Script Usage Rule");
+      expect(output).not.toContain("plan-update.cjs");
+      expect(output).not.toContain("epic-update.cjs");
+    });
+
+    it("script-usage skills still prohibit reading script source files", () => {
+      for (const skill of ["mvt-update-plan", "mvt-implement", "mvt-decompose", "mvt-analyze", "mvt-sync-context"]) {
+        const output = buildSkill(skill);
+        expect(output).toMatch(/Do NOT [^\n]*(?:hand-edit|read `\.cjs`\/`\.js` source|read `\.cjs` or `\.js` source)/);
+      }
     });
   });
 });

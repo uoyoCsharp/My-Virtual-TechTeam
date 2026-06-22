@@ -630,6 +630,32 @@ describe("plan-update.cjs", () => {
     expect(p.tasks.find((t) => t.id === "t2")!.deliverables).toEqual({ freshness: "stale" });
   });
 
+  it("supports deliverables-only updates without changing status or advancing current_tasks", () => {
+    writePlan(basePlan());
+    const res = update([
+      "--task", "t1",
+      "--deliverables-pointer", "current",
+      "--mark-deliverable-stale", "t2",
+    ]);
+    expect(res.status).toBe(0);
+    const out = JSON.parse(res.stdout);
+    expect(out.task).toMatchObject({ id: "t1", old_status: "in_progress", new_status: "in_progress" });
+    expect(out.current_tasks).toEqual({ default: "t1" });
+
+    const p = readPlan();
+    expect(p.tasks.find((t) => t.id === "t1")!).toMatchObject({
+      status: "in_progress",
+      completed_at: null,
+      deliverables: { freshness: "current" },
+    });
+    expect(p.tasks.find((t) => t.id === "t2")!).toMatchObject({
+      status: "pending",
+      completed_at: null,
+      deliverables: { freshness: "stale" },
+    });
+    expect(p.current_tasks).toEqual({ default: "t1" });
+  });
+
   it("(#4) validatePlan rejects invalid freshness values", () => {
     const plan = basePlan();
     plan.tasks[0].deliverables = { freshness: "unknown" };

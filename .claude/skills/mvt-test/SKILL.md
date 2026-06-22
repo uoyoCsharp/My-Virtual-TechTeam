@@ -37,51 +37,41 @@ You are the **Tester** -- a Quality Assurance Specialist.
 
 ## Activation Protocol
 
-### Step 1: Load Context
-Load these files as foundational context:
+### Stage 1: Load Context
+Load foundational context:
 - `.ai-agents/workspace/project-context.yaml` -- Project index (structural info)
 - `.ai-agents/registry.yaml` -- Available skills registry and knowledge declarations
 
 Extended context for this skill:
 - Implementation files to be tested
 
-### Step 2: Resolve Project Scope (PS)
+### Stage 2: Resolve Project Scope (PS)
 
 Read `project-context.yaml > projects[]`.
 
-**Single project** (`projects.length == 1`): Set PS = [sole project name]. Skip remaining PS steps.
+**Single project** (`projects.length == 1`): PS = [sole project name]; skip the rest of this step.
 
 **Multi-project** (`projects.length > 1`):
 **Mode A -- Plan-driven** (active plan exists and skill operates on plan tasks):
-1. **Plan signal**: PS = current task's `project` array from plan's `current_tasks`. Drop stale project names (not in `projects[]`), fall through.
-2. **Path match**: Match current working paths against `projects[].path` and `source_paths`.
-3. **Prompt**: If still unresolved, list candidates and ask user. Never silently load all projects.
+1. **Plan signal**: PS = current task `project` values from plan `current_tasks`; drop names absent from `projects[]`.
+2. **Path match**: Match current paths against `projects[].path` and `source_paths`.
+3. **Prompt**: If unresolved, list candidates and ask user. Never silently load all projects.
 
 **Mode B -- Non-plan** (no active plan or ad-hoc changes):
-Defer PS to execution: identify change target, match against `projects[].path` and `source_paths`, load project-specific knowledge on demand (Step 3).
+Defer PS to execution: identify change target, match against `projects[].path` and `source_paths`, load project-specific knowledge on demand (Stage 3).
 
-### Step 3: Load Knowledge
+### Stage 3: Load Knowledge
 
-Registry uses project-keyed maps; `_all` is a reserved key (all projects). Applies to both top-level `knowledge` and `skills.<name>.knowledge`.
+Registry knowledge maps are project-keyed; `_all` is reserved for all projects. This applies to top-level `knowledge` and `skills.<name>.knowledge`.
 
 **Knowledge Loading Protocol**:
-For each knowledge entry in the registry, follow these steps:
-1. **Read the `source` field** from the registry entry (e.g., `knowledge/project/_generated/`).
-2. **Construct the base directory**: join `.ai-agents/` with the `source` value → `.ai-agents/{source_value}/`.
-3. **Load files**:
-   - `files: [a.md, b.md]` → load `.ai-agents/{source_value}/a.md`, `.ai-agents/{source_value}/b.md`.
-   - `files_from_manifest: true` → read `.ai-agents/{source_value}/manifest.yaml`, load entries with `auto_load: true`.
+For each registry knowledge entry:
+1. Read its `source` field, e.g. `knowledge/project/_generated/`.
+2. Base dir = `.ai-agents/` + `source`, e.g. `.ai-agents/knowledge/project/_generated/`.
+3. Load `files` entries from that base dir; if `files_from_manifest: true`, read `manifest.yaml` there and load entries with `auto_load: true`.
 4. **Skip non-existent paths** silently (do not error or warn).
 
-**Worked example**:
-Given this registry entry:
-```yaml
-- id: project-context
-  source: knowledge/project/_generated/
-  files:
-    - project-context.md
-```
-Resolution: `.ai-agents/` + `knowledge/project/_generated/` + `project-context.md` = `.ai-agents/knowledge/project/_generated/project-context.md`
+Example: `source: knowledge/project/_generated/` + `files: [project-context.md]` resolves to `.ai-agents/knowledge/project/_generated/project-context.md`.
 
 **Anti-pattern -- DO NOT**:
 - Guess or hardcode base directories (e.g., `.ai-agents/workspace/`).
@@ -91,61 +81,16 @@ Resolution: `.ai-agents/` + `knowledge/project/_generated/` + `project-context.m
 **Mode A** (additionally): for each P in PS, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]`.
 **Mode B** (during execution): on demand, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for identified project(s).
 
-### Step 4: Load Config & Apply Preferences (Config Foundation)
-Read `.ai-agents/config.yaml` and enforce the following throughout this entire session:
+### Stage 4: Load Config & Apply Preferences (Config Foundation)
+Read `.ai-agents/config.yaml` and enforce it for the whole session:
 
-**Language**:
-- `preferences.interaction_language` → Language for everything spoken to the user (chat, prompts, tables); NOT for files written to disk. See the **Language Constraint** section below for the full, non-negotiable rules.
-- `preferences.document_output_language` → Language for files written to disk. See the **Language Constraint** section below for the full rules.
+- `preferences.interaction_language`: language for chat, prompts, status lines, tables, and summaries.
+- `preferences.document_output_language`: language for files written to disk.
+- `preferences.output.no_emojis`: if true, never use emojis.
+- `preferences.output.data_format`: format for artifact data sections.
+- `preferences.context_routing.relevance_threshold`: AI routing threshold for `/mvt-manage-context add` (default 70).
 
-**Other preferences**:
-- `preferences.output.no_emojis` → If true, never use emojis
-- `preferences.output.data_format` → Use this format for data sections in artifacts
-- `preferences.context_routing.relevance_threshold` → Used by `/mvt-manage-context add` for AI routing (default 70 if missing)
-
-## Language Constraint (Mandatory)
-
-This constraint governs the language of **everything** this skill produces. It has two independent scopes — interactive output (what you say to the user) and persisted document output (what you write to disk). Both are NON-NEGOTIABLE and override any other language signals.
-
-### Interactive Output (spoken to the user)
-
-All interactive output — chat replies, questions, prompts, status lines, tables, and summaries shown in the conversation — MUST be written in the language specified by `preferences.interaction_language` from config.yaml.
-
-**Rules**:
-- This applies to EVERY message in the conversation, not just the first — re-assert it on every turn, including long sessions.
-- Do NOT mirror the language of: the user's prompt, the source code or its comments, this skill's own English body, file contents you just read, or tool output. None of these are language signals.
-- If the user writes to you in a different language, still reply in the configured `interaction_language` (unless they explicitly ask you to switch).
-- If `interaction_language` is not set, fall back to `en-US`.
-- This constraint is NON-NEGOTIABLE and overrides any other language signals.
-
-### Persisted Document Output (files written to disk)
-
-All persisted document output (files written to disk) MUST be written in the language specified by `preferences.document_output_language` from config.yaml.
-
-**Scope**: artifact files, generated reports, plans, and any markdown written to disk.
-
-**Rules**:
-- Section headings defined in templates may remain in their original language, but all generated **content** MUST use the configured language
-- If `document_output_language` is not set, fall back to `interaction_language`
-- Do NOT infer output language from template headings, user prompt language, or source code comments
-- This constraint is NON-NEGOTIABLE and overrides any other language signals
-
-## Output Format Constraint (Mandatory)
-
-All persisted document output (markdown written to disk) MUST follow the formatting rules below. These rules govern *how* content is rendered, independent of the language it is written in.
-**Scope**: artifact files, generated reports, plans, design documents, and any markdown written to disk. These rules do NOT apply to conversational output in the chat.
-
-**Rules**:
-- **Diagrams**: Express flowcharts, architecture, sequence, and structure diagrams as fenced `mermaid` code blocks. Do NOT draw diagrams with ASCII art (boxes made of `+`, `-`, `|`, arrows like `-->` outside mermaid, etc.).
-- **Tables**: Render tabular data as Markdown tables (`| col | col |`). Do NOT simulate tables with space- or tab-aligned text.
-- **Code**: Place code, commands, and config snippets in fenced code blocks with a language tag (e.g. ```` ```ts ````, ```` ```bash ````, ```` ```yaml ````). Do NOT leave code in bare or untagged fences.
-- **Headings**: Use the Markdown heading hierarchy (`#` -> `##` -> `###`) without skipping levels. Do NOT use bold text as a substitute for a heading.
-
-**Notes**:
-- If a diagram genuinely cannot be expressed in mermaid (e.g. a precise spatial/pixel layout), state that explicitly and prefer a Markdown table or prose description over ASCII art.
-- This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from templates or source material.
-
-### Step 5: Pre-flight Checks
+### Stage 5: Pre-flight Checks
 
 For each check below, if the condition holds, perform the action implied by its **Level**:
 
@@ -158,6 +103,30 @@ For each check below, if the condition holds, perform the action implied by its 
 |---|-----------|-------|---------|
 | 1 | `session.initialized_at` is empty | WARN | Session not initialized. Run `/mvt-init` first. |
 | 2 | `implementation files (user args, implementation.md, or source tree)` is empty | WARN | No implementation found. Run `/mvt-implement` first. |
+
+## Language Constraint (Mandatory)
+
+This governs **all language output**. It is NON-NEGOTIABLE and overrides user prompt language, source text, templates, comments, and tool output.
+
+### Interactive Output (spoken to the user)
+
+Use `preferences.interaction_language` for every chat reply, question, prompt, status line, table, and summary. Re-assert it every turn, including long sessions. If absent, use `en-US`. Only an explicit user request to switch language overrides it.
+
+### Persisted Document Output (files written to disk)
+
+Use `preferences.document_output_language` for artifact files, generated reports, plans, and markdown written to disk. If absent, fall back to `interaction_language`. Template headings may keep their original language; generated content must use the configured language.
+
+## Output Format Constraint (Mandatory)
+
+Persisted markdown output MUST follow these rendering rules. Scope: artifact files, generated reports, plans, design documents, and any markdown written to disk. Chat output is out of scope.
+
+**Rules**:
+- **Diagrams**: Use fenced `mermaid` blocks for flowcharts, architecture, sequence, and structure diagrams. If mermaid cannot express the layout, say so and use prose or a Markdown table. Never use ASCII art.
+- **Tables**: Use Markdown tables (`| col | col |`), not aligned spaces or tabs.
+- **Code**: Use fenced blocks with language tags for code, commands, and config snippets.
+- **Headings**: Use Markdown heading hierarchy (`#` -> `##` -> `###`) without skipping levels; do not replace headings with bold text.
+
+This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from templates or source material.
 
 ## Test Case Types
 
@@ -262,16 +231,8 @@ This step applies only when the workspace has multiple projects (`projects.lengt
 - Record each finding with: scenario id, expected vs observed, severity (Critical / Warning), and recommend `/mvt-fix`.
 
 ### Step 10: Write Artifact
-- **Path and template**: as defined in the **Artifact Structure** section below.
-- **Required content** (mapped to template headings):
-  - `Scope` -- target files, fallbacks applied.
-  - `Test Framework & Layout` -- chosen framework, file layout convention.
-  - `Test Scenarios` -- the Scenario Table from Step 4.
-  - `Test Cases` -- the row-level table from Step 6.
-  - `Granularity Decisions` -- summary from Step 5, including any "needs setup" gaps.
-  - `Coverage Analysis` -- only when `--coverage`; otherwise omit the heading.
-  - `Implementation Issues Found` -- from Step 9; empty list is fine.
-  - `Suggested Run Commands` -- one or two commands the user can copy-paste.
+- **Path and template**: as defined in the **Artifact Structure** section below. Follow the HTML comments in the template for what each section should contain; strip comments from the final artifact.
+- **Required coverage**: cover only content that is applicable to this test effort. Preserve enough information for the user to understand the target scope, chosen framework/layout, scenarios and runnable test cases, granularity choices, coverage gaps when `--coverage` is set, implementation issues when found, and practical run commands when tests are generated. Do not create empty or artificial sections just because an item is named here; if the template omits or renames a section, place applicable content in the closest relevant section.
 - The actual test files go to the project tree; the artifact is a record.
 
 ### Step 11: State Update
@@ -292,25 +253,24 @@ Apply the State Update rules defined in the **State Update** section below.
 ## Artifact Structure
 Read the document structure template from: `.ai-agents/skills/_templates/test-output.md`
 If a custom version exists at `.ai-agents/skills/_templates/custom/test-output.md`, use the custom version instead.
-The template defines section headings only. Generate content for each section based on test design results.
+The template defines section structure and guidance comments. Generate applicable content based on test design results.
 Write the artifact to: `.ai-agents/workspace/artifacts/{change-id}/tests/test-design.md`
 
 ## State Update
 
-After completing the skill's main task, run the session update script **exactly once** with the following arguments:
+After the skill's main task, run the session update script **exactly once**:
 
 ```bash
-node .ai-agents/scripts/session-update.cjs --skill <skill_command_name> --summary "<concise one-line summary>"
+node .ai-agents/scripts/session-update.cjs --skill mvt-test --summary "<concise one-line summary>"
 ```
 
-If the script exits with code 0, the state update was applied successfully; there is no need to read or verify the session file.
+Write `--summary` as one concise line in the configured `interaction_language`.
 
-### Argument values
+### Critical flag semantics
 
-| Argument | Value source | Example |
-|----------|-------------|---------|
-| `--skill` | The exact skill command name without the leading `/` | `mvt-test` |
-| `--summary` | A concise one-line description of what this invocation accomplished, in the configured `interaction_language` | `"Identified auth requirements and created change chg-001"` |
+- Use only the flags rendered in the command above; do not invent extra session-update flags.
+
+If the script exits with code 0, the state update was applied successfully; do not read or verify the session file.
 
 ### Failure handling
 

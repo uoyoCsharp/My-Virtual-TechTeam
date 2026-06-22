@@ -2,12 +2,19 @@
 
 ### Step 1: Load Inputs
 - **Recommended**:
-  - `.ai-agents/knowledge/project/_generated/project-context.md` -- existence check only, to detect whether semantic context has been generated.
+  - `.ai-agents/knowledge/project/_generated/project-context.md` -- existence check only, to detect whether semantic context has been generated. This generated semantic context (`.md`) is distinct from the structural project index (`.ai-agents/workspace/project-context.yaml`) loaded during activation.
 - **Fallback**: any missing optional file is treated as "feature absent" for assessment purposes; do not abort. If `registry.yaml` itself is missing, surface the error and recommend `mvtt install`.
 
 ### Step 2: Assess User Position
 - **What**: pick exactly one recommended next skill based on the current workspace state.
 - **How**: walk the table top-to-bottom; the first row whose condition holds wins.
+- **Evidence conventions**:
+  - Active change artifacts resolve under `.ai-agents/workspace/artifacts/{active_change.id}/`.
+  - `analysis.md`, `design.md`, `implementation.md`, `review.md`, and `test-design.md` refer to files in the active change artifact directory unless stated otherwise.
+  - Completed skill history matches `session.yaml > history[].skill` exactly, using the `/mvt-` prefix and case-sensitive skill name. When `active_change.id` is non-empty, prefer history rows whose `change_id` matches the active change; use unmatched history only as fallback context.
+  - `Change Tracking lists > 5 files` means `design.md > ## Change Tracking` names more than five affected files.
+  - A `review.md` has Critical findings when its severity summary or Critical Issues section reports one or more Critical findings.
+- **Runtime recommendation**: store the winning row as the primary runtime recommendation. Use that same recommendation in Current Status, "What should I do next?" answers, and as the first Suggested Next Steps item.
 
   | Condition | Recommendation |
   |-----------|---------------|
@@ -20,13 +27,13 @@
   | `design.md` exists, change is large (Change Tracking lists > 5 files OR ADR includes breaking change OR > 1 new module) | `/mvt-plan-dev` -- Decompose into tracked plan |
   | `design.md` (or `plan.yaml`) ready, no `implementation.md` | `/mvt-implement` -- Implement the design |
   | `implementation.md` exists, no `review.md` | `/mvt-review` -- Review the code |
+  | `review.md` has Critical findings | `/mvt-fix` -- Fix critical issues before continuing; surface prominently above the catalog |
   | `review.md` exists with no Critical findings, no `test-design.md` | `/mvt-test` -- Write tests |
-  | `review.md` has Critical findings | `/mvt-fix` -- Fix critical issues before continuing |
   | All of the above complete | `/mvt-cleanup` -- Tidy artifacts, OR start a new feature with `/mvt-analyze` |
 
 ### Step 3: Display Skills Catalog
 Read `registry.yaml` > `skills` section.
-Display all skills as a single flat table (no grouping; the section comment headers in `registry.yaml` already group them by role for human readers):
+Display all skills as a single flat table:
 - Header row: `Skill | Description`
 
 For each skill, show: `/{skill-name}` | `description` field from registry.
@@ -46,9 +53,13 @@ flowchart LR
     C -.->|epic scale| DC[decompose]
     DC --> C2[analyze<br/>epic-child]
     C2 --> D
+
+    classDef done fill:#c6efce,stroke:#2e7d32,color:#2e7d32
+    classDef current fill:#ffeb9c,stroke:#f59e0b,color:#b45309
+    classDef pending fill:#f0f0f0,stroke:#9ca3af,color:#6b7280
 ```
 
-Color-code based on current progress: green (done), yellow (current/recommended), gray (pending). The "current" node is whichever skill the Step 2 table recommended; "done" is determined by the same evidence the Step 2 table consumed.
+Apply `:::done`, `:::current`, and `:::pending` to nodes based on current progress: green/done, yellow/current recommendation, gray/pending. The "current" node is whichever skill the Step 2 table recommended; "done" is determined by the same evidence the Step 2 table consumed.
 
 ### Step 5: Respond to User Questions
 - **What**: handle the user's free-form question after the catalog is rendered.
@@ -56,10 +67,10 @@ Color-code based on current progress: green (done), yellow (current/recommended)
 
   | Question pattern | Response |
   |------------------|----------|
-  | "What should I do next?" / no specific question | Repeat the Step 2 recommendation in one line, followed by a one-clause reason citing the matched condition |
-  | "What does `/mvt-X` do?" / asks about a specific skill | Read the skill's metadata from `registry.yaml`, show: name, description, knowledge entries (if any), template (if any). Mention "see the skill's SKILL.md for the full procedure" -- do NOT inline the full SKILL.md content (too large) |
+  | "What should I do next?" / no specific question | Repeat the primary runtime recommendation in one line, followed by a reason explaining why the matched current state fact applies |
+  | "What does `/mvt-X` do?" / asks about a specific skill | Read the skill's metadata from `registry.yaml`; show name and description. If `template` exists, mention it. If `custom: true` is set, note it. If `knowledge` exists on that skill entry, show it; otherwise omit knowledge. Mention "see the skill's SKILL.md for the full procedure" -- do NOT inline the full SKILL.md content (too large) |
   | "Compare `/mvt-X` and `/mvt-Y`" | Pull descriptions from registry; if both are workflow skills, mention their relative position in the diagram |
-  | Asks about something not in registry | Reply: "No skill matches that. Available skills: see catalog above." Do not invent skills |
+  | Asks about something not in registry | Do not invent skills. Use simple keyword overlap against skill names and descriptions in `registry.yaml`; if there are close matches, show up to two "closest matches" with one-line reasons. If no close matches exist, say no skill matches and point to the catalog. |
 
 ## Edge Cases & Errors
 
@@ -68,7 +79,6 @@ Color-code based on current progress: green (done), yellow (current/recommended)
 | `registry.yaml` missing | STOP at Step 1; recommend `mvtt install`; show no catalog |
 | `session.yaml` missing | Render catalog (Step 3) and diagram (Step 4) without the "current position" highlight; Step 2 recommends `/mvt-init` |
 | `changes[]` references a `plan_path` that no longer exists | Ignore for help purposes; do not warn -- `/mvt-status` is the right place for that |
-| User invokes `/mvt-help` while inside an active change with Critical review findings | Step 2's recommendation is `/mvt-fix`; surface this prominently above the catalog |
 | User asks about a custom skill (registry entry with `custom: true`) | Treat identically to built-ins; the only difference is showing `custom: true` in the metadata view |
-| Workflow diagram cannot be rendered (mermaid unsupported in environment) | Fall back to a textual flow: `init -> analyze-code -> analyze -> [decompose (epic) -> analyze (epic-child)] -> design -> [plan-dev] -> implement -> review -> test` |
+| Workflow diagram cannot be rendered (mermaid unsupported in environment) | Fall back to a textual flow: `init -> analyze-code -> analyze -> [decompose (epic) -> analyze (epic-child)] -> design -> [plan-dev] -> implement -> review -> test`; mark nodes with `[done]`, `[current]`, or `[pending]` using the same evidence rules |
 | Epic-pending state (`active_epic` non-empty, `active_change` empty) | Step 2's recommendation is `/mvt-analyze` to start the next sub-change; the decompose path is shown in the workflow diagram |

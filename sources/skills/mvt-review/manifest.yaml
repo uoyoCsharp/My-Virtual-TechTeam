@@ -60,12 +60,6 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/language-constraint.md
-
-  - type: shared
-    source: sections/output-format-constraint.md
-
-  - type: shared
     source: sections/activation-preflight.md
     params:
       checks:
@@ -78,6 +72,12 @@ sections:
           level: "WARN"
           message: "No code to review. Run `/mvt-implement` first or specify files."
 
+  - type: shared
+    source: sections/language-constraint.md
+
+  - type: shared
+    source: sections/output-format-constraint.md
+
   - type: file
     source: ./business.md
 
@@ -86,7 +86,7 @@ sections:
       ## Artifact Structure
       Read the document structure template from: `.ai-agents/skills/_templates/review-output.md`
       If a custom version exists at `.ai-agents/skills/_templates/custom/review-output.md`, use the custom version instead.
-      The template defines section headings only. Generate content for each section based on review results.
+      The template defines section structure and guidance comments. Generate applicable content based on review results.
       Write the artifact to: `.ai-agents/workspace/artifacts/{change-id}/review.md`
 
   - type: shared

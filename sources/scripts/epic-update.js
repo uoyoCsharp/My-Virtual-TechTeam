@@ -11,27 +11,9 @@
  * esbuild bundles it into a zero-dependency single file deployed to
  * .ai-agents/scripts/epic-update.cjs.
  *
- * Usage:
- *   node .ai-agents/scripts/epic-update.cjs \
- *     --epic <path-to-epic.yaml> \
- *     --complete-child <change_id>
- *
- *   node .ai-agents/scripts/epic-update.cjs \
- *     --epic <path> \
- *     --set-child-status <change_id> --child-status <status>
- *
- *   node .ai-agents/scripts/epic-update.cjs \
- *     --epic <path> \
- *     --switch-active <change_id>
- *
- *   node .ai-agents/scripts/epic-update.cjs \
- *     --epic <path> \
- *     --add-child <id> --child-title "<t>" --child-scope "<s>" \
- *     [--child-depends-on "dep1,dep2"] \
- *     [--add-child <id2> --child-title "<t2>" ...]
- *
- *   node .ai-agents/scripts/epic-update.cjs \
- *     --validate <path-to-epic.yaml>
+ * Usage: see the "Script Usage Rule" section in any skill that references
+ *   sections/script-usage-rule.md, or read the full reference at
+ *   .ai-agents/scripts/epic-update.md.
  *
  * Output:
  *   Success (exit 0): one-line JSON on stdout

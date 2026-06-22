@@ -22,7 +22,7 @@ sections:
       decision_rules:
         - rule: "active_change is set AND plan_path is empty -> Generate a fresh plan.yaml"
         - rule: "active_change is set AND plan_path is non-empty -> Confirm before regenerating; default to /mvt-update-plan"
-        - rule: "Tasks would exceed 10 -> Stop, propose phasing the change into multiple plans"
+        - rule: "Plan grows beyond practical manageability -> Stop, propose phasing the change into multiple plans"
         - rule: "Dependencies form a cycle -> Reject and ask the user to resolve"
         - rule: "active_change is empty -> Stop and request /mvt-analyze first"
       boundaries:
@@ -46,12 +46,6 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/language-constraint.md
-
-  - type: shared
-    source: sections/output-format-constraint.md
-
-  - type: shared
     source: sections/activation-preflight.md
     params:
       checks:
@@ -63,6 +57,12 @@ sections:
           field: "active_change.id"
           level: "BLOCK"
           message: 'No active change. Run `/mvt-analyze` to create one before planning.'
+
+  - type: shared
+    source: sections/language-constraint.md
+
+  - type: shared
+    source: sections/output-format-constraint.md
 
   - type: file
     source: ./business.md

@@ -332,4 +332,164 @@ describe("loadSection", () => {
     expect(result).toContain("Header");
     expect(result).toContain("Footer");
   });
+
+  it("renders script-usage-rule.md with plan-update block when uses_plan_update is true", () => {
+    const sourcesDir = path.resolve("sources");
+    const result = loadSection(
+      { type: "shared", source: "sections/script-usage-rule.md", params: { uses_plan_update: true } },
+      path.resolve("."),
+      sourcesDir,
+    );
+
+    // Plan-update block rendered
+    expect(result).toContain("## Script Usage Rule");
+    expect(result).toContain("node .ai-agents/scripts/plan-update.cjs");
+    expect(result).toContain("--plan");
+    expect(result).toContain("--task");
+    expect(result).toContain("--status");
+    expect(result).toContain("--projects");
+    // Pointer to full reference doc
+    expect(result).toContain(".ai-agents/scripts/plan-update.md");
+    // Epic-update block NOT rendered
+    expect(result).not.toContain("node .ai-agents/scripts/epic-update.cjs");
+    // No leftover Mustache markers
+    expect(result).not.toContain("{{#uses_plan_update}}");
+    expect(result).not.toContain("{{/uses_plan_update}}");
+    expect(result).not.toContain("{{#uses_epic_update}}");
+  });
+
+  it("renders script-usage-rule.md with epic-update block when uses_epic_update is true", () => {
+    const sourcesDir = path.resolve("sources");
+    const result = loadSection(
+      { type: "shared", source: "sections/script-usage-rule.md", params: { uses_epic_update: true } },
+      path.resolve("."),
+      sourcesDir,
+    );
+
+    // Epic-update block rendered
+    expect(result).toContain("## Script Usage Rule");
+    expect(result).toContain("node .ai-agents/scripts/epic-update.cjs");
+    expect(result).toContain("--complete-child");
+    expect(result).toContain("--epic");
+    // Pointer to full reference doc
+    expect(result).toContain(".ai-agents/scripts/epic-update.md");
+    // Plan-update block NOT rendered
+    expect(result).not.toContain("node .ai-agents/scripts/plan-update.cjs");
+    // No leftover Mustache markers
+    expect(result).not.toContain("{{#uses_epic_update}}");
+    expect(result).not.toContain("{{/uses_epic_update}}");
+    expect(result).not.toContain("{{#uses_plan_update}}");
+  });
+
+  it("renders script-usage-rule.md with both blocks when both flags are true", () => {
+    const sourcesDir = path.resolve("sources");
+    const result = loadSection(
+      { type: "shared", source: "sections/script-usage-rule.md", params: { uses_plan_update: true, uses_epic_update: true } },
+      path.resolve("."),
+      sourcesDir,
+    );
+
+    expect(result).toContain("node .ai-agents/scripts/plan-update.cjs");
+    expect(result).toContain("node .ai-agents/scripts/epic-update.cjs");
+    expect(result).toContain("Do NOT read `.cjs`/`.js` source");
+  });
+
+  it("renders script-usage-rule.md with no script-specific guidance when no script flags are set", () => {
+    const sourcesDir = path.resolve("sources");
+    const result = loadSection(
+      { type: "shared", source: "sections/script-usage-rule.md", params: {} },
+      path.resolve("."),
+      sourcesDir,
+    );
+
+    expect(result).toContain("## Script Usage Rule");
+    expect(result).not.toContain("node .ai-agents/scripts/plan-update.cjs");
+    expect(result).not.toContain("node .ai-agents/scripts/epic-update.cjs");
+    expect(result).not.toContain(".ai-agents/scripts/plan-update.md");
+    expect(result).not.toContain(".ai-agents/scripts/epic-update.md");
+    // No leftover Mustache markers
+    expect(result).not.toContain("{{#uses_");
+    expect(result).not.toContain("{{/uses_");
+  });
+
+  it("renders plan inline-command-only guidance without generic command or docs pointer", () => {
+    const sourcesDir = path.resolve("sources");
+    const result = loadSection(
+      { type: "shared", source: "sections/script-usage-rule.md", params: { plan_update_inline_command_only: true } },
+      path.resolve("."),
+      sourcesDir,
+    );
+
+    expect(result).toContain("exact `plan-update.cjs` command rendered in this skill's workflow");
+    expect(result).toContain("Do NOT hand-edit `plan.yaml`");
+    expect(result).not.toContain("--status <new_status>");
+    expect(result).not.toContain(".ai-agents/scripts/plan-update.md");
+    expect(result).not.toContain("{{#plan_update_inline_command_only}}");
+  });
+
+  it("renders plan project-reminder guidance without a generic command", () => {
+    const sourcesDir = path.resolve("sources");
+    const result = loadSection(
+      { type: "shared", source: "sections/script-usage-rule.md", params: { plan_update_project_reminder: true } },
+      path.resolve("."),
+      sourcesDir,
+    );
+
+    expect(result).toContain("pass `--projects`");
+    expect(result).toContain(".ai-agents/scripts/plan-update.md");
+    expect(result).not.toContain("--status <new_status>");
+  });
+
+  it("renders epic inline-modes-only guidance without docs pointer", () => {
+    const sourcesDir = path.resolve("sources");
+    const result = loadSection(
+      { type: "shared", source: "sections/script-usage-rule.md", params: { epic_update_inline_modes_only: true } },
+      path.resolve("."),
+      sourcesDir,
+    );
+
+    expect(result).toContain("exact `epic-update.cjs` mode commands rendered in this skill's workflow");
+    expect(result).not.toContain(".ai-agents/scripts/epic-update.md");
+    expect(result).not.toContain("--complete-child <active_change.id>");
+  });
+
+  it("renders epic fallback guidance with docs pointer but no generic command", () => {
+    const sourcesDir = path.resolve("sources");
+    const result = loadSection(
+      { type: "shared", source: "sections/script-usage-rule.md", params: { epic_update_fallback_for_unrendered_modes: true } },
+      path.resolve("."),
+      sourcesDir,
+    );
+
+    expect(result).toContain("For modes or flags not rendered here, read `.ai-agents/scripts/epic-update.md`");
+    expect(result).not.toContain("--complete-child <active_change.id>");
+  });
+
+  it("renders compressed session-update.md as self-sufficient guidance", () => {
+    const sourcesDir = path.resolve("sources");
+    const result = loadSection(
+      {
+        type: "shared",
+        source: "sections/session-update.md",
+        params: {
+          current_skill: "mvt-implement",
+          update_active_change: true,
+          set_plan_path: true,
+          update_change: true,
+        },
+      },
+      path.resolve("."),
+      sourcesDir,
+    );
+
+    expect(result).toContain("--skill mvt-implement");
+    expect(result).toContain("--new-change");
+    expect(result).toContain("--set-plan-path");
+    expect(result).toContain("Critical flag semantics");
+    expect(result).toContain("Use only the flags rendered in the command above");
+    expect(result).not.toContain("Argument values");
+    expect(result).not.toContain("Parameter semantics");
+    expect(result).not.toContain(".ai-agents/scripts/session-update.md");
+    expect(result).not.toContain("{{current_skill}}");
+  });
 });

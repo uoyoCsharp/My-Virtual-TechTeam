@@ -1,4 +1,4 @@
-### Step 5: Pre-flight Checks
+### Stage 5: Pre-flight Checks
 
 For each check below, if the condition holds, perform the action implied by its **Level**:
 

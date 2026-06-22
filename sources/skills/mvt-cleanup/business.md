@@ -104,6 +104,15 @@ N is read from `config.yaml > preferences.history_limits.history` (default 20).
 ### Step 10: State Update
 Apply the State Update rules defined in the **State Update** section below.
 
+**Pre-filled example** (closed active_change + history truncation):
+```bash
+node .ai-agents/scripts/session-update.cjs \
+  --skill mvt-cleanup \
+  --close-change \
+  --truncate-history 10
+```
+Replace `10` with the actual `config.yaml > preferences.history_limits.history` value. If only truncating history (active_change still in progress), omit `--close-change`.
+
 ## Edge Cases & Errors
 
 | Case | Handling |

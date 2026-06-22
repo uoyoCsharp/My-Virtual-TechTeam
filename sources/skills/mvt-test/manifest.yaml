@@ -55,12 +55,6 @@ sections:
     source: sections/activation-load-config.md
 
   - type: shared
-    source: sections/language-constraint.md
-
-  - type: shared
-    source: sections/output-format-constraint.md
-
-  - type: shared
     source: sections/activation-preflight.md
     params:
       checks:
@@ -72,6 +66,12 @@ sections:
           field: "implementation files (user args, implementation.md, or source tree)"
           level: "WARN"
           message: "No implementation found. Run `/mvt-implement` first."
+
+  - type: shared
+    source: sections/language-constraint.md
+
+  - type: shared
+    source: sections/output-format-constraint.md
 
   - type: inline
     content: |
@@ -93,7 +93,7 @@ sections:
       ## Artifact Structure
       Read the document structure template from: `.ai-agents/skills/_templates/test-output.md`
       If a custom version exists at `.ai-agents/skills/_templates/custom/test-output.md`, use the custom version instead.
-      The template defines section headings only. Generate content for each section based on test design results.
+      The template defines section structure and guidance comments. Generate applicable content based on test design results.
       Write the artifact to: `.ai-agents/workspace/artifacts/{change-id}/tests/test-design.md`
 
   - type: shared

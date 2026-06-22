@@ -2,9 +2,9 @@ session:
   initialized_at: 2026-06-05T08:12:06.624Z
   last_synced_at: 2026-06-08T02:44:34.674Z
 active_change:
-  id: 20260608-regular
-  title: Regular change
-  created_at: 2026-06-08T14:23:35.213Z
+  id: 20260619-script-call-prompt-optimization
+  title: Script Call Prompt Optimization
+  created_at: 2026-06-19T13:49:40.019Z
   plan_path: ""
   epic_id: ""
 changes:
@@ -29,80 +29,21 @@ changes:
     title: Regular change
     plan_path: ""
     status: active
-    updated_at: 2026-06-08T14:37:17.059Z
+    updated_at: 2026-06-19T03:23:47.630Z
+    epic_id: ""
+  - id: 20260619-script-callability
+    title: Script Callability — Eliminate AI Reading Script Source
+    plan_path: ""
+    status: active
+    updated_at: 2026-06-19T06:36:41.745Z
+    epic_id: ""
+  - id: 20260619-shared-section-prompt-optimization
+    title: Shared Section Prompt Quality Optimization
+    plan_path: ""
+    status: active
+    updated_at: 2026-06-19T13:49:40.019Z
+    epic_id: ""
 history:
-  - skill: /mvt-analyze
-    completed_at: 2026-06-08T14:23:35.213Z
-    summary: test
-    change_id: 20260608-regular
-  - skill: /mvt-decompose
-    completed_at: 2026-06-08T14:23:35.337Z
-    summary: test
-    change_id: 20260608-regular
-  - skill: /test
-    completed_at: 2026-06-08T14:26:01.193Z
-    summary: test
-    change_id: 20260608-regular
-  - skill: /test
-    completed_at: 2026-06-08T14:26:29.065Z
-    summary: test
-    change_id: 20260608-regular
-  - skill: /mvt-test
-    completed_at: 2026-06-08T14:30:59.322Z
-    summary: "t8 完成: epic-update 46 测试 + session-update 17 回归测试, 全部 232 测试通过"
-    change_id: 20260608-regular
-  - skill: /mvt-review
-    completed_at: 2026-06-08T14:32:37.899Z
-    summary: 审核 Epic 相关 business.md prompt，发现 0 个 Critical、4 个 Warning、3 个 Suggestion
-    change_id: 20260608-regular
-  - skill: /mvt-update-plan
-    completed_at: 2026-06-08T14:37:17.059Z
-    summary: 标记 t8-tests 完成，计划全部完成 (8/8 done)
-    change_id: 20260608-regular
-  - skill: /mvt-fix
-    completed_at: 2026-06-08T14:57:48.813Z
-    summary: "修复 review W1-W4 + S2(升级): batch archive 检测规则、project 默认值、resume epic 路径校验、emoji 冲突、epic-child 误触 re-decompose"
-    change_id: 20260608-regular
-  - skill: /mvt-review
-    completed_at: 2026-06-09T02:07:07.265Z
-    summary: 二轮审核 7 个 business.md：W1/W3/W4/S2 已修复，W2 残留 (单项目仍写 default)，新增 3W+5S（within-epic plan-complete 状态空缺、decompose 验证失败路径未指定、help 文本回退缺 epic 维度等）
-    change_id: 20260608-regular
-  - skill: /mvt-fix
-    completed_at: 2026-06-09T02:39:53.497Z
-    summary: 扩展共享 session-update.md 模板加 5 个 epic flag 块；重构 mvt-decompose 用共享 section（删 30 行内联）+ 修 W2 残留；mvt-analyze 加 link_subchange_to_epic 参数。232 测试全绿。
-    change_id: 20260608-regular
-  - skill: /mvt-fix
-    completed_at: 2026-06-09T02:52:40.328Z
-    summary: 完成 follow-up 1+2：删 mvt-analyze 冗余 epic-id 提示；修 mvt-decompose 单项目 project 指引；plan-update.js + epic-update.js 加 project-context.yaml 自动检测，hardcoded default 保留作兜底。232 测试全绿，端到端验证 OK。
-    change_id: 20260608-regular
-  - skill: /mvt-quick-dev
-    completed_at: 2026-06-09T06:05:47.313Z
-    summary: Analyzed why mvtt install only outputs to .claude platform - root cause is hardcoded output paths in manifest.yaml files
-    change_id: ""
-  - skill: /mvt-quick-dev
-    completed_at: 2026-06-09T06:26:06.855Z
-    summary: Implemented multi-platform skill output support (claude + qoder) with interactive platform selection during install
-    change_id: ""
-  - skill: /mvt-quick-dev
-    completed_at: 2026-06-09T06:35:45.957Z
-    summary: Moved platform storage from config.yaml to .mvtt-manifest.json (installation metadata)
-    change_id: ""
-  - skill: /mvt-review
-    completed_at: 2026-06-09T06:40:22.748Z
-    summary: "Multi-platform skill output code review: 0 critical, 2 warnings (stale comment, double manifest read), 3 suggestions. Verdict: Approve with comments."
-    change_id: 20260608-regular
-  - skill: /mvt-quick-dev
-    completed_at: 2026-06-09T14:38:36.128Z
-    summary: 在 config.yaml 注释和 mvt-config skill 中加入 code→name 映射,AI 可从裸 code 确认语言
-    change_id: ""
-  - skill: /mvt-analyze
-    completed_at: 2026-06-09T14:43:18.071Z
-    summary: 分析了 registry.yaml 中 agent 字段的使用情况,确认是死字段,无代码/脚本/模板读取
-    change_id: 20260608-regular
-  - skill: /mvt-quick-dev
-    completed_at: 2026-06-09T15:16:24.561Z
-    summary: 从 registry.yaml 移除 agent/template/category 三个死字段,同步 TS 类型、mvt-help/mvt-create-skill 模板、测试夹具、物化副本
-    change_id: ""
   - skill: /mvt-bug-detect
     completed_at: 2026-06-11T09:38:34.580Z
     summary: 确认交互语言间歇输出英文的根因:interaction_language 约束远弱于 document_output_language,缺少对等强制 section
@@ -111,6 +52,79 @@ history:
     completed_at: 2026-06-11T09:50:32.949Z
     summary: 将 output-language-constraint 重命名为 language-constraint 并补齐交互语言强约束+反镜像指令,同步17个manifest与引用,重建产物,237测试通过
     change_id: 20260608-regular
+  - skill: /mvt-bug-detect
+    completed_at: 2026-06-19T02:36:05.228Z
+    summary: 定位epic_id为空根因：/mvt-plan-dev的session-update调用中--new-change会覆写epic_id为空串，因为该skill缺少link_subchange_to_epic参数
+    change_id: 20260608-regular
+  - skill: /mvt-review
+    completed_at: 2026-06-19T02:41:11.741Z
+    summary: 审核 epic-change 关联机制：1 Critical（--new-change 无条件覆写 epic_id）、3 Warning（plan-dev manifest、缺失回归测试、字段重置副作用）、2 Suggestion
+    change_id: 20260608-regular
+  - skill: /mvt-fix
+    completed_at: 2026-06-19T02:46:42.916Z
+    summary: 修复C1+W3：session-update.js --new-change 保留已有 epic_id/created_at/plan_path；补充2个回归测试，240测试全绿
+    change_id: 20260608-regular
+  - skill: /mvt-review
+    completed_at: 2026-06-19T02:50:42.514Z
+    summary: 二轮审查修复后代码：发现C1——created_at/plan_path在切换不同change时从旧change继承错误值，需要isSameChange守卫
+    change_id: 20260608-regular
+  - skill: /mvt-fix
+    completed_at: 2026-06-19T02:56:00.048Z
+    summary: 修复 C1 回归：created_at/plan_path 在切换 change 时错误继承旧值，添加 isSameChange 守卫并补充回归测试
+    change_id: 20260608-regular
+  - skill: /mvt-bug-detect
+    completed_at: 2026-06-19T03:11:38.824Z
+    summary: "Diagnosed AI reading script source as a structural documentation gap: hidden template conditionals, missing plan/epic sections, usage trapped in source comments"
+    change_id: 20260608-regular
+  - skill: /mvt-analyze
+    completed_at: 2026-06-19T03:23:47.630Z
+    summary: "Analyzed script-callability requirement: 6 requirements, 6 business rules, 4 ambiguities for design phase"
+    change_id: 20260619-script-callability
+  - skill: /mvt-design
+    completed_at: 2026-06-19T03:36:54.720Z
+    summary: "Designed script-callability fix: 2 new shared sections (plan/epic-update.md), unconditional flag rendering, manifest audit, pre-filled examples, header pointers; 20 files, 6 ADRs"
+    change_id: 20260619-script-callability
+  - skill: /mvt-implement
+    completed_at: 2026-06-19T03:52:02.895Z
+    summary: "Implemented script-callability change: created plan-update.md and epic-update.md shared sections with unconditional flag rendering, updated 6 skill manifests+business.md files to reference
+      sections, reduced 3 script headers to pointers, added 9 tests (250 total pass)."
+    change_id: 20260619-script-callability
+  - skill: /mvt-review
+    completed_at: 2026-06-19T04:54:45.527Z
+    summary: "Completed code review for 20260619-script-callability: 1 Critical (undocumented session-update.js behavioral change), 3 Warnings, 2 Suggestions. Verdict: Request changes."
+    change_id: 20260619-script-callability
+  - skill: /mvt-analyze
+    completed_at: 2026-06-19T06:36:41.745Z
+    summary: 分析公共 section prompt 质量优化需求：7 skill 实测公共占比 45-68%，分类三类优化策略（就地压缩/参考按需提取），4 项歧义待澄清
+    change_id: 20260619-shared-section-prompt-optimization
+  - skill: /mvt-design
+    completed_at: 2026-06-19T06:42:35.706Z
+    summary: 设计公共 section prompt 优化方案：双策略（就地压缩+参考按需提取），6 ADR，7 源文件改动，预计每 skill 省 ~5000 字符（>=30%）
+    change_id: 20260619-shared-section-prompt-optimization
+  - skill: /mvt-implement
+    completed_at: 2026-06-19T08:12:49.438Z
+    summary: 压缩共享 section prompt：内联压缩 State Update 和关键约束，更新测试与生成产物，253 测试通过
+    change_id: 20260619-shared-section-prompt-optimization
+  - skill: /mvt-design
+    completed_at: 2026-06-19T13:49:40.019Z
+    summary: 设计脚本调用 prompt 优化方案：新增独立 change，采用布尔模式开关压缩 script-usage-rule，避免引擎改动
+    change_id: 20260619-script-call-prompt-optimization
+  - skill: /mvt-implement
+    completed_at: 2026-06-19T13:57:54.494Z
+    summary: 实现脚本调用 prompt 优化：新增布尔指导模式，迁移6个相关skill，补充渲染测试并刷新生成产物
+    change_id: 20260619-script-call-prompt-optimization
+  - skill: /mvt-review
+    completed_at: 2026-06-19T14:04:48.045Z
+    summary: 审查脚本调用 prompt 优化变更：0 Critical、1 Warning（无倒装包裹器）、2 Suggestion；设计合规性全部通过，生成产物验证全部正确，257 测试通过。裁决：Approve with comments。
+    change_id: 20260619-script-call-prompt-optimization
+  - skill: /mvt-bug-detect
+    completed_at: 2026-06-20T13:48:33.876Z
+    summary: 复核 mvt-help 提示词问题报告：确认多数问题存在，评估修复方案并提出更优收敛路径
+    change_id: 20260619-script-call-prompt-optimization
+  - skill: /mvt-fix
+    completed_at: 2026-06-20T13:59:47.242Z
+    summary: 修复 mvt-help 提示词一致性与运行时推荐问题，补充回归测试并刷新生成产物
+    change_id: 20260619-script-call-prompt-optimization
 active_epic:
   id: epic-20260608-my
   title: My Epic
