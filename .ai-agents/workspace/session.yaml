@@ -2,9 +2,9 @@ session:
   initialized_at: 2026-06-05T08:12:06.624Z
   last_synced_at: 2026-06-08T02:44:34.674Z
 active_change:
-  id: 20260619-script-call-prompt-optimization
-  title: Script Call Prompt Optimization
-  created_at: 2026-06-19T13:49:40.019Z
+  id: 20260622-session-archive-sync
+  title: Session Index Archive Sync (--remove-* / --update-*-path flags)
+  created_at: 2026-06-22T11:03:20.136Z
   plan_path: ""
   epic_id: ""
 changes:
@@ -43,27 +43,13 @@ changes:
     status: active
     updated_at: 2026-06-19T13:49:40.019Z
     epic_id: ""
+  - id: 20260619-script-call-prompt-optimization
+    title: Script Call Prompt Optimization
+    plan_path: ""
+    status: active
+    updated_at: 2026-06-22T11:03:20.136Z
+    epic_id: ""
 history:
-  - skill: /mvt-fix
-    completed_at: 2026-06-19T02:46:42.916Z
-    summary: 修复C1+W3：session-update.js --new-change 保留已有 epic_id/created_at/plan_path；补充2个回归测试，240测试全绿
-    change_id: 20260608-regular
-  - skill: /mvt-review
-    completed_at: 2026-06-19T02:50:42.514Z
-    summary: 二轮审查修复后代码：发现C1——created_at/plan_path在切换不同change时从旧change继承错误值，需要isSameChange守卫
-    change_id: 20260608-regular
-  - skill: /mvt-fix
-    completed_at: 2026-06-19T02:56:00.048Z
-    summary: 修复 C1 回归：created_at/plan_path 在切换 change 时错误继承旧值，添加 isSameChange 守卫并补充回归测试
-    change_id: 20260608-regular
-  - skill: /mvt-bug-detect
-    completed_at: 2026-06-19T03:11:38.824Z
-    summary: "Diagnosed AI reading script source as a structural documentation gap: hidden template conditionals, missing plan/epic sections, usage trapped in source comments"
-    change_id: 20260608-regular
-  - skill: /mvt-analyze
-    completed_at: 2026-06-19T03:23:47.630Z
-    summary: "Analyzed script-callability requirement: 6 requirements, 6 business rules, 4 ambiguities for design phase"
-    change_id: 20260619-script-callability
   - skill: /mvt-design
     completed_at: 2026-06-19T03:36:54.720Z
     summary: "Designed script-callability fix: 2 new shared sections (plan/epic-update.md), unconditional flag rendering, manifest audit, pre-filled examples, header pointers; 20 files, 6 ADRs"
@@ -125,6 +111,26 @@ history:
     completed_at: 2026-06-22T10:45:59.473Z
     summary: '"清理审查发现的3个代码质量项：移除epic.id回退(catch空块注释)",'
     change_id: 20260619-script-call-prompt-optimization
+  - skill: /mvt-bug-detect
+    completed_at: 2026-06-22T10:53:48.562Z
+    summary: 诊断 changes[] 归档后 plan_path 悬挂指针：mvt-cleanup 移动目录但不更新 session.yaml，会话索引与产物物理位置失同步
+    change_id: 20260619-script-call-prompt-optimization
+  - skill: /mvt-bug-detect
+    completed_at: 2026-06-22T10:57:57.511Z
+    summary: 诊断 epics[] 与 active_epic.epic_path 的归档悬挂指针：与 changes[] 同型但影响面更窄，fix 时建议对称处理
+    change_id: 20260619-script-call-prompt-optimization
+  - skill: /mvt-design
+    completed_at: 2026-06-22T11:01:46.967Z
+    summary: "Design: 在 session-update.cjs 新增 --remove-change/--remove-epic/--update-change-path/--update-epic-path 四个对称 flag 解决 changes[]/epics[] 归档后悬挂指针，主路径采用方案 B（删除条目），备选采用方案 A（路径改写），mvt-cleanup 默认走方案 B"
+    change_id: 20260619-script-call-prompt-optimization
+  - skill: /mvt-design
+    completed_at: 2026-06-22T11:03:20.136Z
+    summary: "Design: 在 session-update.cjs 新增 --remove-change/--remove-epic/--update-change-path/--update-epic-path 四个对称 flag 解决 changes[]/epics[] 归档后悬挂指针，主路径采用方案 B（删除条目），备选采用方案 A（路径改写），mvt-cleanup 默认走方案 B"
+    change_id: 20260622-session-archive-sync
+  - skill: /mvt-design
+    completed_at: 2026-06-22T11:07:04.783Z
+    summary: "Design v1 (Plan B only): 在 session-update.cjs 新增 --remove-change 与 --remove-epic 两个对称 flag 解决 changes[]/epics[] 归档后悬挂指针；mvt-cleanup Step 7/10 默认调用 --remove-*；方案 A（路径改写）推迟到独立 change"
+    change_id: 20260622-session-archive-sync
 active_epic:
   id: epic-20260608-my
   title: My Epic
