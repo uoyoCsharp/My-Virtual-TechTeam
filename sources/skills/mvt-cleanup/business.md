@@ -83,6 +83,7 @@ This check ensures `/mvt-sync-context` has processed a change's knowledge before
   4. **Stale history truncation**: call `session-update.cjs --truncate-history <N>` where N is from `config.yaml > preferences.history_limits.history` (default 20).
   5. All file mutations atomic where possible (write-temp + rename, copy-then-delete for moves).
   6. If any single action fails, STOP further actions; report what completed, what failed, and leave a recoverable state (do not partially overwrite a file with truncated content).
+  7. **Index synchronization**: when an action moves a change-id or epic-id into `artifacts/_archived/`, note the affected id(s) for the Step 10 `--remove-change` / `--remove-epic` flag(s). For Step 7.1 (summarize), Step 7.2 (archive), and Step 7.2a options 2/3 (batch archive children), collect the corresponding change-id(s); for Step 7.2a option 1/2/3, collect the epic-id. These ids are passed to the session-update call in Step 10 to keep `session.changes[]` / `session.epics[]` synchronized with the physical file layout.
 
 ### Step 8: Report Result
 - Print the actually-applied actions (may differ from the plan if Step 7 stopped early).
@@ -95,23 +96,48 @@ Based on the actual cleanup actions performed, choose the appropriate session-up
 
 | Actual cleanup action | session-update parameters |
 |----------------------|---------------------------|
-| Closed `active_change` (all plan tasks completed) | `--close-change --truncate-history <N>` |
-| Only truncated history / archived old changes (active_change still in progress) | `--truncate-history <N>` (**do NOT** pass `--close-change`) |
+| Closed `active_change` (all plan tasks completed) **+** archived old done changes | `--close-change --remove-change <ids> --truncate-history <N>` |
+| Closed `active_change` only (no old changes archived) | `--close-change --truncate-history <N>` |
+| Archived old changes only (active_change still in progress) | `--remove-change <ids> --truncate-history <N>` |
+| Archived epic + its children (batch archive) | `--remove-epic <epic_id> --remove-change <child1>,<child2> --truncate-history <N>` |
 | `--dry-run` mode (no modifications made) | **Do NOT call** session-update script; only record history |
 
-N is read from `config.yaml > preferences.history_limits.history` (default 20).
+N is read from `config.yaml > preferences.history_limits.history` (default 20). `<ids>` is a comma-separated list collected in Step 7.7.
 
 ### Step 10: State Update
 Apply the State Update rules defined in the **State Update** section below.
 
-**Pre-filled example** (closed active_change + history truncation):
+**Pre-filled examples** (one per Step 9 row):
+
 ```bash
+# Row 1: closed active_change + archived old done changes
+node .ai-agents/scripts/session-update.cjs \
+  --skill mvt-cleanup \
+  --close-change \
+  --remove-change <archived_change_ids> \
+  --truncate-history 10
+
+# Row 2: closed active_change only
 node .ai-agents/scripts/session-update.cjs \
   --skill mvt-cleanup \
   --close-change \
   --truncate-history 10
+
+# Row 3: archived old changes only
+node .ai-agents/scripts/session-update.cjs \
+  --skill mvt-cleanup \
+  --remove-change <archived_change_ids> \
+  --truncate-history 10
+
+# Row 4: batch archive (epic + its children)
+node .ai-agents/scripts/session-update.cjs \
+  --skill mvt-cleanup \
+  --remove-epic <archived_epic_id> \
+  --remove-change <archived_child_ids> \
+  --truncate-history 10
 ```
-Replace `10` with the actual `config.yaml > preferences.history_limits.history` value. If only truncating history (active_change still in progress), omit `--close-change`.
+
+Replace `10` with the actual `config.yaml > preferences.history_limits.history` value, and `<archived_change_ids>` / `<archived_child_ids>` with the comma-separated id list collected in Step 7.7, `<archived_epic_id>` with the batch-archived epic id. Drop any `--remove-*` flag whose id list is empty.
 
 ## Edge Cases & Errors
 

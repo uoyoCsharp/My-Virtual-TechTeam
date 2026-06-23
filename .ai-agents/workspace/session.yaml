@@ -50,15 +50,6 @@ changes:
     updated_at: 2026-06-22T11:03:20.136Z
     epic_id: ""
 history:
-  - skill: /mvt-design
-    completed_at: 2026-06-19T03:36:54.720Z
-    summary: "Designed script-callability fix: 2 new shared sections (plan/epic-update.md), unconditional flag rendering, manifest audit, pre-filled examples, header pointers; 20 files, 6 ADRs"
-    change_id: 20260619-script-callability
-  - skill: /mvt-implement
-    completed_at: 2026-06-19T03:52:02.895Z
-    summary: "Implemented script-callability change: created plan-update.md and epic-update.md shared sections with unconditional flag rendering, updated 6 skill manifests+business.md files to reference
-      sections, reduced 3 script headers to pointers, added 9 tests (250 total pass)."
-    change_id: 20260619-script-callability
   - skill: /mvt-review
     completed_at: 2026-06-19T04:54:45.527Z
     summary: "Completed code review for 20260619-script-callability: 1 Critical (undocumented session-update.js behavioral change), 3 Warnings, 2 Suggestions. Verdict: Request changes."
@@ -130,6 +121,14 @@ history:
   - skill: /mvt-design
     completed_at: 2026-06-22T11:07:04.783Z
     summary: "Design v1 (Plan B only): 在 session-update.cjs 新增 --remove-change 与 --remove-epic 两个对称 flag 解决 changes[]/epics[] 归档后悬挂指针；mvt-cleanup Step 7/10 默认调用 --remove-*；方案 A（路径改写）推迟到独立 change"
+    change_id: 20260622-session-archive-sync
+  - skill: /mvt-implement
+    completed_at: 2026-06-23T11:06:04.126Z
+    summary: 实现 --remove-change / --remove-epic flag, 5 个手改源文件落地, 未执行 build 验证
+    change_id: 20260622-session-archive-sync
+  - skill: /mvt-review
+    completed_at: 2026-06-23T11:12:26.009Z
+    summary: "完成代码审查: 1 Critical, 1 Warning, 1 Suggestion, 结论 Request changes"
     change_id: 20260622-session-archive-sync
 active_epic:
   id: epic-20260608-my

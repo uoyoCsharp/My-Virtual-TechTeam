@@ -494,3 +494,282 @@ describe("session-update.cjs (epic flags)", () => {
     });
   });
 });
+
+describe("session-update.cjs (remove-change flag)", () => {
+  let tmpDir: string;
+  let workspaceDir: string;
+  let sessionPath: string;
+
+  beforeEach(() => {
+    tmpDir = mkdtempSync(path.join(os.tmpdir(), "mvtt-session-remove-change-"));
+    workspaceDir = path.join(tmpDir, ".ai-agents", "workspace");
+    mkdirSync(workspaceDir, { recursive: true });
+    sessionPath = path.join(workspaceDir, "session.yaml");
+  });
+
+  afterEach(() => {
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  function writeSession(session: Session): void {
+    writeFileSync(sessionPath, stringifyYaml(session), "utf-8");
+  }
+
+  function readSession(): any {
+    return parseYaml(readFileSync(sessionPath, "utf-8"));
+  }
+
+  function run(args: string[]): { status: number; stdout: string; stderr: string } {
+    const res = spawnSync("node", [SCRIPT, ...args], {
+      encoding: "utf-8",
+      cwd: tmpDir,
+    });
+    return {
+      status: res.status ?? -1,
+      stdout: res.stdout ?? "",
+      stderr: res.stderr ?? "",
+    };
+  }
+
+  function update(extra: string[]): { status: number; stdout: string; stderr: string } {
+    return run(["--skill", "test", "--summary", "test", ...extra]);
+  }
+
+  function sessionWithChanges(): Session {
+    return baseSession({
+      changes: [
+        { id: "20260601-a", title: "A", plan_path: "", status: "done", updated_at: "2026-06-01T10:00:00Z", epic_id: "" },
+        { id: "20260601-b", title: "B", plan_path: "", status: "done", updated_at: "2026-06-02T10:00:00Z", epic_id: "" },
+        { id: "20260601-c", title: "C", plan_path: "", status: "done", updated_at: "2026-06-03T10:00:00Z", epic_id: "" },
+      ],
+    });
+  }
+
+  it("removes a single matching change-id", () => {
+    writeSession(sessionWithChanges());
+    const res = update(["--remove-change", "20260601-b"]);
+    expect(res.status).toBe(0);
+    expect(readSession().changes.map((c: any) => c.id)).toEqual([
+      "20260601-a",
+      "20260601-c",
+    ]);
+  });
+
+  it("silently skips unknown change-id and exits 0", () => {
+    writeSession(sessionWithChanges());
+    const res = update(["--remove-change", "does-not-exist"]);
+    expect(res.status).toBe(0);
+    expect(readSession().changes).toHaveLength(3);
+  });
+
+  it("removes multiple matching ids in one call", () => {
+    writeSession(sessionWithChanges());
+    const res = update(["--remove-change", "20260601-a,20260601-c"]);
+    expect(res.status).toBe(0);
+    expect(readSession().changes.map((c: any) => c.id)).toEqual(["20260601-b"]);
+  });
+
+  it("removes the matching subset when some ids are unknown", () => {
+    writeSession(sessionWithChanges());
+    const res = update(["--remove-change", "20260601-a,nope,20260601-c"]);
+    expect(res.status).toBe(0);
+    expect(readSession().changes.map((c: any) => c.id)).toEqual(["20260601-b"]);
+  });
+
+  it("rejects empty value with MISSING_REMOVE_VALUE", () => {
+    writeSession(sessionWithChanges());
+    const res = update(["--remove-change", ""]);
+    expect(res.status).toBe(1);
+    expect(res.stderr).toMatch(/non-empty value/);
+  });
+
+  it("warns to stderr when all requested ids are unknown (still exit 0)", () => {
+    writeSession(sessionWithChanges());
+    const res = update(["--remove-change", "x,y"]);
+    expect(res.status).toBe(0);
+    expect(res.stderr).toMatch(/not found/);
+  });
+});
+
+describe("session-update.cjs (remove-epic flag)", () => {
+  let tmpDir: string;
+  let workspaceDir: string;
+  let sessionPath: string;
+
+  beforeEach(() => {
+    tmpDir = mkdtempSync(path.join(os.tmpdir(), "mvtt-session-remove-epic-"));
+    workspaceDir = path.join(tmpDir, ".ai-agents", "workspace");
+    mkdirSync(workspaceDir, { recursive: true });
+    sessionPath = path.join(workspaceDir, "session.yaml");
+  });
+
+  afterEach(() => {
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  function writeSession(session: Session): void {
+    writeFileSync(sessionPath, stringifyYaml(session), "utf-8");
+  }
+
+  function readSession(): any {
+    return parseYaml(readFileSync(sessionPath, "utf-8"));
+  }
+
+  function run(args: string[]): { status: number; stdout: string; stderr: string } {
+    const res = spawnSync("node", [SCRIPT, ...args], {
+      encoding: "utf-8",
+      cwd: tmpDir,
+    });
+    return {
+      status: res.status ?? -1,
+      stdout: res.stdout ?? "",
+      stderr: res.stderr ?? "",
+    };
+  }
+
+  function update(extra: string[]): { status: number; stdout: string; stderr: string } {
+    return run(["--skill", "test", "--summary", "test", ...extra]);
+  }
+
+  function sessionWithEpics(): Session {
+    return baseSession({
+      epics: [
+        { id: "epic-a", title: "A", epic_path: "", status: "done", updated_at: "2026-06-01T10:00:00Z" },
+        { id: "epic-b", title: "B", epic_path: "", status: "done", updated_at: "2026-06-02T10:00:00Z" },
+      ],
+    });
+  }
+
+  it("removes a single matching epic-id", () => {
+    writeSession(sessionWithEpics());
+    const res = update(["--remove-epic", "epic-a"]);
+    expect(res.status).toBe(0);
+    expect(readSession().epics.map((e: any) => e.id)).toEqual(["epic-b"]);
+  });
+
+  it("silently skips unknown epic-id and exits 0", () => {
+    writeSession(sessionWithEpics());
+    const res = update(["--remove-epic", "does-not-exist"]);
+    expect(res.status).toBe(0);
+    expect(readSession().epics).toHaveLength(2);
+  });
+
+  it("removes multiple matching ids in one call", () => {
+    writeSession(sessionWithEpics());
+    const res = update(["--remove-epic", "epic-a,epic-b"]);
+    expect(res.status).toBe(0);
+    expect(readSession().epics).toHaveLength(0);
+  });
+
+  it("removes the matching subset when some ids are unknown", () => {
+    writeSession(sessionWithEpics());
+    const res = update(["--remove-epic", "epic-a,nope"]);
+    expect(res.status).toBe(0);
+    expect(readSession().epics.map((e: any) => e.id)).toEqual(["epic-b"]);
+  });
+
+  it("rejects empty value with MISSING_REMOVE_VALUE", () => {
+    writeSession(sessionWithEpics());
+    const res = update(["--remove-epic", "   "]);
+    expect(res.status).toBe(1);
+    expect(res.stderr).toMatch(/non-empty value/);
+  });
+
+  it("warns to stderr when all requested ids are unknown (still exit 0)", () => {
+    writeSession(sessionWithEpics());
+    const res = update(["--remove-epic", "x"]);
+    expect(res.status).toBe(0);
+    expect(res.stderr).toMatch(/not found/);
+  });
+});
+
+describe("session-update.cjs (remove flags: active_change isolation)", () => {
+  let tmpDir: string;
+  let workspaceDir: string;
+  let sessionPath: string;
+
+  beforeEach(() => {
+    tmpDir = mkdtempSync(path.join(os.tmpdir(), "mvtt-session-remove-iso-"));
+    workspaceDir = path.join(tmpDir, ".ai-agents", "workspace");
+    mkdirSync(workspaceDir, { recursive: true });
+    sessionPath = path.join(workspaceDir, "session.yaml");
+  });
+
+  afterEach(() => {
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  function writeSession(session: Session): void {
+    writeFileSync(sessionPath, stringifyYaml(session), "utf-8");
+  }
+
+  function readSession(): any {
+    return parseYaml(readFileSync(sessionPath, "utf-8"));
+  }
+
+  function run(args: string[]): { status: number; stdout: string; stderr: string } {
+    const res = spawnSync("node", [SCRIPT, ...args], {
+      encoding: "utf-8",
+      cwd: tmpDir,
+    });
+    return {
+      status: res.status ?? -1,
+      stdout: res.stdout ?? "",
+      stderr: res.stderr ?? "",
+    };
+  }
+
+  function update(extra: string[]): { status: number; stdout: string; stderr: string } {
+    return run(["--skill", "test", "--summary", "test", ...extra]);
+  }
+
+  it("--remove-change does not touch active_change even when ids match", () => {
+    const session = baseSession();
+    session.active_change = {
+      id: "20260601-active",
+      title: "Active",
+      created_at: "2026-06-05T10:00:00Z",
+      plan_path: "/path/plan.yaml",
+      epic_id: "",
+    };
+    session.changes = [
+      { id: "20260601-active", title: "Active", plan_path: "/path/plan.yaml", status: "active", updated_at: "2026-06-05T10:00:00Z", epic_id: "" },
+      { id: "20260601-old", title: "Old", plan_path: "", status: "done", updated_at: "2026-06-01T10:00:00Z", epic_id: "" },
+    ];
+    writeSession(session);
+
+    const res = update(["--remove-change", "20260601-old"]);
+    expect(res.status).toBe(0);
+    const s = readSession();
+    expect(s.active_change.id).toBe("20260601-active");
+    expect(s.changes.map((c: any) => c.id)).toEqual(["20260601-active"]);
+  });
+
+  it("--close-change + --remove-change compose in one call", () => {
+    const session = baseSession();
+    session.active_change = {
+      id: "20260601-active",
+      title: "Active",
+      created_at: "2026-06-05T10:00:00Z",
+      plan_path: "/path/plan.yaml",
+      epic_id: "",
+    };
+    session.changes = [
+      { id: "20260601-active", title: "Active", plan_path: "/path/plan.yaml", status: "active", updated_at: "2026-06-05T10:00:00Z", epic_id: "" },
+      { id: "20260601-old", title: "Old", plan_path: "", status: "done", updated_at: "2026-06-01T10:00:00Z", epic_id: "" },
+    ];
+    writeSession(session);
+
+    const res = update(["--close-change", "--remove-change", "20260601-old"]);
+    expect(res.status).toBe(0);
+    const s = readSession();
+    expect(s.active_change.id).toBe("");
+    // After --close-change snapshots active to changes[] (status: done), then
+    // --remove-change removes "20260601-old" only. "20260601-active" remains
+    // as a done snapshot.
+    const ids = s.changes.map((c: any) => c.id);
+    expect(ids).toContain("20260601-active");
+    expect(ids).not.toContain("20260601-old");
+    expect(s.changes.find((c: any) => c.id === "20260601-active").status).toBe("done");
+  });
+});

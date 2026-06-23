@@ -1,6 +1,6 @@
 ---
 id: 'design-output'
-version: '1.0'
+version: '1.4'
 skill: 'mvt-design'
 ---
 
@@ -63,7 +63,7 @@ skill: 'mvt-design'
 | Title | mvt-cleanup defaults to --remove-* on every archive action; no archive-mode switch in v1 |
 | Status | accepted |
 | Context | 设计了 `--archive-mode=rewrite` 备选流程会让 mvt-cleanup 承担 CLI 解析职责（需要改 `src/commands/cleanup.ts` 或 SKILL.md 增加分支判断）。用户确认 v1 范围仅含方案 B，方案 A 的入口都不实现。 |
-| Decision | `mvt-cleanup` SKILL.md Step 7 实际执行时，按归档动作分类追加 session-update 调用：<br>• Step 7.1 summarize 完成 → 追加 `--remove-change <id>`<br>• Step 7.2 archive 完成 → 追加 `--remove-change <id>`<br>• Step 7.2a batch archive 选项 1 / 2 / 3 完成 → 追加 `--remove-epic <epic_id>`；选项 2/3 选中的每个子 change 追加 `--remove-change <child_id>`<br>Step 9/10 state-update 段落只列"默认 `remove`"一种调用形态，不出现 `rewrite` 备选模板。 |
+| Decision | `mvt-cleanup` SKILL.md Step 7 实际执行时，按归档动作分类追加 session-update 调用：<br>• Step 7.1 summarize 完成 → 追加 `--remove-change <id>`<br>• Step 7.2 archive 完成 → 追加 `--remove-change <id>`<br>• Step 7.2a batch archive 选项 1 / 2 / 3 完成 → 追加 `--remove-epic <epic_id>`；选项 2/3 选中的每个子 change 追加 `--remove-change <child_id>`<br><br>**组合场景**：当 `mvt-cleanup` 在一次运行中同时关闭 active_change（plan 已完成）和归档旧 done change 时，将 `--close-change` 与 `--remove-change <ids>` **合并到一次 session-update.cjs 调用**。两者职责不重叠——`--close-change` 操作 `active_change`，`--remove-change` 操作 `session.changes[]`，在脚本内部先后处理互不干扰。<br><br>Step 9/10 state-update 段落只列"默认 `remove`"一种调用形态，不出现 `rewrite` 备选模板。 |
 | Alternatives | **Step 10 同时列两种调用模板**：用户已明确 v1 不实现方案 A；不采用。**实现 `--archive-mode=rewrite` CLI flag**：超出 v1 范围；不采用。 |
 | Consequences | Positive: SKILL.md 调用模板单一清晰；无需 CLI 解析改动。Negative: 未来需要方案 A 时需重读 SKILL.md 增补模板。Downstream: `/mvt-test` 只需验证"默认 remove"调用形态（`--remove-change` 单 id 与逗号多 id）。 |
 
@@ -113,13 +113,14 @@ skill: 'mvt-design'
 
 ## Module Design
 
+> **注意**：`Module Design` 只列运行时模块（核心写入脚本 + skill 调用方）。测试文件已在 `File Structure` 章节归类为手改源文件，不重复列出。`.claude/skills/*/SKILL.md` 是 `npm run build` 生成的产物，不是源文件 —— 修改发生在 `sources/skills/*/business.md` + `manifest.yaml` 中。
+
 | Module (file) | Path | Responsibility | Dependencies |
 |---|---|---|---|
-| `session-update.cjs` (核心写入) | `sources/scripts/session-update.js` (build → `dist/scripts/session-update.cjs`) | 新增 2 个 flag：`--remove-change`、`--remove-epic`；扩展 `validate()`、扩展 `main()` 2 个分支 | `yaml` (解析), `node:fs`, `node:path` |
-| `mvt-cleanup` SKILL.md | `.claude/skills/mvt-cleanup/SKILL.md` | Step 7 实际执行时追加 session-update 调用形态；Step 10 state-update 段落列出 `--remove-*` 模板 | (无代码) |
-| `mvt-status` SKILL.md | `.claude/skills/mvt-status/SKILL.md` | Edge case "changes[] 引用不存在的 plan_path → 标 (missing)" 可以降级为日志；新增的"已归档条目不再出现"行为无需显式修改（因为已经从 `changes[]` 移除） | (无代码) |
-| `mvt-resume` SKILL.md | `.claude/skills/mvt-resume/SKILL.md` | Step 7 Epic Context 的"找不到时 warn"分支可降级为日志；`mvt-resume/SKILL.md:213` 的 epic_path 解析逻辑无需变化 | (无代码) |
-| `session-update.test.ts` | `test/session-update.test.ts` | 2 个新 flag 的回归测试矩阵：单 id / 多 id / 不存在 id / 末尾空值 / 与 `--close-change` 组合 | `vitest`, `yaml`, `node:child_process` |
+| `session-update.cjs` (核心写入) | `sources/scripts/session-update.js` (build → `dist/scripts/session-update.cjs` → `.ai-agents/scripts/session-update.cjs`) | 新增 2 个 flag：`--remove-change`、`--remove-epic`；扩展 `validate()`、扩展 `main()` 2 个分支 | `yaml` (解析), `node:fs`, `node:path` |
+| `mvt-cleanup` (调用方) | `sources/skills/mvt-cleanup/{business.md,manifest.yaml}` | Step 7 实际执行时追加 session-update 调用形态；Step 9 表格 + Step 10 列出 `--remove-*` 模板；manifest 启用 `remove_change` / `remove_epic` params | (无代码, 纯 Markdown) |
+| `mvt-status` (消费者, 不改) | `sources/skills/mvt-status/business.md` | Edge case "changes[] 引用不存在的 plan_path → 标 (missing)" 可以降级为日志；新增的"已归档条目不再出现"行为无需显式修改（因为已经从 `changes[]` 移除）。**design 推荐保留该边缘规则作为防御性提示，不改** | (无代码, 纯 Markdown) |
+| `mvt-resume` (消费者, 不改) | `sources/skills/mvt-resume/business.md` | Step 7 Epic Context 的"找不到时 warn"分支可降级为日志；解析逻辑无需变化。**design 推荐保留该分支作为防御性提示，不改** | (无代码, 纯 Markdown) |
 
 ## Key Interfaces
 
@@ -145,7 +146,7 @@ function parseIdList(value) → string[]
 //   --remove-change requires non-empty value
 //   --remove-epic requires non-empty value
 
-// New main() branches (after --close-change, before --new-epic):
+// New main() branches (after --close-epic, before atomic write):
 //
 // --remove-change <ids>:
 //   removed = 0
@@ -233,46 +234,149 @@ sequenceDiagram
 
 ## File Structure
 
+> **视角说明**：本 change 改的是 MVTT 框架自身。下表只列**手写修改的源文件**；所有 `.claude/skills/*/SKILL.md`、`.qoder/skills/*/SKILL.md`、`dist/scripts/*.cjs`、`.ai-agents/scripts/*.cjs`、`.mvtt-manifest.json` 都是 `npm run build` 由 `install-manifest.yaml > generated` 规则自动重新生成的产物，**不需要也禁止手改**。
+
+### 手改源文件（5 个）
+
 | File | Action | Description |
 |---|---|---|
-| `sources/scripts/session-update.js` | modify | 新增 2 个 CLI flag、扩展 `validate()`、扩展 `main()` 2 个分支、扩展 `ERRORS` 字典 |
-| `dist/scripts/session-update.cjs` | regenerate | `npm run build` 产物（esbuild bundle） |
-| `test/session-update.test.ts` | modify | 新增 `describe("session-update.cjs (remove-change flag)")` 与 `describe("session-update.cjs (remove-epic flag)")`；每 describe 5+ cases |
-| `.claude/skills/mvt-cleanup/SKILL.md` | modify | Step 7 末尾追加 session-update 调用模板；Step 10 state-update 段落增补 `--remove-change` / `--remove-epic` 调用 |
-| `.claude/skills/mvt-status/SKILL.md` | modify (optional) | Edge case "references missing plan_path" 段可降级；或保留作为防御性提示（推荐保留） |
-| `.claude/skills/mvt-resume/SKILL.md` | modify (optional) | Epic Context "could not be loaded" 分支可降级；或保留（推荐保留） |
-| `.qoder/skills/mvt-cleanup/SKILL.md` | regenerate | 与 `.claude/` 同步 |
-| `.qoder/skills/mvt-status/SKILL.md` | regenerate | 与 `.claude/` 同步 |
-| `.qoder/skills/mvt-resume/SKILL.md` | regenerate | 与 `.claude/` 同步 |
+| `sources/scripts/session-update.js` | modify | 核心写入点：新增 2 个 CLI flag、扩展 `validate()`、扩展 `main()` 2 个分支、扩展 `ERRORS` 字典、新增 `parseIdList()` 工具函数 |
+| `sources/sections/session-update.md` | modify | **新增** `{{#remove_change}} ... {{/remove_change}}` 与 `{{#remove_epic}} ... {{/remove_epic}}` 两个条件块，并在 "Critical flag semantics" 段落补上对应说明。**此模板硬约束 "Use only the flags rendered in the command above"**，不增加条件块会阻止 `mvt-cleanup` 在 Step 10 实际调用新 flag |
+| `sources/skills/mvt-cleanup/manifest.yaml` | modify | 在 `sections/session-update.md` 的 `params` 中**新增** `remove_change: true` + `remove_epic: true`（按 cleanup 动作可选）；其他 23 个引用该模板的 skill **不**会启用这俩 key，渲染输出完全不变 |
+| `sources/skills/mvt-cleanup/business.md` | modify | Step 7 末尾追加 `node .ai-agents/scripts/session-update.cjs --remove-change <id>` 提示行；Step 9 表格新增 "Archive removal" 行（覆盖 Step 7.1/7.2/7.2a 三类归档动作）；Step 10 列出完整 `--remove-change` / `--remove-epic` 调用模板 |
+| `test/session-update.test.ts` | modify | 新增 `describe("session-update.cjs (remove-change flag)")` 与 `describe("session-update.cjs (remove-epic flag)")` 两个 describe 块；每 describe 5+ cases：单 id 命中 / 单 id 不存在 / 多 id 全命中 / 多 id 部分命中 / 末尾空值 |
+
+### 自动重新生成产物（`npm run build` 自动产出）
+
+按 `install-manifest.yaml > generated` 规则逐条对应：
+
+| 生成产物 | 来源规则 | 备注 |
+|---|---|---|
+| `dist/scripts/session-update.cjs` | `npm run build` esbuild bundle | 终端用户产物 |
+| `.ai-agents/scripts/session-update.cjs` | `bundle:sources/scripts/session-update.js` | install-manifest 显式声明的 bundle 目标 |
+| `.claude/skills/mvt-cleanup/SKILL.md` | `build:skills` | 由 `business.md` + `manifest.yaml` + `sections/*.md` 渲染 |
+| `.qoder/skills/mvt-cleanup/SKILL.md` | `build:skills` | 与 `.claude/` 镜像 |
+| 23 个其他 skill 的 `.claude/skills/mvt-*/SKILL.md` 与 `.qoder/skills/mvt-*/SKILL.md` | `build:skills` | **不**启用 `remove_change` / `remove_epic` 的 params，渲染输出**完全不变**（纯加法、无破坏性） |
+| `.mvtt-manifest.json` | build 终产物 | 记录所有生成产物的 hash，用于增量更新判断 |
+
+### 问题文档
+
+| File | Action | Description |
+|---|---|---|
 | `docs/problems/archived-change-lingers-in-changes.md` | (no change) | 问题文档；本 design 是其推荐方案 B 的实现蓝图 |
 
-**Files NOT modified** (explicitly out of scope):
+### Files NOT modified (explicitly out of scope)
+
 - `src/build/*.ts` — build 引擎不变
 - `sources/scripts/plan-update.js` / `epic-update.js` — 内部脚本不变
-- `sources/sections/*.md` — 模板不变
-- 任何 `*.yaml` schema — schema 不变
-- `mvt-sync-context/SKILL.md` — ADR-4 显式声明不需要改
-- `mvt-help/SKILL.md` — 不读 `changes[]` / `epics[]`
-- `mvt-analyze*` / `mvt-design` / `mvt-implement` / `mvt-review` / `mvt-test` — 不读 `changes[]` / `epics[]` 的写入
+- `sources/sections/*.md` 中**除 `session-update.md` 外的其他模板** — 不需要改
+- `install-manifest.yaml` / `registry.yaml` / `sources/defaults/*.yaml` — schema 不变
+- `sources/skills/mvt-status/business.md` — design **推荐保留** `(epic.yaml not found at {path})` 边缘规则作为防御性提示
+- `sources/skills/mvt-resume/business.md` — design **推荐保留** "Epic context could not be loaded" 分支作为防御性提示
+- `sources/skills/mvt-sync-context/business.md` — ADR-4 显式声明不需要改（依赖既有目录存在性检查，归档后从 `changes[]` 移除自然失效）
+- `sources/skills/mvt-help/business.md` — 不读 `changes[]` / `epics[]`
+- `sources/skills/mvt-{analyze,analyze-code,design,implement,review,test,plan-dev,refactor,decompose,quick-dev,fix,bug-detect,update-plan,manage-context,check-context,config,sync-context,init,template,create-skill}/business.md` — 不读 `changes[]` / `epics[]` 的写入
+- `.claude/skills/*/SKILL.md` 与 `.qoder/skills/*/SKILL.md`（全部 24 个 skill × 2 个目录 = 48 个文件）— **由 `npm run build` 自动生成，禁止手改**
 
 ## Implementation Guidelines
 
 ### Ordering for `/mvt-implement`
 
-1. **`sources/scripts/session-update.js` 先扩展 `ERRORS` 字典**（新增 1 条错误消息：`MISSING_REMOVE_VALUE`），再扩展 `validate()`，再扩展 `main()` 的 2 个新分支。这样 IDE 与测试可以在新分支尚未工作时通过 `validate()` 报"参数缺失"看到错误信号。
+> **阶段概述**：整个实施过程分为四个阶段 —— **Plan（原型）→ Test（写测试）→ Implement（实现）→ Build（重构建）**。每个阶段内子步骤按编号执行，前置完成方可进入下一阶段。
 
-2. **`parseIdList` 工具函数**放在 `parseArgs` 之下、`validate` 之上，复用逗号分隔约定（与 `sources/scripts/epic-update.js:74` 风格一致）。
+#### Phase A: Prototype（实现骨架 — 先让 flag 能被识别）
 
-3. **测试先行**：2 个新 flag 共 2 个 describe 块、合计 10+ cases（每个 flag 5 cases：单 id 命中、单 id 不存在、多 id 全部命中、多 id 部分命中、末尾空值），先写测试 → 跑通失败 → 再写实现。
+1. **扩展 `ERRORS` 字典**：新增 `MISSING_REMOVE_VALUE` 错误消息（函数，返回 "Missing required argument: --remove-change / --remove-epic requires a non-empty value"）。
 
-4. **`mvt-cleanup/SKILL.md` 改造顺序**：Step 7 末尾追加 `node .ai-agents/scripts/session-update.cjs --remove-change <id>` 提示行；Step 9 表格新增 "Archive removal" 行；Step 10 列出完整 `--remove-change` / `--remove-epic` 调用模板。
+2. **新增 `parseIdList()` 工具函数**：放在 `parseArgs` 之下、`validate` 之上。具体位置：
+   ```
+   parseArgs()         ← 既有（不变）
+   ──── parseIdList()  ← 新增 ────
+   validate()          ← 扩展（下一步）
+   main()              ← 扩展（Phase C）
+   ```
+   复用逗号分隔约定（`String.split(",").map(s => s.trim()).filter(Boolean)`，与 `sources/scripts/epic-update.js:74` 风格一致）。
 
-5. **重新构建并刷新 `.claude/skills/*/SKILL.md` 与 `.qoder/skills/*/SKILL.md`**：`npm run build` 触发；如未自动刷新，需手动跑 `build-scripts.js`。
+3. **扩展 `validate()`**：在既有校验之后追加两条规则 —— `args["remove-change"]` 必须为非空值；`args["remove-epic"]` 必须为非空值。空字符串 / 全空白 → 返回 `MISSING_REMOVE_VALUE`。
+
+**验证点**：此时 `node session-update.js --skill x --summary "test" --remove-change ""` 应退出 1 并报 `MISSING_REMOVE_VALUE` 错误（先通过基础校验，再命中新增的空值校验）。
+
+#### Phase B: Test（TDD — 先写测试看到失败）
+
+4. **写测试 `test/session-update.test.ts`**：新增 2 个 describe 块、合计 10+ cases：
+   - `describe("session-update.cjs (remove-change flag)")`：5+ cases — 单 id 命中 / 单 id 不存在 / 多 id 全部命中 / 多 id 部分命中 / 末尾空值
+   - `describe("session-update.cjs (remove-epic flag)")`：同上 5 cases
+   - 额外 2 个组合 case：与 `--close-change` 同时调用（验证职责分离，`active_change` 不受 `--remove-change` 影响）
+   
+   **跑测试**：确认新测试全部 **FAIL**（因为 `main()` 尚未实现），既有测试全部 **PASS**（没有破坏现有行为）。
+
+#### Phase C: Implement（实现 `main()` 分支 + 模板条件块 + 调用方配置）
+
+5. **扩展 `main()` 的新分支**：在 `--close-epic` 之后、原子写入之前，插入两个新分支：
+   ```
+   // --remove-change <ids>: 过滤 session.changes
+   // --remove-epic <ids>: 过滤 session.epics
+   ```
+   遵循 ADR-3（逗号多 id）、ADR-5（未知 id 静默跳过）、ADR-6（全未命中时 stderr Warning、exit 0）。
+
+6. **更新 `sources/sections/session-update.md` 模板**：在命令拼接行的 `{{#truncate_history}}` 之后追加：
+   ```
+   {{#remove_change}} --remove-change <ids>{{/remove_change}}{{#remove_epic}} --remove-epic <ids>{{/remove_epic}}
+   ```
+   在 "Critical flag semantics" 段落用同样的条件块补上语义说明：
+   ```
+   {{#remove_change}}
+   - `--remove-change <ids>` 从 `session.changes[]` 中移除指定 id 的条目（逗号分隔多 id）；不影响 `active_change`。
+   {{/remove_change}}
+   {{#remove_epic}}
+   - `--remove-epic <ids>` 从 `session.epics[]` 中移除指定 id 的条目（逗号分隔多 id）；不影响 `active_epic`。
+   {{/remove_epic}}
+   ```
+   **必须在步骤 7 之前完成** —— 当前渲染器对未定义的模板变量采取**静默空字符串**策略（见 `src/build/section-loader.ts:38` 的 `expandBlocks` 与 `:77` 的 `expandConditionals`），**不会报错**；但若步骤 6 未完成，步骤 7 启用的 `remove_change` / `remove_epic` params 对应的 `{{#remove_change}}` / `{{#remove_epic}}` 块不存在，命令拼接行不会渲染出 `--remove-change` / `--remove-epic`，`mvt-cleanup` Step 10 实际调用会**静默丢失新 flag**，导致归档后索引与物理位置失同步的 bug 未被修复。
+
+7. **启用 `mvt-cleanup/manifest.yaml` params**：在 `sections/session-update.md` 的 `params` 中追加：
+   ```yaml
+   remove_change: true
+   remove_epic: true
+   ```
+   **仅改这一个 manifest**，其他 23 个 skill **不**改。
+
+8. **改造 `mvt-cleanup/business.md`**：
+   - Step 7 末尾追加 `node .ai-agents/scripts/session-update.cjs --remove-change <id>` 提示行
+   - Step 9 表格由 2 行扩为 **4 行**：
+
+     | Actual cleanup action | session-update parameters |
+     |---|---|
+     | Closed `active_change` (all plan tasks completed) **+** archived old done changes | `--close-change --remove-change <ids> --truncate-history <N>` |
+     | Closed `active_change` only (no old changes archived) | `--close-change --truncate-history <N>` |
+     | Archived old changes only (active_change still in progress) | `--remove-change <ids> --truncate-history <N>` |
+     | Archived epic + its children (batch) | `--remove-epic <epic_id> --remove-change <child1>,<child2> --truncate-history <N>` |
+
+     第一行对应**组合场景**（ADR-2），`--close-change` 与 `--remove-change <ids>` 职责不重叠。
+
+   - Step 10 列出完整 `--remove-change` / `--remove-epic` 调用模板
+
+**验证点**：此时所有新测试应 **PASS**，既有测试全部 **PASS**。
+
+#### Phase D: Build（常规重构建）
+
+9. **`npm run build`**：刷新所有生成产物 —— 包括 `dist/scripts/session-update.cjs`、`.ai-agents/scripts/session-update.cjs`、所有 24 个 skill 的 `.claude/skills/*/SKILL.md` 与 `.qoder/skills/*/SKILL.md`、`.mvtt-manifest.json`。
+
+**验证点**：23 个未启用 `remove_change` / `remove_epic` params 的 skill 渲染输出**完全不变**。可执行命令：
+```bash
+# 重新构建后，对比 .claude/ 与 .qoder/ 下除 mvt-cleanup 外所有 skill 的 SKILL.md
+# （包含在仓库内时）应与 build 前完全一致
+git diff -- .claude .qoder -- '*/SKILL.md' ':!mvt-cleanup/SKILL.md'
+# 或使用 manifest 哈希比对（更可靠，不依赖 git 暂存）
+# 对比 .mvtt-manifest.json 中除 mvt-cleanup 外所有 skill 的 content_hash
+```
+若发现任何 skill 的 SKILL.md 发生变化，说明模板改动不小心"穿透"到了无关 skill，必须回退步骤 6 的模板修改并检查 `{{#remove_change}}` / `{{#remove_epic}}` 条件块的包裹。
 
 ### Sequencing constraints
 
-- **必须先扩展 `session-update.js` 再改 SKILL.md**：否则 `mvt-cleanup/SKILL.md` 引用不存在的 flag，运行时会报错。
-- **测试与实现必须同步提交**：与既往 fix 经验一致（如 `20260608-regular` C1 回归的 fix 经验）。
+- **调用链约束**（Phase A → Phase C）：`sources/scripts/session-update.js` → `sources/sections/session-update.md` 模板 → `sources/skills/mvt-cleanup/manifest.yaml` → `sources/skills/mvt-cleanup/business.md`。四个文件构成一条调用链，任何一环前置未做都会让后续步骤引用不存在的 flag / 渲染变量。
+- **Phase B 完整性约束**：测试先行确保新代码至少被一次运行覆盖。如果 Phase C 实现后发现测试覆盖不足，应回到 Phase B 补充测试，**不**允许实现先于测试。
+- **23-skill hash 不变约束**（Phase D 验证点）：`npm run build` 后 `.mvtt-manifest.json` 中除 `mvt-cleanup` 外所有 skill 的 hash 不应变化。若发生变化，说明模板改动不小心"穿透"到了无关 skill，必须回退步骤 6 的模板修改，检查 `{{#remove_change}}` / `{{#remove_epic}}` 条件块的包裹是否正确。
 - **review 阶段需验证 `mvt-sync-context` 行为不变**：bug-detect 已识别 sync-context 是关键消费者，review 时必须回归测试 sync-context 的"归档后跳过"逻辑。
 
 ## Change Tracking
@@ -281,11 +385,11 @@ sequenceDiagram
 |---|---|
 | Change ID | `20260622-session-archive-sync` |
 | Scope | v1, Plan B only (方案 A 推迟到独立 change) |
-| Affected files (estimated) | `sources/scripts/session-update.js`, `dist/scripts/session-update.cjs` (regenerated), `test/session-update.test.ts`, `.claude/skills/mvt-cleanup/SKILL.md`, `.qoder/skills/mvt-cleanup/SKILL.md`, plus regenerated `.claude/skills/mvt-status/SKILL.md` / `.qoder/skills/mvt-status/SKILL.md` / `.claude/skills/mvt-resume/SKILL.md` / `.qoder/skills/mvt-resume/SKILL.md` (optional downgrade of edge cases) |
+| Affected files (estimated) | **手改源文件（5）**：`sources/scripts/session-update.js`、`sources/sections/session-update.md`、`sources/skills/mvt-cleanup/manifest.yaml`、`sources/skills/mvt-cleanup/business.md`、`test/session-update.test.ts`。**自动重生产物（build）**：`dist/scripts/session-update.cjs`、`.ai-agents/scripts/session-update.cjs`、所有 24 个 skill 的 `.claude/skills/*/SKILL.md` 与 `.qoder/skills/*/SKILL.md`、`.mvtt-manifest.json`（其中 23 个 skill 渲染输出应完全不变） |
 | New modules | None |
 | New flags | 2 (`--remove-change`, `--remove-epic`) |
 | ADRs | 6 (this design) |
 | Breaking changes | None — additive flags only; existing 9 flags and all behaviors preserved |
 | Regression risk | Low — all new flags are new code paths; no modification to existing branches |
-| Reviewer checklist | (1) `mvt-cleanup` Step 7 → Step 10 调用形态； (2) `mvt-sync-context` 归档后行为不变； (3) `mvt-status` (missing) 边缘规则是否降级或保留； (4) 2 个新 flag 的测试覆盖度； (5) `parseArgs` 扩展（仅 `parseIdList` 助手）是否影响既有 9 个 flag 的解析 |
+| Reviewer checklist | (1) `mvt-cleanup` Step 7 → Step 10 调用形态；(2) `mvt-sync-context` 归档后行为不变；(3) `mvt-status` (missing) 边缘规则是否降级或保留；(4) 2 个新 flag 的测试覆盖度；(5) `parseArgs` 扩展（仅 `parseIdList` 助手）是否影响既有 9 个 flag 的解析；(6) `sources/sections/session-update.md` 新增条件块后，23 个未启用 `remove_change` / `remove_epic` 的 skill 渲染输出 hash 不变 —— 执行 `git diff -- .claude .qoder -- '*/SKILL.md' ':!mvt-cleanup/SKILL.md'` 应为空，或对比 `.mvtt-manifest.json` 中除 `mvt-cleanup` 外所有 skill 的 `content_hash` |
 | Future work (out of scope) | 方案 A：`--update-change-path` / `--update-epic-path` flag（路径改写为 `_archived/` 前缀） |

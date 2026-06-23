@@ -75,6 +75,8 @@ sections:
       current_skill: mvt-cleanup
       truncate_history: true
       close_change: true
+      remove_change: true
+      remove_epic: true
 
   - type: shared
     source: sections/footer-next-steps.md

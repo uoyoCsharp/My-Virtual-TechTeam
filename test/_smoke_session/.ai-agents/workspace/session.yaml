@@ -1,0 +1,30 @@
+session:
+  initialized_at: 2026-06-05T08:00:00Z
+  last_synced_at: 2026-06-08T02:00:00Z
+active_epic:
+  id: ""
+  title: ""
+  created_at: ""
+  epic_path: ""
+epics:
+  - id: epic-keep
+    title: Keep
+    epic_path: /keep
+    status: active
+    updated_at: 2026-06-01T00:00:00Z
+active_change:
+  id: ""
+  title: ""
+  created_at: ""
+  plan_path: ""
+  epic_id: ""
+changes: []
+history:
+  - skill: /smoke
+    completed_at: 2026-06-23T10:02:21.890Z
+    summary: smoke
+    change_id: ""
+  - skill: /smoke
+    completed_at: 2026-06-23T10:02:22.011Z
+    summary: smoke
+    change_id: ""
