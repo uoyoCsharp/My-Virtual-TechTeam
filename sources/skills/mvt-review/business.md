@@ -97,7 +97,11 @@ This step applies only when the workspace has multiple projects (`projects.lengt
 - Each finding must include: file, line range, severity, observation, recommendation.
 
 ### Step 7: Write Artifact
-- **Path and template**: as defined in the **Artifact Structure** section below. If no `active_change` exists, use `.ai-agents/workspace/artifacts/_ad-hoc-review-{YYYY-MM-DD-HHMM}/review.md`. Follow the HTML comments in the template for what each section should contain; strip comments from the final artifact.
+- **Confirm before writing**: when an `active_change` exists (so an artifact would be written), present the review result in the conversation first (verdict + Critical/Warning/Suggestion counts), then ask the user whether to persist it: `Write the review artifact to {path}? (y/n)`.
+  - If the user declines (n), do NOT write any file under `artifacts/`. Keep the full review in the conversation only, and note that no artifact was persisted. Then continue to Step 8.
+  - If the user confirms (y), write the artifact as described below.
+  - When no `active_change` exists, there is no artifact to write — skip the prompt and keep the full review in the conversation only (no artifact).
+- **Path and template**: as defined in the **Artifact Structure** section below; this applies only when an `active_change` exists. Follow the HTML comments in the template for what each section should contain; strip comments from the final artifact.
 - **Required coverage**: cover only content that is applicable to this review. Preserve enough information for the user to understand what was reviewed, the verdict, material findings, skipped checks, and the recommended next step. Do not create empty or artificial sections just because an item is named here; if the template omits or renames a section, place applicable content in the closest relevant section.
 
 ### Step 8: Verdict Rule
@@ -119,3 +123,5 @@ Apply the State Update rules defined in the **State Update** section below.
 | Findings in the same file conflict (e.g., quality says "extract", architecture says "do not introduce a new module") | Defer to architecture; record the tension in `Suggestions` |
 | Implementation explicitly documents a deviation from design (in `Deviations from Design`) | Treat as accepted -- flag only if the deviation is itself problematic |
 | Reviewer finds bugs requiring discussion before fix | Mark Critical, but do NOT auto-invoke `/mvt-fix`; leave the call to the user |
+| User declines to write the artifact at Step 7 | Do not write any file under `artifacts/`; keep the review in the conversation only and note that no artifact was persisted |
+| `active_change` is missing entirely | Run the review and keep the result in the conversation only; do not write any artifact (no ad-hoc artifact path) |

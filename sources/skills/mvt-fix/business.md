@@ -122,6 +122,10 @@ This step applies only when the workspace has multiple projects (`projects.lengt
 - If repro still fails -> revert, return to Step 3 with the new evidence.
 
 ### Step 9: Write Fix Notes
+- **Confirm before writing**: when an `active_change` exists (so an artifact would be written), present the fix notes content in the conversation first, then ask the user whether to persist it: `Write the fix notes to {path}? (y/n)`.
+  - If the user declines (n), do NOT write any file under `artifacts/`. Keep the fix notes in the conversation only, and note that no artifact was persisted. Then continue to Step 10.
+  - If the user confirms (y), write the artifact as described below.
+  - When no `active_change` exists, there is no artifact to write — skip the prompt and keep the notes inline (existing shortcut behavior).
 - **Path**: `.ai-agents/workspace/artifacts/{change-id}/fix-notes.md` if an `active_change` exists; otherwise inline in the conversation only (no artifact -- shortcut operation).
 - **Structure** (each section is a single paragraph or list):
   - `Symptom` -- what the user saw / reported.
@@ -144,5 +148,6 @@ Apply the State Update rules defined in the **State Update** section below.
 | Fix would require breaking a downstream API | STOP -- escalate to `/mvt-design` or `/mvt-refactor`; do not silently break contracts |
 | Root cause is in a third-party dependency | Document the upstream issue, apply a minimal local workaround clearly labeled as temporary |
 | User aborts at Step 7 | Do not write fix notes; record the diagnosis as a comment in the conversation only |
+| User declines to write the artifact at Step 9 | Do not write any file under `artifacts/`; keep the fix notes in the conversation only and note that no artifact was persisted |
 | Fix relies on changes the user has uncommitted in another branch | Surface the conflict before editing; do not overwrite |
 | `active_change` is missing entirely | Apply fix without writing artifact (shortcut mode), summarize result in conversation |

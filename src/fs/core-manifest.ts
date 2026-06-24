@@ -41,10 +41,15 @@ function backupUserManifest(projectRoot: string, sourcePath: string): string {
  * - All entries with origin: "user" in the existing user manifest are preserved.
  * - Any other entries (legacy or malformed) are dropped.
  *
- * The user manifest at projectRoot is rewritten with the merged result. A backup
- * of the previous user manifest (if any) is written to .ai-agents/.backup/.
+ * The user manifest at projectRoot is rewritten with the merged result. When
+ * `backup` is true (the default), a backup of the previous user manifest (if
+ * any) is written to .ai-agents/.backup/.
  */
-export function updateCoreManifest(projectRoot: string, packageRoot: string): {
+export function updateCoreManifest(
+  projectRoot: string,
+  packageRoot: string,
+  createBackup = true,
+): {
   written: boolean;
   backup: string | null;
   frameworkCount: number;
@@ -81,7 +86,7 @@ export function updateCoreManifest(projectRoot: string, packageRoot: string): {
   };
 
   let backup: string | null = null;
-  if (existsSync(userPath)) {
+  if (createBackup && existsSync(userPath)) {
     backup = backupUserManifest(projectRoot, userPath);
   }
 

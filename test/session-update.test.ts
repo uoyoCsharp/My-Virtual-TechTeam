@@ -583,6 +583,13 @@ describe("session-update.cjs (remove-change flag)", () => {
     expect(res.stderr).toMatch(/non-empty value/);
   });
 
+  it("rejects missing value when --remove-change is provided without argument", () => {
+    writeSession(sessionWithChanges());
+    const res = update(["--remove-change"]);
+    expect(res.status).toBe(1);
+    expect(res.stderr).toMatch(/non-empty value/);
+  });
+
   it("warns to stderr when all requested ids are unknown (still exit 0)", () => {
     writeSession(sessionWithChanges());
     const res = update(["--remove-change", "x,y"]);
@@ -671,6 +678,13 @@ describe("session-update.cjs (remove-epic flag)", () => {
   it("rejects empty value with MISSING_REMOVE_VALUE", () => {
     writeSession(sessionWithEpics());
     const res = update(["--remove-epic", "   "]);
+    expect(res.status).toBe(1);
+    expect(res.stderr).toMatch(/non-empty value/);
+  });
+
+  it("rejects missing value when --remove-epic is provided without argument", () => {
+    writeSession(sessionWithEpics());
+    const res = update(["--remove-epic"]);
     expect(res.status).toBe(1);
     expect(res.stderr).toMatch(/non-empty value/);
   });

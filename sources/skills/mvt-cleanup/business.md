@@ -30,7 +30,7 @@ This check ensures `/mvt-sync-context` has processed a change's knowledge before
 
   | Source | Rule | Proposed action |
   |--------|------|-----------------|
-  | `changes[]` entry with `status: done` AND any task in plan is older than the active change's start | Summarize: generate a `summary.md` from the change's artifacts, then move the **entire** `artifacts/{id}/` directory (including `summary.md`) to `artifacts/_archived/{id}/` |
+  | `changes[]` entry with `status: done` AND `artifacts/{id}/` exists AND (any task in plan is older than the active change's start **OR** plan metadata is missing, unreadable, or absent for this change) | Summarize: generate a `summary.md` from the change's artifacts, then move the **entire** `artifacts/{id}/` directory (including `summary.md`) to `artifacts/_archived/{id}/` |
   | `changes[]` entry with `status: done` AND `epic_id` non-empty AND parent epic status is NOT `done` | **Epic integrity warning**: mark the candidate as `epic-unsafe` -- archiving a sub-change whose parent epic is still in-progress may leave the epic in an inconsistent state. Default to `n` (skip) in the cleanup plan. User may override to force-archive. |
   | Artifact directory under `artifacts/` whose id starts with `epic-` AND contains `epic.yaml` with `status: done` | **Batch archive candidate**: mark for batch suggestion in Step 7 -- read `epic.yaml.children[]` for child change-ids to offer as batch archive options alongside the epic |
   | Change-id directory marked `unindexed` | List for user review (do NOT auto-archive -- could be in-flight work the user just hasn't registered) |

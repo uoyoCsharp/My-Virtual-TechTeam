@@ -30,6 +30,8 @@ export interface MaterializeOptions {
   timestamp?: string;
   overwriteCreateOnce?: boolean;
   platforms?: PlatformId[];
+  /** Back up the existing user registry/core-manifest before rewriting them. Defaults to true. */
+  backup?: boolean;
 }
 
 const SKILL_OUTPUT_PREFIX = PLATFORMS[0].skillDir + "/";
@@ -72,7 +74,7 @@ function copyRecursive(
 }
 
 export function materializeProject(options: MaterializeOptions): MaterializedFile[] {
-  const { packageRoot, projectRoot, overwriteCreateOnce = false } = options;
+  const { packageRoot, projectRoot, overwriteCreateOnce = false, backup = true } = options;
   const selectedPlatforms = options.platforms ?? DEFAULT_PLATFORMS;
   const timestamp = options.timestamp ?? new Date().toISOString();
   const sourcesDir = path.resolve(packageRoot, "sources");
@@ -154,7 +156,7 @@ export function materializeProject(options: MaterializeOptions): MaterializedFil
     projectRoot,
     ".ai-agents/knowledge/core/manifest.yaml",
   );
-  updateCoreManifest(projectRoot, packageRoot);
+  updateCoreManifest(projectRoot, packageRoot, backup);
   materialized.push({
     absPath: coreManifestDest,
     relPath: ".ai-agents/knowledge/core/manifest.yaml",
@@ -167,7 +169,7 @@ export function materializeProject(options: MaterializeOptions): MaterializedFil
   // /mvt-manage-context must survive `mvtt update`. Treated as create_once
   // (like core/manifest.yaml) so the modified-files guard does not flag it.
   const registryDest = path.resolve(projectRoot, ".ai-agents/registry.yaml");
-  updateRegistry(projectRoot, packageRoot);
+  updateRegistry(projectRoot, packageRoot, backup);
   materialized.push({
     absPath: registryDest,
     relPath: ".ai-agents/registry.yaml",

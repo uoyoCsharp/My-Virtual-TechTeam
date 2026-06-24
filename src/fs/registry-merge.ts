@@ -231,10 +231,15 @@ function mergeRegistry(
  *
  * On a fresh install (no existing user registry) the framework file is copied
  * verbatim so its documentation comments survive. When a user registry already
- * exists it is backed up to `.ai-agents/.backup/` and rewritten with the merged
- * result.
+ * exists it is rewritten with the merged result; when `createBackup` is true
+ * (the default) the previous user registry is first backed up to
+ * `.ai-agents/.backup/`.
  */
-export function updateRegistry(projectRoot: string, packageRoot: string): RegistryMergeResult {
+export function updateRegistry(
+  projectRoot: string,
+  packageRoot: string,
+  createBackup = true,
+): RegistryMergeResult {
   const frameworkPath = path.resolve(packageRoot, FRAMEWORK_REGISTRY_REL);
   const userPath = path.resolve(projectRoot, USER_REGISTRY_REL);
 
@@ -258,7 +263,7 @@ export function updateRegistry(projectRoot: string, packageRoot: string): Regist
   const existingUser = readRegistry(userPath) ?? {};
 
   let backup: string | null = null;
-  if (existsSync(userPath)) {
+  if (createBackup && existsSync(userPath)) {
     backup = backupRegistry(projectRoot, userPath);
   }
 

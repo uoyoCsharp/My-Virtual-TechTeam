@@ -39,8 +39,8 @@ export async function run(argv: string[]): Promise<void> {
     .command("update")
     .description(bilingual("Update MVTT to latest version", "将 MVTT 更新到最新版本"))
     .option("--check", bilingual("Only report version diff, do not modify", "仅报告版本差异，不实际修改"))
-    .action((opts) => {
-      updateCommand(opts);
+    .action(async (opts) => {
+      await updateCommand(opts);
     });
 
   program

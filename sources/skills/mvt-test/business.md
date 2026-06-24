@@ -91,7 +91,12 @@ This step applies only when the workspace has multiple projects (`projects.lengt
 - Record each finding with: scenario id, expected vs observed, severity (Critical / Warning), and recommend `/mvt-fix`.
 
 ### Step 10: Write Artifact
-- **Path and template**: as defined in the **Artifact Structure** section below. Follow the HTML comments in the template for what each section should contain; strip comments from the final artifact.
+- **Scope of this step**: this gate concerns ONLY the test-design record artifact (`test-design.md`). The actual test files were already written to the project tree in Step 7 and are NOT affected by the choice below.
+- **Confirm before writing**: when an `active_change` exists (so an artifact would be written), present the test-design summary in the conversation first (target scope, scenario/case counts, coverage gaps, any implementation issues), then ask the user whether to persist it: `Write the test-design artifact to {path}? (y/n)`.
+  - If the user declines (n), do NOT write any file under `artifacts/`. Keep the full test design in the conversation only, and note that no artifact was persisted. Then continue to Step 11.
+  - If the user confirms (y), write the artifact as described below.
+  - When no `active_change` exists, there is no artifact to write — skip the prompt and keep the full test design in the conversation only (no artifact).
+- **Path and template**: as defined in the **Artifact Structure** section below; this applies only when an `active_change` exists. Follow the HTML comments in the template for what each section should contain; strip comments from the final artifact.
 - **Required coverage**: cover only content that is applicable to this test effort. Preserve enough information for the user to understand the target scope, chosen framework/layout, scenarios and runnable test cases, granularity choices, coverage gaps when `--coverage` is set, implementation issues when found, and practical run commands when tests are generated. Do not create empty or artificial sections just because an item is named here; if the template omits or renames a section, place applicable content in the closest relevant section.
 - The actual test files go to the project tree; the artifact is a record.
 
@@ -109,3 +114,5 @@ Apply the State Update rules defined in the **State Update** section below.
 | Flaky test detected during writing | Add deterministic seeding/clock; if not possible, mark as `flaky-suspected` and surface in artifact |
 | User asks to "skip edge cases" | Refuse: edge cases are a non-negotiable boundary of this skill; explain and continue |
 | `--coverage` set but coverage tool not configured in project | Generate the gap list from scenarios alone; suggest tool setup; do not invoke a non-existent coverage runner |
+| User declines to write the artifact at Step 10 | Do not write any file under `artifacts/`; keep the test design in the conversation only and note that no artifact was persisted. Test files already written to the project tree (Step 7) are unaffected |
+| `active_change` is missing entirely | Write the test files to the project tree as usual, but keep the test-design record in the conversation only; do not write any artifact (no ad-hoc artifact path) |

@@ -135,10 +135,16 @@ function validate(args) {
   if (args["epic-id"] && !args["new-change"] && !args["new-epic"]) return ERRORS.EPIC_ID_ORPHAN();
 
   // Remove flags require non-empty values
-  if (args["remove-change"] !== undefined && !String(args["remove-change"]).trim()) {
+  if (
+    args["remove-change"] !== undefined
+    && (args["remove-change"] === true || !String(args["remove-change"]).trim())
+  ) {
     return ERRORS.MISSING_REMOVE_VALUE();
   }
-  if (args["remove-epic"] !== undefined && !String(args["remove-epic"]).trim()) {
+  if (
+    args["remove-epic"] !== undefined
+    && (args["remove-epic"] === true || !String(args["remove-epic"]).trim())
+  ) {
     return ERRORS.MISSING_REMOVE_VALUE();
   }
 

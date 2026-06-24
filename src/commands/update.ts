@@ -1,5 +1,6 @@
 import { existsSync, rmSync, readdirSync } from "node:fs";
 import path from "node:path";
+import * as p from "@clack/prompts";
 import { materializeProject } from "../fs/materialize.js";
 import {
   readInstallationManifest,
@@ -15,7 +16,7 @@ export interface UpdateOptions {
   check?: boolean;
 }
 
-export function updateCommand(options: UpdateOptions = {}): void {
+export async function updateCommand(options: UpdateOptions = {}): Promise<void> {
   const projectRoot = process.cwd();
   const packageRoot = getPackageRoot();
   const version = getVersion();
@@ -72,6 +73,25 @@ export function updateCommand(options: UpdateOptions = {}): void {
     ));
   }
 
+  // Backing up the existing registry / core-manifest is optional. In an
+  // interactive terminal, let the user decide (defaults to yes); in a non-TTY
+  // context (CI, pipes) there is no one to prompt, so fall back to backing up.
+  let backup = true;
+  if (process.stdout.isTTY) {
+    const response = await p.confirm({
+      message: bilingual(
+        "Back up the existing registry and core-manifest to .ai-agents/.backup/ before updating?",
+        "更新前是否将现有的 registry 和 core-manifest 备份到 .ai-agents/.backup/？",
+      ),
+      initialValue: true,
+    });
+    if (p.isCancel(response)) {
+      console.log(bilingual("Update cancelled.", "已取消更新。"));
+      return;
+    }
+    backup = response;
+  }
+
   console.log(bilingual(
     `Updating MVTT from v${existing.mvtt_version} to v${version}...`,
     `正在将 MVTT 从 v${existing.mvtt_version} 更新到 v${version}...`,
@@ -88,6 +108,7 @@ export function updateCommand(options: UpdateOptions = {}): void {
       projectRoot,
       platforms,
       overwriteCreateOnce: false,
+      backup,
     });
     spinner.succeed();
   } catch (err) {
