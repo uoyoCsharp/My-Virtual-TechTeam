@@ -35,7 +35,7 @@ This step applies only when the workspace has multiple projects (`projects.lengt
   2. Every entry under `skills.mvt-review.knowledge.{P}` -- load each entry's referenced files.
   3. Skip any key absent from the registry (no project-specific knowledge is valid; do not warn).
 - **Multi-project scenario**: if files span multiple projects, load each project's knowledge sequentially. The skill operates with the union of all loaded project-specific knowledge plus the `_all` knowledge already loaded at activation.
-- **Unmatched files**: if a file path does not match any project's `path` or `source_paths`, surface a note and treat it as belonging to the first project in `projects[]` (fallback). This may indicate a configuration gap in `project-context.yaml`.
+- **Unmatched files**: if a file path does not match any project's `path` or `source_paths`, surface a note and ask the user to choose the project scope. Do not silently fall back to the first project.
 
 ### Step 4: Determine Review Depth
 - **Default**: full review across all axes (Step 5).
@@ -107,7 +107,8 @@ This step applies only when the workspace has multiple projects (`projects.lengt
 ### Step 8: Verdict Rule
 - Critical > 0 -> verdict is `Request changes`. Suggest `/mvt-fix`.
 - Critical = 0, Warnings > 5 -> verdict is `Approve with comments`.
-- Critical = 0, Warnings <= 5, Suggestions only -> verdict is `Approve`.
+- Critical = 0, Warnings between 1 and 5 -> verdict is `Approve with comments`.
+- Critical = 0, Warnings = 0 -> verdict is `Approve`.
 - Code-only review (design.md missing) -> verdict cannot be higher than `Approve with comments` (call it out explicitly).
 
 ### Step 9: State Update

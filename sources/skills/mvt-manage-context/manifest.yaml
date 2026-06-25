@@ -37,8 +37,8 @@ sections:
           skill: "/mvt-design"
         - scope: "write implementation code"
           skill: "/mvt-implement"
-        - scope: "edit framework knowledge under core/_framework/ (framework files are read-only)"
-          skill: "(constraint)"
+        - scope: "edit framework knowledge under core/_framework/"
+          guidance: "framework files are read-only"
 
   - type: shared
     source: sections/activation-protocol.md

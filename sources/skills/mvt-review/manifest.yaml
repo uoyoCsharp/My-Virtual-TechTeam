@@ -33,7 +33,7 @@ sections:
         - scope: "make architecture decisions"
           skill: "/mvt-design"
         - scope: "modify source code"
-          skill: "(This is a read-only review)"
+          guidance: "this is a read-only review"
 
   - type: inline
     content: |
@@ -43,8 +43,12 @@ sections:
       |--------|-------------|
       | `architecture` | Layer compliance, module boundaries, dependency direction |
       | `security` | Input validation, injection prevention, authentication |
-      | `performance` | N+1 queries, memory leaks, caching |
-      | `style` | Naming conventions, formatting, documentation |
+      | `quality` | Function size, duplication, dead code, maintainability |
+      | `errors` | Error handling, swallowed errors, boundary behavior |
+      | `edge-cases` | Boundary inputs, concurrency, resource lifecycle |
+      | `security` | Input validation, injection prevention, authentication |
+      | `naming` | Naming conventions, formatting, documentation |
+      | `tests` | Test coverage, assertions, skipped tests |
 
       Usage: `/mvt-review` or `/mvt-review --aspect {type}`
 

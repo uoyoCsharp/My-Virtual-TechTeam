@@ -1,57 +1,62 @@
 ## Execution Flow
 
+`/mvt-config` takes no arguments. Every invocation opens the Interactive Menu (Step 2); all actions -- viewing settings, editing a key, and guided setup -- are reached from there. There is no `set` / `show` / `wizard` / `reset` invocation form.
+
 ### Step 1: Load Inputs
+- **Required**:
+  - `.ai-agents/config.yaml` -- the configuration to inspect and edit.
 - **Recommended**:
-  - `.ai-agents/knowledge/core/manifest.yaml` -- only when computing token estimates for shared knowledge view.
+  - `.ai-agents/knowledge/core/manifest.yaml` -- only when computing token estimates for the shared knowledge view.
 - **Fallback**: if `config.yaml` is missing, surface the error and recommend `mvtt install` or `/mvt-init`. Do not silently create a fresh config from this skill.
 
-### Step 2: Dispatch by Mode
-- **What**: pick the operating mode from the user's invocation.
-- **How**:
+### Step 2: Interactive Menu (entry point)
+1. Read current `config.yaml`.
+2. Render the top-level menu with these actions:
 
-  | Invocation | Mode | Go to |
-  |------------|------|-------|
-  | `/mvt-config` (no args) | Interactive Menu | Step 3 |
-  | `/mvt-config show` | Show All | Step 4 |
-  | `/mvt-config set {key} {value}` | Direct Set | Step 5 |
-  | `/mvt-config wizard` | Guided Wizard | Step 6 |
-  | `/mvt-config reset` | Reset | Step 7 |
-  | Anything else | Refuse, print Variants table, stop | -- |
+   | # | Action | Goes to |
+   |---|--------|---------|
+   | 1 | View all settings | Step 3 |
+   | 2 | Edit a setting | Step 4 |
+   | 3 | Guided setup (walk through common settings) | Step 5 |
+   | `q` | Quit | -- exit, no write |
 
-### Step 3: Interactive Menu
-1. Read current `config.yaml` and render a numbered menu grouped by category (User Preferences, Knowledge Settings, etc.) with current values inline.
-2. Wait for user to select a category number (or `q` to quit).
-3. Show the category detail view: keys with current values, type, default, allowed values.
-4. Let user pick a key to edit; reuse Step 5 (Direct Set) sub-flow for validation, preview, confirmation, write.
-5. After write, return to the top-level menu until user quits.
-6. No write happens unless the Step 5 sub-flow confirms.
+3. Wait for the user's selection. Re-render the menu after any action completes, until the user quits.
+4. On an unrecognized selection, re-print the menu and prompt again. Do not exit.
+5. No write happens unless the user confirms -- either in the Edit sub-flow (Step 4) or at the Guided-setup summary (Step 5).
 
-### Step 4: Show All
+### Step 3: View All
 - Print every key with `current value | type | default`. Mark values that differ from default with a `*`.
-- Print the Configuration Keys reference table (provided in shared section above) below the values, for context.
-- No write.
+- Print the Configuration Keys reference table (provided in the shared section above) below the values, for context.
+- No write. Return to the top-level menu (Step 2).
 
-### Step 5: Direct Set (`set {key} {value}`)
-1. **Validate key exists**:
-   - The key must match one of the rows in the Configuration Keys table. If not, print "Unknown key: <name>", list available keys, exit without writing.
+### Step 4: Edit a Setting
+1. Render a numbered list of editable keys grouped by category (User Preferences, etc.) with current values inline.
+2. Wait for the user to select a key (or `b` to go back to the top-level menu).
+3. Show the key detail: current value, type, default, allowed values.
+4. Run the **Edit sub-flow** (below) for the selected key.
+5. After the sub-flow completes (write or cancel), return to the editable-key list, then to the top-level menu.
+
+#### Edit sub-flow (validate -> preview -> confirm -> write)
+Used by Step 4 and by each stage of Step 5.
+
+1. **Validate key exists**: the key must match one of the rows in the Configuration Keys table. If not, report it and return without writing.
 2. **Validate value type and constraints**:
 
    | Type | Validation |
    |------|------------|
-   | `enum` | Value MUST be in the allowed list. Reject with the allowed list shown. For `language` enums (`en-US` = English, `zh-CN` = 简体中文), reject other locale strings -- ask user to pick from the allowed list (do not fuzzy-match) |
+   | `enum` | Value MUST be in the allowed list. Reject with the allowed list shown. For `language` enums (`en-US` = English, `zh-CN` = 简体中文), reject other locale strings -- ask the user to pick from the allowed list (do not fuzzy-match) |
    | `bool` | Accept exactly `true` / `false` (case-insensitive). Reject `yes`/`1`/`y` |
    | `int` | Parse as integer; check range when range is documented (e.g., `relevance_threshold` must be 0-100) |
-   | `list` | Parse as comma-separated tokens; for knowledge map entries (`_all` and project keys), every token must be a registered knowledge id |
 
 3. **Preview**: render `key: <current> -> <new>` on a single line.
-4. **Confirm**: prompt `Apply this change? (y/n)`. Skip the prompt only if invocation included an explicit non-interactive flag (none currently exists, so always prompt).
+4. **Confirm**: prompt `Apply this change? (y/n)`. On `n`, discard and return.
 5. **Write atomically**:
    - Read the current file, mutate only the targeted key, preserve all other content and formatting (do NOT rewrite the whole file from a template -- the user may have comments).
    - Write to a temp file in the same directory, then rename. On any error, do not touch the original.
 6. Report the new value and a one-line "what this affects" hint (e.g., "applies to subsequent skill invocations").
 
-### Step 6: Guided Wizard
-- Walk the user through these stages in order. Each stage uses the Step 5 validation rules. Defer the actual write to the end.
+### Step 5: Guided Setup
+- Selected from the top-level menu. Walk the user through these stages in order. Each stage uses the Edit sub-flow's validation rules. Defer the actual write to the end.
 
   | Stage | Key | Notes |
   |-------|-----|-------|
@@ -65,17 +70,9 @@
 
 - After all stages, render a Summary Preview table: `key | from | to`, then a single confirmation prompt to apply ALL changes atomically.
 - If the user aborts at the summary, discard all in-progress values; do not write anything.
+- After applying (or aborting), return to the top-level menu (Step 2).
 
-### Step 7: Reset
-1. Build the diff between current `config.yaml` and framework defaults: list every key that will revert.
-2. Render the diff as `key | current | will-become-default`.
-3. Require explicit confirmation: `Reset all settings to defaults? (y/n)`.
-4. Backup current `config.yaml` to `config.yaml.bak` before writing.
-5. Write defaults atomically.
-6. Report the keys that changed.
-- Do NOT reset knowledge map entries (`_all`, project keys) to defaults if the user has added entries via `/mvt-manage-context` -- preserve user-added knowledge ids; only reset preferences. Surface this exception in the diff.
-
-## Knowledge Inspection (sub-flow used by Interactive Menu and Show All)
+## Knowledge Inspection (sub-flow used by View All and Edit a Setting)
 - **View**: list global knowledge ids from `registry.yaml > knowledge._all` and project-specific ids from `knowledge.{projectName}`, then per-skill knowledge ids grouped by skill (`registry.yaml > skills.*.knowledge`). Show token estimates from each entry's manifest if available.
 - **Modify**: this skill does NOT mutate knowledge settings; defer to `/mvt-manage-context`. Print the suggested command (`/mvt-manage-context move`, `/mvt-manage-context add`, etc.) instead of doing the work here.
 
@@ -85,10 +82,8 @@
 |------|----------|
 | `config.yaml` missing | STOP; recommend `mvtt install` or `/mvt-init` |
 | `config.yaml` exists but unparseable YAML | Surface error with line number; refuse to write; recommend manual fix or `mvtt install --refresh` |
-| User runs `set` with a deprecated key (`preferences.language`) | Print migration hint: `Run mvtt update --migrate-config` to split into the two language fields. Do not mutate the deprecated key |
-| Wizard stage receives an empty value | Treat as "accept default for this stage", continue |
-| User aborts mid-wizard | No partial write; the temp values are discarded |
-| `.bak` from previous reset already exists | Overwrite (only the most recent backup is useful) |
+| Editing a deprecated key (`preferences.language`) | Print migration hint: `Run mvtt update --migrate-config` to split into the two language fields. Do not mutate the deprecated key |
+| Guided-setup stage receives an empty value | Treat as "accept default for this stage", continue |
+| User aborts mid guided-setup | No partial write; the temp values are discarded |
 | Concurrent edit detected (mtime changed during preview->write) | Abort write, surface a message, ask user to re-run |
-| `set knowledge._all <list>` (or project key) includes unknown id | Reject with the list of valid ids from `registry.yaml` |
-| `reset` invoked but `config.yaml` already matches defaults | Report "nothing to reset", do not write |
+| User asks to edit `knowledge._all` or any knowledge map key | Refuse and route to `/mvt-manage-context`; this skill inspects knowledge settings but does not mutate them |

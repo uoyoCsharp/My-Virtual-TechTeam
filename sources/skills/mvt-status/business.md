@@ -12,7 +12,7 @@
 - **What**: produce the most-recent-first list of history entries with derived metadata.
 - **How**:
   1. Read `.ai-agents/workspace/session.yaml`, extract `history`.
-  2. For each entry, attach: relative time (e.g., "2h ago"), `change_id` (if present), and the originating skill name.
+  2. For each entry, attach an ISO timestamp copied from the entry, `change_id` (if present), and the originating skill name. Do not invent approximate relative times.
   3. Limit to the last 10 entries for the rendered table; keep full count separately for the summary line.
 
 ### Step 3: Discover All Plans (Multi-Change Dashboard)
@@ -30,7 +30,7 @@
   | No plans found anywhere | Skip the Changes Overview section entirely; render "No active plans." |
   | One plan found | Render Changes Overview with one row |
   | Multiple plans found | Render Changes Overview sorted: `in_progress` desc by `updated_at` first, then `done` desc by `updated_at`, then `abandoned` last |
-  | Any plan over the cap (more than ~12 rows) | Show top 10 rows; print a `+N older changes hidden -- see artifacts/` line |
+  | Any plan list over the cap (more than 12 rows) | Show top 10 rows; print a `+N older changes hidden -- see artifacts/` line |
 
 ### Step 4: Build the Status Report
 - Render in this order, omitting any section whose inputs were unavailable:
@@ -67,7 +67,7 @@
      For `current_tasks`, display as a compact representation: if single-project, show the task id only; if multi-project, show `web: t2, api: t1` format. The `project` column lists the distinct projects across all tasks in the plan.
   6. **Skill History** -- last 5 rows of the timeline from Step 2.
 
-- Hard cap: total rendered output should not exceed ~120 lines. If it would, truncate Skill History first; never truncate the active change or Changes Overview header rows.
+- Hard cap: total rendered output should not exceed 120 lines. If it would, truncate Skill History first; never truncate the active change or Changes Overview header rows.
 
 ## Edge Cases & Errors
 

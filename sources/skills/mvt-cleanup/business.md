@@ -16,7 +16,7 @@ This check ensures `/mvt-sync-context` has processed a change's knowledge before
 - **What**: produce a per-change-id inventory with size and last-modified data.
 - **How**:
   1. Walk `.ai-agents/workspace/artifacts/` and group files by their parent change-id directory. **Exclude the `_archived/` subdirectory** from the walk — it contains previously archived changes and is not subject to re-inventory.
-  2. For each file: characters, estimated tokens (`chars / 4`), last-modified (mtime).
+  2. For each file: characters, estimated tokens (`ceil(characters / 4)`), last-modified (mtime).
   3. For each change-id directory, sum tokens and file count.
   4. Mark each change-id as `active | in-recent-changes | unindexed | legacy-pattern`:
      - `active` if it matches `session.active_change.id`.
@@ -34,8 +34,8 @@ This check ensures `/mvt-sync-context` has processed a change's knowledge before
   | `changes[]` entry with `status: done` AND `epic_id` non-empty AND parent epic status is NOT `done` | **Epic integrity warning**: mark the candidate as `epic-unsafe` -- archiving a sub-change whose parent epic is still in-progress may leave the epic in an inconsistent state. Default to `n` (skip) in the cleanup plan. User may override to force-archive. |
   | Artifact directory under `artifacts/` whose id starts with `epic-` AND contains `epic.yaml` with `status: done` | **Batch archive candidate**: mark for batch suggestion in Step 7 -- read `epic.yaml.children[]` for child change-ids to offer as batch archive options alongside the epic |
   | Change-id directory marked `unindexed` | List for user review (do NOT auto-archive -- could be in-flight work the user just hasn't registered) |
-  | `history` entries beyond the most recent N (from `config.yaml > preferences.history_limits.history`, default 20) | Truncate via `session-update.cjs --truncate-history <N>` |
-  | Directory `knowledge/patterns/` exists | Flag for deletion (legacy pattern data; no replacement) |
+  | `history` entries beyond the most recent N (from `config.yaml > preferences.history_limits.history`, default 10) | Truncate via `session-update.cjs --truncate-history <N>` |
+  | Directory `knowledge/patterns/` exists | Archive to `.ai-agents/knowledge/_archived/legacy-patterns/` after confirmation (legacy pattern data; no replacement) |
   | Empty change-id directories (zero files inside) | Propose deletion of the directory itself |
 
 - For each candidate, compute: `current size (tokens)` -> `projected size (tokens)`, expected savings.
@@ -79,11 +79,12 @@ This check ensures `/mvt-sync-context` has processed a change's knowledge before
 
      Per ADR-8: archive = abandon references; no post-archive `epic_id` integrity maintenance. Child changes that are also `status: done` are eligible for batch archiving; in-progress or pending children are excluded with a note.
 
-  3. **Delete action**: remove only the items explicitly marked for deletion in the confirmed plan; never recurse beyond what was listed.
-  4. **Stale history truncation**: call `session-update.cjs --truncate-history <N>` where N is from `config.yaml > preferences.history_limits.history` (default 20).
-  5. All file mutations atomic where possible (write-temp + rename, copy-then-delete for moves).
-  6. If any single action fails, STOP further actions; report what completed, what failed, and leave a recoverable state (do not partially overwrite a file with truncated content).
-  7. **Index synchronization**: when an action moves a change-id or epic-id into `artifacts/_archived/`, note the affected id(s) for the Step 10 `--remove-change` / `--remove-epic` flag(s). For Step 7.1 (summarize), Step 7.2 (archive), and Step 7.2a options 2/3 (batch archive children), collect the corresponding change-id(s); for Step 7.2a option 1/2/3, collect the epic-id. These ids are passed to the session-update call in Step 10 to keep `session.changes[]` / `session.epics[]` synchronized with the physical file layout.
+  3. **Archive legacy-pattern action**: move `knowledge/patterns/` to `.ai-agents/knowledge/_archived/legacy-patterns/`. If that destination exists, preserve existing content and ask for a timestamped suffix. Do not hard-delete this directory.
+  4. **Delete action**: remove only the items explicitly marked for deletion in the confirmed plan; never recurse beyond what was listed.
+  5. **Stale history truncation**: call `session-update.cjs --truncate-history <N>` where N is from `config.yaml > preferences.history_limits.history` (default 10).
+  6. All file mutations atomic where possible (write-temp + rename, copy-then-delete for moves).
+  7. If any single action fails, STOP further actions; report what completed, what failed, and leave a recoverable state (do not partially overwrite a file with truncated content).
+  8. **Index synchronization**: after all archive moves finish, re-glob `artifacts/_archived/` for the actual moved change-id and epic-id directories from this run. The `--remove-change` id set MUST equal the set of change-id directories actually moved into `_archived/`; the `--remove-epic` id set MUST equal the set of epic directories actually moved. If the sets differ from the planned ids, use the actual moved-dir set and report the mismatch.
 
 ### Step 8: Report Result
 - Print the actually-applied actions (may differ from the plan if Step 7 stopped early).
@@ -102,7 +103,7 @@ Based on the actual cleanup actions performed, choose the appropriate session-up
 | Archived epic + its children (batch archive) | `--remove-epic <epic_id> --remove-change <child1>,<child2> --truncate-history <N>` |
 | `--dry-run` mode (no modifications made) | **Do NOT call** session-update script; only record history |
 
-N is read from `config.yaml > preferences.history_limits.history` (default 20). `<ids>` is a comma-separated list collected in Step 7.7.
+N is read from `config.yaml > preferences.history_limits.history` (default 10). `<ids>` is a comma-separated list from the actual moved-dir set collected in Step 7.8.
 
 ### Step 10: State Update
 Apply the State Update rules defined in the **State Update** section below.
@@ -137,7 +138,7 @@ node .ai-agents/scripts/session-update.cjs \
   --truncate-history 10
 ```
 
-Replace `10` with the actual `config.yaml > preferences.history_limits.history` value, and `<archived_change_ids>` / `<archived_child_ids>` with the comma-separated id list collected in Step 7.7, `<archived_epic_id>` with the batch-archived epic id. Drop any `--remove-*` flag whose id list is empty.
+Replace `10` with the actual `config.yaml > preferences.history_limits.history` value, and `<archived_change_ids>` / `<archived_child_ids>` with the comma-separated id list collected in Step 7.8, `<archived_epic_id>` with the batch-archived epic id. Drop any `--remove-*` flag whose id list is empty.
 
 ## Edge Cases & Errors
 

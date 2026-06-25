@@ -45,7 +45,7 @@ Collect core metadata. Each field has an explicit constraint -- do not accept va
 
 | Field | Constraint | Notes |
 |-------|------------|-------|
-| Name | Lowercase, kebab-case, no spaces. Prefix `mvt-` for framework skills; project-specific prefixes (e.g., `app-`, `proj-`) are also acceptable | Reject if conflicts with an existing entry in `registry.yaml` |
+| Name | Lowercase, kebab-case, no spaces, must match `^[a-z][a-z0-9-]*$`. Prefix `mvt-` for framework skills; project-specific prefixes (e.g., `app-`, `proj-`) are also acceptable | Reject if invalid or if it conflicts with an existing entry in `registry.yaml` |
 | Agent role | One of: `conductor`, `analyst`, `architect`, `developer`, `reviewer`, `tester` | Maps the skill to an existing role family |
 | Purpose | One sentence | Will become the SKILL.md `## Purpose` section |
 | Category | One of: `workflow`, `shortcut`, `project`, `utility` | Drives how `/mvt-help` groups it |
@@ -86,7 +86,7 @@ If the user is unsure on any field, propose a default and ask for confirmation r
 ### Step 6: Generate Skill Files
 1. Create skill directory: `.claude/skills/{name}/`.
 2. Generate a complete `SKILL.md` file (see Generated SKILL.md Structure below). This file must be fully self-contained — there is no assembler or build step to resolve shared section references. All content must be inlined directly into the SKILL.md.
-3. For standard sections (Activation Protocol, Language Constraint, Output Format Constraint, State Update, Next Steps), copy them verbatim from this document's own SKILL.md and substitute only the skill-specific values (role, decision rules, boundaries, pre-flight checks, next-skill suggestions). Do NOT paraphrase standard sections — copy character-for-character to ensure consistency. (Config preferences and pre-flight checks are part of the Activation Protocol block, not separate sections.)
+3. For standard sections (Activation Protocol, Language Constraint, Output Format Constraint, State Update, Next Steps), read the existing shared section files under `.ai-agents/sections/` or the corresponding installed skill section and substitute only the skill-specific values (role, decision rules, boundaries, pre-flight checks, next-skill suggestions). Do NOT reproduce these sections from memory; use the checked-in source text as the canonical template.
 4. For skill-specific sections (frontmatter, Purpose, Execution Flow, Edge Cases & Errors), generate fresh content following the skeleton below.
    - `## Execution Flow`
    - `### Step 1: Load Inputs` -- list required and recommended files, plus fallback rules.
@@ -100,7 +100,7 @@ If the user is unsure on any field, propose a default and ask for confirmation r
 7. SKILL.md word budget: aim for the body to be under ~5k words. Push reference material to `references/`.
 
 ### Step 7: Register in Registry (MANDATORY)
-Append the skill entry to `.ai-agents/registry.yaml` > `skills` section:
+Create a pre-write backup of `.ai-agents/registry.yaml`, then add the skill entry to `.ai-agents/registry.yaml` > `skills` section using structured YAML serialization (not hand-written string concatenation):
 
 ```yaml
   {name}:
@@ -109,7 +109,10 @@ Append the skill entry to `.ai-agents/registry.yaml` > `skills` section:
 ```
 
 - The `custom: true` field is **required** for user-created skills; without it, framework updates will overwrite the entry.
-- Validate the YAML still parses after the append; if not, abort and surface the parse error.
+- Refuse to overwrite an existing skill key.
+- Escape `description` through the YAML serializer; never interpolate raw user text into YAML.
+- Validate the YAML still parses after the write; if not, restore the backup and surface the parse error.
+- Post-write, assert the skills entry count increased by exactly 1 and no existing sibling skill entry changed.
 
 ### Step 8: Validation
 Walk this checklist; any failed item must be fixed before declaring success.
@@ -150,7 +153,7 @@ Apply the State Update rules defined in the **State Update** section below.
 | Skill duplicates an existing skill's responsibility | Surface the overlap (cite the existing skill's description); propose merging or sub-classing as a variant rather than creating a duplicate |
 | User provides a non-third-person description ("Use this skill when you need...") | Rewrite to third-person before saving; show the rewrite for confirmation |
 | Generated SKILL.md is missing a standard section (e.g., State Update, Next Steps) | Abort generation; inform user which section is missing; read an existing SKILL.md for the correct structure |
-| `registry.yaml` parse fails after append | Restore from a pre-append backup; surface the error; do not leave the registry corrupt |
+| `registry.yaml` parse fails after write | Restore from the pre-write backup; surface the error; do not leave the registry corrupt |
 
 ## Generated SKILL.md Structure
 
@@ -216,4 +219,4 @@ Copy the following sections verbatim from this document (the assembled SKILL.md 
 | State Update | `## State Update` | Replace `/{name}` with the new skill's command; include `active_change` conditional block only if the skill creates changes; include `Shortcut Operation Rules` if the user opted for shortcut semantics during Step 5 design |
 | Suggested Next Steps | `## Suggested Next Steps` | Replace `current_skill` with the new skill name; replace conditional suggestions with skill-appropriate ones |
 
-**Important**: Do NOT paraphrase or rewrite the standard sections. Copy them character-for-character from this document and only substitute the skill-specific values. This ensures consistency across all MVTT skills.
+**Important**: Do NOT paraphrase or rewrite the standard sections. Load them from the checked-in shared section sources or a selected installed exemplar and only substitute the skill-specific values. This ensures consistency across all MVTT skills.

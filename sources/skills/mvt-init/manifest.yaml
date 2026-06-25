@@ -56,7 +56,8 @@ sections:
       has_preflight: true
       checks:
         - order: "1"
-          field: "session and project-context both empty"
+          field: "first-time initialization inputs"
+          condition: "session.initialized_at is empty AND project-context.yaml has no projects[]"
           level: "INFO"
           message: "This is a first-time init, proceed normally."
 

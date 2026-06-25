@@ -109,7 +109,7 @@ describe("assembler", () => {
 
     it("includes BLOCK-level pre-flight checks", () => {
       const output = buildSkill("mvt-design");
-      expect(output).toMatch(/\|\s*\d+\s*\|\s*`[^`]+`\s+is empty\s*\|\s*BLOCK\s*\|/);
+      expect(output).toMatch(/\|\s*\d+\s*\|\s*`[^`]+ is empty`\s*\|\s*BLOCK\s*\|/);
     });
   });
 
@@ -122,8 +122,8 @@ describe("assembler", () => {
 
     it("has WARN not BLOCK pre-flight", () => {
       const output = buildSkill("mvt-fix");
-      expect(output).toMatch(/\|\s*1\s*\|\s*`session\.initialized_at`\s+is empty\s*\|\s*WARN\s*\|/);
-      expect(output).not.toMatch(/\|\s*\d+\s*\|\s*`[^`]+`\s+is empty\s*\|\s*BLOCK\s*\|/);
+      expect(output).toMatch(/\|\s*1\s*\|\s*`session\.initialized_at is empty`\s*\|\s*WARN\s*\|/);
+      expect(output).not.toMatch(/\|\s*\d+\s*\|\s*`[^`]+ is empty`\s*\|\s*BLOCK\s*\|/);
     });
   });
 

@@ -53,6 +53,7 @@ sections:
       checks:
         - order: "1"
           field: "project not initialized"
+          condition: "session.yaml missing OR session.initialized_at is empty"
           level: "REQUIRED"
           message: "Project must be initialized (session.yaml exists)"
 

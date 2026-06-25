@@ -17,6 +17,7 @@
 
 - **1b. Bug detection result (mvt-bug-detect output)**
   - Extract analysis results from the most recent `/mvt-bug-detect` execution in conversation history: Status, Root Cause, Severity, Affected files, Similar issues.
+  - If the conversation history is unavailable, incomplete, or does not contain a concrete root cause, treat this source as unavailable and continue to Step 1c. Do not fix from a half-remembered diagnosis.
   - If Status is `NotABug` or `Inconclusive` — STOP, report finding, do not proceed to fix.
   - Skip Steps 2-4, proceed directly to Step 5 with extracted context.
 
@@ -102,7 +103,7 @@ This step applies only when the workspace has multiple projects (`projects.lengt
   2. Every entry under `skills.mvt-fix.knowledge.{P}` -- load each entry's referenced files.
   3. Skip any key absent from the registry (no project-specific knowledge is valid; do not warn).
 - **Multi-project scenario**: if affected files span multiple projects, load each project's knowledge sequentially. The skill operates with the union of all loaded project-specific knowledge plus the `_all` knowledge already loaded at activation.
-- **Unmatched files**: if a file path does not match any project's `path` or `source_paths`, surface a note and treat it as belonging to the first project in `projects[]` (fallback). This may indicate a configuration gap in `project-context.yaml`.
+- **Unmatched files**: if a file path does not match any project's `path` or `source_paths`, surface a note and ask the user to choose the project scope. Do not silently fall back to the first project.
 
 ### Step 7: User Confirmation
 - **When to confirm before applying**:

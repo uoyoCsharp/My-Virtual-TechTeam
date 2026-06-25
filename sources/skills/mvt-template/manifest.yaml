@@ -28,9 +28,9 @@ sections:
         - rule: "Custom template must preserve frontmatter format"
       boundaries:
         - scope: "modify default templates in `_templates/` root (only create/modify in `custom/`)"
-          skill: "(constraint)"
+          guidance: "constraint"
         - scope: "modify skill logic (only change output formatting)"
-          skill: "(constraint)"
+          guidance: "constraint"
 
   - type: shared
     source: sections/activation-protocol.md

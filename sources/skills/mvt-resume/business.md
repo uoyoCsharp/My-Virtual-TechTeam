@@ -47,7 +47,7 @@ Found {N} active plans. Select which to resume:
 
 | # | change-id | title | progress | updated_at |
 |---|-----------|-------|----------|------------|
-| 1 | {id}      | {t}   | {d}/{n}  | {relative} |
+| 1 | {id}      | {t}   | {d}/{n}  | {updated_at ISO timestamp} |
 | ...
 
 Enter a number, a change-id, or "none" to skip plan context:
@@ -63,7 +63,7 @@ List files under `.ai-agents/workspace/artifacts/{selected_change_id}/`, sorted 
 - Exclude `plan.yaml` from the artifact list (it gets its own section)
 - Take the top 5
 
-For each artifact, capture: file path, mtime, size (in tokens estimate = chars / 4), and the change-id it belongs to.
+For each artifact, capture: file path, mtime, size in characters and estimated tokens using a deterministic character count divided by 4, rounded up, and the change-id it belongs to.
 
 ### Step 5: Determine Resume Point
 
@@ -95,7 +95,7 @@ And the **Current Task Detail** section:
 
 ### Step 7: Generate Resume Report
 
-Render via the `resume-output.md` template. Sections to fill:
+Render inline using the seven sections below. No external template is required.
 
 1. **Active Task** -- name, change-id, started_at (from selected plan)
 2. **Epic Context** (if `within_epic` is true) -- epic title, id, progress (done/total children), current position within the epic. Resolve the parent epic path: compare `active_change.epic_id` to `active_epic.id`. If they match, use `active_epic.epic_path`. If they do not match, search `session.epics[]` for an entry with `id == active_change.epic_id` and use its `epic_path`. If neither path exists, render the plan resume and add a bounded warning: "Epic context could not be loaded (epic_id: {active_change.epic_id})." Read `epic.yaml` via the resolved path and render: "This change is part of epic: **{epic_title}** ({done}/{total} sub-changes done). Current: {active_child_title}."

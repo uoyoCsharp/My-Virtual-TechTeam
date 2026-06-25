@@ -49,6 +49,7 @@ sections:
           message: "Project not initialized. Run `/mvt-init` first."
         - order: "3"
           field: "active_change.id"
+          condition: "active_change.id is non-empty"
           level: "WARN"
           message: "An active change already exists. Decomposing will create a new epic alongside it. Continue? (y/n)"
 

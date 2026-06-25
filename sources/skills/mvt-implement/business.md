@@ -127,4 +127,4 @@
 | Plan task is `blocked` or `done` already | Refuse to implement that task; ask user to pick another task from `current_tasks` or run `/mvt-update-plan` |
 | Deliverables already exist and user declines to update | Leave existing deliverables in place; do not call `plan-update.cjs` with deliverables flags |
 | `plan-update.cjs` rejects deliverables pointer | Surface error; leave `implementation.md` as written (content is source of truth, pointer can be retried) |
-| Re-implementing a task whose `## Task: {id}` section already exists in `implementation.md` | Replace that section's content in place; preserve any `### Deliverables` subsection within it. Do NOT create a second `## Task: {id}` section |
+| Re-implementing a task whose `## Task: {id}` section already exists in `implementation.md` | Immediately before editing, re-read `implementation.md` and verify there is exactly one matching `## Task: {id}` heading. Replace that section's content in place; preserve any `### Deliverables` subsection within it. Do NOT create a second `## Task: {id}` section. If zero or multiple matching headings exist, stop and ask the user to resolve the artifact manually. |

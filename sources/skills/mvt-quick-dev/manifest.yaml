@@ -37,6 +37,8 @@ sections:
   - type: shared
     source: sections/activation-protocol.md
     params:
+      activation_reads:
+        - session.yaml
       extended_context:
         - ".ai-agents/knowledge/project/_generated/project-context.md -- Module/layer map (optional)"
         - "Target source files (load based on change description)"

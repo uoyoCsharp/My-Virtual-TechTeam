@@ -50,6 +50,8 @@ sections:
         - session.yaml
       extended_context:
         - ".ai-agents/workspace/artifacts/{active_change.id}/analysis.md -- Analysis from previous phase"
+        - ".ai-agents/knowledge/project/_generated/project-context.md -- Current semantic project context"
+        - ".ai-agents/workspace/artifacts/*/design.md -- Prior design artifacts for related changes (load only relevant matches)"
       has_preflight: true
       checks:
         - order: "1"
