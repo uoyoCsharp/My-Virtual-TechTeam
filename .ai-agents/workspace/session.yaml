@@ -2,10 +2,10 @@ session:
   initialized_at: 2026-06-05T08:12:06.624Z
   last_synced_at: 2026-06-08T02:44:34.674Z
 active_change:
-  id: 20260622-session-archive-sync
-  title: Session Index Archive Sync (--remove-* / --update-*-path flags)
-  created_at: 2026-06-22T11:03:20.136Z
-  plan_path: ""
+  id: 20260624-activation-load-parallelization
+  title: Activation-Phase Load Parallelization
+  created_at: 2026-06-24T10:47:05.665Z
+  plan_path: .ai-agents/workspace/artifacts/20260624-activation-load-parallelization/plan.yaml
   epic_id: ""
 changes:
   - id: 20260605-multi-project-workflow-support
@@ -16,7 +16,7 @@ changes:
   - id: 20260608-epic-scope-detection
     title: Epic Decomposition Layer (OPT-2026-003)
     plan_path: .ai-agents/workspace/artifacts/20260608-epic-scope-detection/plan.yaml
-    status: active
+    status: done
     updated_at: 2026-06-08T14:23:34.708Z
     epic_id: ""
   - id: 20260608-sub
@@ -28,96 +28,40 @@ changes:
   - id: 20260608-regular
     title: Regular change
     plan_path: ""
-    status: active
+    status: done
     updated_at: 2026-06-19T03:23:47.630Z
     epic_id: ""
   - id: 20260619-script-callability
     title: Script Callability — Eliminate AI Reading Script Source
     plan_path: ""
-    status: active
+    status: done
     updated_at: 2026-06-19T06:36:41.745Z
     epic_id: ""
   - id: 20260619-shared-section-prompt-optimization
     title: Shared Section Prompt Quality Optimization
     plan_path: ""
-    status: active
+    status: done
     updated_at: 2026-06-19T13:49:40.019Z
     epic_id: ""
   - id: 20260619-script-call-prompt-optimization
     title: Script Call Prompt Optimization
     plan_path: ""
-    status: active
+    status: done
     updated_at: 2026-06-22T11:03:20.136Z
     epic_id: ""
+  - id: 20260622-session-archive-sync
+    title: Session Index Archive Sync (--remove-* / --update-*-path flags)
+    plan_path: ""
+    status: done
+    updated_at: 2026-06-24T10:51:00.000Z
+    epic_id: ""
+  - id: 20260624-activation-load-parallelization
+    title: Activation-Phase Load Parallelization
+    plan_path: .ai-agents/workspace/artifacts/20260624-activation-load-parallelization/plan.yaml
+    status: active
+    updated_at: 2026-06-25T01:56:53.599Z
+    epic_id: ""
 history:
-  - skill: /mvt-review
-    completed_at: 2026-06-19T04:54:45.527Z
-    summary: "Completed code review for 20260619-script-callability: 1 Critical (undocumented session-update.js behavioral change), 3 Warnings, 2 Suggestions. Verdict: Request changes."
-    change_id: 20260619-script-callability
-  - skill: /mvt-analyze
-    completed_at: 2026-06-19T06:36:41.745Z
-    summary: 分析公共 section prompt 质量优化需求：7 skill 实测公共占比 45-68%，分类三类优化策略（就地压缩/参考按需提取），4 项歧义待澄清
-    change_id: 20260619-shared-section-prompt-optimization
-  - skill: /mvt-design
-    completed_at: 2026-06-19T06:42:35.706Z
-    summary: 设计公共 section prompt 优化方案：双策略（就地压缩+参考按需提取），6 ADR，7 源文件改动，预计每 skill 省 ~5000 字符（>=30%）
-    change_id: 20260619-shared-section-prompt-optimization
-  - skill: /mvt-implement
-    completed_at: 2026-06-19T08:12:49.438Z
-    summary: 压缩共享 section prompt：内联压缩 State Update 和关键约束，更新测试与生成产物，253 测试通过
-    change_id: 20260619-shared-section-prompt-optimization
-  - skill: /mvt-design
-    completed_at: 2026-06-19T13:49:40.019Z
-    summary: 设计脚本调用 prompt 优化方案：新增独立 change，采用布尔模式开关压缩 script-usage-rule，避免引擎改动
-    change_id: 20260619-script-call-prompt-optimization
-  - skill: /mvt-implement
-    completed_at: 2026-06-19T13:57:54.494Z
-    summary: 实现脚本调用 prompt 优化：新增布尔指导模式，迁移6个相关skill，补充渲染测试并刷新生成产物
-    change_id: 20260619-script-call-prompt-optimization
-  - skill: /mvt-review
-    completed_at: 2026-06-19T14:04:48.045Z
-    summary: 审查脚本调用 prompt 优化变更：0 Critical、1 Warning（无倒装包裹器）、2 Suggestion；设计合规性全部通过，生成产物验证全部正确，257 测试通过。裁决：Approve with comments。
-    change_id: 20260619-script-call-prompt-optimization
-  - skill: /mvt-bug-detect
-    completed_at: 2026-06-20T13:48:33.876Z
-    summary: 复核 mvt-help 提示词问题报告：确认多数问题存在，评估修复方案并提出更优收敛路径
-    change_id: 20260619-script-call-prompt-optimization
-  - skill: /mvt-fix
-    completed_at: 2026-06-20T13:59:47.242Z
-    summary: 修复 mvt-help 提示词一致性与运行时推荐问题，补充回归测试并刷新生成产物
-    change_id: 20260619-script-call-prompt-optimization
-  - skill: /mvt-bug-detect
-    completed_at: 2026-06-22T09:25:11.578Z
-    summary: "Verified mvt-help-prompt-review.md: 10 of 12 claims are fabricated/false; only P3-1 (registry present but skills empty) is a real gap."
-    change_id: 20260619-script-call-prompt-optimization
-  - skill: /mvt-fix
-    completed_at: 2026-06-22T10:04:03.088Z
-    summary: 在 epic-update.cjs 中实现 epic 变 done 时自动清 active_epic,session-update --close-epic 降级为手工修复
-    change_id: 20260619-script-call-prompt-optimization
-  - skill: /mvt-review
-    completed_at: 2026-06-22T10:42:07.294Z
-    summary: 审查 epic-update.js session_sync 实现：0 Critical、1 Warning、2 Suggestion，裁决 Approve with comments
-    change_id: 20260619-script-call-prompt-optimization
-  - skill: /mvt-fix
-    completed_at: 2026-06-22T10:45:59.473Z
-    summary: '"清理审查发现的3个代码质量项：移除epic.id回退(catch空块注释)",'
-    change_id: 20260619-script-call-prompt-optimization
-  - skill: /mvt-bug-detect
-    completed_at: 2026-06-22T10:53:48.562Z
-    summary: 诊断 changes[] 归档后 plan_path 悬挂指针：mvt-cleanup 移动目录但不更新 session.yaml，会话索引与产物物理位置失同步
-    change_id: 20260619-script-call-prompt-optimization
-  - skill: /mvt-bug-detect
-    completed_at: 2026-06-22T10:57:57.511Z
-    summary: 诊断 epics[] 与 active_epic.epic_path 的归档悬挂指针：与 changes[] 同型但影响面更窄，fix 时建议对称处理
-    change_id: 20260619-script-call-prompt-optimization
-  - skill: /mvt-design
-    completed_at: 2026-06-22T11:01:46.967Z
-    summary: "Design: 在 session-update.cjs 新增 --remove-change/--remove-epic/--update-change-path/--update-epic-path 四个对称 flag 解决 changes[]/epics[] 归档后悬挂指针，主路径采用方案 B（删除条目），备选采用方案 A（路径改写），mvt-cleanup 默认走方案 B"
-    change_id: 20260619-script-call-prompt-optimization
-  - skill: /mvt-design
-    completed_at: 2026-06-22T11:03:20.136Z
-    summary: "Design: 在 session-update.cjs 新增 --remove-change/--remove-epic/--update-change-path/--update-epic-path 四个对称 flag 解决 changes[]/epics[] 归档后悬挂指针，主路径采用方案 B（删除条目），备选采用方案 A（路径改写），mvt-cleanup 默认走方案 B"
-    change_id: 20260622-session-archive-sync
   - skill: /mvt-design
     completed_at: 2026-06-22T11:07:04.783Z
     summary: "Design v1 (Plan B only): 在 session-update.cjs 新增 --remove-change 与 --remove-epic 两个对称 flag 解决 changes[]/epics[] 归档后悬挂指针；mvt-cleanup Step 7/10 默认调用 --remove-*；方案 A（路径改写）推迟到独立 change"
@@ -130,6 +74,74 @@ history:
     completed_at: 2026-06-23T11:12:26.009Z
     summary: "完成代码审查: 1 Critical, 1 Warning, 1 Suggestion, 结论 Request changes"
     change_id: 20260622-session-archive-sync
+  - skill: /mvt-quick-dev
+    completed_at: 2026-06-24T07:28:34.886Z
+    summary: 为 mvt-review/mvt-fix 增加写入产出物前的用户确认开关
+    change_id: ""
+  - skill: /mvt-quick-dev
+    completed_at: 2026-06-24T07:34:48.123Z
+    summary: mvt-review 无 active_change 时改为仅对话输出，与 mvt-fix 行为一致
+    change_id: ""
+  - skill: /mvt-quick-dev
+    completed_at: 2026-06-24T07:58:09.408Z
+    summary: mvtt update 备份改为可选：交互式询问，非 TTY 默认备份
+    change_id: ""
+  - skill: /mvt-quick-dev
+    completed_at: 2026-06-24T08:12:40.559Z
+    summary: mvt-test 产物对齐 review/fix：写 artifact 前确认，无 active_change 仅对话
+    change_id: ""
+  - skill: /mvt-review
+    completed_at: 2026-06-24T09:29:50.092Z
+    summary: Reviewed mvt-status activation optimization proposal
+    change_id: ""
+  - skill: /mvt-design
+    completed_at: 2026-06-24T10:44:03.907Z
+    summary: 设计激活阶段加载并行化重构：批量并行前导(ADR-1/2)、下游阶段改为解释已加载内容(ADR-3)、单项目快捷路径(ADR-4)、mvt-status存在性检查+glob为准(ADR-5)
+    change_id: ""
+  - skill: /mvt-plan-dev
+    completed_at: 2026-06-24T10:47:05.665Z
+    summary: 生成激活并行化重构计划：6任务(ADR-3措辞→ADR-1/2前导+param→ADR-4快捷路径→ADR-5 mvt-status→重编译验证)
+    change_id: 20260624-activation-load-parallelization
+  - skill: /mvt-implement
+    completed_at: 2026-06-24T10:50:35.298Z
+    summary: 实现 t1：将激活 Stage 1/2/4/5 改为'使用已加载内容'措辞(ADR-3)，改 3 个共享 section，保留全部文件引用与模板 token，未重编译
+    change_id: 20260624-activation-load-parallelization
+  - skill: /mvt-implement
+    completed_at: 2026-06-24T10:55:34.371Z
+    summary: 实现 t2：在 activation-load-context.md 头部加 Batch Load 并行前导 + activation_reads param(ADR-1/2)，引擎实测有/无 param 渲染均正确
+    change_id: 20260624-activation-load-parallelization
+  - skill: /mvt-implement
+    completed_at: 2026-06-24T11:01:15.607Z
+    summary: 一次实现 t3/t4/t5：16个preflight manifest接入activation_reads(8个非preflight未污染,均机验)、单项目快捷路径(保留_all)、mvt-status存在性检查+glob为准(保留missing标记)
+    change_id: 20260624-activation-load-parallelization
+  - skill: /mvt-update-plan
+    completed_at: 2026-06-24T11:10:31.820Z
+    summary: 标记 t1-t5 完成(ADR-3措辞/ADR-1-2前导+param/16 manifest接入/单项目快捷路径/mvt-status加固)，current_tasks 推进到 t7
+    change_id: 20260624-activation-load-parallelization
+  - skill: /mvt-implement
+    completed_at: 2026-06-24T11:12:53.913Z
+    summary: 实现 t7：activation-load-context.md 加 Wave 2 两波加载模型(ADR-6)，extended_context 区分变更产物并行/发现型 deferred，修 Stage 1 不一致，引擎实测有/无 param 渲染均正确
+    change_id: 20260624-activation-load-parallelization
+  - skill: /mvt-implement
+    completed_at: 2026-06-24T11:27:49.805Z
+    summary: 实现 t8(ADR-7)：三个 activation section 合并为 activation-protocol.md，24 manifest 迁移+删旧文件；Stage5 改用 {{?has_preflight}} 包裹(引擎同名嵌套不可靠，偏离ADR-7已记录)；顺带修 t3 给 create-skill 误加 activation_reads 的bug
+    change_id: 20260624-activation-load-parallelization
+  - skill: /mvt-implement
+    completed_at: 2026-06-24T11:48:31.664Z
+    summary: 记录 post-t8 收尾到 implementation.md：F1 activation-protocol 精简为 Load/Resolve 两区块(review Approve with comments)，F2 修 mvt-create-skill 三处陈旧引用(含引用类型根本错误)，并列出 ADR-8/t6基线/S-1 待办
+    change_id: 20260624-activation-load-parallelization
+  - skill: /mvt-update-plan
+    completed_at: 2026-06-25T01:56:53.599Z
+    summary: 标记 t7(两波加载)、t8(三section合并+create-skill引用修复)完成，current_tasks 推进到 t6 验证关卡
+    change_id: 20260624-activation-load-parallelization
+  - skill: /mvt-design
+    completed_at: 2026-06-25T02:03:20.446Z
+    summary: 补 ADR-8：激活协议精简为 Load/Resolve 两区块、has_preflight 门控(修正 ADR-7 被引擎推翻的 {{?checks}} 方案)、mvt-create-skill 引用产物概念约束；并给 ADR-7 加 superseded 脚注
+    change_id: 20260624-activation-load-parallelization
+  - skill: /mvt-test
+    completed_at: 2026-06-25T02:07:39.815Z
+    summary: t6 验证通过：build exit0、vitest 284/284(修复1个旧Stage断言改为Load/Resolve)、24技能重编译矩阵全过(语义等价、preflight门控正确)，plan 8/8 完成
+    change_id: 20260624-activation-load-parallelization
 active_epic:
   id: epic-20260608-my
   title: My Epic

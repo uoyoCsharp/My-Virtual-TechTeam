@@ -33,13 +33,10 @@ sections:
           skill: "(constraint)"
 
   - type: shared
-    source: sections/activation-load-context.md
+    source: sections/activation-protocol.md
     params:
       extended_context:
         - "Scan `.ai-agents/skills/_templates/custom/` for existing customizations"
-
-  - type: shared
-    source: sections/activation-load-config.md
 
   - type: shared
     source: sections/language-constraint.md

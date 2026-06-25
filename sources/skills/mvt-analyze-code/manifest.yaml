@@ -43,19 +43,15 @@ sections:
       When multiple projects exist, the skill interactively prompts the user to select the target(s).
 
   - type: shared
-    source: sections/activation-load-context.md
+    source: sections/activation-protocol.md
     params:
+      activation_reads:
+        - session.yaml
       extended_context:
         - "Scan project source directories for analysis"
         - ".ai-agents/skills/_templates/project-context.md -- Default template for output structure"
         - ".ai-agents/skills/_templates/custom/project-context.md -- Custom template (if exists)"
-
-  - type: shared
-    source: sections/activation-load-config.md
-
-  - type: shared
-    source: sections/activation-preflight.md
-    params:
+      has_preflight: true
       checks:
         - order: "1"
           field: "session.initialized_at"

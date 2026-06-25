@@ -77,7 +77,7 @@ If the user is unsure on any field, propose a default and ask for confirmation r
   |--------|----------|
   | Input parameters | What does the skill need from the user / workspace? |
   | Execution mode | Interactive / automated / hybrid |
-  | Pre-flight checks | List, with severity (BLOCK / WARN); defer to `activation-preflight.md` shared section |
+  | Pre-flight checks | List, with severity (BLOCK / WARN); these populate the Pre-flight part of the Activation Protocol copied into the generated SKILL.md |
   | Decision rules (in role-header) | 3-7 imperative rules covering the major branches |
   | Boundaries | What is in-scope vs delegated to other skills |
   | Execution Flow steps | Bulleted titles only (full content comes in Step 6) |
@@ -86,7 +86,7 @@ If the user is unsure on any field, propose a default and ask for confirmation r
 ### Step 6: Generate Skill Files
 1. Create skill directory: `.claude/skills/{name}/`.
 2. Generate a complete `SKILL.md` file (see Generated SKILL.md Structure below). This file must be fully self-contained — there is no assembler or build step to resolve shared section references. All content must be inlined directly into the SKILL.md.
-3. For standard sections (Activation Protocol, Load Config, Language Constraint, Pre-flight, State Update, Next Steps), copy them verbatim from this document's own SKILL.md and substitute only the skill-specific values (role, decision rules, boundaries, pre-flight checks, next-skill suggestions). Do NOT paraphrase standard sections — copy character-for-character to ensure consistency.
+3. For standard sections (Activation Protocol, Language Constraint, Output Format Constraint, State Update, Next Steps), copy them verbatim from this document's own SKILL.md and substitute only the skill-specific values (role, decision rules, boundaries, pre-flight checks, next-skill suggestions). Do NOT paraphrase standard sections — copy character-for-character to ensure consistency. (Config preferences and pre-flight checks are part of the Activation Protocol block, not separate sections.)
 4. For skill-specific sections (frontmatter, Purpose, Execution Flow, Edge Cases & Errors), generate fresh content following the skeleton below.
    - `## Execution Flow`
    - `### Step 1: Load Inputs` -- list required and recommended files, plus fallback rules.
@@ -210,10 +210,9 @@ Copy the following sections verbatim from this document (the assembled SKILL.md 
 
 | Section | Source in this document | What to replace |
 |---------|----------------------|-----------------|
-| Activation Protocol | `## Activation Protocol` | Add `extended_context` entries if the skill needs additional context sources; otherwise copy as-is |
-| Load Config | Load Config step within Activation Protocol | Copy as-is |
-| Language Constraint | Language Constraint step within Activation Protocol | Copy as-is |
-| Pre-flight Checks | Pre-flight Checks step within Activation Protocol | Replace `checks` table with skill-specific checks; if none required, use a single INFO row |
+| Activation Protocol | `## Activation Protocol` (the whole Load + Resolve block) | Copy the entire block as-is. The block already covers context loading, project scope, knowledge, config preferences, and pre-flight. Adjust only two skill-specific parts: under Load, the Extended Context entries (add the files/directives this skill needs, or drop the Extended Context bullet if none); under Resolve > Pre-flight, the checks table (skill-specific checks, or a single INFO row if none required) |
+| Language Constraint | `## Language Constraint` | Copy as-is (separate section, not part of Activation Protocol) |
+| Output Format Constraint | `## Output Format Constraint` | Copy as-is (separate section); include only if the skill writes persisted markdown |
 | State Update | `## State Update` | Replace `/{name}` with the new skill's command; include `active_change` conditional block only if the skill creates changes; include `Shortcut Operation Rules` if the user opted for shortcut semantics during Step 5 design |
 | Suggested Next Steps | `## Suggested Next Steps` | Replace `current_skill` with the new skill name; replace conditional suggestions with skill-appropriate ones |
 

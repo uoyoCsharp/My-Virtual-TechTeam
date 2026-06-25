@@ -32,13 +32,10 @@ sections:
           skill: "/mvt-manage-context"
 
   - type: shared
-    source: sections/activation-load-context.md
+    source: sections/activation-protocol.md
     params:
       extended_context:
         - ".ai-agents/config.yaml -- Framework configuration (to be scanned for size)"
-
-  - type: shared
-    source: sections/activation-load-config.md
 
   - type: shared
     source: sections/language-constraint.md

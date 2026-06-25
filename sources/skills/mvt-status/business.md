@@ -2,7 +2,7 @@
 
 ### Step 1: Load Inputs
 - **Recommended**:
-  - `.ai-agents/knowledge/project/_generated/project-context.md` -- semantic context (only checked for existence here, not parsed).
+  - `.ai-agents/knowledge/project/_generated/project-context.md` -- semantic context. Check **presence only** (e.g. `test -f`); do NOT read its contents. This skill reports whether the file exists, never what is in it.
 - **Fallback / robustness**:
   - If a YAML file is missing, mark its section as `(unavailable)` in the report and continue. Do not abort the whole skill.
   - If a YAML file fails to parse, surface a one-line error with the file path and skip the affected section. Do not attempt automatic repair.
@@ -18,10 +18,11 @@
 ### Step 3: Discover All Plans (Multi-Change Dashboard)
 - **What**: produce the canonical plan list across the workspace.
 - **How**:
-  1. From the session data loaded above, iterate `changes[]`. For each entry with a `plan_path`, attempt to read the plan file.
-  2. Glob `.ai-agents/workspace/artifacts/*/plan.yaml` to find any plans not registered in `changes` (mark them `unindexed`). **Exclude paths under `artifacts/_archived/`** — those are completed changes archived by `/mvt-cleanup`.
-  3. For each plan, extract: `change_id`, `title`, `status`, `current_tasks`, task progress (`done/total`), `updated_at`, `skill_hint` (from current task if present).
-  4. If a plan file is present but malformed, include a row with `(corrupt)` in the status column and mark the file path; do not abort.
+  1. **Glob first — the glob is the source of truth for live plans.** Glob `.ai-agents/workspace/artifacts/*/plan.yaml`. **Exclude paths under `artifacts/_archived/`** — those are completed changes archived by `/mvt-cleanup`. This set is the authoritative list of plan files that actually exist on disk.
+  2. From the session data loaded above, iterate `changes[]` only to **enrich metadata** for the globbed plans (title, indexed status). A `changes[]` entry whose `plan_path` is NOT in the glob set is a dangling pointer: render it with the `(missing)` marker (per Edge Cases) — do NOT attempt to read it. Only read a `changes[].plan_path` that the glob confirmed exists.
+  3. A globbed plan with no matching `changes[]` entry is `unindexed`.
+  4. For each plan, extract: `change_id`, `title`, `status`, `current_tasks`, task progress (`done/total`), `updated_at`, `skill_hint` (from current task if present).
+  5. If a plan file is present but malformed, include a row with `(corrupt)` in the status column and mark the file path; do not abort.
 - **Branches**:
 
   | Condition | Action |

@@ -42,14 +42,11 @@ sections:
           skill: "(Use the recommended next skill)"
 
   - type: shared
-    source: sections/activation-load-context.md
-
-  - type: shared
-    source: sections/activation-load-config.md
-
-  - type: shared
-    source: sections/activation-preflight.md
+    source: sections/activation-protocol.md
     params:
+      activation_reads:
+        - session.yaml
+      has_preflight: true
       checks:
         - order: "1"
           field: "session.initialized_at"

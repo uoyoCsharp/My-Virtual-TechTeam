@@ -35,26 +35,22 @@ sections:
           skill: "/mvt-implement"
 
   - type: shared
-    source: sections/activation-load-context.md
+    source: sections/activation-protocol.md
     params:
+      activation_reads:
+        - session.yaml
       extended_context:
         - "{active_change.plan_path} -- The plan to update (resolved from session.yaml)"
-
-  - type: shared
-    source: sections/activation-load-config.md
-
-  - type: shared
-    source: sections/activation-preflight.md
-    params:
+      has_preflight: true
       checks:
         - order: "1"
           field: "session.initialized_at"
           level: "WARN"
-          message: 'Session not initialized. Run `/mvt-init` first.'
+          message: "Session not initialized. Run `/mvt-init` first."
         - order: "2"
           field: "active_change.plan_path"
           level: "BLOCK"
-          message: 'No active plan. Run `/mvt-plan-dev` to create one.'
+          message: "No active plan. Run `/mvt-plan-dev` to create one."
 
   - type: shared
     source: sections/language-constraint.md

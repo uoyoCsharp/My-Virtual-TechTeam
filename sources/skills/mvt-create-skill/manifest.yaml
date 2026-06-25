@@ -39,13 +39,10 @@ sections:
           skill: "references/ for detailed content"
 
   - type: shared
-    source: sections/activation-load-context.md
+    source: sections/activation-protocol.md
     params:
       extended_context:
         - "Load one existing SKILL.md as structural reference (e.g., `.claude/skills/mvt-status/SKILL.md`)"
-
-  - type: shared
-    source: sections/activation-load-config.md
 
   - type: shared
     source: sections/language-constraint.md

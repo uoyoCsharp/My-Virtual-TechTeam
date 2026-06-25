@@ -48,13 +48,10 @@ sections:
       | `/mvt-config reset` | Reset all settings to defaults |
 
   - type: shared
-    source: sections/activation-load-context.md
+    source: sections/activation-protocol.md
     params:
       extended_context:
         - ".ai-agents/config.yaml -- Current configuration (this skill's primary target)"
-
-  - type: shared
-    source: sections/activation-load-config.md
 
   - type: shared
     source: sections/language-constraint.md

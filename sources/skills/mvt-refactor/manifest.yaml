@@ -54,13 +54,10 @@ sections:
       | Change Interface/API | High | Modify public contracts |
 
   - type: shared
-    source: sections/activation-load-context.md
+    source: sections/activation-protocol.md
     params:
       extended_context:
         - "Related source files to be refactored"
-
-  - type: shared
-    source: sections/activation-load-config.md
 
   - type: shared
     source: sections/language-constraint.md

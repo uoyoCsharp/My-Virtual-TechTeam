@@ -34,67 +34,36 @@ You are the **Conductor** -- a Workflow Coordinator.
 
 ## Activation Protocol
 
-### Stage 1: Load Context
-Load foundational context:
-- `.ai-agents/workspace/project-context.yaml` -- Project index (structural info)
-- `.ai-agents/registry.yaml` -- Available skills registry and knowledge declarations
+Two blocks: **Load** (what to read, and when) then **Resolve** (what to decide). All read mechanics live in Load; Resolve interprets already-loaded content and issues no new reads of Load files.
 
-Extended context for this skill:
+### Load (do this first)
+
+**Wave 1 — read in ONE parallel batch, then never re-read these:**
+- `.ai-agents/workspace/project-context.yaml`
+- `.ai-agents/registry.yaml`
+- `.ai-agents/config.yaml`
+- `.ai-agents/workspace/session.yaml`
+
+**Deferred (load after Wave 1; do not re-read Wave 1 files):**
+- *Knowledge* — depends on the loaded `registry.yaml`; resolve and load per the rule in Resolve. May be serial (manifest-driven).
+- *Extended Context* (listed below) — once `session.yaml` values such as `{active_change.id}` / `{plan_path}` are known, read the concrete files (e.g. `analysis.md`, `design.md`, `plan.yaml`, template paths) in ONE parallel sub-batch. Discovery directives (e.g. "scan the project root", "load source files per the bug description") are NOT files: load them on demand at runtime.
+
+Extended Context entries:
 - Scan all files under `.ai-agents/workspace/artifacts/` (all change-id directories)
 
-### Stage 2: Resolve Project Scope (PS)
+### Resolve (interpret loaded content — no new reads of Load files)
 
-Read `project-context.yaml > projects[]`.
+**Project Scope (PS)** — from `project-context.yaml > projects[]`:
+- **Single project** → PS = [the sole project]. Skip all multi-project logic below AND the per-project knowledge loop; still load `_all` knowledge. This is the common case.
+- **Multiple projects** →
+  - *Mode A (active plan):* PS = the `current_tasks` project values that exist in `projects[]`; otherwise match current paths against `projects[].path` / `source_paths`; if still unresolved, list candidates and ask. Never silently load all.
+  - *Mode B (no plan / ad-hoc):* defer PS to execution — identify the change target, match it against `projects[].path` / `source_paths`.
 
-**Single project** (`projects.length == 1`): PS = [sole project name]; skip the rest of this step.
+**Knowledge** — always load `knowledge._all` + `skills.<current-skill>.knowledge._all`. In multi-project Mode A/B, additionally load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for each resolved P. For every entry: base dir = `.ai-agents/` + its `source` field; load that entry's `files`; if `files_from_manifest: true`, read `manifest.yaml` in that dir and load entries with `auto_load: true`. Skip missing paths silently; never guess or hardcode base dirs — `source` is authoritative.
 
-**Multi-project** (`projects.length > 1`):
-**Mode A -- Plan-driven** (active plan exists and skill operates on plan tasks):
-1. **Plan signal**: PS = current task `project` values from plan `current_tasks`; drop names absent from `projects[]`.
-2. **Path match**: Match current paths against `projects[].path` and `source_paths`.
-3. **Prompt**: If unresolved, list candidates and ask user. Never silently load all projects.
+**Config** — apply `config.yaml` preferences for the whole session: `interaction_language` (chat/prompts/tables), `document_output_language` (files on disk), `output.no_emojis`, `output.data_format`, `context_routing.relevance_threshold`.
 
-**Mode B -- Non-plan** (no active plan or ad-hoc changes):
-Defer PS to execution: identify change target, match against `projects[].path` and `source_paths`, load project-specific knowledge on demand (Stage 3).
-
-### Stage 3: Load Knowledge
-
-Registry knowledge maps are project-keyed; `_all` is reserved for all projects. This applies to top-level `knowledge` and `skills.<name>.knowledge`.
-
-**Knowledge Loading Protocol**:
-For each registry knowledge entry:
-1. Read its `source` field, e.g. `knowledge/project/_generated/`.
-2. Base dir = `.ai-agents/` + `source`, e.g. `.ai-agents/knowledge/project/_generated/`.
-3. Load `files` entries from that base dir; if `files_from_manifest: true`, read `manifest.yaml` there and load entries with `auto_load: true`.
-4. **Skip non-existent paths** silently (do not error or warn).
-
-Example: `source: knowledge/project/_generated/` + `files: [project-context.md]` resolves to `.ai-agents/knowledge/project/_generated/project-context.md`.
-
-**Anti-pattern -- DO NOT**:
-- Guess or hardcode base directories (e.g., `.ai-agents/workspace/`).
-- Assume a default path structure. The `source` field value is the authoritative path component.
-
-**At activation** (both modes): load `knowledge._all` + `skills.<current-skill>.knowledge._all`.
-**Mode A** (additionally): for each P in PS, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]`.
-**Mode B** (during execution): on demand, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for identified project(s).
-
-### Stage 4: Load Config & Apply Preferences (Config Foundation)
-Read `.ai-agents/config.yaml` and enforce it for the whole session:
-
-- `preferences.interaction_language`: language for chat, prompts, status lines, tables, and summaries.
-- `preferences.document_output_language`: language for files written to disk.
-- `preferences.output.no_emojis`: if true, never use emojis.
-- `preferences.output.data_format`: format for artifact data sections.
-- `preferences.context_routing.relevance_threshold`: AI routing threshold for `/mvt-manage-context add` (default 70).
-
-### Stage 5: Pre-flight Checks
-
-For each check below, if the condition holds, perform the action implied by its **Level**:
-
-- **WARN** -- emit the message, then ask "Continue anyway? (y/n)". Default to **y** if the user does not respond.
-- **BLOCK** -- emit the message and stop. Do not proceed until the prerequisite is satisfied.
-- **REQUIRED** -- same as BLOCK; the prerequisite is mandatory.
-- **INFO** -- emit the message and proceed; no confirmation needed.
+**Pre-flight** — evaluate each check below against the loaded `session.yaml` / `project-context.yaml`. Levels: **WARN** = emit message, ask "Continue? (y/n)", default **y**; **BLOCK** / **REQUIRED** = emit and stop until satisfied; **INFO** = emit and proceed.
 
 | # | Condition | Level | Message |
 |---|-----------|-------|---------|
@@ -156,7 +125,7 @@ This check ensures `/mvt-sync-context` has processed a change's knowledge before
 
   | Source | Rule | Proposed action |
   |--------|------|-----------------|
-  | `changes[]` entry with `status: done` AND any task in plan is older than the active change's start | Summarize: generate a `summary.md` from the change's artifacts, then move the **entire** `artifacts/{id}/` directory (including `summary.md`) to `artifacts/_archived/{id}/` |
+  | `changes[]` entry with `status: done` AND `artifacts/{id}/` exists AND (any task in plan is older than the active change's start **OR** plan metadata is missing, unreadable, or absent for this change) | Summarize: generate a `summary.md` from the change's artifacts, then move the **entire** `artifacts/{id}/` directory (including `summary.md`) to `artifacts/_archived/{id}/` |
   | `changes[]` entry with `status: done` AND `epic_id` non-empty AND parent epic status is NOT `done` | **Epic integrity warning**: mark the candidate as `epic-unsafe` -- archiving a sub-change whose parent epic is still in-progress may leave the epic in an inconsistent state. Default to `n` (skip) in the cleanup plan. User may override to force-archive. |
   | Artifact directory under `artifacts/` whose id starts with `epic-` AND contains `epic.yaml` with `status: done` | **Batch archive candidate**: mark for batch suggestion in Step 7 -- read `epic.yaml.children[]` for child change-ids to offer as batch archive options alongside the epic |
   | Change-id directory marked `unindexed` | List for user review (do NOT auto-archive -- could be in-flight work the user just hasn't registered) |
@@ -209,6 +178,7 @@ This check ensures `/mvt-sync-context` has processed a change's knowledge before
   4. **Stale history truncation**: call `session-update.cjs --truncate-history <N>` where N is from `config.yaml > preferences.history_limits.history` (default 20).
   5. All file mutations atomic where possible (write-temp + rename, copy-then-delete for moves).
   6. If any single action fails, STOP further actions; report what completed, what failed, and leave a recoverable state (do not partially overwrite a file with truncated content).
+  7. **Index synchronization**: when an action moves a change-id or epic-id into `artifacts/_archived/`, note the affected id(s) for the Step 10 `--remove-change` / `--remove-epic` flag(s). For Step 7.1 (summarize), Step 7.2 (archive), and Step 7.2a options 2/3 (batch archive children), collect the corresponding change-id(s); for Step 7.2a option 1/2/3, collect the epic-id. These ids are passed to the session-update call in Step 10 to keep `session.changes[]` / `session.epics[]` synchronized with the physical file layout.
 
 ### Step 8: Report Result
 - Print the actually-applied actions (may differ from the plan if Step 7 stopped early).
@@ -221,23 +191,48 @@ Based on the actual cleanup actions performed, choose the appropriate session-up
 
 | Actual cleanup action | session-update parameters |
 |----------------------|---------------------------|
-| Closed `active_change` (all plan tasks completed) | `--close-change --truncate-history <N>` |
-| Only truncated history / archived old changes (active_change still in progress) | `--truncate-history <N>` (**do NOT** pass `--close-change`) |
+| Closed `active_change` (all plan tasks completed) **+** archived old done changes | `--close-change --remove-change <ids> --truncate-history <N>` |
+| Closed `active_change` only (no old changes archived) | `--close-change --truncate-history <N>` |
+| Archived old changes only (active_change still in progress) | `--remove-change <ids> --truncate-history <N>` |
+| Archived epic + its children (batch archive) | `--remove-epic <epic_id> --remove-change <child1>,<child2> --truncate-history <N>` |
 | `--dry-run` mode (no modifications made) | **Do NOT call** session-update script; only record history |
 
-N is read from `config.yaml > preferences.history_limits.history` (default 20).
+N is read from `config.yaml > preferences.history_limits.history` (default 20). `<ids>` is a comma-separated list collected in Step 7.7.
 
 ### Step 10: State Update
 Apply the State Update rules defined in the **State Update** section below.
 
-**Pre-filled example** (closed active_change + history truncation):
+**Pre-filled examples** (one per Step 9 row):
+
 ```bash
+# Row 1: closed active_change + archived old done changes
+node .ai-agents/scripts/session-update.cjs \
+  --skill mvt-cleanup \
+  --close-change \
+  --remove-change <archived_change_ids> \
+  --truncate-history 10
+
+# Row 2: closed active_change only
 node .ai-agents/scripts/session-update.cjs \
   --skill mvt-cleanup \
   --close-change \
   --truncate-history 10
+
+# Row 3: archived old changes only
+node .ai-agents/scripts/session-update.cjs \
+  --skill mvt-cleanup \
+  --remove-change <archived_change_ids> \
+  --truncate-history 10
+
+# Row 4: batch archive (epic + its children)
+node .ai-agents/scripts/session-update.cjs \
+  --skill mvt-cleanup \
+  --remove-epic <archived_epic_id> \
+  --remove-change <archived_child_ids> \
+  --truncate-history 10
 ```
-Replace `10` with the actual `config.yaml > preferences.history_limits.history` value. If only truncating history (active_change still in progress), omit `--close-change`.
+
+Replace `10` with the actual `config.yaml > preferences.history_limits.history` value, and `<archived_change_ids>` / `<archived_child_ids>` with the comma-separated id list collected in Step 7.7, `<archived_epic_id>` with the batch-archived epic id. Drop any `--remove-*` flag whose id list is empty.
 
 ## Edge Cases & Errors
 
@@ -260,7 +255,8 @@ Replace `10` with the actual `config.yaml > preferences.history_limits.history` 
 After the skill's main task, run the session update script **exactly once**:
 
 ```bash
-node .ai-agents/scripts/session-update.cjs --skill mvt-cleanup --summary "<concise one-line summary>" --close-change --truncate-history <count>
+node .ai-agents/scripts/session-update.cjs --skill mvt-cleanup --summary "<concise one-line summary>" --close-change --truncate-history <count> --remove-change <ids> --remove-epic <ids>
+
 ```
 
 Write `--summary` as one concise line in the configured `interaction_language`.
@@ -270,6 +266,8 @@ Write `--summary` as one concise line in the configured `interaction_language`.
 - Use only the flags rendered in the command above; do not invent extra session-update flags.
 - `--close-change` snapshots `active_change` into `changes[]` with `status: done`, then clears all active-change fields.
 - `--truncate-history` keeps the most recent N `history[]` entries; use the configured history limit.
+- `--remove-change <ids>` removes entries with matching `id` from `session.changes[]` (comma-separated for multiple ids); does NOT touch `active_change`. Unknown ids are silently skipped; if all ids are unknown, a warning is written to stderr (exit code remains 0).
+- `--remove-epic <ids>` removes entries with matching `id` from `session.epics[]` (comma-separated for multiple ids); does NOT touch `active_epic`. Unknown ids are silently skipped; if all ids are unknown, a warning is written to stderr (exit code remains 0).
 
 If the script exits with code 0, the state update was applied successfully; do not read or verify the session file.
 

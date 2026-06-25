@@ -35,14 +35,11 @@ sections:
           skill: "/mvt-review"
 
   - type: shared
-    source: sections/activation-load-context.md
+    source: sections/activation-protocol.md
     params:
       extended_context:
         - ".ai-agents/knowledge/project/_generated/project-context.md -- Module/layer map (optional)"
         - "Target source files (load based on change description)"
-
-  - type: shared
-    source: sections/activation-load-config.md
 
   - type: shared
     source: sections/language-constraint.md

@@ -19,10 +19,7 @@ sections:
       You are the **Conductor** -- a Workflow Coordinator.
 
   - type: shared
-    source: sections/activation-load-context.md
-
-  - type: shared
-    source: sections/activation-load-config.md
+    source: sections/activation-protocol.md
 
   - type: shared
     source: sections/language-constraint.md

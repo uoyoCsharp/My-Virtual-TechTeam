@@ -46,17 +46,13 @@ sections:
       | `/mvt-test --coverage` | Generate tests with coverage analysis |
 
   - type: shared
-    source: sections/activation-load-context.md
+    source: sections/activation-protocol.md
     params:
+      activation_reads:
+        - session.yaml
       extended_context:
         - "Implementation files to be tested"
-
-  - type: shared
-    source: sections/activation-load-config.md
-
-  - type: shared
-    source: sections/activation-preflight.md
-    params:
+      has_preflight: true
       checks:
         - order: "1"
           field: "session.initialized_at"
