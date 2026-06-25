@@ -56,6 +56,8 @@ sections:
   - type: shared
     source: sections/activation-protocol.md
     params:
+      activation_reads:
+        - session.yaml
       extended_context:
         - "Related source files to be refactored"
 

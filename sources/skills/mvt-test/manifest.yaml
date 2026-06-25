@@ -52,6 +52,7 @@ sections:
         - session.yaml
       extended_context:
         - "Implementation files to be tested"
+        - ".ai-agents/workspace/artifacts/{active_change.id}/design.md -- error paths / data flow that negative-path scenarios trace to (skip if absent)"
       has_preflight: true
       checks:
         - order: "1"

@@ -20,6 +20,9 @@ sections:
 
   - type: shared
     source: sections/activation-protocol.md
+    params:
+      activation_reads:
+        - session.yaml
 
   - type: shared
     source: sections/language-constraint.md

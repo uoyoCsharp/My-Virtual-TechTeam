@@ -46,7 +46,6 @@ sections:
       | `quality` | Function size, duplication, dead code, maintainability |
       | `errors` | Error handling, swallowed errors, boundary behavior |
       | `edge-cases` | Boundary inputs, concurrency, resource lifecycle |
-      | `security` | Input validation, injection prevention, authentication |
       | `naming` | Naming conventions, formatting, documentation |
       | `tests` | Test coverage, assertions, skipped tests |
 

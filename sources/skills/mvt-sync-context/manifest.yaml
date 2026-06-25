@@ -62,7 +62,7 @@ sections:
           level: "BLOCK"
           message: "Session not initialized. Run `/mvt-init` first."
         - order: "2"
-          field: ".ai-agents/knowledge/project/_generated/project-context.md exists"
+          condition: ".ai-agents/knowledge/project/_generated/project-context.md does NOT exist or is empty"
           level: "BLOCK"
           message: "project-context.md not found. Run `/mvt-analyze-code` to create the initial document; this skill only handles incremental updates."
 

@@ -106,8 +106,10 @@ Create a pre-write backup of `.ai-agents/registry.yaml`, then add the skill entr
   {name}:
     description: "{third-person description with trigger keywords}"
     custom: true
+    template: "_templates/{name}-output.md"   # include ONLY if an output template was created in Step 6; omit this key otherwise
 ```
 
+- If an output template was created in Step 6, set `template:` to its path so `/mvt-template` can discover it; otherwise omit the key entirely.
 - The `custom: true` field is **required** for user-created skills; without it, framework updates will overwrite the entry.
 - Refuse to overwrite an existing skill key.
 - Escape `description` through the YAML serializer; never interpolate raw user text into YAML.

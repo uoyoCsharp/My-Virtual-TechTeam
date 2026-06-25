@@ -61,13 +61,13 @@ The skill should suggest a type based on content keywords; the user confirms or 
 2. **Question 2: Breadth** -- Ask: "Should this knowledge be loaded by all skills or a specific skill?"
    - `all skills` -> top-level `knowledge` map
    - `specific skill` -> AI-score each skill for relevance (see below)
-3. Read `.ai-agents/registry.yaml` > `skills.*` -- collect every skill's `name` and `description`.
+3. From the already-loaded `registry.yaml` (Wave 1) > `skills.*` -- collect every skill's `name` and `description`. Do not re-read the file.
 4. For each skill, score relevance to the content on a 0-100 scale:
    - 90-100: directly aligned (e.g., review rules + `mvt-review`)
    - 70-89: strongly relevant
    - 50-69: tangentially relevant
    - 0-49: weak match
-5. Read `.ai-agents/config.yaml` > `preferences.context_routing.relevance_threshold` (default 70 if missing).
+5. Use the already-loaded `config.yaml` (Wave 1) > `preferences.context_routing.relevance_threshold` (default 70 if missing). Do not re-read the file.
 6. Display **all** skills sorted by score descending. Do not truncate -- the user sees the full list with scores.
    - Skills at or above threshold: pre-checked, shown with `[High]` / `[Med]` markers (or stars in emoji mode).
    - Skills below threshold: collapsed under an "expand" prompt; not pre-checked.
@@ -98,12 +98,6 @@ If the user chose multiple bindings (e.g., shared + per-skill review), apply eac
 1. Write the knowledge file.
 2. Update `registry.yaml` (and/or `core/manifest.yaml`) with all references.
 3. If any write fails, roll back: delete the new file, revert the registry/manifest edits.
-
-Registry and manifest mutation rules:
-- Backup `registry.yaml` and any touched manifest before writing.
-- Touch only the targeted entries; preserve sibling ordering and unrelated formatting as much as the structured YAML serializer allows.
-- Never write into or mutate entries under `core/_framework` from this skill.
-- After writing, parse the YAML again and inspect the diff. If the diff includes paths or entries outside the intended target set, restore the backup and report the unexpected change.
 
 ### 2.7 Report
 Use the `add / move / rename` output format from the manifest. Show:

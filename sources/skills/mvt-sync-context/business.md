@@ -44,9 +44,9 @@ This step establishes the **target structure** that aggregated content must fit 
 2. Parse the current `.md` into a section map:
    - Each top-level `##` heading -> one section anchor.
    - Record: section title (verbatim), byte range, and a 1-line semantic summary derived from the section's content (e.g., "lists domain terms with definitions" or "describes module dependencies").
-   - The summary is what enables matching in Step 5 -- section titles may be in any language and may not match conventional names (Terms / Modules / etc.).
+   - The summary is what enables matching in Step 6 -- section titles may be in any language and may not match conventional names (Terms / Modules / etc.).
 3. If the document has zero `##` sections (single block) -> STOP. Recommend `/mvt-analyze-code` to establish a sectioned baseline first.
-4. Read `.ai-agents/workspace/project-context.yaml`. Record current `projects[].source_paths`, `modules`, and `tech_stack` for diff comparison in Step 5d.
+4. Read `.ai-agents/workspace/project-context.yaml`. Record current `projects[].source_paths`, `modules`, and `tech_stack` for diff comparison in Step 7 (Table 7d).
 
 ### Step 4: Extract Artifact Content
 
@@ -78,9 +78,9 @@ Before classifying extracted items against the section map, normalize each item 
    **Critical**: strip only the *reference marker*, never the *substantive content* it annotates.
 
 2. After normalization, re-evaluate each item:
-   - Still contains substantive content -> keep for classification in Step 5.
+   - Still contains substantive content -> keep for classification in Step 6.
    - Was entirely a cross-reference with no independent semantic value -> drop it (it is a pointer, not knowledge).
-3. Any normalization that removes content from a `modify` item (where the item modifies an existing entry) must be flagged in the update plan (Step 6, Table 6b) so the user can verify the substantive meaning was preserved.
+3. Any normalization that removes content from a `modify` item (where the item modifies an existing entry) must be flagged in the update plan (Step 7, Table 7b) so the user can verify the substantive meaning was preserved.
 
 ### Step 6: Classify Artifact Content
 
@@ -157,10 +157,10 @@ If user skips verification: proceed directly to Step 10 with Step 7 selections.
    3. Each `orphan` item with new-section choice: append a new `##` section at end of file only after explicit user confirmation of the new section name.
   4. **Never delete** any existing line. **Never reorder** existing sections.
   5. **Multi-project files**: use `# Project: {name}` headings to scope merges to the correct project section. New items for project X go into its `# Project: X` section; do not mix cross-project content.
-  6. All merged content must already be normalized per Step 4 rules. Do not re-introduce stripped references during inline replacement or append operations.
+  6. All merged content must already be normalized per Step 5 rules. Do not re-introduce stripped references during inline replacement or append operations.
 
 - **Update `project-context.yaml`** (structured merge):
-  1. Apply accepted entries from Table 6d.
+  1. Apply accepted entries from Table 7d.
   2. Add new `source_paths` to matching project entry; add new modules to `modules[]`.
   3. **Never delete** an existing yaml entry in this skill.
 
@@ -196,5 +196,5 @@ Apply the State Update rules defined in the **State Update** section below.
 | `.md.bak` already exists | Overwrite (only the most recent backup matters) |
 | User aborts at Step 7 | Do not write; report "no changes applied" |
 | Step 9 verification finds zero matches for everything | Strong warning; require explicit confirm before proceeding (artifacts likely describe planned, not delivered, work) |
-| Two artifacts contradict each other (analysis claims rule X, implementation realizes rule Y) | Surface in Table 6b as cross-artifact conflict; user picks |
+| Two artifacts contradict each other (analysis claims rule X, implementation realizes rule Y) | Surface in Table 7b as cross-artifact conflict; user picks |
 | change-id was archived between Step 1 and Step 9 | Skip with note; do not error the run |

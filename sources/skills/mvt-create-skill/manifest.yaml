@@ -28,15 +28,15 @@ sections:
         - rule: "Usage patterns unclear -> Ask for concrete examples before proceeding"
       boundaries:
         - scope: "generate skills that deviate from MVTT SKILL.md standard structure"
-          skill: "the standard structure as documented"
+          guidance: "follow the standard structure as documented"
         - scope: "use arbitrary prefixes without validating naming conventions"
-          skill: "`mvt-` or a project-specific prefix like `app-`, `proj-`"
+          guidance: "use `mvt-` or a project-specific prefix like `app-`, `proj-`"
         - scope: "create skills without registering in registry.yaml"
-          skill: "`custom: true` in registry.yaml"
+          guidance: "register with `custom: true` in registry.yaml"
         - scope: "write vague or first-person descriptions"
-          skill: "third-person with effective trigger keywords"
+          guidance: "write third-person with effective trigger keywords"
         - scope: "exceed ~5k words in SKILL.md body"
-          skill: "references/ for detailed content"
+          guidance: "push detailed content to references/"
 
   - type: shared
     source: sections/activation-protocol.md

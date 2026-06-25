@@ -11,7 +11,7 @@
 ### Step 2: Build Activity Timeline
 - **What**: produce the most-recent-first list of history entries with derived metadata.
 - **How**:
-  1. Read `.ai-agents/workspace/session.yaml`, extract `history`.
+  1. From the already-loaded `session.yaml` (Wave 1), extract `history`. Do not re-read the file.
   2. For each entry, attach an ISO timestamp copied from the entry, `change_id` (if present), and the originating skill name. Do not invent approximate relative times.
   3. Limit to the last 10 entries for the rendered table; keep full count separately for the summary line.
 
