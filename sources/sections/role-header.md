@@ -9,5 +9,5 @@ You are the **{{role}}** -- {{role_desc}}.
 
 ### Boundaries
 {{#boundaries}}
-- Do NOT {{scope}} (use `{{skill}}` instead)
+- Do NOT {{scope}}{{#skill}} (use `{{skill}}` instead){{/skill}}{{#guidance}} ({{guidance}}){{/guidance}}
 {{/boundaries}}

@@ -25,6 +25,7 @@
   | No requirements, but user describes a simple change directly | `/mvt-quick-dev` -- Implement a simple change quickly |
   | Requirements present, no `design.md` | `/mvt-design` -- Design architecture |
   | `design.md` exists, change is large (Change Tracking lists > 5 files OR ADR includes breaking change OR > 1 new module) | `/mvt-plan-dev` -- Decompose into tracked plan |
+  | `plan.yaml` status is `in_progress` AND `current_tasks` is non-empty | `/mvt-resume` -- Resume the current planned task |
   | `design.md` (or `plan.yaml`) ready, no `implementation.md` | `/mvt-implement` -- Implement the design |
   | `implementation.md` exists, no `review.md` | `/mvt-review` -- Review the code |
   | `review.md` has Critical findings | `/mvt-fix` -- Fix critical issues before continuing; surface prominently above the catalog |

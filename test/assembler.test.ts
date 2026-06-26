@@ -57,14 +57,20 @@ describe("assembler", () => {
       );
     });
 
-    it("includes Activation Protocol", () => {
+    it("includes Activation Protocol (Load / Resolve two-block structure, ADR-8)", () => {
       const output = buildSkill("mvt-analyze");
       expect(output).toContain("## Activation Protocol");
-      expect(output).toContain("### Stage 1: Load Context");
-      expect(output).toContain("### Stage 2: Resolve Project Scope");
-      expect(output).toContain("### Stage 3: Load Knowledge");
-      expect(output).toContain("### Stage 4: Load Config");
-      expect(output).toContain("### Stage 5: Pre-flight Checks");
+      // ADR-8 condensed the five numbered Stages into two topic blocks:
+      // Load (read mechanics) and Resolve (decision logic). Assert the blocks
+      // and each load-bearing decision unit still render, not the old Stage labels.
+      expect(output).toContain("### Load (do this first)");
+      expect(output).toContain("### Resolve");
+      expect(output).toContain("**Wave 1");
+      expect(output).toContain("**Project Scope (PS)**");
+      expect(output).toContain("**Knowledge**");
+      expect(output).toContain("**Config**");
+      // mvt-analyze is a preflight skill, so the Pre-flight unit must render.
+      expect(output).toContain("**Pre-flight**");
     });
 
     it("includes Execution Flow from business.md", () => {
@@ -103,7 +109,7 @@ describe("assembler", () => {
 
     it("includes BLOCK-level pre-flight checks", () => {
       const output = buildSkill("mvt-design");
-      expect(output).toMatch(/\|\s*\d+\s*\|\s*`[^`]+`\s+is empty\s*\|\s*BLOCK\s*\|/);
+      expect(output).toMatch(/\|\s*\d+\s*\|\s*`[^`]+ is empty`\s*\|\s*BLOCK\s*\|/);
     });
   });
 
@@ -116,8 +122,8 @@ describe("assembler", () => {
 
     it("has WARN not BLOCK pre-flight", () => {
       const output = buildSkill("mvt-fix");
-      expect(output).toMatch(/\|\s*1\s*\|\s*`session\.initialized_at`\s+is empty\s*\|\s*WARN\s*\|/);
-      expect(output).not.toMatch(/\|\s*\d+\s*\|\s*`[^`]+`\s+is empty\s*\|\s*BLOCK\s*\|/);
+      expect(output).toMatch(/\|\s*1\s*\|\s*`session\.initialized_at is empty`\s*\|\s*WARN\s*\|/);
+      expect(output).not.toMatch(/\|\s*\d+\s*\|\s*`[^`]+ is empty`\s*\|\s*BLOCK\s*\|/);
     });
   });
 

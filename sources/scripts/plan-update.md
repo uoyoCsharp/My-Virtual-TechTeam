@@ -17,6 +17,12 @@ node .ai-agents/scripts/plan-update.cjs \
   [--mark-deliverable-stale <task_id>[,task_id2,...]]
 ```
 
+Read-only validation mode:
+
+```bash
+node .ai-agents/scripts/plan-update.cjs --validate "<draft-plan-path>" [--projects "<comma,separated,project,names>"]
+```
+
 Include `--artifacts`, `--notes`, `--deliverables-pointer`, and `--mark-deliverable-stale` only when the skill's logic determines they apply; omit each flag otherwise.
 
 ## Argument values
@@ -31,6 +37,7 @@ Include `--artifacts`, `--notes`, `--deliverables-pointer`, and `--mark-delivera
 | `--notes` | optional; overwrites the task's `notes` | `"blocked on API spec"` |
 | `--deliverables-pointer` | optional; set to `current` to record that this task's deliverables section is written | `current` |
 | `--mark-deliverable-stale` | optional; comma-separated downstream task ids whose deliverables are now stale | `"t3,t4"` |
+| `--validate` | optional read-only validation target; accepts the plan path as its value | `".ai-agents/workspace/artifacts/chg-001/plan.yaml"` |
 
 ## Parameter semantics
 
@@ -41,6 +48,7 @@ Include `--artifacts`, `--notes`, `--deliverables-pointer`, and `--mark-delivera
 | `--artifacts` | Task produced or touched files | Appends + de-duplicates paths into the task's `artifacts.files`; handles `artifacts: null`. |
 | `--notes` | Task needs a free-form note | Overwrites the task's existing `notes`. |
 | `--deliverables-pointer` + `--mark-deliverable-stale` | Task wrote its deliverables section (e.g. `/mvt-implement` Step 8) | Records the deliverables pointer on the task; marks the listed downstream tasks' deliverables as stale so `/mvt-resume` and `/mvt-status` surface a warning. Use both flags together in a single invocation. |
+| `--validate` | `/mvt-plan-dev` has assembled a draft plan before final write | Parses and validates the plan, prints JSON on success, and never writes the file. |
 
 ## What the script does (deterministically)
 
@@ -57,3 +65,4 @@ Include `--artifacts`, `--notes`, `--deliverables-pointer`, and `--mark-delivera
   ```
   Use these fields directly to render output. The file is already written — do NOT read it back to verify. If `warning` is non-null, surface it. If `project_switch` is non-null, note the project boundary crossing.
 - **Exit 1**: failure. stderr carries the error (invalid status, task not found, validation failure, parse/write error). The file was **not** modified. Report the error to the user and do not fabricate a success summary.
+- **Read-only validation**: exit 0 stdout is `{"ok":true,"plan_status":"...","tasks":N}`. Exit 1 stderr carries parse or validation errors; no file is modified.

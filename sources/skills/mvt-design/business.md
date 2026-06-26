@@ -86,7 +86,7 @@
 - Do NOT modify `project-context.yaml` or `project-context.md` here.
 
 ### Step 8: Suggest Plan Decomposition
-- If `Change Tracking` lists more than ~5 files OR Module Design adds more than 1 new module OR ADRs include any breaking change, recommend `/mvt-plan-dev` as the next step.
+- If `Change Tracking` lists more than 5 files OR Module Design adds more than 1 new module OR ADRs include any breaking change, recommend `/mvt-plan-dev` as the next step.
 - Otherwise recommend `/mvt-implement` directly.
 
 ### Step 9: State Update

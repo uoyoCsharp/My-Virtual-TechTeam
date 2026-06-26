@@ -42,7 +42,7 @@
   3. No write.
 
 #### 4b. Customize
-- **What**: create or update the custom override; preserve a structure the assembler can still consume.
+- **What**: create or update the custom override while preserving the headings-only document structure used by MVTT output templates.
 - **How** (4-step subflow):
   1. **Show baseline**: print the current active version (custom if exists, otherwise default).
   2. **Collect modifications from the user**: ask for one of these explicit input forms (do not improvise):
@@ -52,10 +52,10 @@
      - "edit frontmatter field `<key>` to `<value>`"
      - "free-form patch: <unified diff>"
   3. **Preview**: render the resulting file (full content) and a diff against the baseline. Do NOT write yet.
-  4. **Validate** (mandatory before write):
-     - Frontmatter block (`---\n...\n---`) must be present and parseable.
-     - Required frontmatter keys (`id`, `version`, `skill` if originally present) must be retained.
-     - All Mustache placeholders that were present in the default and that the assembler relies on (`{{...}}`, `{{#...}}`, `{{?...}}`, `{{^...}}`) must still be present unless the user explicitly removed them; warn if removed.
+    4. **Validate** (mandatory before write):
+      - The customized template must remain Markdown with a clear heading hierarchy.
+      - If the default template had frontmatter, the customized version must keep a parseable frontmatter block and retain the original frontmatter keys. If the default template had no frontmatter, do not require one.
+      - If the default template had Mustache placeholders, retain them unless the user explicitly removed them. If the default template had no placeholders, do not require placeholders.
      - Validation failures -> abort write, surface the failed checks, return to step 2 of this subflow.
   5. **Confirm and write**: prompt `Save customized template to .ai-agents/skills/_templates/custom/<name>? (y/n)`. On `y`, write atomically (temp + rename). Backup any existing custom file as `<name>.bak` first.
 

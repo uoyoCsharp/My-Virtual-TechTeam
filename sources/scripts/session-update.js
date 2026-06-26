@@ -40,6 +40,7 @@ const ERRORS = {
   CLOSE_NEW_EPIC_CONFLICT: () => "--close-epic and --new-epic are mutually exclusive",
   NO_ACTIVE_EPIC: (flag) => `${flag} requires an active epic (active_epic.id is empty)`,
   EPIC_ID_ORPHAN: () => "--epic-id (for sub-change) requires --new-change",
+  MISSING_REMOVE_VALUE: () => "--remove-change / --remove-epic requires a non-empty value",
 };
 
 // ── Defaults ────────────────────────────────────────────────────────────────
@@ -82,6 +83,17 @@ function parseArgs(argv) {
   return args;
 }
 
+// ── Multi-id Helper ─────────────────────────────────────────────────────────
+// Comma-separated list of ids, used by --remove-change / --remove-epic.
+// Mirrors the convention in sources/scripts/epic-update.js.
+function parseIdList(value) {
+  if (value == null) return [];
+  return String(value)
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
+}
+
 // ── Config Loading ──────────────────────────────────────────────────────────
 function loadHistoryLimits(configPath) {
   const limits = { ...DEFAULT_LIMITS };
@@ -117,10 +129,24 @@ function validate(args) {
   if (!args.summary) return ERRORS.MISSING_SUMMARY();
   if (args["new-change"] && !args["change-id"]) return ERRORS.CHANGE_ID_REQUIRED();
 
-  // Epic combo validation (§9.1.1, ADR-10)
+  // Epic combo validation
   if (args["new-epic"] && !args["epic-id"]) return ERRORS.EPIC_ID_REQUIRED();
   if (args["close-epic"] && args["new-epic"]) return ERRORS.CLOSE_NEW_EPIC_CONFLICT();
   if (args["epic-id"] && !args["new-change"] && !args["new-epic"]) return ERRORS.EPIC_ID_ORPHAN();
+
+  // Remove flags require non-empty values
+  if (
+    args["remove-change"] !== undefined
+    && (args["remove-change"] === true || !String(args["remove-change"]).trim())
+  ) {
+    return ERRORS.MISSING_REMOVE_VALUE();
+  }
+  if (
+    args["remove-epic"] !== undefined
+    && (args["remove-epic"] === true || !String(args["remove-epic"]).trim())
+  ) {
+    return ERRORS.MISSING_REMOVE_VALUE();
+  }
 
   return null;
 }
@@ -411,6 +437,40 @@ function main() {
       created_at: "",
       epic_path: "",
     };
+  }
+
+  // --remove-change <ids>: filter session.changes[]
+  if (args["remove-change"] !== undefined) {
+    session.changes = session.changes || [];
+    const rawIds = args["remove-change"];
+    let removed = 0;
+    for (const id of parseIdList(rawIds)) {
+      const before = session.changes.length;
+      session.changes = session.changes.filter((e) => e.id !== id);
+      if (session.changes.length < before) removed++;
+    }
+    if (removed === 0) {
+      process.stderr.write(
+        `Warning: --remove-change requested ids [${rawIds}] not found; no entries removed.\n`,
+      );
+    }
+  }
+
+  // --remove-epic <ids>: filter session.epics[]
+  if (args["remove-epic"] !== undefined) {
+    session.epics = session.epics || [];
+    const rawIds = args["remove-epic"];
+    let removed = 0;
+    for (const id of parseIdList(rawIds)) {
+      const before = session.epics.length;
+      session.epics = session.epics.filter((e) => e.id !== id);
+      if (session.epics.length < before) removed++;
+    }
+    if (removed === 0) {
+      process.stderr.write(
+        `Warning: --remove-epic requested ids [${rawIds}] not found; no entries removed.\n`,
+      );
+    }
   }
 
   // ── Write back atomically ─────────────────────────────────────────────

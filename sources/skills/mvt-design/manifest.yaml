@@ -44,17 +44,15 @@ sections:
       | `/mvt-design --plan` | High-level implementation plan only: skip Step 5 (data flow detail) and Step 6 (full ADR fields). ADRs collapse to one-line `decision: <text>`. Step 8 writes `design.md` with abbreviated content and a top-line `Mode: plan` indicator. If the request is actually small (1 file), downgrade to a 5-line summary in chat and do NOT write `design.md`. |
 
   - type: shared
-    source: sections/activation-load-context.md
+    source: sections/activation-protocol.md
     params:
+      activation_reads:
+        - session.yaml
       extended_context:
         - ".ai-agents/workspace/artifacts/{active_change.id}/analysis.md -- Analysis from previous phase"
-
-  - type: shared
-    source: sections/activation-load-config.md
-
-  - type: shared
-    source: sections/activation-preflight.md
-    params:
+        - ".ai-agents/knowledge/project/_generated/project-context.md -- Current semantic project context"
+        - ".ai-agents/workspace/artifacts/*/design.md -- Prior design artifacts for related changes (load only relevant matches)"
+      has_preflight: true
       checks:
         - order: "1"
           field: "session.initialized_at"

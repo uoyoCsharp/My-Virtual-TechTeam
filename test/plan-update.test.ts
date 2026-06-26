@@ -110,6 +110,16 @@ describe("plan-update.cjs", () => {
 
   // ── Original tests (updated for current_tasks schema) ────────────────
 
+  it("validates a plan without mutating it", () => {
+    writePlan(basePlan());
+    const before = readFileSync(planPath, "utf-8");
+    const res = run(["--validate", planPath]);
+
+    expect(res.status).toBe(0);
+    expect(JSON.parse(res.stdout)).toMatchObject({ ok: true, plan_status: "in_progress", tasks: 2 });
+    expect(readFileSync(planPath, "utf-8")).toBe(before);
+  });
+
   it("marks a task done, sets completed_at, advances current_tasks", () => {
     writePlan(basePlan());
     const res = update(["--task", "t1", "--status", "done"]);

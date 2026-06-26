@@ -35,21 +35,18 @@ sections:
         - rule: "Last skill was interrupted -> Surface the context, suggest retry"
       boundaries:
         - scope: "read git state (branch, diff, commits)"
-          skill: "(Out of scope -- this skill is session-state only)"
+          guidance: "out of scope -- this skill is session-state only"
         - scope: "modify any files"
-          skill: "(Read-only)"
+          guidance: "read-only"
         - scope: "run analyses or tests"
-          skill: "(Use the recommended next skill)"
+          guidance: "use the recommended next skill"
 
   - type: shared
-    source: sections/activation-load-context.md
-
-  - type: shared
-    source: sections/activation-load-config.md
-
-  - type: shared
-    source: sections/activation-preflight.md
+    source: sections/activation-protocol.md
     params:
+      activation_reads:
+        - session.yaml
+      has_preflight: true
       checks:
         - order: "1"
           field: "session.initialized_at"

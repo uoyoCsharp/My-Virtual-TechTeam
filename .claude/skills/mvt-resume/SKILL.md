@@ -29,74 +29,42 @@ You are the **Conductor** -- a Workflow Coordinator.
 - Last skill was interrupted -> Surface the context, suggest retry
 
 ### Boundaries
-- Do NOT read git state (branch, diff, commits) (use `(Out of scope -- this skill is session-state only)` instead)
-- Do NOT modify any files (use `(Read-only)` instead)
-- Do NOT run analyses or tests (use `(Use the recommended next skill)` instead)
+- Do NOT read git state (branch, diff, commits) (out of scope -- this skill is session-state only)
+- Do NOT modify any files (read-only)
+- Do NOT run analyses or tests (use the recommended next skill)
 
 ## Activation Protocol
 
-### Stage 1: Load Context
-Load foundational context:
-- `.ai-agents/workspace/project-context.yaml` -- Project index (structural info)
-- `.ai-agents/registry.yaml` -- Available skills registry and knowledge declarations
+Two blocks: **Load** (what to read, and when) then **Resolve** (what to decide). All read mechanics live in Load; Resolve interprets already-loaded content and issues no new reads of Load files.
 
-### Stage 2: Resolve Project Scope (PS)
+### Load (do this first)
 
-Read `project-context.yaml > projects[]`.
+**Wave 1 — read in ONE parallel batch, then never re-read these:**
+- `.ai-agents/workspace/project-context.yaml`
+- `.ai-agents/registry.yaml`
+- `.ai-agents/config.yaml`
+- `.ai-agents/workspace/session.yaml`
 
-**Single project** (`projects.length == 1`): PS = [sole project name]; skip the rest of this step.
+**Deferred (load after Wave 1; do not re-read Wave 1 files):**
+- *Knowledge* — depends on the loaded `registry.yaml`; resolve and load per the rule in Resolve. May be serial (manifest-driven).
 
-**Multi-project** (`projects.length > 1`):
-**Mode A -- Plan-driven** (active plan exists and skill operates on plan tasks):
-1. **Plan signal**: PS = current task `project` values from plan `current_tasks`; drop names absent from `projects[]`.
-2. **Path match**: Match current paths against `projects[].path` and `source_paths`.
-3. **Prompt**: If unresolved, list candidates and ask user. Never silently load all projects.
+### Resolve (interpret loaded content — no new reads of Load files)
 
-**Mode B -- Non-plan** (no active plan or ad-hoc changes):
-Defer PS to execution: identify change target, match against `projects[].path` and `source_paths`, load project-specific knowledge on demand (Stage 3).
+**Project Scope (PS)** — from `project-context.yaml > projects[]`:
+- **Single project** → PS = [the sole project]. Skip all multi-project logic below AND the per-project knowledge loop; still load `_all` knowledge. This is the common case.
+- **Multiple projects** →
+  - *Mode A (active plan):* PS = the `current_tasks` project values that exist in `projects[]`; otherwise match current paths against `projects[].path` / `source_paths`; if still unresolved, list candidates and ask. Never silently load all.
+  - *Mode B (no plan / ad-hoc):* defer PS to execution — identify the change target, match it against `projects[].path` / `source_paths`.
 
-### Stage 3: Load Knowledge
+**Knowledge** — always load `knowledge._all` + `skills.<current-skill>.knowledge._all`. In multi-project Mode A/B, additionally load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for each resolved P. For every entry: base dir = `.ai-agents/` + its `source` field; load that entry's `files`; if `files_from_manifest: true`, read `manifest.yaml` in that dir and load entries with `auto_load: true`. Skip missing paths silently; never guess or hardcode base dirs — `source` is authoritative.
 
-Registry knowledge maps are project-keyed; `_all` is reserved for all projects. This applies to top-level `knowledge` and `skills.<name>.knowledge`.
+**Config** — apply `config.yaml` preferences for the whole session: `preferences.interaction_language` (chat/prompts/tables), `preferences.document_output_language` (files on disk), `preferences.output.no_emojis`, `preferences.output.data_format`, `preferences.context_routing.relevance_threshold`.
 
-**Knowledge Loading Protocol**:
-For each registry knowledge entry:
-1. Read its `source` field, e.g. `knowledge/project/_generated/`.
-2. Base dir = `.ai-agents/` + `source`, e.g. `.ai-agents/knowledge/project/_generated/`.
-3. Load `files` entries from that base dir; if `files_from_manifest: true`, read `manifest.yaml` there and load entries with `auto_load: true`.
-4. **Skip non-existent paths** silently (do not error or warn).
-
-Example: `source: knowledge/project/_generated/` + `files: [project-context.md]` resolves to `.ai-agents/knowledge/project/_generated/project-context.md`.
-
-**Anti-pattern -- DO NOT**:
-- Guess or hardcode base directories (e.g., `.ai-agents/workspace/`).
-- Assume a default path structure. The `source` field value is the authoritative path component.
-
-**At activation** (both modes): load `knowledge._all` + `skills.<current-skill>.knowledge._all`.
-**Mode A** (additionally): for each P in PS, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]`.
-**Mode B** (during execution): on demand, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for identified project(s).
-
-### Stage 4: Load Config & Apply Preferences (Config Foundation)
-Read `.ai-agents/config.yaml` and enforce it for the whole session:
-
-- `preferences.interaction_language`: language for chat, prompts, status lines, tables, and summaries.
-- `preferences.document_output_language`: language for files written to disk.
-- `preferences.output.no_emojis`: if true, never use emojis.
-- `preferences.output.data_format`: format for artifact data sections.
-- `preferences.context_routing.relevance_threshold`: AI routing threshold for `/mvt-manage-context add` (default 70).
-
-### Stage 5: Pre-flight Checks
-
-For each check below, if the condition holds, perform the action implied by its **Level**:
-
-- **WARN** -- emit the message, then ask "Continue anyway? (y/n)". Default to **y** if the user does not respond.
-- **BLOCK** -- emit the message and stop. Do not proceed until the prerequisite is satisfied.
-- **REQUIRED** -- same as BLOCK; the prerequisite is mandatory.
-- **INFO** -- emit the message and proceed; no confirmation needed.
+**Pre-flight** — evaluate each check below against the loaded `session.yaml` / `project-context.yaml`. Levels: **WARN** = emit message, ask "Continue? (y/n)", default **y**; **BLOCK** / **REQUIRED** = emit and stop until satisfied; **INFO** = emit and proceed.
 
 | # | Condition | Level | Message |
 |---|-----------|-------|---------|
-| 1 | `session.initialized_at` is empty | WARN | Session not initialized. Run `/mvt-init` first. |
+| 1 | `session.initialized_at is empty` | WARN | Session not initialized. Run `/mvt-init` first. |
 
 ## Language Constraint (Mandatory)
 
@@ -159,7 +127,7 @@ Found {N} active plans. Select which to resume:
 
 | # | change-id | title | progress | updated_at |
 |---|-----------|-------|----------|------------|
-| 1 | {id}      | {t}   | {d}/{n}  | {relative} |
+| 1 | {id}      | {t}   | {d}/{n}  | {updated_at ISO timestamp} |
 | ...
 
 Enter a number, a change-id, or "none" to skip plan context:
@@ -175,7 +143,7 @@ List files under `.ai-agents/workspace/artifacts/{selected_change_id}/`, sorted 
 - Exclude `plan.yaml` from the artifact list (it gets its own section)
 - Take the top 5
 
-For each artifact, capture: file path, mtime, size (in tokens estimate = chars / 4), and the change-id it belongs to.
+For each artifact, capture: file path, mtime, size in characters and estimated tokens using a deterministic character count divided by 4, rounded up, and the change-id it belongs to.
 
 ### Step 5: Determine Resume Point
 
@@ -207,7 +175,7 @@ And the **Current Task Detail** section:
 
 ### Step 7: Generate Resume Report
 
-Render via the `resume-output.md` template. Sections to fill:
+Render inline using the seven sections below. No external template is required.
 
 1. **Active Task** -- name, change-id, started_at (from selected plan)
 2. **Epic Context** (if `within_epic` is true) -- epic title, id, progress (done/total children), current position within the epic. Resolve the parent epic path: compare `active_change.epic_id` to `active_epic.id`. If they match, use `active_epic.epic_path`. If they do not match, search `session.epics[]` for an entry with `id == active_change.epic_id` and use its `epic_path`. If neither path exists, render the plan resume and add a bounded warning: "Epic context could not be loaded (epic_id: {active_change.epic_id})." Read `epic.yaml` via the resolved path and render: "This change is part of epic: **{epic_title}** ({done}/{total} sub-changes done). Current: {active_child_title}."

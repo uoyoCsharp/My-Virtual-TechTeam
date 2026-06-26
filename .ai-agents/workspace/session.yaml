@@ -1,143 +1,48 @@
 session:
   initialized_at: 2026-06-05T08:12:06.624Z
   last_synced_at: 2026-06-08T02:44:34.674Z
-active_change:
-  id: 20260619-script-call-prompt-optimization
-  title: Script Call Prompt Optimization
-  created_at: 2026-06-19T13:49:40.019Z
-  plan_path: ""
-  epic_id: ""
-changes:
-  - id: 20260605-multi-project-workflow-support
-    title: 多项目工作流支持 (OPT-2026-002)
-    plan_path: .ai-agents/workspace/artifacts/20260605-multi-project-workflow-support/plan.yaml
-    status: done
-    updated_at: 2026-06-06T15:04:34.440Z
-  - id: 20260608-epic-scope-detection
-    title: Epic Decomposition Layer (OPT-2026-003)
-    plan_path: .ai-agents/workspace/artifacts/20260608-epic-scope-detection/plan.yaml
-    status: active
-    updated_at: 2026-06-08T14:23:34.708Z
-    epic_id: ""
-  - id: 20260608-sub
-    title: Sub-change
-    plan_path: ""
-    status: done
-    updated_at: 2026-06-08T14:23:34.967Z
-    epic_id: epic-20260608-demo
-  - id: 20260608-regular
-    title: Regular change
-    plan_path: ""
-    status: active
-    updated_at: 2026-06-19T03:23:47.630Z
-    epic_id: ""
-  - id: 20260619-script-callability
-    title: Script Callability — Eliminate AI Reading Script Source
-    plan_path: ""
-    status: active
-    updated_at: 2026-06-19T06:36:41.745Z
-    epic_id: ""
-  - id: 20260619-shared-section-prompt-optimization
-    title: Shared Section Prompt Quality Optimization
-    plan_path: ""
-    status: active
-    updated_at: 2026-06-19T13:49:40.019Z
-    epic_id: ""
+active_change: null
+changes: null
 history:
-  - skill: /mvt-bug-detect
-    completed_at: 2026-06-11T09:38:34.580Z
-    summary: 确认交互语言间歇输出英文的根因:interaction_language 约束远弱于 document_output_language,缺少对等强制 section
-    change_id: 20260608-regular
+  - skill: /mvt-test
+    completed_at: 2026-06-25T02:07:39.815Z
+    summary: t6 验证通过：build exit0、vitest 284/284(修复1个旧Stage断言改为Load/Resolve)、24技能重编译矩阵全过(语义等价、preflight门控正确)，plan 8/8 完成
+    change_id: 20260624-activation-load-parallelization
+  - skill: /mvt-cleanup
+    completed_at: 2026-06-25T02:26:19.557Z
+    summary: 归档已完成变更 20260622-session-archive-sync 产物至 _archived
+    change_id: 20260624-activation-load-parallelization
+  - skill: /mvt-refactor
+    completed_at: 2026-06-25T07:43:30.824Z
+    summary: 核验 MVTT skills prompt audit 问题是否存在
+    change_id: ""
   - skill: /mvt-fix
-    completed_at: 2026-06-11T09:50:32.949Z
-    summary: 将 output-language-constraint 重命名为 language-constraint 并补齐交互语言强约束+反镜像指令,同步17个manifest与引用,重建产物,237测试通过
-    change_id: 20260608-regular
-  - skill: /mvt-bug-detect
-    completed_at: 2026-06-19T02:36:05.228Z
-    summary: 定位epic_id为空根因：/mvt-plan-dev的session-update调用中--new-change会覆写epic_id为空串，因为该skill缺少link_subchange_to_epic参数
-    change_id: 20260608-regular
-  - skill: /mvt-review
-    completed_at: 2026-06-19T02:41:11.741Z
-    summary: 审核 epic-change 关联机制：1 Critical（--new-change 无条件覆写 epic_id）、3 Warning（plan-dev manifest、缺失回归测试、字段重置副作用）、2 Suggestion
-    change_id: 20260608-regular
+    completed_at: 2026-06-25T07:58:35.932Z
+    summary: 修复 MVTT skills prompt audit 中确认存在的问题
+    change_id: ""
+  - skill: /mvt-refactor
+    completed_at: 2026-06-25T09:15:10.236Z
+    summary: 重构 mvt-config：取消 args 模式改为交互菜单，移除 reset 操作
+    change_id: ""
   - skill: /mvt-fix
-    completed_at: 2026-06-19T02:46:42.916Z
-    summary: 修复C1+W3：session-update.js --new-change 保留已有 epic_id/created_at/plan_path；补充2个回归测试，240测试全绿
-    change_id: 20260608-regular
+    completed_at: 2026-06-25T09:21:02.597Z
+    summary: 修复 mvt-config 评审 W1(写入不变量补全引导式设置路径)+S1(删除不可达 list 校验行)
+    change_id: ""
   - skill: /mvt-review
-    completed_at: 2026-06-19T02:50:42.514Z
-    summary: 二轮审查修复后代码：发现C1——created_at/plan_path在切换不同change时从旧change继承错误值，需要isSameChange守卫
-    change_id: 20260608-regular
+    completed_at: 2026-06-25T10:57:47.073Z
+    summary: 深度审计24个MVTT技能prompt(修复后现状)：确认5高危+11中危+9低危，落盘 skills-prompt-audit-2026-06-25-v2.md
+    change_id: ""
+  - skill: /mvt-review
+    completed_at: 2026-06-25T11:04:19.534Z
+    summary: 核验 skills-prompt-audit v2 报告 25 条问题：24 条属实合理，仅 L1 对 mvt-help 误判(无 Extended Context 块)；H3/M10/M11/L8 须改 source 层
+    change_id: ""
   - skill: /mvt-fix
-    completed_at: 2026-06-19T02:56:00.048Z
-    summary: 修复 C1 回归：created_at/plan_path 在切换 change 时错误继承旧值，添加 isSameChange 守卫并补充回归测试
-    change_id: 20260608-regular
-  - skill: /mvt-bug-detect
-    completed_at: 2026-06-19T03:11:38.824Z
-    summary: "Diagnosed AI reading script source as a structural documentation gap: hidden template conditionals, missing plan/epic sections, usage trapped in source comments"
-    change_id: 20260608-regular
-  - skill: /mvt-analyze
-    completed_at: 2026-06-19T03:23:47.630Z
-    summary: "Analyzed script-callability requirement: 6 requirements, 6 business rules, 4 ambiguities for design phase"
-    change_id: 20260619-script-callability
-  - skill: /mvt-design
-    completed_at: 2026-06-19T03:36:54.720Z
-    summary: "Designed script-callability fix: 2 new shared sections (plan/epic-update.md), unconditional flag rendering, manifest audit, pre-filled examples, header pointers; 20 files, 6 ADRs"
-    change_id: 20260619-script-callability
-  - skill: /mvt-implement
-    completed_at: 2026-06-19T03:52:02.895Z
-    summary: "Implemented script-callability change: created plan-update.md and epic-update.md shared sections with unconditional flag rendering, updated 6 skill manifests+business.md files to reference
-      sections, reduced 3 script headers to pointers, added 9 tests (250 total pass)."
-    change_id: 20260619-script-callability
-  - skill: /mvt-review
-    completed_at: 2026-06-19T04:54:45.527Z
-    summary: "Completed code review for 20260619-script-callability: 1 Critical (undocumented session-update.js behavioral change), 3 Warnings, 2 Suggestions. Verdict: Request changes."
-    change_id: 20260619-script-callability
-  - skill: /mvt-analyze
-    completed_at: 2026-06-19T06:36:41.745Z
-    summary: 分析公共 section prompt 质量优化需求：7 skill 实测公共占比 45-68%，分类三类优化策略（就地压缩/参考按需提取），4 项歧义待澄清
-    change_id: 20260619-shared-section-prompt-optimization
-  - skill: /mvt-design
-    completed_at: 2026-06-19T06:42:35.706Z
-    summary: 设计公共 section prompt 优化方案：双策略（就地压缩+参考按需提取），6 ADR，7 源文件改动，预计每 skill 省 ~5000 字符（>=30%）
-    change_id: 20260619-shared-section-prompt-optimization
-  - skill: /mvt-implement
-    completed_at: 2026-06-19T08:12:49.438Z
-    summary: 压缩共享 section prompt：内联压缩 State Update 和关键约束，更新测试与生成产物，253 测试通过
-    change_id: 20260619-shared-section-prompt-optimization
-  - skill: /mvt-design
-    completed_at: 2026-06-19T13:49:40.019Z
-    summary: 设计脚本调用 prompt 优化方案：新增独立 change，采用布尔模式开关压缩 script-usage-rule，避免引擎改动
-    change_id: 20260619-script-call-prompt-optimization
-  - skill: /mvt-implement
-    completed_at: 2026-06-19T13:57:54.494Z
-    summary: 实现脚本调用 prompt 优化：新增布尔指导模式，迁移6个相关skill，补充渲染测试并刷新生成产物
-    change_id: 20260619-script-call-prompt-optimization
-  - skill: /mvt-review
-    completed_at: 2026-06-19T14:04:48.045Z
-    summary: 审查脚本调用 prompt 优化变更：0 Critical、1 Warning（无倒装包裹器）、2 Suggestion；设计合规性全部通过，生成产物验证全部正确，257 测试通过。裁决：Approve with comments。
-    change_id: 20260619-script-call-prompt-optimization
-  - skill: /mvt-bug-detect
-    completed_at: 2026-06-20T13:48:33.876Z
-    summary: 复核 mvt-help 提示词问题报告：确认多数问题存在，评估修复方案并提出更优收敛路径
-    change_id: 20260619-script-call-prompt-optimization
+    completed_at: 2026-06-25T11:22:18.961Z
+    summary: 修复 audit v2 全部16项高+中危(改 sources/ 后重新装配12个技能):H1/H2加session.yaml到Wave1, H3/M10修死路径与误述, H4/M5/M6 epic写前校验门控+碰撞+分歧, H5 bug-detect可持久化供fix跨会话读取, M1-M4/M7-M9/M11 各类一致性修复; 测试285通过(1预存计时flake隔离通过)
+    change_id: ""
   - skill: /mvt-fix
-    completed_at: 2026-06-20T13:59:47.242Z
-    summary: 修复 mvt-help 提示词一致性与运行时推荐问题，补充回归测试并刷新生成产物
-    change_id: 20260619-script-call-prompt-optimization
-active_epic:
-  id: epic-20260608-my
-  title: My Epic
-  created_at: 2026-06-08T14:23:35.337Z
-  epic_path: C:/Program Files/Git/some/path
-epics:
-  - id: epic-20260608-my-epic
-    title: My Epic
-    epic_path: ""
-    status: active
-    updated_at: 2026-06-08T14:23:33.720Z
-  - id: epic-20260608-new
-    title: New Epic
-    epic_path: ""
-    status: active
-    updated_at: 2026-06-08T14:23:33.849Z
+    completed_at: 2026-06-26T04:11:21.306Z
+    summary: 修复 mvt-update-plan State Update 段无条件 --update-change --close-change 的缺陷：改为按 plan_status 二选一，并与 Step 5 epic 流程对齐
+    change_id: ""
+active_epic: null
+epics: null

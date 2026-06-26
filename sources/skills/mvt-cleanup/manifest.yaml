@@ -43,20 +43,17 @@ sections:
       | `/mvt-cleanup --dry-run` | Preview what would be cleaned |
 
   - type: shared
-    source: sections/activation-load-context.md
+    source: sections/activation-protocol.md
     params:
+      activation_reads:
+        - session.yaml
       extended_context:
         - "Scan all files under `.ai-agents/workspace/artifacts/` (all change-id directories)"
-
-  - type: shared
-    source: sections/activation-load-config.md
-
-  - type: shared
-    source: sections/activation-preflight.md
-    params:
+      has_preflight: true
       checks:
         - order: "1"
           field: "project not initialized"
+          condition: "session.yaml missing OR session.initialized_at is empty"
           level: "REQUIRED"
           message: "Project must be initialized (session.yaml exists)"
 
@@ -75,6 +72,8 @@ sections:
       current_skill: mvt-cleanup
       truncate_history: true
       close_change: true
+      remove_change: true
+      remove_epic: true
 
   - type: shared
     source: sections/footer-next-steps.md

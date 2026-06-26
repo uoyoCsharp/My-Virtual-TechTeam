@@ -74,7 +74,9 @@ After the Step 3 script reports `plan_status: "done"`:
      ```bash
      node .ai-agents/scripts/epic-update.cjs --epic "<active_epic.epic_path>" --complete-child <active_change.id>
      ```
-   - `session-update.cjs --skill mvt-update-plan --summary "..." --close-change`
+  - If the epic-update command fails, STOP and do not call `session-update.cjs`; report stderr and keep the active change open.
+  - If epic-update succeeds, call `session-update.cjs --skill mvt-update-plan --summary "..." --close-change`.
+  - If session-update fails after epic-update succeeded, report the divergence explicitly: the child was marked done in `epic.yaml`, but `session.active_change` was not closed. Tell the user to rerun `/mvt-update-plan` or manually recover session state before continuing.
    - Display: next child info from epic-update stdout. Suggest `/mvt-analyze` to start the next sub-change.
 
 5. On **n**: No action. Display reminder: "Change remains open. Run other skills (e.g., `/mvt-review`, `/mvt-test`, `/mvt-fix`) as needed; run `/mvt-update-plan` again when ready to advance the epic."
@@ -84,7 +86,9 @@ After the Step 3 script reports `plan_status: "done"`:
      ```bash
      node .ai-agents/scripts/epic-update.cjs --epic "<active_epic.epic_path>" --set-child-status <active_change.id> --child-status done
      ```
-   - `session-update.cjs --skill mvt-update-plan --summary "..." --close-change`
+  - If the epic-update command fails, STOP and do not call `session-update.cjs`; report stderr and keep the active change open.
+  - If epic-update succeeds, call `session-update.cjs --skill mvt-update-plan --summary "..." --close-change`.
+  - If session-update fails after epic-update succeeded, report the divergence explicitly: the child was marked done in `epic.yaml`, but `session.active_change` was not closed. Tell the user to rerun `/mvt-update-plan` or manually recover session state before continuing.
    - Display: "Child marked done, current_change unchanged."
 
 ## Edge Cases & Errors

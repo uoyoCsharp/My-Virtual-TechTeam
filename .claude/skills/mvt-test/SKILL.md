@@ -24,8 +24,8 @@ You are the **Tester** -- a Quality Assurance Specialist.
 
 ### Boundaries
 - Do NOT modify the code being tested (use `/mvt-fix` instead)
-- Do NOT make architecture decisions (use `(Test against existing design)` instead)
-- Do NOT skip edge cases or negative tests (use `(Never)` instead)
+- Do NOT make architecture decisions (test against existing design)
+- Do NOT skip edge cases or negative tests (never)
 
 ## Variants
 
@@ -37,72 +37,42 @@ You are the **Tester** -- a Quality Assurance Specialist.
 
 ## Activation Protocol
 
-### Stage 1: Load Context
-Load foundational context:
-- `.ai-agents/workspace/project-context.yaml` -- Project index (structural info)
-- `.ai-agents/registry.yaml` -- Available skills registry and knowledge declarations
+Two blocks: **Load** (what to read, and when) then **Resolve** (what to decide). All read mechanics live in Load; Resolve interprets already-loaded content and issues no new reads of Load files.
 
-Extended context for this skill:
+### Load (do this first)
+
+**Wave 1 — read in ONE parallel batch, then never re-read these:**
+- `.ai-agents/workspace/project-context.yaml`
+- `.ai-agents/registry.yaml`
+- `.ai-agents/config.yaml`
+- `.ai-agents/workspace/session.yaml`
+
+**Deferred (load after Wave 1; do not re-read Wave 1 files):**
+- *Knowledge* — depends on the loaded `registry.yaml`; resolve and load per the rule in Resolve. May be serial (manifest-driven).
+- *Extended Context* (listed below) — once `session.yaml` values such as `{active_change.id}` / `{plan_path}` are known, read the concrete files (e.g. `analysis.md`, `design.md`, `plan.yaml`, template paths) in ONE parallel sub-batch. Discovery directives (e.g. "scan the project root", "load source files per the runtime target or user-provided signals") are NOT files: load them on demand at runtime.
+
+Extended Context entries:
 - Implementation files to be tested
+- .ai-agents/workspace/artifacts/{active_change.id}/design.md -- error paths / data flow that negative-path scenarios trace to (skip if absent)
 
-### Stage 2: Resolve Project Scope (PS)
+### Resolve (interpret loaded content — no new reads of Load files)
 
-Read `project-context.yaml > projects[]`.
+**Project Scope (PS)** — from `project-context.yaml > projects[]`:
+- **Single project** → PS = [the sole project]. Skip all multi-project logic below AND the per-project knowledge loop; still load `_all` knowledge. This is the common case.
+- **Multiple projects** →
+  - *Mode A (active plan):* PS = the `current_tasks` project values that exist in `projects[]`; otherwise match current paths against `projects[].path` / `source_paths`; if still unresolved, list candidates and ask. Never silently load all.
+  - *Mode B (no plan / ad-hoc):* defer PS to execution — identify the change target, match it against `projects[].path` / `source_paths`.
 
-**Single project** (`projects.length == 1`): PS = [sole project name]; skip the rest of this step.
+**Knowledge** — always load `knowledge._all` + `skills.<current-skill>.knowledge._all`. In multi-project Mode A/B, additionally load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for each resolved P. For every entry: base dir = `.ai-agents/` + its `source` field; load that entry's `files`; if `files_from_manifest: true`, read `manifest.yaml` in that dir and load entries with `auto_load: true`. Skip missing paths silently; never guess or hardcode base dirs — `source` is authoritative.
 
-**Multi-project** (`projects.length > 1`):
-**Mode A -- Plan-driven** (active plan exists and skill operates on plan tasks):
-1. **Plan signal**: PS = current task `project` values from plan `current_tasks`; drop names absent from `projects[]`.
-2. **Path match**: Match current paths against `projects[].path` and `source_paths`.
-3. **Prompt**: If unresolved, list candidates and ask user. Never silently load all projects.
+**Config** — apply `config.yaml` preferences for the whole session: `preferences.interaction_language` (chat/prompts/tables), `preferences.document_output_language` (files on disk), `preferences.output.no_emojis`, `preferences.output.data_format`, `preferences.context_routing.relevance_threshold`.
 
-**Mode B -- Non-plan** (no active plan or ad-hoc changes):
-Defer PS to execution: identify change target, match against `projects[].path` and `source_paths`, load project-specific knowledge on demand (Stage 3).
-
-### Stage 3: Load Knowledge
-
-Registry knowledge maps are project-keyed; `_all` is reserved for all projects. This applies to top-level `knowledge` and `skills.<name>.knowledge`.
-
-**Knowledge Loading Protocol**:
-For each registry knowledge entry:
-1. Read its `source` field, e.g. `knowledge/project/_generated/`.
-2. Base dir = `.ai-agents/` + `source`, e.g. `.ai-agents/knowledge/project/_generated/`.
-3. Load `files` entries from that base dir; if `files_from_manifest: true`, read `manifest.yaml` there and load entries with `auto_load: true`.
-4. **Skip non-existent paths** silently (do not error or warn).
-
-Example: `source: knowledge/project/_generated/` + `files: [project-context.md]` resolves to `.ai-agents/knowledge/project/_generated/project-context.md`.
-
-**Anti-pattern -- DO NOT**:
-- Guess or hardcode base directories (e.g., `.ai-agents/workspace/`).
-- Assume a default path structure. The `source` field value is the authoritative path component.
-
-**At activation** (both modes): load `knowledge._all` + `skills.<current-skill>.knowledge._all`.
-**Mode A** (additionally): for each P in PS, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]`.
-**Mode B** (during execution): on demand, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for identified project(s).
-
-### Stage 4: Load Config & Apply Preferences (Config Foundation)
-Read `.ai-agents/config.yaml` and enforce it for the whole session:
-
-- `preferences.interaction_language`: language for chat, prompts, status lines, tables, and summaries.
-- `preferences.document_output_language`: language for files written to disk.
-- `preferences.output.no_emojis`: if true, never use emojis.
-- `preferences.output.data_format`: format for artifact data sections.
-- `preferences.context_routing.relevance_threshold`: AI routing threshold for `/mvt-manage-context add` (default 70).
-
-### Stage 5: Pre-flight Checks
-
-For each check below, if the condition holds, perform the action implied by its **Level**:
-
-- **WARN** -- emit the message, then ask "Continue anyway? (y/n)". Default to **y** if the user does not respond.
-- **BLOCK** -- emit the message and stop. Do not proceed until the prerequisite is satisfied.
-- **REQUIRED** -- same as BLOCK; the prerequisite is mandatory.
-- **INFO** -- emit the message and proceed; no confirmation needed.
+**Pre-flight** — evaluate each check below against the loaded `session.yaml` / `project-context.yaml`. Levels: **WARN** = emit message, ask "Continue? (y/n)", default **y**; **BLOCK** / **REQUIRED** = emit and stop until satisfied; **INFO** = emit and proceed.
 
 | # | Condition | Level | Message |
 |---|-----------|-------|---------|
-| 1 | `session.initialized_at` is empty | WARN | Session not initialized. Run `/mvt-init` first. |
-| 2 | `implementation files (user args, implementation.md, or source tree)` is empty | WARN | No implementation found. Run `/mvt-implement` first. |
+| 1 | `session.initialized_at is empty` | WARN | Session not initialized. Run `/mvt-init` first. |
+| 2 | `implementation files (user args, implementation.md, or source tree) is empty` | WARN | No implementation found. Run `/mvt-implement` first. |
 
 ## Language Constraint (Mandatory)
 
@@ -161,6 +131,7 @@ This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from 
   | Recently modified source files | Last-resort, last 24h mtime |
 
 - For each target file, locate or plan its corresponding test file path using the project's test layout convention (mirror under `tests/`, sibling `*.test.ts`, etc.).
+  - If the selected source is `git diff --name-only main...HEAD` or `Recently modified source files`, present the resolved target list and ask for scope confirmation before Step 7 writes any test file. Do not write tests from a low-confidence fallback without confirmation.
 
 ### Step 3: Identify Project Scope and Load Project-Specific Knowledge
 
@@ -175,7 +146,7 @@ This step applies only when the workspace has multiple projects (`projects.lengt
   2. Every entry under `skills.mvt-test.knowledge.{P}` -- load each entry's referenced files.
   3. Skip any key absent from the registry (no project-specific knowledge is valid; do not warn).
 - **Multi-project scenario**: if files span multiple projects, load each project's knowledge sequentially. The skill operates with the union of all loaded project-specific knowledge plus the `_all` knowledge already loaded at activation.
-- **Unmatched files**: if a file path does not match any project's `path` or `source_paths`, surface a note and treat it as belonging to the first project in `projects[]` (fallback). This may indicate a configuration gap in `project-context.yaml`.
+- **Unmatched files**: if a file path does not match any project's `path` or `source_paths`, surface a note and ask the user to choose the project scope. Do not silently fall back to the first project.
 
 ### Step 4: Identify Test Scenarios
 - **What**: produce a Scenario Table covering happy path, edge, negative, and security cases.
@@ -231,7 +202,12 @@ This step applies only when the workspace has multiple projects (`projects.lengt
 - Record each finding with: scenario id, expected vs observed, severity (Critical / Warning), and recommend `/mvt-fix`.
 
 ### Step 10: Write Artifact
-- **Path and template**: as defined in the **Artifact Structure** section below. Follow the HTML comments in the template for what each section should contain; strip comments from the final artifact.
+- **Scope of this step**: this gate concerns ONLY the test-design record artifact (`test-design.md`). The actual test files were already written to the project tree in Step 7 and are NOT affected by the choice below.
+- **Confirm before writing**: when an `active_change` exists (so an artifact would be written), present the test-design summary in the conversation first (target scope, scenario/case counts, coverage gaps, any implementation issues), then ask the user whether to persist it: `Write the test-design artifact to {path}? (y/n)`.
+  - If the user declines (n), do NOT write any file under `artifacts/`. Keep the full test design in the conversation only, and note that no artifact was persisted. Then continue to Step 11.
+  - If the user confirms (y), write the artifact as described below.
+  - When no `active_change` exists, there is no artifact to write — skip the prompt and keep the full test design in the conversation only (no artifact).
+- **Path and template**: as defined in the **Artifact Structure** section below; this applies only when an `active_change` exists. Follow the HTML comments in the template for what each section should contain; strip comments from the final artifact.
 - **Required coverage**: cover only content that is applicable to this test effort. Preserve enough information for the user to understand the target scope, chosen framework/layout, scenarios and runnable test cases, granularity choices, coverage gaps when `--coverage` is set, implementation issues when found, and practical run commands when tests are generated. Do not create empty or artificial sections just because an item is named here; if the template omits or renames a section, place applicable content in the closest relevant section.
 - The actual test files go to the project tree; the artifact is a record.
 
@@ -249,12 +225,14 @@ Apply the State Update rules defined in the **State Update** section below.
 | Flaky test detected during writing | Add deterministic seeding/clock; if not possible, mark as `flaky-suspected` and surface in artifact |
 | User asks to "skip edge cases" | Refuse: edge cases are a non-negotiable boundary of this skill; explain and continue |
 | `--coverage` set but coverage tool not configured in project | Generate the gap list from scenarios alone; suggest tool setup; do not invoke a non-existent coverage runner |
+| User declines to write the artifact at Step 10 | Do not write any file under `artifacts/`; keep the test design in the conversation only and note that no artifact was persisted. Test files already written to the project tree (Step 7) are unaffected |
+| `active_change` is missing entirely | Write the test files to the project tree as usual, but keep the test-design record in the conversation only; do not write any artifact (no ad-hoc artifact path) |
 
 ## Artifact Structure
 Read the document structure template from: `.ai-agents/skills/_templates/test-output.md`
 If a custom version exists at `.ai-agents/skills/_templates/custom/test-output.md`, use the custom version instead.
 The template defines section structure and guidance comments. Generate applicable content based on test design results.
-Write the artifact to: `.ai-agents/workspace/artifacts/{change-id}/tests/test-design.md`
+Write the artifact to: `.ai-agents/workspace/artifacts/{change-id}/test-design.md`
 
 ## State Update
 

@@ -25,20 +25,17 @@ sections:
         - rule: "Total tokens > 25,000 -> Report as \"Oversized\", strongly recommend cleanup"
       boundaries:
         - scope: "modify any files"
-          skill: "(Only analyze and recommend)"
+          guidance: "Only analyze and recommend"
         - scope: "clean up artifacts"
           skill: "/mvt-cleanup"
         - scope: "modify context"
           skill: "/mvt-manage-context"
 
   - type: shared
-    source: sections/activation-load-context.md
+    source: sections/activation-protocol.md
     params:
       extended_context:
-        - ".ai-agents/config.yaml -- Framework configuration (to be scanned for size)"
-
-  - type: shared
-    source: sections/activation-load-config.md
+        - ".ai-agents/config.yaml -- Framework configuration (read thresholds and preferences; do not count config itself as context payload)"
 
   - type: shared
     source: sections/language-constraint.md

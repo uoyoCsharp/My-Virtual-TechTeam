@@ -12,7 +12,7 @@ sections:
 
       ## Purpose
 
-      Manage MVTT framework configuration interactively. Provide guided setup, direct key-value setting, and a setup wizard for common configurations.
+      Manage MVTT framework configuration through an interactive menu: view all settings, edit an individual key, or run a guided setup for common configurations.
 
   - type: shared
     source: sections/role-header.md
@@ -20,13 +20,12 @@ sections:
       role: Conductor
       role_desc: "a Workflow Coordinator"
       decision_rules:
-        - rule: "No arguments -> Show interactive configuration menu"
-        - rule: "`show` argument -> Display all current settings"
-        - rule: "`set {key} {value}` -> Validate and apply the specific setting"
-        - rule: "`wizard` argument -> Start guided setup flow"
-        - rule: "`reset` argument -> Reset all settings to defaults after confirmation"
-        - rule: "Invalid key -> Show available keys and exit"
-        - rule: "Invalid value type -> Show expected type and exit"
+        - rule: "Any invocation -> Open the interactive configuration menu (this skill takes no arguments)"
+        - rule: "Menu: View all settings -> Display every key with current value, type, default"
+        - rule: "Menu: Edit a setting -> Pick a key, validate, preview, confirm, write"
+        - rule: "Menu: Guided setup -> Walk common settings in order, apply atomically at the end"
+        - rule: "Invalid key -> Show available keys and return to the menu"
+        - rule: "Invalid value type -> Show expected type and re-prompt"
       boundaries:
         - scope: "analyze requirements"
           skill: "/mvt-analyze"
@@ -37,24 +36,21 @@ sections:
 
   - type: inline
     content: |
-      ## Variants
+      ## Usage
 
-      | Variant | Description |
-      |---------|-------------|
-      | `/mvt-config` | Show interactive configuration menu |
-      | `/mvt-config show` | Display all current settings |
-      | `/mvt-config set {key} {value}` | Set a specific configuration value |
-      | `/mvt-config wizard` | Start guided setup wizard |
-      | `/mvt-config reset` | Reset all settings to defaults |
+      `/mvt-config` takes no arguments. It always opens an interactive menu; all actions are reached from there.
+
+      | Menu action | Description |
+      |-------------|-------------|
+      | View all settings | Display every configuration key with its current value, type, and default |
+      | Edit a setting | Pick a key, then validate, preview, confirm, and write the change |
+      | Guided setup | Walk through common settings in order and apply them atomically |
 
   - type: shared
-    source: sections/activation-load-context.md
+    source: sections/activation-protocol.md
     params:
       extended_context:
         - ".ai-agents/config.yaml -- Current configuration (this skill's primary target)"
-
-  - type: shared
-    source: sections/activation-load-config.md
 
   - type: shared
     source: sections/language-constraint.md
@@ -72,15 +68,14 @@ sections:
       | `preferences.output.no_emojis` | bool | `true` | Disable emojis in output |
       | `preferences.output.data_format` | enum | `yaml` | Data output format (yaml, json) |
       | `preferences.context_routing.relevance_threshold` | int | `70` | AI routing threshold for `/mvt-manage-context add` (0-100) |
-      | `preferences.history_limits.history` | int | `20` | Max history entries (1-100) |
-      | `preferences.history_limits.changes` | int | `20` | Max changes entries (1-100) |
+      | `preferences.history_limits.history` | int | `10` | Max history entries (1-100) |
+      | `preferences.history_limits.changes` | int | `10` | Max changes entries (1-100) |
+      | `preferences.context_thresholds.*` | map | built-in thresholds | Optional context health thresholds read by `/mvt-check-context`; omitted keys use built-in defaults |
       | `preferences.planning.granularity` | enum | `medium` | Task decomposition granularity for `/mvt-plan-dev`. Qualitative AI guidance, not hard limits. Values: `coarse` (fewer, larger tasks), `medium` (balanced), `fine` (more, smaller tasks) |
 
       ### Knowledge Settings
 
-      | Key | Type | Default | Description |
-      |-----|------|---------|-------------|
-      | `knowledge._all` | list | `[core, project-context]` | Global knowledge entries in registry.yaml under `_all` key, loaded by all skills across all projects |
+      Knowledge routing is managed by `/mvt-manage-context`, not by `/mvt-config`. Requests to change `knowledge.*` keys must be refused and routed there.
 
   - type: file
     source: ./business.md

@@ -7,7 +7,11 @@ var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __commonJS = (cb, mod) => function __require() {
-  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+  try {
+    return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+  } catch (e) {
+    throw mod = 0, e;
+  }
 };
 var __copyProps = (to, from, except, desc) => {
   if (from && typeof from === "object" || typeof from === "function") {
@@ -7394,6 +7398,7 @@ function parseArgs(argv) {
   return args2;
 }
 function validateArgs(args2) {
+  if (args2.validate) return null;
   if (!args2.plan || args2.plan === true) return ERRORS.MISSING_PLAN();
   if (!args2.task || args2.task === true) return ERRORS.MISSING_TASK();
   const hasStatus = args2.status && args2.status !== true;
@@ -7677,6 +7682,9 @@ function findCycleInSubgraph(tasks, taskIds) {
 }
 function main() {
   const args2 = parseArgs(process.argv);
+  if (args2.validate && args2.validate !== true && !args2.plan) {
+    args2.plan = args2.validate;
+  }
   const argErr = validateArgs(args2);
   if (argErr) {
     process.stderr.write(argErr + "\n");
@@ -7697,20 +7705,30 @@ function main() {
     process.stderr.write(ERRORS.PLAN_PARSE_FAILED("missing tasks[]") + "\n");
     process.exit(1);
   }
-  if (!plan.tasks.some((t) => t.id === args2.task)) {
-    process.stderr.write(
-      ERRORS.TASK_NOT_FOUND(args2.task, plan.tasks.map((t) => t.id)) + "\n"
-    );
-    process.exit(1);
-  }
   let projectList = null;
   if (args2.projects && args2.projects !== true) {
     projectList = args2.projects.split(",").map((s) => s.trim()).filter(Boolean);
   } else {
     projectList = deriveProjectList(plan.tasks);
   }
+  if (args2.validate) {
+    const validationErrors2 = validatePlan(plan, projectList);
+    if (validationErrors2.length) {
+      process.stderr.write(ERRORS.VALIDATION_FAILED(validationErrors2) + "\n");
+      process.exit(1);
+    }
+    process.stdout.write(JSON.stringify({ ok: true, plan_status: plan.status, tasks: plan.tasks.length }) + "\n");
+    return;
+  }
+  if (!plan.tasks.some((t) => t.id === args2.task)) {
+    process.stderr.write(
+      ERRORS.TASK_NOT_FOUND(args2.task, plan.tasks.map((t) => t.id)) + "\n"
+    );
+    process.exit(1);
+  }
   if (plan.current_task != null && (!plan.current_tasks || typeof plan.current_tasks !== "object")) {
-    plan.current_tasks = { default: plan.current_task };
+    const legacyProject = projectList.length === 1 ? projectList[0] : loadSoleProject(findProjectRootFromPath(args2.plan))?.[0] || "default";
+    plan.current_tasks = { [legacyProject]: plan.current_task };
   }
   if ("current_task" in plan) {
     delete plan.current_task;

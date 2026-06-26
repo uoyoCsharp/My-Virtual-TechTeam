@@ -37,14 +37,11 @@ sections:
           skill: "/mvt-design"
         - scope: "write implementation code"
           skill: "/mvt-implement"
-        - scope: "edit framework knowledge under core/_framework/ (framework files are read-only)"
-          skill: "(constraint)"
+        - scope: "edit framework knowledge under core/_framework/"
+          guidance: "framework files are read-only"
 
   - type: shared
-    source: sections/activation-load-context.md
-
-  - type: shared
-    source: sections/activation-load-config.md
+    source: sections/activation-protocol.md
 
   - type: shared
     source: sections/language-constraint.md

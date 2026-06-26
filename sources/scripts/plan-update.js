@@ -117,6 +117,7 @@ function parseArgs(argv) {
 }
 
 function validateArgs(args) {
+  if (args.validate) return null;
   if (!args.plan || args.plan === true) return ERRORS.MISSING_PLAN();
   if (!args.task || args.task === true) return ERRORS.MISSING_TASK();
   const hasStatus = args.status && args.status !== true;
@@ -520,6 +521,10 @@ function findCycleInSubgraph(tasks, taskIds) {
 function main() {
   const args = parseArgs(process.argv);
 
+  if (args.validate && args.validate !== true && !args.plan) {
+    args.plan = args.validate;
+  }
+
   const argErr = validateArgs(args);
   if (argErr) {
     process.stderr.write(argErr + "\n");
@@ -544,13 +549,6 @@ function main() {
     process.exit(1);
   }
 
-  if (!plan.tasks.some((t) => t.id === args.task)) {
-    process.stderr.write(
-      ERRORS.TASK_NOT_FOUND(args.task, plan.tasks.map((t) => t.id)) + "\n"
-    );
-    process.exit(1);
-  }
-
   // Parse --projects; if not provided, derive from tasks
   let projectList = null;
   if (args.projects && args.projects !== true) {
@@ -561,10 +559,30 @@ function main() {
     projectList = deriveProjectList(plan.tasks);
   }
 
+  if (args.validate) {
+    const validationErrors = validatePlan(plan, projectList);
+    if (validationErrors.length) {
+      process.stderr.write(ERRORS.VALIDATION_FAILED(validationErrors) + "\n");
+      process.exit(1);
+    }
+    process.stdout.write(JSON.stringify({ ok: true, plan_status: plan.status, tasks: plan.tasks.length }) + "\n");
+    return;
+  }
+
+  if (!plan.tasks.some((t) => t.id === args.task)) {
+    process.stderr.write(
+      ERRORS.TASK_NOT_FOUND(args.task, plan.tasks.map((t) => t.id)) + "\n"
+    );
+    process.exit(1);
+  }
+
   // Migrate old current_task (string) to current_tasks (Record) if needed.
   // Also remove legacy current_task field even when null (YAML `current_task: null`).
   if (plan.current_task != null && (!plan.current_tasks || typeof plan.current_tasks !== "object")) {
-    plan.current_tasks = { default: plan.current_task };
+    const legacyProject = projectList.length === 1
+      ? projectList[0]
+      : (loadSoleProject(findProjectRootFromPath(args.plan))?.[0] || "default");
+    plan.current_tasks = { [legacyProject]: plan.current_task };
   }
   if ("current_task" in plan) {
     delete plan.current_task;

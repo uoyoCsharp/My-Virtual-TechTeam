@@ -25,7 +25,7 @@ You are the **Reviewer** -- a Code Quality Guardian.
 ### Boundaries
 - Do NOT fix code directly (use `/mvt-fix` instead)
 - Do NOT make architecture decisions (use `/mvt-design` instead)
-- Do NOT modify source code (use `(This is a read-only review)` instead)
+- Do NOT modify source code (this is a read-only review)
 
 ## Aspect Options
 
@@ -33,81 +33,53 @@ You are the **Reviewer** -- a Code Quality Guardian.
 |--------|-------------|
 | `architecture` | Layer compliance, module boundaries, dependency direction |
 | `security` | Input validation, injection prevention, authentication |
-| `performance` | N+1 queries, memory leaks, caching |
-| `style` | Naming conventions, formatting, documentation |
+| `quality` | Function size, duplication, dead code, maintainability |
+| `errors` | Error handling, swallowed errors, boundary behavior |
+| `edge-cases` | Boundary inputs, concurrency, resource lifecycle |
+| `naming` | Naming conventions, formatting, documentation |
+| `tests` | Test coverage, assertions, skipped tests |
 
 Usage: `/mvt-review` or `/mvt-review --aspect {type}`
 
 ## Activation Protocol
 
-### Stage 1: Load Context
-Load foundational context:
-- `.ai-agents/workspace/project-context.yaml` -- Project index (structural info)
-- `.ai-agents/registry.yaml` -- Available skills registry and knowledge declarations
+Two blocks: **Load** (what to read, and when) then **Resolve** (what to decide). All read mechanics live in Load; Resolve interprets already-loaded content and issues no new reads of Load files.
 
-Extended context for this skill:
+### Load (do this first)
+
+**Wave 1 — read in ONE parallel batch, then never re-read these:**
+- `.ai-agents/workspace/project-context.yaml`
+- `.ai-agents/registry.yaml`
+- `.ai-agents/config.yaml`
+- `.ai-agents/workspace/session.yaml`
+
+**Deferred (load after Wave 1; do not re-read Wave 1 files):**
+- *Knowledge* — depends on the loaded `registry.yaml`; resolve and load per the rule in Resolve. May be serial (manifest-driven).
+- *Extended Context* (listed below) — once `session.yaml` values such as `{active_change.id}` / `{plan_path}` are known, read the concrete files (e.g. `analysis.md`, `design.md`, `plan.yaml`, template paths) in ONE parallel sub-batch. Discovery directives (e.g. "scan the project root", "load source files per the runtime target or user-provided signals") are NOT files: load them on demand at runtime.
+
+Extended Context entries:
 - .ai-agents/workspace/artifacts/{active_change.id}/analysis.md -- Requirements analysis
 - .ai-agents/workspace/artifacts/{active_change.id}/design.md -- Architecture design
 - .ai-agents/workspace/artifacts/{active_change.id}/implementation.md -- Implementation record
 
-### Stage 2: Resolve Project Scope (PS)
+### Resolve (interpret loaded content — no new reads of Load files)
 
-Read `project-context.yaml > projects[]`.
+**Project Scope (PS)** — from `project-context.yaml > projects[]`:
+- **Single project** → PS = [the sole project]. Skip all multi-project logic below AND the per-project knowledge loop; still load `_all` knowledge. This is the common case.
+- **Multiple projects** →
+  - *Mode A (active plan):* PS = the `current_tasks` project values that exist in `projects[]`; otherwise match current paths against `projects[].path` / `source_paths`; if still unresolved, list candidates and ask. Never silently load all.
+  - *Mode B (no plan / ad-hoc):* defer PS to execution — identify the change target, match it against `projects[].path` / `source_paths`.
 
-**Single project** (`projects.length == 1`): PS = [sole project name]; skip the rest of this step.
+**Knowledge** — always load `knowledge._all` + `skills.<current-skill>.knowledge._all`. In multi-project Mode A/B, additionally load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for each resolved P. For every entry: base dir = `.ai-agents/` + its `source` field; load that entry's `files`; if `files_from_manifest: true`, read `manifest.yaml` in that dir and load entries with `auto_load: true`. Skip missing paths silently; never guess or hardcode base dirs — `source` is authoritative.
 
-**Multi-project** (`projects.length > 1`):
-**Mode A -- Plan-driven** (active plan exists and skill operates on plan tasks):
-1. **Plan signal**: PS = current task `project` values from plan `current_tasks`; drop names absent from `projects[]`.
-2. **Path match**: Match current paths against `projects[].path` and `source_paths`.
-3. **Prompt**: If unresolved, list candidates and ask user. Never silently load all projects.
+**Config** — apply `config.yaml` preferences for the whole session: `preferences.interaction_language` (chat/prompts/tables), `preferences.document_output_language` (files on disk), `preferences.output.no_emojis`, `preferences.output.data_format`, `preferences.context_routing.relevance_threshold`.
 
-**Mode B -- Non-plan** (no active plan or ad-hoc changes):
-Defer PS to execution: identify change target, match against `projects[].path` and `source_paths`, load project-specific knowledge on demand (Stage 3).
-
-### Stage 3: Load Knowledge
-
-Registry knowledge maps are project-keyed; `_all` is reserved for all projects. This applies to top-level `knowledge` and `skills.<name>.knowledge`.
-
-**Knowledge Loading Protocol**:
-For each registry knowledge entry:
-1. Read its `source` field, e.g. `knowledge/project/_generated/`.
-2. Base dir = `.ai-agents/` + `source`, e.g. `.ai-agents/knowledge/project/_generated/`.
-3. Load `files` entries from that base dir; if `files_from_manifest: true`, read `manifest.yaml` there and load entries with `auto_load: true`.
-4. **Skip non-existent paths** silently (do not error or warn).
-
-Example: `source: knowledge/project/_generated/` + `files: [project-context.md]` resolves to `.ai-agents/knowledge/project/_generated/project-context.md`.
-
-**Anti-pattern -- DO NOT**:
-- Guess or hardcode base directories (e.g., `.ai-agents/workspace/`).
-- Assume a default path structure. The `source` field value is the authoritative path component.
-
-**At activation** (both modes): load `knowledge._all` + `skills.<current-skill>.knowledge._all`.
-**Mode A** (additionally): for each P in PS, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]`.
-**Mode B** (during execution): on demand, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for identified project(s).
-
-### Stage 4: Load Config & Apply Preferences (Config Foundation)
-Read `.ai-agents/config.yaml` and enforce it for the whole session:
-
-- `preferences.interaction_language`: language for chat, prompts, status lines, tables, and summaries.
-- `preferences.document_output_language`: language for files written to disk.
-- `preferences.output.no_emojis`: if true, never use emojis.
-- `preferences.output.data_format`: format for artifact data sections.
-- `preferences.context_routing.relevance_threshold`: AI routing threshold for `/mvt-manage-context add` (default 70).
-
-### Stage 5: Pre-flight Checks
-
-For each check below, if the condition holds, perform the action implied by its **Level**:
-
-- **WARN** -- emit the message, then ask "Continue anyway? (y/n)". Default to **y** if the user does not respond.
-- **BLOCK** -- emit the message and stop. Do not proceed until the prerequisite is satisfied.
-- **REQUIRED** -- same as BLOCK; the prerequisite is mandatory.
-- **INFO** -- emit the message and proceed; no confirmation needed.
+**Pre-flight** — evaluate each check below against the loaded `session.yaml` / `project-context.yaml`. Levels: **WARN** = emit message, ask "Continue? (y/n)", default **y**; **BLOCK** / **REQUIRED** = emit and stop until satisfied; **INFO** = emit and proceed.
 
 | # | Condition | Level | Message |
 |---|-----------|-------|---------|
-| 1 | `session.initialized_at` is empty | WARN | Session not initialized. Run `/mvt-init` first. |
-| 2 | `review target (user args, implementation.md, or git diff)` is empty | WARN | No code to review. Run `/mvt-implement` first or specify files. |
+| 1 | `session.initialized_at is empty` | WARN | Session not initialized. Run `/mvt-init` first. |
+| 2 | `review target (user args, implementation.md, or git diff) is empty` | WARN | No code to review. Run `/mvt-implement` first or specify files. |
 
 ## Language Constraint (Mandatory)
 
@@ -170,7 +142,7 @@ This step applies only when the workspace has multiple projects (`projects.lengt
   2. Every entry under `skills.mvt-review.knowledge.{P}` -- load each entry's referenced files.
   3. Skip any key absent from the registry (no project-specific knowledge is valid; do not warn).
 - **Multi-project scenario**: if files span multiple projects, load each project's knowledge sequentially. The skill operates with the union of all loaded project-specific knowledge plus the `_all` knowledge already loaded at activation.
-- **Unmatched files**: if a file path does not match any project's `path` or `source_paths`, surface a note and treat it as belonging to the first project in `projects[]` (fallback). This may indicate a configuration gap in `project-context.yaml`.
+- **Unmatched files**: if a file path does not match any project's `path` or `source_paths`, surface a note and ask the user to choose the project scope. Do not silently fall back to the first project.
 
 ### Step 4: Determine Review Depth
 - **Default**: full review across all axes (Step 5).
@@ -232,13 +204,18 @@ This step applies only when the workspace has multiple projects (`projects.lengt
 - Each finding must include: file, line range, severity, observation, recommendation.
 
 ### Step 7: Write Artifact
-- **Path and template**: as defined in the **Artifact Structure** section below. If no `active_change` exists, use `.ai-agents/workspace/artifacts/_ad-hoc-review-{YYYY-MM-DD-HHMM}/review.md`. Follow the HTML comments in the template for what each section should contain; strip comments from the final artifact.
+- **Confirm before writing**: when an `active_change` exists (so an artifact would be written), present the review result in the conversation first (verdict + Critical/Warning/Suggestion counts), then ask the user whether to persist it: `Write the review artifact to {path}? (y/n)`.
+  - If the user declines (n), do NOT write any file under `artifacts/`. Keep the full review in the conversation only, and note that no artifact was persisted. Then continue to Step 8.
+  - If the user confirms (y), write the artifact as described below.
+  - When no `active_change` exists, there is no artifact to write — skip the prompt and keep the full review in the conversation only (no artifact).
+- **Path and template**: as defined in the **Artifact Structure** section below; this applies only when an `active_change` exists. Follow the HTML comments in the template for what each section should contain; strip comments from the final artifact.
 - **Required coverage**: cover only content that is applicable to this review. Preserve enough information for the user to understand what was reviewed, the verdict, material findings, skipped checks, and the recommended next step. Do not create empty or artificial sections just because an item is named here; if the template omits or renames a section, place applicable content in the closest relevant section.
 
 ### Step 8: Verdict Rule
 - Critical > 0 -> verdict is `Request changes`. Suggest `/mvt-fix`.
 - Critical = 0, Warnings > 5 -> verdict is `Approve with comments`.
-- Critical = 0, Warnings <= 5, Suggestions only -> verdict is `Approve`.
+- Critical = 0, Warnings between 1 and 5 -> verdict is `Approve with comments`.
+- Critical = 0, Warnings = 0 -> verdict is `Approve`.
 - Code-only review (design.md missing) -> verdict cannot be higher than `Approve with comments` (call it out explicitly).
 
 ### Step 9: State Update
@@ -254,6 +231,8 @@ Apply the State Update rules defined in the **State Update** section below.
 | Findings in the same file conflict (e.g., quality says "extract", architecture says "do not introduce a new module") | Defer to architecture; record the tension in `Suggestions` |
 | Implementation explicitly documents a deviation from design (in `Deviations from Design`) | Treat as accepted -- flag only if the deviation is itself problematic |
 | Reviewer finds bugs requiring discussion before fix | Mark Critical, but do NOT auto-invoke `/mvt-fix`; leave the call to the user |
+| User declines to write the artifact at Step 7 | Do not write any file under `artifacts/`; keep the review in the conversation only and note that no artifact was persisted |
+| `active_change` is missing entirely | Run the review and keep the result in the conversation only; do not write any artifact (no ad-hoc artifact path) |
 
 ## Artifact Structure
 Read the document structure template from: `.ai-agents/skills/_templates/review-output.md`

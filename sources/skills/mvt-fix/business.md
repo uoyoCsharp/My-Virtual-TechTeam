@@ -17,6 +17,7 @@
 
 - **1b. Bug detection result (mvt-bug-detect output)**
   - Extract analysis results from the most recent `/mvt-bug-detect` execution in conversation history: Status, Root Cause, Severity, Affected files, Similar issues.
+  - If the conversation history is unavailable, incomplete, or does not contain a concrete root cause, treat this source as unavailable and continue to Step 1c. Do not fix from a half-remembered diagnosis.
   - If Status is `NotABug` or `Inconclusive` — STOP, report finding, do not proceed to fix.
   - Skip Steps 2-4, proceed directly to Step 5 with extracted context.
 
@@ -102,7 +103,7 @@ This step applies only when the workspace has multiple projects (`projects.lengt
   2. Every entry under `skills.mvt-fix.knowledge.{P}` -- load each entry's referenced files.
   3. Skip any key absent from the registry (no project-specific knowledge is valid; do not warn).
 - **Multi-project scenario**: if affected files span multiple projects, load each project's knowledge sequentially. The skill operates with the union of all loaded project-specific knowledge plus the `_all` knowledge already loaded at activation.
-- **Unmatched files**: if a file path does not match any project's `path` or `source_paths`, surface a note and treat it as belonging to the first project in `projects[]` (fallback). This may indicate a configuration gap in `project-context.yaml`.
+- **Unmatched files**: if a file path does not match any project's `path` or `source_paths`, surface a note and ask the user to choose the project scope. Do not silently fall back to the first project.
 
 ### Step 7: User Confirmation
 - **When to confirm before applying**:
@@ -122,6 +123,10 @@ This step applies only when the workspace has multiple projects (`projects.lengt
 - If repro still fails -> revert, return to Step 3 with the new evidence.
 
 ### Step 9: Write Fix Notes
+- **Confirm before writing**: when an `active_change` exists (so an artifact would be written), present the fix notes content in the conversation first, then ask the user whether to persist it: `Write the fix notes to {path}? (y/n)`.
+  - If the user declines (n), do NOT write any file under `artifacts/`. Keep the fix notes in the conversation only, and note that no artifact was persisted. Then continue to Step 10.
+  - If the user confirms (y), write the artifact as described below.
+  - When no `active_change` exists, there is no artifact to write — skip the prompt and keep the notes inline (existing shortcut behavior).
 - **Path**: `.ai-agents/workspace/artifacts/{change-id}/fix-notes.md` if an `active_change` exists; otherwise inline in the conversation only (no artifact -- shortcut operation).
 - **Structure** (each section is a single paragraph or list):
   - `Symptom` -- what the user saw / reported.
@@ -144,5 +149,6 @@ Apply the State Update rules defined in the **State Update** section below.
 | Fix would require breaking a downstream API | STOP -- escalate to `/mvt-design` or `/mvt-refactor`; do not silently break contracts |
 | Root cause is in a third-party dependency | Document the upstream issue, apply a minimal local workaround clearly labeled as temporary |
 | User aborts at Step 7 | Do not write fix notes; record the diagnosis as a comment in the conversation only |
+| User declines to write the artifact at Step 9 | Do not write any file under `artifacts/`; keep the fix notes in the conversation only and note that no artifact was persisted |
 | Fix relies on changes the user has uncommitted in another branch | Surface the conflict before editing; do not overwrite |
 | `active_change` is missing entirely | Apply fix without writing artifact (shortcut mode), summarize result in conversation |

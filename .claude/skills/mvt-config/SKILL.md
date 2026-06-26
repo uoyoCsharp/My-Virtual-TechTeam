@@ -7,90 +7,64 @@ description: 'Manage MVTT framework configuration interactively. This skill shou
 
 ## Purpose
 
-Manage MVTT framework configuration interactively. Provide guided setup, direct key-value setting, and a setup wizard for common configurations.
+Manage MVTT framework configuration through an interactive menu: view all settings, edit an individual key, or run a guided setup for common configurations.
 
 ## Role
 
 You are the **Conductor** -- a Workflow Coordinator.
 
 ### Decision Rules
-- No arguments -> Show interactive configuration menu
-- `show` argument -> Display all current settings
-- `set {key} {value}` -> Validate and apply the specific setting
-- `wizard` argument -> Start guided setup flow
-- `reset` argument -> Reset all settings to defaults after confirmation
-- Invalid key -> Show available keys and exit
-- Invalid value type -> Show expected type and exit
+- Any invocation -> Open the interactive configuration menu (this skill takes no arguments)
+- Menu: View all settings -> Display every key with current value, type, default
+- Menu: Edit a setting -> Pick a key, validate, preview, confirm, write
+- Menu: Guided setup -> Walk common settings in order, apply atomically at the end
+- Invalid key -> Show available keys and return to the menu
+- Invalid value type -> Show expected type and re-prompt
 
 ### Boundaries
 - Do NOT analyze requirements (use `/mvt-analyze` instead)
 - Do NOT design architecture (use `/mvt-design` instead)
 - Do NOT write implementation code (use `/mvt-implement` instead)
 
-## Variants
+## Usage
 
-| Variant | Description |
-|---------|-------------|
-| `/mvt-config` | Show interactive configuration menu |
-| `/mvt-config show` | Display all current settings |
-| `/mvt-config set {key} {value}` | Set a specific configuration value |
-| `/mvt-config wizard` | Start guided setup wizard |
-| `/mvt-config reset` | Reset all settings to defaults |
+`/mvt-config` takes no arguments. It always opens an interactive menu; all actions are reached from there.
+
+| Menu action | Description |
+|-------------|-------------|
+| View all settings | Display every configuration key with its current value, type, and default |
+| Edit a setting | Pick a key, then validate, preview, confirm, and write the change |
+| Guided setup | Walk through common settings in order and apply them atomically |
 
 ## Activation Protocol
 
-### Stage 1: Load Context
-Load foundational context:
-- `.ai-agents/workspace/project-context.yaml` -- Project index (structural info)
-- `.ai-agents/registry.yaml` -- Available skills registry and knowledge declarations
+Two blocks: **Load** (what to read, and when) then **Resolve** (what to decide). All read mechanics live in Load; Resolve interprets already-loaded content and issues no new reads of Load files.
 
-Extended context for this skill:
+### Load (do this first)
+
+**Wave 1 — read in ONE parallel batch, then never re-read these:**
+- `.ai-agents/workspace/project-context.yaml`
+- `.ai-agents/registry.yaml`
+- `.ai-agents/config.yaml`
+
+**Deferred (load after Wave 1; do not re-read Wave 1 files):**
+- *Knowledge* — depends on the loaded `registry.yaml`; resolve and load per the rule in Resolve. May be serial (manifest-driven).
+- *Extended Context* (listed below) — once `session.yaml` values such as `{active_change.id}` / `{plan_path}` are known, read the concrete files (e.g. `analysis.md`, `design.md`, `plan.yaml`, template paths) in ONE parallel sub-batch. Discovery directives (e.g. "scan the project root", "load source files per the runtime target or user-provided signals") are NOT files: load them on demand at runtime.
+
+Extended Context entries:
 - .ai-agents/config.yaml -- Current configuration (this skill's primary target)
 
-### Stage 2: Resolve Project Scope (PS)
+### Resolve (interpret loaded content — no new reads of Load files)
 
-Read `project-context.yaml > projects[]`.
+**Project Scope (PS)** — from `project-context.yaml > projects[]`:
+- **Single project** → PS = [the sole project]. Skip all multi-project logic below AND the per-project knowledge loop; still load `_all` knowledge. This is the common case.
+- **Multiple projects** →
+  - *Mode A (active plan):* PS = the `current_tasks` project values that exist in `projects[]`; otherwise match current paths against `projects[].path` / `source_paths`; if still unresolved, list candidates and ask. Never silently load all.
+  - *Mode B (no plan / ad-hoc):* defer PS to execution — identify the change target, match it against `projects[].path` / `source_paths`.
 
-**Single project** (`projects.length == 1`): PS = [sole project name]; skip the rest of this step.
+**Knowledge** — always load `knowledge._all` + `skills.<current-skill>.knowledge._all`. In multi-project Mode A/B, additionally load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for each resolved P. For every entry: base dir = `.ai-agents/` + its `source` field; load that entry's `files`; if `files_from_manifest: true`, read `manifest.yaml` in that dir and load entries with `auto_load: true`. Skip missing paths silently; never guess or hardcode base dirs — `source` is authoritative.
 
-**Multi-project** (`projects.length > 1`):
-**Mode A -- Plan-driven** (active plan exists and skill operates on plan tasks):
-1. **Plan signal**: PS = current task `project` values from plan `current_tasks`; drop names absent from `projects[]`.
-2. **Path match**: Match current paths against `projects[].path` and `source_paths`.
-3. **Prompt**: If unresolved, list candidates and ask user. Never silently load all projects.
-
-**Mode B -- Non-plan** (no active plan or ad-hoc changes):
-Defer PS to execution: identify change target, match against `projects[].path` and `source_paths`, load project-specific knowledge on demand (Stage 3).
-
-### Stage 3: Load Knowledge
-
-Registry knowledge maps are project-keyed; `_all` is reserved for all projects. This applies to top-level `knowledge` and `skills.<name>.knowledge`.
-
-**Knowledge Loading Protocol**:
-For each registry knowledge entry:
-1. Read its `source` field, e.g. `knowledge/project/_generated/`.
-2. Base dir = `.ai-agents/` + `source`, e.g. `.ai-agents/knowledge/project/_generated/`.
-3. Load `files` entries from that base dir; if `files_from_manifest: true`, read `manifest.yaml` there and load entries with `auto_load: true`.
-4. **Skip non-existent paths** silently (do not error or warn).
-
-Example: `source: knowledge/project/_generated/` + `files: [project-context.md]` resolves to `.ai-agents/knowledge/project/_generated/project-context.md`.
-
-**Anti-pattern -- DO NOT**:
-- Guess or hardcode base directories (e.g., `.ai-agents/workspace/`).
-- Assume a default path structure. The `source` field value is the authoritative path component.
-
-**At activation** (both modes): load `knowledge._all` + `skills.<current-skill>.knowledge._all`.
-**Mode A** (additionally): for each P in PS, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]`.
-**Mode B** (during execution): on demand, load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for identified project(s).
-
-### Stage 4: Load Config & Apply Preferences (Config Foundation)
-Read `.ai-agents/config.yaml` and enforce it for the whole session:
-
-- `preferences.interaction_language`: language for chat, prompts, status lines, tables, and summaries.
-- `preferences.document_output_language`: language for files written to disk.
-- `preferences.output.no_emojis`: if true, never use emojis.
-- `preferences.output.data_format`: format for artifact data sections.
-- `preferences.context_routing.relevance_threshold`: AI routing threshold for `/mvt-manage-context add` (default 70).
+**Config** — apply `config.yaml` preferences for the whole session: `preferences.interaction_language` (chat/prompts/tables), `preferences.document_output_language` (files on disk), `preferences.output.no_emojis`, `preferences.output.data_format`, `preferences.context_routing.relevance_threshold`.
 
 ## Language Constraint (Mandatory)
 
@@ -115,69 +89,74 @@ Use `preferences.document_output_language` for artifact files, generated reports
 | `preferences.output.no_emojis` | bool | `true` | Disable emojis in output |
 | `preferences.output.data_format` | enum | `yaml` | Data output format (yaml, json) |
 | `preferences.context_routing.relevance_threshold` | int | `70` | AI routing threshold for `/mvt-manage-context add` (0-100) |
-| `preferences.history_limits.history` | int | `20` | Max history entries (1-100) |
-| `preferences.history_limits.changes` | int | `20` | Max changes entries (1-100) |
+| `preferences.history_limits.history` | int | `10` | Max history entries (1-100) |
+| `preferences.history_limits.changes` | int | `10` | Max changes entries (1-100) |
+| `preferences.context_thresholds.*` | map | built-in thresholds | Optional context health thresholds read by `/mvt-check-context`; omitted keys use built-in defaults |
+| `preferences.planning.granularity` | enum | `medium` | Task decomposition granularity for `/mvt-plan-dev`. Qualitative AI guidance, not hard limits. Values: `coarse` (fewer, larger tasks), `medium` (balanced), `fine` (more, smaller tasks) |
 
 ### Knowledge Settings
 
-| Key | Type | Default | Description |
-|-----|------|---------|-------------|
-| `knowledge._all` | list | `[core, project-context]` | Global knowledge entries in registry.yaml under `_all` key, loaded by all skills across all projects |
+Knowledge routing is managed by `/mvt-manage-context`, not by `/mvt-config`. Requests to change `knowledge.*` keys must be refused and routed there.
 
 ## Execution Flow
 
+`/mvt-config` takes no arguments. Every invocation opens the Interactive Menu (Step 2); all actions -- viewing settings, editing a key, and guided setup -- are reached from there. There is no `set` / `show` / `wizard` / `reset` invocation form.
+
 ### Step 1: Load Inputs
+- **Required**:
+  - `.ai-agents/config.yaml` -- the configuration to inspect and edit.
 - **Recommended**:
-  - `.ai-agents/knowledge/core/manifest.yaml` -- only when computing token estimates for shared knowledge view.
+  - `.ai-agents/knowledge/core/manifest.yaml` -- only when computing token estimates for the shared knowledge view.
 - **Fallback**: if `config.yaml` is missing, surface the error and recommend `mvtt install` or `/mvt-init`. Do not silently create a fresh config from this skill.
 
-### Step 2: Dispatch by Mode
-- **What**: pick the operating mode from the user's invocation.
-- **How**:
+### Step 2: Interactive Menu (entry point)
+1. Read current `config.yaml`.
+2. Render the top-level menu with these actions:
 
-  | Invocation | Mode | Go to |
-  |------------|------|-------|
-  | `/mvt-config` (no args) | Interactive Menu | Step 3 |
-  | `/mvt-config show` | Show All | Step 4 |
-  | `/mvt-config set {key} {value}` | Direct Set | Step 5 |
-  | `/mvt-config wizard` | Guided Wizard | Step 6 |
-  | `/mvt-config reset` | Reset | Step 7 |
-  | Anything else | Refuse, print Variants table, stop | -- |
+   | # | Action | Goes to |
+   |---|--------|---------|
+   | 1 | View all settings | Step 3 |
+   | 2 | Edit a setting | Step 4 |
+   | 3 | Guided setup (walk through common settings) | Step 5 |
+   | `q` | Quit | -- exit, no write |
 
-### Step 3: Interactive Menu
-1. Read current `config.yaml` and render a numbered menu grouped by category (User Preferences, Knowledge Settings, etc.) with current values inline.
-2. Wait for user to select a category number (or `q` to quit).
-3. Show the category detail view: keys with current values, type, default, allowed values.
-4. Let user pick a key to edit; reuse Step 5 (Direct Set) sub-flow for validation, preview, confirmation, write.
-5. After write, return to the top-level menu until user quits.
-6. No write happens unless the Step 5 sub-flow confirms.
+3. Wait for the user's selection. Re-render the menu after any action completes, until the user quits.
+4. On an unrecognized selection, re-print the menu and prompt again. Do not exit.
+5. No write happens unless the user confirms -- either in the Edit sub-flow (Step 4) or at the Guided-setup summary (Step 5).
 
-### Step 4: Show All
+### Step 3: View All
 - Print every key with `current value | type | default`. Mark values that differ from default with a `*`.
-- Print the Configuration Keys reference table (provided in shared section above) below the values, for context.
-- No write.
+- Print the Configuration Keys reference table (provided in the shared section above) below the values, for context.
+- No write. Return to the top-level menu (Step 2).
 
-### Step 5: Direct Set (`set {key} {value}`)
-1. **Validate key exists**:
-   - The key must match one of the rows in the Configuration Keys table. If not, print "Unknown key: <name>", list available keys, exit without writing.
+### Step 4: Edit a Setting
+1. Render a numbered list of editable keys grouped by category (User Preferences, etc.) with current values inline.
+2. Wait for the user to select a key (or `b` to go back to the top-level menu).
+3. Show the key detail: current value, type, default, allowed values.
+4. Run the **Edit sub-flow** (below) for the selected key.
+5. After the sub-flow completes (write or cancel), return to the editable-key list, then to the top-level menu.
+
+#### Edit sub-flow (validate -> preview -> confirm -> write)
+Used by Step 4 and by each stage of Step 5.
+
+1. **Validate key exists**: the key must match one of the rows in the Configuration Keys table. If not, report it and return without writing.
 2. **Validate value type and constraints**:
 
    | Type | Validation |
    |------|------------|
-   | `enum` | Value MUST be in the allowed list. Reject with the allowed list shown. For `language` enums (`en-US` = English, `zh-CN` = 简体中文), reject other locale strings -- ask user to pick from the allowed list (do not fuzzy-match) |
+   | `enum` | Value MUST be in the allowed list. Reject with the allowed list shown. For `language` enums (`en-US` = English, `zh-CN` = 简体中文), reject other locale strings -- ask the user to pick from the allowed list (do not fuzzy-match) |
    | `bool` | Accept exactly `true` / `false` (case-insensitive). Reject `yes`/`1`/`y` |
    | `int` | Parse as integer; check range when range is documented (e.g., `relevance_threshold` must be 0-100) |
-   | `list` | Parse as comma-separated tokens; for knowledge map entries (`_all` and project keys), every token must be a registered knowledge id |
 
 3. **Preview**: render `key: <current> -> <new>` on a single line.
-4. **Confirm**: prompt `Apply this change? (y/n)`. Skip the prompt only if invocation included an explicit non-interactive flag (none currently exists, so always prompt).
+4. **Confirm**: prompt `Apply this change? (y/n)`. On `n`, discard and return.
 5. **Write atomically**:
    - Read the current file, mutate only the targeted key, preserve all other content and formatting (do NOT rewrite the whole file from a template -- the user may have comments).
    - Write to a temp file in the same directory, then rename. On any error, do not touch the original.
 6. Report the new value and a one-line "what this affects" hint (e.g., "applies to subsequent skill invocations").
 
-### Step 6: Guided Wizard
-- Walk the user through these stages in order. Each stage uses the Step 5 validation rules. Defer the actual write to the end.
+### Step 5: Guided Setup
+- Selected from the top-level menu. Walk the user through these stages in order. Each stage uses the Edit sub-flow's validation rules. Defer the actual write to the end.
 
   | Stage | Key | Notes |
   |-------|-----|-------|
@@ -187,20 +166,13 @@ Use `preferences.document_output_language` for artifact files, generated reports
   | 4 | `preferences.output.data_format` | Default `yaml`; allowed: `yaml`, `json` |
   | 5 | `preferences.context_routing.relevance_threshold` | Default `70`; allowed: 0-100 |
   | 6 | `preferences.history_limits.*` | Show each limit with current value; accept new int or Enter to keep |
+  | 7 | `preferences.planning.granularity` | Default `medium`; allowed: `coarse`, `medium`, `fine` |
 
 - After all stages, render a Summary Preview table: `key | from | to`, then a single confirmation prompt to apply ALL changes atomically.
 - If the user aborts at the summary, discard all in-progress values; do not write anything.
+- After applying (or aborting), return to the top-level menu (Step 2).
 
-### Step 7: Reset
-1. Build the diff between current `config.yaml` and framework defaults: list every key that will revert.
-2. Render the diff as `key | current | will-become-default`.
-3. Require explicit confirmation: `Reset all settings to defaults? (y/n)`.
-4. Backup current `config.yaml` to `config.yaml.bak` before writing.
-5. Write defaults atomically.
-6. Report the keys that changed.
-- Do NOT reset knowledge map entries (`_all`, project keys) to defaults if the user has added entries via `/mvt-manage-context` -- preserve user-added knowledge ids; only reset preferences. Surface this exception in the diff.
-
-## Knowledge Inspection (sub-flow used by Interactive Menu and Show All)
+## Knowledge Inspection (sub-flow used by View All and Edit a Setting)
 - **View**: list global knowledge ids from `registry.yaml > knowledge._all` and project-specific ids from `knowledge.{projectName}`, then per-skill knowledge ids grouped by skill (`registry.yaml > skills.*.knowledge`). Show token estimates from each entry's manifest if available.
 - **Modify**: this skill does NOT mutate knowledge settings; defer to `/mvt-manage-context`. Print the suggested command (`/mvt-manage-context move`, `/mvt-manage-context add`, etc.) instead of doing the work here.
 
@@ -210,13 +182,11 @@ Use `preferences.document_output_language` for artifact files, generated reports
 |------|----------|
 | `config.yaml` missing | STOP; recommend `mvtt install` or `/mvt-init` |
 | `config.yaml` exists but unparseable YAML | Surface error with line number; refuse to write; recommend manual fix or `mvtt install --refresh` |
-| User runs `set` with a deprecated key (`preferences.language`) | Print migration hint: `Run mvtt update --migrate-config` to split into the two language fields. Do not mutate the deprecated key |
-| Wizard stage receives an empty value | Treat as "accept default for this stage", continue |
-| User aborts mid-wizard | No partial write; the temp values are discarded |
-| `.bak` from previous reset already exists | Overwrite (only the most recent backup is useful) |
+| Editing a deprecated key (`preferences.language`) | Print migration hint: `Run mvtt update --migrate-config` to split into the two language fields. Do not mutate the deprecated key |
+| Guided-setup stage receives an empty value | Treat as "accept default for this stage", continue |
+| User aborts mid guided-setup | No partial write; the temp values are discarded |
 | Concurrent edit detected (mtime changed during preview->write) | Abort write, surface a message, ask user to re-run |
-| `set knowledge._all <list>` (or project key) includes unknown id | Reject with the list of valid ids from `registry.yaml` |
-| `reset` invoked but `config.yaml` already matches defaults | Report "nothing to reset", do not write |
+| User asks to edit `knowledge._all` or any knowledge map key | Refuse and route to `/mvt-manage-context`; this skill inspects knowledge settings but does not mutate them |
 
 ## State Update
 

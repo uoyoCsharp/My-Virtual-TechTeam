@@ -7,7 +7,11 @@ var __getOwnPropNames = Object.getOwnPropertyNames;
 var __getProtoOf = Object.getPrototypeOf;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
 var __commonJS = (cb, mod) => function __require() {
-  return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+  try {
+    return mod || (0, cb[__getOwnPropNames(cb)[0]])((mod = { exports: {} }).exports, mod), mod.exports;
+  } catch (e) {
+    throw mod = 0, e;
+  }
 };
 var __copyProps = (to, from, except, desc) => {
   if (from && typeof from === "object" || typeof from === "function") {
@@ -7344,7 +7348,8 @@ var ERRORS = {
   EPIC_ID_REQUIRED: () => "--new-epic requires --epic-id",
   CLOSE_NEW_EPIC_CONFLICT: () => "--close-epic and --new-epic are mutually exclusive",
   NO_ACTIVE_EPIC: (flag) => `${flag} requires an active epic (active_epic.id is empty)`,
-  EPIC_ID_ORPHAN: () => "--epic-id (for sub-change) requires --new-change"
+  EPIC_ID_ORPHAN: () => "--epic-id (for sub-change) requires --new-change",
+  MISSING_REMOVE_VALUE: () => "--remove-change / --remove-epic requires a non-empty value"
 };
 var DEFAULT_LIMITS = {
   history: 20,
@@ -7379,6 +7384,10 @@ function parseArgs(argv) {
   }
   return args;
 }
+function parseIdList(value) {
+  if (value == null) return [];
+  return String(value).split(",").map((s) => s.trim()).filter(Boolean);
+}
 function loadHistoryLimits(configPath) {
   const limits = { ...DEFAULT_LIMITS };
   if (!(0, import_node_fs.existsSync)(configPath)) return limits;
@@ -7409,6 +7418,12 @@ function validate(args) {
   if (args["new-epic"] && !args["epic-id"]) return ERRORS.EPIC_ID_REQUIRED();
   if (args["close-epic"] && args["new-epic"]) return ERRORS.CLOSE_NEW_EPIC_CONFLICT();
   if (args["epic-id"] && !args["new-change"] && !args["new-epic"]) return ERRORS.EPIC_ID_ORPHAN();
+  if (args["remove-change"] !== void 0 && (args["remove-change"] === true || !String(args["remove-change"]).trim())) {
+    return ERRORS.MISSING_REMOVE_VALUE();
+  }
+  if (args["remove-epic"] !== void 0 && (args["remove-epic"] === true || !String(args["remove-epic"]).trim())) {
+    return ERRORS.MISSING_REMOVE_VALUE();
+  }
   return null;
 }
 function main() {
@@ -7643,6 +7658,38 @@ function main() {
       created_at: "",
       epic_path: ""
     };
+  }
+  if (args["remove-change"] !== void 0) {
+    session.changes = session.changes || [];
+    const rawIds = args["remove-change"];
+    let removed = 0;
+    for (const id of parseIdList(rawIds)) {
+      const before = session.changes.length;
+      session.changes = session.changes.filter((e) => e.id !== id);
+      if (session.changes.length < before) removed++;
+    }
+    if (removed === 0) {
+      process.stderr.write(
+        `Warning: --remove-change requested ids [${rawIds}] not found; no entries removed.
+`
+      );
+    }
+  }
+  if (args["remove-epic"] !== void 0) {
+    session.epics = session.epics || [];
+    const rawIds = args["remove-epic"];
+    let removed = 0;
+    for (const id of parseIdList(rawIds)) {
+      const before = session.epics.length;
+      session.epics = session.epics.filter((e) => e.id !== id);
+      if (session.epics.length < before) removed++;
+    }
+    if (removed === 0) {
+      process.stderr.write(
+        `Warning: --remove-epic requested ids [${rawIds}] not found; no entries removed.
+`
+      );
+    }
   }
   const tmpPath = sessionPath + ".tmp";
   try {

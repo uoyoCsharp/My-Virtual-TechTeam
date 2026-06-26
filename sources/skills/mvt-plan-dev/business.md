@@ -40,7 +40,7 @@ This is **qualitative AI guidance**, not a hard task count constraint. A complex
 | Explicit dependencies | If task B requires output from task A, list `A` in B's `depends_on`. Avoid hidden ordering. Tasks that can run in parallel should have no dependency between them. |
 | No cycles | Dependency graph must be a DAG. Validation will reject cycles. |
 | Skill hint | Set `skill_hint` to the skill best suited to execute the task (without `/` prefix): `mvt-implement`, `mvt-test`, `mvt-fix`, `mvt-design`, `mvt-review`, `mvt-refactor`, etc. |
-| Project attribution | Each task must have a `project` array listing which projects it belongs to. In a single-project workspace (`projects.length == 1`), set `project: ["default"]` (or the sole project's name). In a multi-project workspace, auto-infer from the task's file paths matching `projects[].path` and `projects[].source_paths`; if ambiguous, prompt the user. Cross-project tasks list multiple project names. |
+| Project attribution | Each task must have a `project` array listing which projects it belongs to. In a single-project workspace (`projects.length == 1`), use the sole project name from `project-context.yaml > projects[].name`. In a multi-project workspace, auto-infer from the task's file paths matching `projects[].path` and `projects[].source_paths`; if ambiguous, prompt the user. Cross-project tasks list multiple project names. |
 | Invalid value handling | If `granularity` contains a value other than `coarse`, `medium`, `fine`, warn the user and fall back to `medium`. |
 
 ### Step 4: Assemble plan.yaml
@@ -55,7 +55,7 @@ created_at: "2026-05-31T11:30:00"
 updated_at: "2026-05-31T11:30:00"
 status: in_progress
 current_tasks:
-  default: "t1-foundation-layer"
+  "<project-name>": "t1-foundation-layer"
 
 tasks:
   - id: "t1-foundation-layer"
@@ -64,7 +64,7 @@ tasks:
     completed_at: null
     depends_on: []
     project:
-      - default
+      - "<project-name>"
     skill_hint: mvt-implement
     artifacts:
       files:
@@ -83,7 +83,7 @@ tasks:
     completed_at: null
     depends_on: ["t1-foundation-layer"]
     project:
-      - default
+      - "<project-name>"
     skill_hint: mvt-implement
     artifacts: null
     notes: >
@@ -103,7 +103,7 @@ tasks:
 - `created_at`: current ISO 8601 timestamp
 - `updated_at`: same as `created_at` initially
 - `status: in_progress`
-- `current_tasks`: a map of project name to task id. For single-project workspaces: `{ default: "<first_task_id>" }`. For multi-project: one key per project, each pointing to that project's first executable task.
+- `current_tasks`: a map of project name to task id. For single-project workspaces: `{ <sole-project-name>: "<first_task_id>" }`, where the key is copied from `project-context.yaml > projects[0].name`. For multi-project: one key per project, each pointing to that project's first executable task.
 
 #### Task fields
 
@@ -114,7 +114,7 @@ For each task, populate:
 - **`status`**: first executable task → `in_progress`; all others → `pending`.
 - **`completed_at`**: `null` for all tasks on initial creation (set by `/mvt-update-plan` when marking `done`).
 - **`depends_on`**: array of task ids. Empty array `[]` means no dependencies.
-- **`project`**: array of project names this task belongs to. In single-project workspaces, use `["default"]` (or the sole project's name). Cross-project tasks list multiple names. Auto-infer from file paths matching `projects[].path` and `projects[].source_paths`; if ambiguous, prompt the user.
+- **`project`**: array of project names this task belongs to. In single-project workspaces, use the sole project name from `project-context.yaml > projects[].name`. Cross-project tasks list multiple names. Auto-infer from file paths matching `projects[].path` and `projects[].source_paths`; if ambiguous, prompt the user.
 - **`skill_hint`**: the skill name (without `/`) that will execute this task.
 - **`artifacts`**: structured object. On initial plan creation, set to `null` or pre-populate with planned target files if known:
   ```yaml
@@ -143,6 +143,8 @@ Before writing, validate the assembled YAML:
 8. **Project attribution** — every task has a `project` array with at least one valid project name
 
 If validation fails, revise the plan and re-validate (do NOT write a broken plan).
+
+Before writing, write the draft to a temporary path and validate it with `node .ai-agents/scripts/plan-update.cjs --validate <draft-plan-path>`. Only write the final `plan.yaml` when the command exits 0; on failure, surface stderr, revise the draft, and re-run validation.
 
 ### Step 6: Write plan.yaml
 

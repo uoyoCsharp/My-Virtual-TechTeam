@@ -33,27 +33,25 @@ sections:
           skill: "/mvt-analyze"
 
   - type: shared
-    source: sections/activation-load-context.md
-
-  - type: shared
-    source: sections/activation-load-config.md
-
-  - type: shared
-    source: sections/activation-preflight.md
+    source: sections/activation-protocol.md
     params:
+      activation_reads:
+        - session.yaml
+      has_preflight: true
       checks:
         - order: "1"
           field: "session.initialized_at"
           level: "WARN"
-          message: 'Session not initialized. Run `/mvt-init` first.'
+          message: "Session not initialized. Run `/mvt-init` first."
         - order: "2"
           field: "projects[] in project-context.yaml"
           level: "WARN"
-          message: 'Project not initialized. Run `/mvt-init` first.'
+          message: "Project not initialized. Run `/mvt-init` first."
         - order: "3"
           field: "active_change.id"
+          condition: "active_change.id is non-empty"
           level: "WARN"
-          message: 'An active change already exists. Decomposing will create a new epic alongside it. Continue? (y/n)'
+          message: "An active change already exists. Decomposing will create a new epic alongside it. Continue? (y/n)"
 
   - type: shared
     source: sections/language-constraint.md

@@ -23,7 +23,7 @@ This skill measures only files the **user** can reduce or relocate. Framework-fi
 ### Step 3: Estimate Token Consumption
 - **What**: produce a per-file tokens estimate and per-category subtotals, with **per-project breakdown**.
 - **How**:
-  1. For each in-scope file: tokens ~= `characters / 4`.
+  1. For each in-scope file: compute characters mechanically and estimate tokens as `ceil(characters / 4)`.
   2. Group by category: `Index`, `Semantic Context`, `Shared Knowledge`, `Per-Skill Knowledge`, `Artifacts`.
   3. For Shared Knowledge, compute total once -- this is per-skill overhead (loaded by every skill invocation).
   4. For Per-Skill Knowledge, compute totals per skill so users can see which skill is heaviest.
@@ -63,7 +63,7 @@ This skill measures only files the **user** can reduce or relocate. Framework-fi
   | A single Shared Knowledge file is `oversized` | "{path} is {N} tokens. Split or move to per-skill." | `/mvt-manage-context move` |
   | Per-skill Knowledge entry exists in `registry.yaml` but its referenced files are missing | "{skill} declares knowledge `{id}` but `{path}` is missing." | `/mvt-manage-context remove` (or restore the file) |
   | A knowledge file exists on disk but no `registry.yaml` entry references it | "{path} is unused (not loaded by any skill)." | `/mvt-manage-context remove` |
-  | Two knowledge entries reference identical content (same hash) | "{a} and {b} are duplicates. Consolidate." | manual edit |
+  | Two knowledge entries reference identical content (same SHA-256 hash computed from file bytes) | "{a} and {b} are duplicates. Consolidate." | manual edit |
 
 - **Constraints on recommendations**:
   - Never recommend changes to framework files (`_framework/`, `mvt-*/SKILL.md`).
