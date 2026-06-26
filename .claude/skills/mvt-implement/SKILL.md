@@ -51,14 +51,14 @@ Two blocks: **Load** (what to read, and when) then **Resolve** (what to decide).
 
 **Knowledge** — always load `knowledge._all` + `skills.<current-skill>.knowledge._all`. In multi-project Mode A/B, additionally load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for each resolved P. For every entry: base dir = `.ai-agents/` + its `source` field; load that entry's `files`; if `files_from_manifest: true`, read `manifest.yaml` in that dir and load entries with `auto_load: true`. Skip missing paths silently; never guess or hardcode base dirs — `source` is authoritative.
 
-**Config** — apply `config.yaml` preferences for the whole session: `interaction_language` (chat/prompts/tables), `document_output_language` (files on disk), `output.no_emojis`, `output.data_format`, `context_routing.relevance_threshold`.
+**Config** — apply `config.yaml` preferences for the whole session: `preferences.interaction_language` (chat/prompts/tables), `preferences.document_output_language` (files on disk), `preferences.output.no_emojis`, `preferences.output.data_format`, `preferences.context_routing.relevance_threshold`.
 
 **Pre-flight** — evaluate each check below against the loaded `session.yaml` / `project-context.yaml`. Levels: **WARN** = emit message, ask "Continue? (y/n)", default **y**; **BLOCK** / **REQUIRED** = emit and stop until satisfied; **INFO** = emit and proceed.
 
 | # | Condition | Level | Message |
 |---|-----------|-------|---------|
-| 1 | `session.initialized_at` is empty | BLOCK | Session not initialized. Run `/mvt-init` first. |
-| 2 | `projects[] in project-context.yaml` is empty | BLOCK | Project not initialized. Run `/mvt-init` first. |
+| 1 | `session.initialized_at is empty` | BLOCK | Session not initialized. Run `/mvt-init` first. |
+| 2 | `projects[] in project-context.yaml is empty` | BLOCK | Project not initialized. Run `/mvt-init` first. |
 
 ## Language Constraint (Mandatory)
 
@@ -213,7 +213,7 @@ This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from 
 | Plan task is `blocked` or `done` already | Refuse to implement that task; ask user to pick another task from `current_tasks` or run `/mvt-update-plan` |
 | Deliverables already exist and user declines to update | Leave existing deliverables in place; do not call `plan-update.cjs` with deliverables flags |
 | `plan-update.cjs` rejects deliverables pointer | Surface error; leave `implementation.md` as written (content is source of truth, pointer can be retried) |
-| Re-implementing a task whose `## Task: {id}` section already exists in `implementation.md` | Replace that section's content in place; preserve any `### Deliverables` subsection within it. Do NOT create a second `## Task: {id}` section |
+| Re-implementing a task whose `## Task: {id}` section already exists in `implementation.md` | Immediately before editing, re-read `implementation.md` and verify there is exactly one matching `## Task: {id}` heading. Replace that section's content in place; preserve any `### Deliverables` subsection within it. Do NOT create a second `## Task: {id}` section. If zero or multiple matching headings exist, stop and ask the user to resolve the artifact manually. |
 
 ## Artifact Structure
 Template location: `.ai-agents/skills/_templates/implement-output.md`

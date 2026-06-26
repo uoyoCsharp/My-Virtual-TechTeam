@@ -40,7 +40,7 @@ Two blocks: **Load** (what to read, and when) then **Resolve** (what to decide).
 
 **Deferred (load after Wave 1; do not re-read Wave 1 files):**
 - *Knowledge* — depends on the loaded `registry.yaml`; resolve and load per the rule in Resolve. May be serial (manifest-driven).
-- *Extended Context* (listed below) — once `session.yaml` values such as `{active_change.id}` / `{plan_path}` are known, read the concrete files (e.g. `analysis.md`, `design.md`, `plan.yaml`, template paths) in ONE parallel sub-batch. Discovery directives (e.g. "scan the project root", "load source files per the bug description") are NOT files: load them on demand at runtime.
+- *Extended Context* (listed below) — once `session.yaml` values such as `{active_change.id}` / `{plan_path}` are known, read the concrete files (e.g. `analysis.md`, `design.md`, `plan.yaml`, template paths) in ONE parallel sub-batch. Discovery directives (e.g. "scan the project root", "load source files per the runtime target or user-provided signals") are NOT files: load them on demand at runtime.
 
 Extended Context entries:
 - .ai-agents/workspace/artifacts/{active_change.id}/ -- Existing analysis/design artifacts for this change
@@ -56,14 +56,14 @@ Extended Context entries:
 
 **Knowledge** — always load `knowledge._all` + `skills.<current-skill>.knowledge._all`. In multi-project Mode A/B, additionally load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for each resolved P. For every entry: base dir = `.ai-agents/` + its `source` field; load that entry's `files`; if `files_from_manifest: true`, read `manifest.yaml` in that dir and load entries with `auto_load: true`. Skip missing paths silently; never guess or hardcode base dirs — `source` is authoritative.
 
-**Config** — apply `config.yaml` preferences for the whole session: `interaction_language` (chat/prompts/tables), `document_output_language` (files on disk), `output.no_emojis`, `output.data_format`, `context_routing.relevance_threshold`.
+**Config** — apply `config.yaml` preferences for the whole session: `preferences.interaction_language` (chat/prompts/tables), `preferences.document_output_language` (files on disk), `preferences.output.no_emojis`, `preferences.output.data_format`, `preferences.context_routing.relevance_threshold`.
 
 **Pre-flight** — evaluate each check below against the loaded `session.yaml` / `project-context.yaml`. Levels: **WARN** = emit message, ask "Continue? (y/n)", default **y**; **BLOCK** / **REQUIRED** = emit and stop until satisfied; **INFO** = emit and proceed.
 
 | # | Condition | Level | Message |
 |---|-----------|-------|---------|
-| 1 | `session.initialized_at` is empty | WARN | Session not initialized. Run `/mvt-init` first. |
-| 2 | `active_change.id` is empty | BLOCK | No active change. Run `/mvt-analyze` to create one before planning. |
+| 1 | `session.initialized_at is empty` | WARN | Session not initialized. Run `/mvt-init` first. |
+| 2 | `active_change.id is empty` | BLOCK | No active change. Run `/mvt-analyze` to create one before planning. |
 
 ## Language Constraint (Mandatory)
 
@@ -131,7 +131,7 @@ This is **qualitative AI guidance**, not a hard task count constraint. A complex
 | Explicit dependencies | If task B requires output from task A, list `A` in B's `depends_on`. Avoid hidden ordering. Tasks that can run in parallel should have no dependency between them. |
 | No cycles | Dependency graph must be a DAG. Validation will reject cycles. |
 | Skill hint | Set `skill_hint` to the skill best suited to execute the task (without `/` prefix): `mvt-implement`, `mvt-test`, `mvt-fix`, `mvt-design`, `mvt-review`, `mvt-refactor`, etc. |
-| Project attribution | Each task must have a `project` array listing which projects it belongs to. In a single-project workspace (`projects.length == 1`), set `project: ["default"]` (or the sole project's name). In a multi-project workspace, auto-infer from the task's file paths matching `projects[].path` and `projects[].source_paths`; if ambiguous, prompt the user. Cross-project tasks list multiple project names. |
+| Project attribution | Each task must have a `project` array listing which projects it belongs to. In a single-project workspace (`projects.length == 1`), use the sole project name from `project-context.yaml > projects[].name`. In a multi-project workspace, auto-infer from the task's file paths matching `projects[].path` and `projects[].source_paths`; if ambiguous, prompt the user. Cross-project tasks list multiple project names. |
 | Invalid value handling | If `granularity` contains a value other than `coarse`, `medium`, `fine`, warn the user and fall back to `medium`. |
 
 ### Step 4: Assemble plan.yaml
@@ -146,7 +146,7 @@ created_at: "2026-05-31T11:30:00"
 updated_at: "2026-05-31T11:30:00"
 status: in_progress
 current_tasks:
-  default: "t1-foundation-layer"
+  "<project-name>": "t1-foundation-layer"
 
 tasks:
   - id: "t1-foundation-layer"
@@ -155,7 +155,7 @@ tasks:
     completed_at: null
     depends_on: []
     project:
-      - default
+      - "<project-name>"
     skill_hint: mvt-implement
     artifacts:
       files:
@@ -174,7 +174,7 @@ tasks:
     completed_at: null
     depends_on: ["t1-foundation-layer"]
     project:
-      - default
+      - "<project-name>"
     skill_hint: mvt-implement
     artifacts: null
     notes: >
@@ -194,7 +194,7 @@ tasks:
 - `created_at`: current ISO 8601 timestamp
 - `updated_at`: same as `created_at` initially
 - `status: in_progress`
-- `current_tasks`: a map of project name to task id. For single-project workspaces: `{ default: "<first_task_id>" }`. For multi-project: one key per project, each pointing to that project's first executable task.
+- `current_tasks`: a map of project name to task id. For single-project workspaces: `{ <sole-project-name>: "<first_task_id>" }`, where the key is copied from `project-context.yaml > projects[0].name`. For multi-project: one key per project, each pointing to that project's first executable task.
 
 #### Task fields
 
@@ -205,7 +205,7 @@ For each task, populate:
 - **`status`**: first executable task → `in_progress`; all others → `pending`.
 - **`completed_at`**: `null` for all tasks on initial creation (set by `/mvt-update-plan` when marking `done`).
 - **`depends_on`**: array of task ids. Empty array `[]` means no dependencies.
-- **`project`**: array of project names this task belongs to. In single-project workspaces, use `["default"]` (or the sole project's name). Cross-project tasks list multiple names. Auto-infer from file paths matching `projects[].path` and `projects[].source_paths`; if ambiguous, prompt the user.
+- **`project`**: array of project names this task belongs to. In single-project workspaces, use the sole project name from `project-context.yaml > projects[].name`. Cross-project tasks list multiple names. Auto-infer from file paths matching `projects[].path` and `projects[].source_paths`; if ambiguous, prompt the user.
 - **`skill_hint`**: the skill name (without `/`) that will execute this task.
 - **`artifacts`**: structured object. On initial plan creation, set to `null` or pre-populate with planned target files if known:
   ```yaml
@@ -234,6 +234,8 @@ Before writing, validate the assembled YAML:
 8. **Project attribution** — every task has a `project` array with at least one valid project name
 
 If validation fails, revise the plan and re-validate (do NOT write a broken plan).
+
+Before writing, write the draft to a temporary path and validate it with `node .ai-agents/scripts/plan-update.cjs --validate <draft-plan-path>`. Only write the final `plan.yaml` when the command exits 0; on failure, surface stderr, revise the draft, and re-run validation.
 
 ### Step 6: Write plan.yaml
 

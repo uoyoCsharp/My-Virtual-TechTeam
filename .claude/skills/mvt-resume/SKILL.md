@@ -29,9 +29,9 @@ You are the **Conductor** -- a Workflow Coordinator.
 - Last skill was interrupted -> Surface the context, suggest retry
 
 ### Boundaries
-- Do NOT read git state (branch, diff, commits) (use `(Out of scope -- this skill is session-state only)` instead)
-- Do NOT modify any files (use `(Read-only)` instead)
-- Do NOT run analyses or tests (use `(Use the recommended next skill)` instead)
+- Do NOT read git state (branch, diff, commits) (out of scope -- this skill is session-state only)
+- Do NOT modify any files (read-only)
+- Do NOT run analyses or tests (use the recommended next skill)
 
 ## Activation Protocol
 
@@ -58,13 +58,13 @@ Two blocks: **Load** (what to read, and when) then **Resolve** (what to decide).
 
 **Knowledge** — always load `knowledge._all` + `skills.<current-skill>.knowledge._all`. In multi-project Mode A/B, additionally load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for each resolved P. For every entry: base dir = `.ai-agents/` + its `source` field; load that entry's `files`; if `files_from_manifest: true`, read `manifest.yaml` in that dir and load entries with `auto_load: true`. Skip missing paths silently; never guess or hardcode base dirs — `source` is authoritative.
 
-**Config** — apply `config.yaml` preferences for the whole session: `interaction_language` (chat/prompts/tables), `document_output_language` (files on disk), `output.no_emojis`, `output.data_format`, `context_routing.relevance_threshold`.
+**Config** — apply `config.yaml` preferences for the whole session: `preferences.interaction_language` (chat/prompts/tables), `preferences.document_output_language` (files on disk), `preferences.output.no_emojis`, `preferences.output.data_format`, `preferences.context_routing.relevance_threshold`.
 
 **Pre-flight** — evaluate each check below against the loaded `session.yaml` / `project-context.yaml`. Levels: **WARN** = emit message, ask "Continue? (y/n)", default **y**; **BLOCK** / **REQUIRED** = emit and stop until satisfied; **INFO** = emit and proceed.
 
 | # | Condition | Level | Message |
 |---|-----------|-------|---------|
-| 1 | `session.initialized_at` is empty | WARN | Session not initialized. Run `/mvt-init` first. |
+| 1 | `session.initialized_at is empty` | WARN | Session not initialized. Run `/mvt-init` first. |
 
 ## Language Constraint (Mandatory)
 
@@ -127,7 +127,7 @@ Found {N} active plans. Select which to resume:
 
 | # | change-id | title | progress | updated_at |
 |---|-----------|-------|----------|------------|
-| 1 | {id}      | {t}   | {d}/{n}  | {relative} |
+| 1 | {id}      | {t}   | {d}/{n}  | {updated_at ISO timestamp} |
 | ...
 
 Enter a number, a change-id, or "none" to skip plan context:
@@ -143,7 +143,7 @@ List files under `.ai-agents/workspace/artifacts/{selected_change_id}/`, sorted 
 - Exclude `plan.yaml` from the artifact list (it gets its own section)
 - Take the top 5
 
-For each artifact, capture: file path, mtime, size (in tokens estimate = chars / 4), and the change-id it belongs to.
+For each artifact, capture: file path, mtime, size in characters and estimated tokens using a deterministic character count divided by 4, rounded up, and the change-id it belongs to.
 
 ### Step 5: Determine Resume Point
 
@@ -175,7 +175,7 @@ And the **Current Task Detail** section:
 
 ### Step 7: Generate Resume Report
 
-Render via the `resume-output.md` template. Sections to fill:
+Render inline using the seven sections below. No external template is required.
 
 1. **Active Task** -- name, change-id, started_at (from selected plan)
 2. **Epic Context** (if `within_epic` is true) -- epic title, id, progress (done/total children), current position within the epic. Resolve the parent epic path: compare `active_change.epic_id` to `active_epic.id`. If they match, use `active_epic.epic_path`. If they do not match, search `session.epics[]` for an entry with `id == active_change.epic_id` and use its `epic_path`. If neither path exists, render the plan resume and add a bounded warning: "Epic context could not be loaded (epic_id: {active_change.epic_id})." Read `epic.yaml` via the resolved path and render: "This change is part of epic: **{epic_title}** ({done}/{total} sub-changes done). Current: {active_child_title}."

@@ -103,7 +103,6 @@ sections:
     params:
       current_skill: mvt-update-plan
       update_change: true
-      close_change: true
 
   - type: shared
     source: sections/script-usage-rule.md

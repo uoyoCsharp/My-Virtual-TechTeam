@@ -51,13 +51,13 @@ Two blocks: **Load** (what to read, and when) then **Resolve** (what to decide).
 
 **Knowledge** — always load `knowledge._all` + `skills.<current-skill>.knowledge._all`. In multi-project Mode A/B, additionally load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for each resolved P. For every entry: base dir = `.ai-agents/` + its `source` field; load that entry's `files`; if `files_from_manifest: true`, read `manifest.yaml` in that dir and load entries with `auto_load: true`. Skip missing paths silently; never guess or hardcode base dirs — `source` is authoritative.
 
-**Config** — apply `config.yaml` preferences for the whole session: `interaction_language` (chat/prompts/tables), `document_output_language` (files on disk), `output.no_emojis`, `output.data_format`, `context_routing.relevance_threshold`.
+**Config** — apply `config.yaml` preferences for the whole session: `preferences.interaction_language` (chat/prompts/tables), `preferences.document_output_language` (files on disk), `preferences.output.no_emojis`, `preferences.output.data_format`, `preferences.context_routing.relevance_threshold`.
 
 **Pre-flight** — evaluate each check below against the loaded `session.yaml` / `project-context.yaml`. Levels: **WARN** = emit message, ask "Continue? (y/n)", default **y**; **BLOCK** / **REQUIRED** = emit and stop until satisfied; **INFO** = emit and proceed.
 
 | # | Condition | Level | Message |
 |---|-----------|-------|---------|
-| 1 | `session.initialized_at` is empty | WARN | Session not initialized. Run `/mvt-init` first. |
+| 1 | `session.initialized_at is empty` | WARN | Session not initialized. Run `/mvt-init` first. |
 
 ## Language Constraint (Mandatory)
 
@@ -84,8 +84,8 @@ Use `preferences.document_output_language` for artifact files, generated reports
 ### Step 2: Build Activity Timeline
 - **What**: produce the most-recent-first list of history entries with derived metadata.
 - **How**:
-  1. Read `.ai-agents/workspace/session.yaml`, extract `history`.
-  2. For each entry, attach: relative time (e.g., "2h ago"), `change_id` (if present), and the originating skill name.
+  1. From the already-loaded `session.yaml` (Wave 1), extract `history`. Do not re-read the file.
+  2. For each entry, attach an ISO timestamp copied from the entry, `change_id` (if present), and the originating skill name. Do not invent approximate relative times.
   3. Limit to the last 10 entries for the rendered table; keep full count separately for the summary line.
 
 ### Step 3: Discover All Plans (Multi-Change Dashboard)
@@ -103,7 +103,7 @@ Use `preferences.document_output_language` for artifact files, generated reports
   | No plans found anywhere | Skip the Changes Overview section entirely; render "No active plans." |
   | One plan found | Render Changes Overview with one row |
   | Multiple plans found | Render Changes Overview sorted: `in_progress` desc by `updated_at` first, then `done` desc by `updated_at`, then `abandoned` last |
-  | Any plan over the cap (more than ~12 rows) | Show top 10 rows; print a `+N older changes hidden -- see artifacts/` line |
+  | Any plan list over the cap (more than 12 rows) | Show top 10 rows; print a `+N older changes hidden -- see artifacts/` line |
 
 ### Step 4: Build the Status Report
 - Render in this order, omitting any section whose inputs were unavailable:
@@ -140,7 +140,7 @@ Use `preferences.document_output_language` for artifact files, generated reports
      For `current_tasks`, display as a compact representation: if single-project, show the task id only; if multi-project, show `web: t2, api: t1` format. The `project` column lists the distinct projects across all tasks in the plan.
   6. **Skill History** -- last 5 rows of the timeline from Step 2.
 
-- Hard cap: total rendered output should not exceed ~120 lines. If it would, truncate Skill History first; never truncate the active change or Changes Overview header rows.
+- Hard cap: total rendered output should not exceed 120 lines. If it would, truncate Skill History first; never truncate the active change or Changes Overview header rows.
 
 ## Edge Cases & Errors
 

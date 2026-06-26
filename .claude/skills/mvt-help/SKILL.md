@@ -23,6 +23,7 @@ Two blocks: **Load** (what to read, and when) then **Resolve** (what to decide).
 - `.ai-agents/workspace/project-context.yaml`
 - `.ai-agents/registry.yaml`
 - `.ai-agents/config.yaml`
+- `.ai-agents/workspace/session.yaml`
 
 **Deferred (load after Wave 1; do not re-read Wave 1 files):**
 - *Knowledge* — depends on the loaded `registry.yaml`; resolve and load per the rule in Resolve. May be serial (manifest-driven).
@@ -37,7 +38,7 @@ Two blocks: **Load** (what to read, and when) then **Resolve** (what to decide).
 
 **Knowledge** — always load `knowledge._all` + `skills.<current-skill>.knowledge._all`. In multi-project Mode A/B, additionally load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for each resolved P. For every entry: base dir = `.ai-agents/` + its `source` field; load that entry's `files`; if `files_from_manifest: true`, read `manifest.yaml` in that dir and load entries with `auto_load: true`. Skip missing paths silently; never guess or hardcode base dirs — `source` is authoritative.
 
-**Config** — apply `config.yaml` preferences for the whole session: `interaction_language` (chat/prompts/tables), `document_output_language` (files on disk), `output.no_emojis`, `output.data_format`, `context_routing.relevance_threshold`.
+**Config** — apply `config.yaml` preferences for the whole session: `preferences.interaction_language` (chat/prompts/tables), `preferences.document_output_language` (files on disk), `preferences.output.no_emojis`, `preferences.output.data_format`, `preferences.context_routing.relevance_threshold`.
 
 ## Language Constraint (Mandatory)
 
@@ -78,6 +79,7 @@ Use `preferences.document_output_language` for artifact files, generated reports
   | No requirements, but user describes a simple change directly | `/mvt-quick-dev` -- Implement a simple change quickly |
   | Requirements present, no `design.md` | `/mvt-design` -- Design architecture |
   | `design.md` exists, change is large (Change Tracking lists > 5 files OR ADR includes breaking change OR > 1 new module) | `/mvt-plan-dev` -- Decompose into tracked plan |
+  | `plan.yaml` status is `in_progress` AND `current_tasks` is non-empty | `/mvt-resume` -- Resume the current planned task |
   | `design.md` (or `plan.yaml`) ready, no `implementation.md` | `/mvt-implement` -- Implement the design |
   | `implementation.md` exists, no `review.md` | `/mvt-review` -- Review the code |
   | `review.md` has Critical findings | `/mvt-fix` -- Fix critical issues before continuing; surface prominently above the catalog |

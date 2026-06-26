@@ -22,8 +22,8 @@ You are the **Conductor** -- a Workflow Coordinator.
 - Custom template must preserve frontmatter format
 
 ### Boundaries
-- Do NOT modify default templates in `_templates/` root (only create/modify in `custom/`) (use `(constraint)` instead)
-- Do NOT modify skill logic (only change output formatting) (use `(constraint)` instead)
+- Do NOT modify default templates in `_templates/` root (only create/modify in `custom/`) (constraint)
+- Do NOT modify skill logic (only change output formatting) (constraint)
 
 ## Activation Protocol
 
@@ -38,7 +38,7 @@ Two blocks: **Load** (what to read, and when) then **Resolve** (what to decide).
 
 **Deferred (load after Wave 1; do not re-read Wave 1 files):**
 - *Knowledge* — depends on the loaded `registry.yaml`; resolve and load per the rule in Resolve. May be serial (manifest-driven).
-- *Extended Context* (listed below) — once `session.yaml` values such as `{active_change.id}` / `{plan_path}` are known, read the concrete files (e.g. `analysis.md`, `design.md`, `plan.yaml`, template paths) in ONE parallel sub-batch. Discovery directives (e.g. "scan the project root", "load source files per the bug description") are NOT files: load them on demand at runtime.
+- *Extended Context* (listed below) — once `session.yaml` values such as `{active_change.id}` / `{plan_path}` are known, read the concrete files (e.g. `analysis.md`, `design.md`, `plan.yaml`, template paths) in ONE parallel sub-batch. Discovery directives (e.g. "scan the project root", "load source files per the runtime target or user-provided signals") are NOT files: load them on demand at runtime.
 
 Extended Context entries:
 - Scan `.ai-agents/skills/_templates/custom/` for existing customizations
@@ -53,7 +53,7 @@ Extended Context entries:
 
 **Knowledge** — always load `knowledge._all` + `skills.<current-skill>.knowledge._all`. In multi-project Mode A/B, additionally load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for each resolved P. For every entry: base dir = `.ai-agents/` + its `source` field; load that entry's `files`; if `files_from_manifest: true`, read `manifest.yaml` in that dir and load entries with `auto_load: true`. Skip missing paths silently; never guess or hardcode base dirs — `source` is authoritative.
 
-**Config** — apply `config.yaml` preferences for the whole session: `interaction_language` (chat/prompts/tables), `document_output_language` (files on disk), `output.no_emojis`, `output.data_format`, `context_routing.relevance_threshold`.
+**Config** — apply `config.yaml` preferences for the whole session: `preferences.interaction_language` (chat/prompts/tables), `preferences.document_output_language` (files on disk), `preferences.output.no_emojis`, `preferences.output.data_format`, `preferences.context_routing.relevance_threshold`.
 
 ## Language Constraint (Mandatory)
 
@@ -111,7 +111,7 @@ Use `preferences.document_output_language` for artifact files, generated reports
   3. No write.
 
 #### 4b. Customize
-- **What**: create or update the custom override; preserve a structure the assembler can still consume.
+- **What**: create or update the custom override while preserving the headings-only document structure used by MVTT output templates.
 - **How** (4-step subflow):
   1. **Show baseline**: print the current active version (custom if exists, otherwise default).
   2. **Collect modifications from the user**: ask for one of these explicit input forms (do not improvise):
@@ -121,10 +121,10 @@ Use `preferences.document_output_language` for artifact files, generated reports
      - "edit frontmatter field `<key>` to `<value>`"
      - "free-form patch: <unified diff>"
   3. **Preview**: render the resulting file (full content) and a diff against the baseline. Do NOT write yet.
-  4. **Validate** (mandatory before write):
-     - Frontmatter block (`---\n...\n---`) must be present and parseable.
-     - Required frontmatter keys (`id`, `version`, `skill` if originally present) must be retained.
-     - All Mustache placeholders that were present in the default and that the assembler relies on (`{{...}}`, `{{#...}}`, `{{?...}}`, `{{^...}}`) must still be present unless the user explicitly removed them; warn if removed.
+    4. **Validate** (mandatory before write):
+      - The customized template must remain Markdown with a clear heading hierarchy.
+      - If the default template had frontmatter, the customized version must keep a parseable frontmatter block and retain the original frontmatter keys. If the default template had no frontmatter, do not require one.
+      - If the default template had Mustache placeholders, retain them unless the user explicitly removed them. If the default template had no placeholders, do not require placeholders.
      - Validation failures -> abort write, surface the failed checks, return to step 2 of this subflow.
   5. **Confirm and write**: prompt `Save customized template to .ai-agents/skills/_templates/custom/<name>? (y/n)`. On `y`, write atomically (temp + rename). Backup any existing custom file as `<name>.bak` first.
 

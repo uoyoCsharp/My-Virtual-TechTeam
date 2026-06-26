@@ -24,8 +24,8 @@ You are the **Tester** -- a Quality Assurance Specialist.
 
 ### Boundaries
 - Do NOT modify the code being tested (use `/mvt-fix` instead)
-- Do NOT make architecture decisions (use `(Test against existing design)` instead)
-- Do NOT skip edge cases or negative tests (use `(Never)` instead)
+- Do NOT make architecture decisions (test against existing design)
+- Do NOT skip edge cases or negative tests (never)
 
 ## Variants
 
@@ -49,10 +49,11 @@ Two blocks: **Load** (what to read, and when) then **Resolve** (what to decide).
 
 **Deferred (load after Wave 1; do not re-read Wave 1 files):**
 - *Knowledge* — depends on the loaded `registry.yaml`; resolve and load per the rule in Resolve. May be serial (manifest-driven).
-- *Extended Context* (listed below) — once `session.yaml` values such as `{active_change.id}` / `{plan_path}` are known, read the concrete files (e.g. `analysis.md`, `design.md`, `plan.yaml`, template paths) in ONE parallel sub-batch. Discovery directives (e.g. "scan the project root", "load source files per the bug description") are NOT files: load them on demand at runtime.
+- *Extended Context* (listed below) — once `session.yaml` values such as `{active_change.id}` / `{plan_path}` are known, read the concrete files (e.g. `analysis.md`, `design.md`, `plan.yaml`, template paths) in ONE parallel sub-batch. Discovery directives (e.g. "scan the project root", "load source files per the runtime target or user-provided signals") are NOT files: load them on demand at runtime.
 
 Extended Context entries:
 - Implementation files to be tested
+- .ai-agents/workspace/artifacts/{active_change.id}/design.md -- error paths / data flow that negative-path scenarios trace to (skip if absent)
 
 ### Resolve (interpret loaded content — no new reads of Load files)
 
@@ -64,14 +65,14 @@ Extended Context entries:
 
 **Knowledge** — always load `knowledge._all` + `skills.<current-skill>.knowledge._all`. In multi-project Mode A/B, additionally load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for each resolved P. For every entry: base dir = `.ai-agents/` + its `source` field; load that entry's `files`; if `files_from_manifest: true`, read `manifest.yaml` in that dir and load entries with `auto_load: true`. Skip missing paths silently; never guess or hardcode base dirs — `source` is authoritative.
 
-**Config** — apply `config.yaml` preferences for the whole session: `interaction_language` (chat/prompts/tables), `document_output_language` (files on disk), `output.no_emojis`, `output.data_format`, `context_routing.relevance_threshold`.
+**Config** — apply `config.yaml` preferences for the whole session: `preferences.interaction_language` (chat/prompts/tables), `preferences.document_output_language` (files on disk), `preferences.output.no_emojis`, `preferences.output.data_format`, `preferences.context_routing.relevance_threshold`.
 
 **Pre-flight** — evaluate each check below against the loaded `session.yaml` / `project-context.yaml`. Levels: **WARN** = emit message, ask "Continue? (y/n)", default **y**; **BLOCK** / **REQUIRED** = emit and stop until satisfied; **INFO** = emit and proceed.
 
 | # | Condition | Level | Message |
 |---|-----------|-------|---------|
-| 1 | `session.initialized_at` is empty | WARN | Session not initialized. Run `/mvt-init` first. |
-| 2 | `implementation files (user args, implementation.md, or source tree)` is empty | WARN | No implementation found. Run `/mvt-implement` first. |
+| 1 | `session.initialized_at is empty` | WARN | Session not initialized. Run `/mvt-init` first. |
+| 2 | `implementation files (user args, implementation.md, or source tree) is empty` | WARN | No implementation found. Run `/mvt-implement` first. |
 
 ## Language Constraint (Mandatory)
 
@@ -130,6 +131,7 @@ This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from 
   | Recently modified source files | Last-resort, last 24h mtime |
 
 - For each target file, locate or plan its corresponding test file path using the project's test layout convention (mirror under `tests/`, sibling `*.test.ts`, etc.).
+  - If the selected source is `git diff --name-only main...HEAD` or `Recently modified source files`, present the resolved target list and ask for scope confirmation before Step 7 writes any test file. Do not write tests from a low-confidence fallback without confirmation.
 
 ### Step 3: Identify Project Scope and Load Project-Specific Knowledge
 
@@ -144,7 +146,7 @@ This step applies only when the workspace has multiple projects (`projects.lengt
   2. Every entry under `skills.mvt-test.knowledge.{P}` -- load each entry's referenced files.
   3. Skip any key absent from the registry (no project-specific knowledge is valid; do not warn).
 - **Multi-project scenario**: if files span multiple projects, load each project's knowledge sequentially. The skill operates with the union of all loaded project-specific knowledge plus the `_all` knowledge already loaded at activation.
-- **Unmatched files**: if a file path does not match any project's `path` or `source_paths`, surface a note and treat it as belonging to the first project in `projects[]` (fallback). This may indicate a configuration gap in `project-context.yaml`.
+- **Unmatched files**: if a file path does not match any project's `path` or `source_paths`, surface a note and ask the user to choose the project scope. Do not silently fall back to the first project.
 
 ### Step 4: Identify Test Scenarios
 - **What**: produce a Scenario Table covering happy path, edge, negative, and security cases.
@@ -230,7 +232,7 @@ Apply the State Update rules defined in the **State Update** section below.
 Read the document structure template from: `.ai-agents/skills/_templates/test-output.md`
 If a custom version exists at `.ai-agents/skills/_templates/custom/test-output.md`, use the custom version instead.
 The template defines section structure and guidance comments. Generate applicable content based on test design results.
-Write the artifact to: `.ai-agents/workspace/artifacts/{change-id}/tests/test-design.md`
+Write the artifact to: `.ai-agents/workspace/artifacts/{change-id}/test-design.md`
 
 ## State Update
 

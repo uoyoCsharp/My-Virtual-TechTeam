@@ -25,7 +25,7 @@ You are the **Reviewer** -- a Code Quality Guardian.
 ### Boundaries
 - Do NOT fix code directly (use `/mvt-fix` instead)
 - Do NOT make architecture decisions (use `/mvt-design` instead)
-- Do NOT modify source code (use `(This is a read-only review)` instead)
+- Do NOT modify source code (this is a read-only review)
 
 ## Aspect Options
 
@@ -33,8 +33,11 @@ You are the **Reviewer** -- a Code Quality Guardian.
 |--------|-------------|
 | `architecture` | Layer compliance, module boundaries, dependency direction |
 | `security` | Input validation, injection prevention, authentication |
-| `performance` | N+1 queries, memory leaks, caching |
-| `style` | Naming conventions, formatting, documentation |
+| `quality` | Function size, duplication, dead code, maintainability |
+| `errors` | Error handling, swallowed errors, boundary behavior |
+| `edge-cases` | Boundary inputs, concurrency, resource lifecycle |
+| `naming` | Naming conventions, formatting, documentation |
+| `tests` | Test coverage, assertions, skipped tests |
 
 Usage: `/mvt-review` or `/mvt-review --aspect {type}`
 
@@ -52,7 +55,7 @@ Two blocks: **Load** (what to read, and when) then **Resolve** (what to decide).
 
 **Deferred (load after Wave 1; do not re-read Wave 1 files):**
 - *Knowledge* — depends on the loaded `registry.yaml`; resolve and load per the rule in Resolve. May be serial (manifest-driven).
-- *Extended Context* (listed below) — once `session.yaml` values such as `{active_change.id}` / `{plan_path}` are known, read the concrete files (e.g. `analysis.md`, `design.md`, `plan.yaml`, template paths) in ONE parallel sub-batch. Discovery directives (e.g. "scan the project root", "load source files per the bug description") are NOT files: load them on demand at runtime.
+- *Extended Context* (listed below) — once `session.yaml` values such as `{active_change.id}` / `{plan_path}` are known, read the concrete files (e.g. `analysis.md`, `design.md`, `plan.yaml`, template paths) in ONE parallel sub-batch. Discovery directives (e.g. "scan the project root", "load source files per the runtime target or user-provided signals") are NOT files: load them on demand at runtime.
 
 Extended Context entries:
 - .ai-agents/workspace/artifacts/{active_change.id}/analysis.md -- Requirements analysis
@@ -69,14 +72,14 @@ Extended Context entries:
 
 **Knowledge** — always load `knowledge._all` + `skills.<current-skill>.knowledge._all`. In multi-project Mode A/B, additionally load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for each resolved P. For every entry: base dir = `.ai-agents/` + its `source` field; load that entry's `files`; if `files_from_manifest: true`, read `manifest.yaml` in that dir and load entries with `auto_load: true`. Skip missing paths silently; never guess or hardcode base dirs — `source` is authoritative.
 
-**Config** — apply `config.yaml` preferences for the whole session: `interaction_language` (chat/prompts/tables), `document_output_language` (files on disk), `output.no_emojis`, `output.data_format`, `context_routing.relevance_threshold`.
+**Config** — apply `config.yaml` preferences for the whole session: `preferences.interaction_language` (chat/prompts/tables), `preferences.document_output_language` (files on disk), `preferences.output.no_emojis`, `preferences.output.data_format`, `preferences.context_routing.relevance_threshold`.
 
 **Pre-flight** — evaluate each check below against the loaded `session.yaml` / `project-context.yaml`. Levels: **WARN** = emit message, ask "Continue? (y/n)", default **y**; **BLOCK** / **REQUIRED** = emit and stop until satisfied; **INFO** = emit and proceed.
 
 | # | Condition | Level | Message |
 |---|-----------|-------|---------|
-| 1 | `session.initialized_at` is empty | WARN | Session not initialized. Run `/mvt-init` first. |
-| 2 | `review target (user args, implementation.md, or git diff)` is empty | WARN | No code to review. Run `/mvt-implement` first or specify files. |
+| 1 | `session.initialized_at is empty` | WARN | Session not initialized. Run `/mvt-init` first. |
+| 2 | `review target (user args, implementation.md, or git diff) is empty` | WARN | No code to review. Run `/mvt-implement` first or specify files. |
 
 ## Language Constraint (Mandatory)
 
@@ -139,7 +142,7 @@ This step applies only when the workspace has multiple projects (`projects.lengt
   2. Every entry under `skills.mvt-review.knowledge.{P}` -- load each entry's referenced files.
   3. Skip any key absent from the registry (no project-specific knowledge is valid; do not warn).
 - **Multi-project scenario**: if files span multiple projects, load each project's knowledge sequentially. The skill operates with the union of all loaded project-specific knowledge plus the `_all` knowledge already loaded at activation.
-- **Unmatched files**: if a file path does not match any project's `path` or `source_paths`, surface a note and treat it as belonging to the first project in `projects[]` (fallback). This may indicate a configuration gap in `project-context.yaml`.
+- **Unmatched files**: if a file path does not match any project's `path` or `source_paths`, surface a note and ask the user to choose the project scope. Do not silently fall back to the first project.
 
 ### Step 4: Determine Review Depth
 - **Default**: full review across all axes (Step 5).
@@ -211,7 +214,8 @@ This step applies only when the workspace has multiple projects (`projects.lengt
 ### Step 8: Verdict Rule
 - Critical > 0 -> verdict is `Request changes`. Suggest `/mvt-fix`.
 - Critical = 0, Warnings > 5 -> verdict is `Approve with comments`.
-- Critical = 0, Warnings <= 5, Suggestions only -> verdict is `Approve`.
+- Critical = 0, Warnings between 1 and 5 -> verdict is `Approve with comments`.
+- Critical = 0, Warnings = 0 -> verdict is `Approve`.
 - Code-only review (design.md missing) -> verdict cannot be higher than `Approve with comments` (call it out explicitly).
 
 ### Step 9: State Update

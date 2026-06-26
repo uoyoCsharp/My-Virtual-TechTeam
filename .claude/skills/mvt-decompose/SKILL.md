@@ -49,15 +49,15 @@ Two blocks: **Load** (what to read, and when) then **Resolve** (what to decide).
 
 **Knowledge** — always load `knowledge._all` + `skills.<current-skill>.knowledge._all`. In multi-project Mode A/B, additionally load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for each resolved P. For every entry: base dir = `.ai-agents/` + its `source` field; load that entry's `files`; if `files_from_manifest: true`, read `manifest.yaml` in that dir and load entries with `auto_load: true`. Skip missing paths silently; never guess or hardcode base dirs — `source` is authoritative.
 
-**Config** — apply `config.yaml` preferences for the whole session: `interaction_language` (chat/prompts/tables), `document_output_language` (files on disk), `output.no_emojis`, `output.data_format`, `context_routing.relevance_threshold`.
+**Config** — apply `config.yaml` preferences for the whole session: `preferences.interaction_language` (chat/prompts/tables), `preferences.document_output_language` (files on disk), `preferences.output.no_emojis`, `preferences.output.data_format`, `preferences.context_routing.relevance_threshold`.
 
 **Pre-flight** — evaluate each check below against the loaded `session.yaml` / `project-context.yaml`. Levels: **WARN** = emit message, ask "Continue? (y/n)", default **y**; **BLOCK** / **REQUIRED** = emit and stop until satisfied; **INFO** = emit and proceed.
 
 | # | Condition | Level | Message |
 |---|-----------|-------|---------|
-| 1 | `session.initialized_at` is empty | WARN | Session not initialized. Run `/mvt-init` first. |
-| 2 | `projects[] in project-context.yaml` is empty | WARN | Project not initialized. Run `/mvt-init` first. |
-| 3 | `active_change.id` is empty | WARN | An active change already exists. Decomposing will create a new epic alongside it. Continue? (y/n) |
+| 1 | `session.initialized_at is empty` | WARN | Session not initialized. Run `/mvt-init` first. |
+| 2 | `projects[] in project-context.yaml is empty` | WARN | Project not initialized. Run `/mvt-init` first. |
+| 3 | `active_change.id is non-empty` | WARN | An active change already exists. Decomposing will create a new epic alongside it. Continue? (y/n) |
 
 ## Language Constraint (Mandatory)
 
@@ -141,6 +141,8 @@ This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from 
 ### Step 6: Write Artifacts
 Write two artifacts:
 
+Before writing, derive `epic_id` and check whether `.ai-agents/workspace/artifacts/{epic_id}/` already exists. If it exists, do NOT overwrite it; warn the user and ask for a disambiguating slug, then re-run the preview from Step 5 with the new id.
+
 1. **epic.md** (narrative) -- `.ai-agents/workspace/artifacts/{epic_id}/epic.md`
    - Uses the `decompose-output` template. Follow the HTML comments in the template for what each section should contain (including the Child Stories table format and the Dependency Map mermaid flowchart); strip comments from the final artifact.
   - **Required coverage**: cover only content that is applicable to this decomposition. Preserve enough information for the user to understand the epic vision, boundaries, cross-cutting concerns, child stories, dependencies, and unresolved questions. Do not create empty or artificial sections just because an item is named here; if the template omits or renames a section, place applicable content in the closest relevant section.
@@ -152,6 +154,7 @@ Write two artifacts:
 
 **Self-validation checklist** (verify before writing):
 - [ ] All `change_id` values are unique
+- [ ] `.ai-agents/workspace/artifacts/{epic_id}/` does not already exist
 - [ ] All `depends_on` references exist in `children[]`
 - [ ] No cycles in the dependency graph
 - [ ] Exactly one child has `status: active`

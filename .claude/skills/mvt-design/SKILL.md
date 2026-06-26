@@ -47,10 +47,12 @@ Two blocks: **Load** (what to read, and when) then **Resolve** (what to decide).
 
 **Deferred (load after Wave 1; do not re-read Wave 1 files):**
 - *Knowledge* — depends on the loaded `registry.yaml`; resolve and load per the rule in Resolve. May be serial (manifest-driven).
-- *Extended Context* (listed below) — once `session.yaml` values such as `{active_change.id}` / `{plan_path}` are known, read the concrete files (e.g. `analysis.md`, `design.md`, `plan.yaml`, template paths) in ONE parallel sub-batch. Discovery directives (e.g. "scan the project root", "load source files per the bug description") are NOT files: load them on demand at runtime.
+- *Extended Context* (listed below) — once `session.yaml` values such as `{active_change.id}` / `{plan_path}` are known, read the concrete files (e.g. `analysis.md`, `design.md`, `plan.yaml`, template paths) in ONE parallel sub-batch. Discovery directives (e.g. "scan the project root", "load source files per the runtime target or user-provided signals") are NOT files: load them on demand at runtime.
 
 Extended Context entries:
 - .ai-agents/workspace/artifacts/{active_change.id}/analysis.md -- Analysis from previous phase
+- .ai-agents/knowledge/project/_generated/project-context.md -- Current semantic project context
+- .ai-agents/workspace/artifacts/*/design.md -- Prior design artifacts for related changes (load only relevant matches)
 
 ### Resolve (interpret loaded content — no new reads of Load files)
 
@@ -62,16 +64,16 @@ Extended Context entries:
 
 **Knowledge** — always load `knowledge._all` + `skills.<current-skill>.knowledge._all`. In multi-project Mode A/B, additionally load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for each resolved P. For every entry: base dir = `.ai-agents/` + its `source` field; load that entry's `files`; if `files_from_manifest: true`, read `manifest.yaml` in that dir and load entries with `auto_load: true`. Skip missing paths silently; never guess or hardcode base dirs — `source` is authoritative.
 
-**Config** — apply `config.yaml` preferences for the whole session: `interaction_language` (chat/prompts/tables), `document_output_language` (files on disk), `output.no_emojis`, `output.data_format`, `context_routing.relevance_threshold`.
+**Config** — apply `config.yaml` preferences for the whole session: `preferences.interaction_language` (chat/prompts/tables), `preferences.document_output_language` (files on disk), `preferences.output.no_emojis`, `preferences.output.data_format`, `preferences.context_routing.relevance_threshold`.
 
 **Pre-flight** — evaluate each check below against the loaded `session.yaml` / `project-context.yaml`. Levels: **WARN** = emit message, ask "Continue? (y/n)", default **y**; **BLOCK** / **REQUIRED** = emit and stop until satisfied; **INFO** = emit and proceed.
 
 | # | Condition | Level | Message |
 |---|-----------|-------|---------|
-| 1 | `session.initialized_at` is empty | BLOCK | Session not initialized. Run `/mvt-init` first. |
-| 2 | `projects[] in project-context.yaml` is empty | BLOCK | Project not initialized. Run `/mvt-init` first. |
-| 3 | `project-context.md` is empty | WARN | No project-context.md found. Run `/mvt-analyze-code` for better design context. (allow user to proceed) |
-| 4 | `requirements in project-context.md` is empty | WARN | No requirements found. Run `/mvt-analyze` first. (allow user to proceed) |
+| 1 | `session.initialized_at is empty` | BLOCK | Session not initialized. Run `/mvt-init` first. |
+| 2 | `projects[] in project-context.yaml is empty` | BLOCK | Project not initialized. Run `/mvt-init` first. |
+| 3 | `project-context.md is empty` | WARN | No project-context.md found. Run `/mvt-analyze-code` for better design context. (allow user to proceed) |
+| 4 | `requirements in project-context.md is empty` | WARN | No requirements found. Run `/mvt-analyze` first. (allow user to proceed) |
 
 ## Language Constraint (Mandatory)
 
@@ -185,7 +187,7 @@ This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from 
 - Do NOT modify `project-context.yaml` or `project-context.md` here.
 
 ### Step 8: Suggest Plan Decomposition
-- If `Change Tracking` lists more than ~5 files OR Module Design adds more than 1 new module OR ADRs include any breaking change, recommend `/mvt-plan-dev` as the next step.
+- If `Change Tracking` lists more than 5 files OR Module Design adds more than 1 new module OR ADRs include any breaking change, recommend `/mvt-plan-dev` as the next step.
 - Otherwise recommend `/mvt-implement` directly.
 
 ### Step 9: State Update

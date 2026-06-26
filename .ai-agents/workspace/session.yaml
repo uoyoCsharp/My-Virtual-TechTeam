@@ -1,160 +1,48 @@
 session:
   initialized_at: 2026-06-05T08:12:06.624Z
   last_synced_at: 2026-06-08T02:44:34.674Z
-active_change:
-  id: 20260624-activation-load-parallelization
-  title: Activation-Phase Load Parallelization
-  created_at: 2026-06-24T10:47:05.665Z
-  plan_path: .ai-agents/workspace/artifacts/20260624-activation-load-parallelization/plan.yaml
-  epic_id: ""
-changes:
-  - id: 20260605-multi-project-workflow-support
-    title: 多项目工作流支持 (OPT-2026-002)
-    plan_path: .ai-agents/workspace/artifacts/20260605-multi-project-workflow-support/plan.yaml
-    status: done
-    updated_at: 2026-06-06T15:04:34.440Z
-  - id: 20260608-epic-scope-detection
-    title: Epic Decomposition Layer (OPT-2026-003)
-    plan_path: .ai-agents/workspace/artifacts/20260608-epic-scope-detection/plan.yaml
-    status: done
-    updated_at: 2026-06-08T14:23:34.708Z
-    epic_id: ""
-  - id: 20260608-sub
-    title: Sub-change
-    plan_path: ""
-    status: done
-    updated_at: 2026-06-08T14:23:34.967Z
-    epic_id: epic-20260608-demo
-  - id: 20260608-regular
-    title: Regular change
-    plan_path: ""
-    status: done
-    updated_at: 2026-06-19T03:23:47.630Z
-    epic_id: ""
-  - id: 20260619-script-callability
-    title: Script Callability — Eliminate AI Reading Script Source
-    plan_path: ""
-    status: done
-    updated_at: 2026-06-19T06:36:41.745Z
-    epic_id: ""
-  - id: 20260619-shared-section-prompt-optimization
-    title: Shared Section Prompt Quality Optimization
-    plan_path: ""
-    status: done
-    updated_at: 2026-06-19T13:49:40.019Z
-    epic_id: ""
-  - id: 20260619-script-call-prompt-optimization
-    title: Script Call Prompt Optimization
-    plan_path: ""
-    status: done
-    updated_at: 2026-06-22T11:03:20.136Z
-    epic_id: ""
-  - id: 20260622-session-archive-sync
-    title: Session Index Archive Sync (--remove-* / --update-*-path flags)
-    plan_path: ""
-    status: done
-    updated_at: 2026-06-24T10:51:00.000Z
-    epic_id: ""
-  - id: 20260624-activation-load-parallelization
-    title: Activation-Phase Load Parallelization
-    plan_path: .ai-agents/workspace/artifacts/20260624-activation-load-parallelization/plan.yaml
-    status: active
-    updated_at: 2026-06-25T01:56:53.599Z
-    epic_id: ""
+active_change: null
+changes: null
 history:
-  - skill: /mvt-design
-    completed_at: 2026-06-22T11:07:04.783Z
-    summary: "Design v1 (Plan B only): 在 session-update.cjs 新增 --remove-change 与 --remove-epic 两个对称 flag 解决 changes[]/epics[] 归档后悬挂指针；mvt-cleanup Step 7/10 默认调用 --remove-*；方案 A（路径改写）推迟到独立 change"
-    change_id: 20260622-session-archive-sync
-  - skill: /mvt-implement
-    completed_at: 2026-06-23T11:06:04.126Z
-    summary: 实现 --remove-change / --remove-epic flag, 5 个手改源文件落地, 未执行 build 验证
-    change_id: 20260622-session-archive-sync
-  - skill: /mvt-review
-    completed_at: 2026-06-23T11:12:26.009Z
-    summary: "完成代码审查: 1 Critical, 1 Warning, 1 Suggestion, 结论 Request changes"
-    change_id: 20260622-session-archive-sync
-  - skill: /mvt-quick-dev
-    completed_at: 2026-06-24T07:28:34.886Z
-    summary: 为 mvt-review/mvt-fix 增加写入产出物前的用户确认开关
-    change_id: ""
-  - skill: /mvt-quick-dev
-    completed_at: 2026-06-24T07:34:48.123Z
-    summary: mvt-review 无 active_change 时改为仅对话输出，与 mvt-fix 行为一致
-    change_id: ""
-  - skill: /mvt-quick-dev
-    completed_at: 2026-06-24T07:58:09.408Z
-    summary: mvtt update 备份改为可选：交互式询问，非 TTY 默认备份
-    change_id: ""
-  - skill: /mvt-quick-dev
-    completed_at: 2026-06-24T08:12:40.559Z
-    summary: mvt-test 产物对齐 review/fix：写 artifact 前确认，无 active_change 仅对话
-    change_id: ""
-  - skill: /mvt-review
-    completed_at: 2026-06-24T09:29:50.092Z
-    summary: Reviewed mvt-status activation optimization proposal
-    change_id: ""
-  - skill: /mvt-design
-    completed_at: 2026-06-24T10:44:03.907Z
-    summary: 设计激活阶段加载并行化重构：批量并行前导(ADR-1/2)、下游阶段改为解释已加载内容(ADR-3)、单项目快捷路径(ADR-4)、mvt-status存在性检查+glob为准(ADR-5)
-    change_id: ""
-  - skill: /mvt-plan-dev
-    completed_at: 2026-06-24T10:47:05.665Z
-    summary: 生成激活并行化重构计划：6任务(ADR-3措辞→ADR-1/2前导+param→ADR-4快捷路径→ADR-5 mvt-status→重编译验证)
-    change_id: 20260624-activation-load-parallelization
-  - skill: /mvt-implement
-    completed_at: 2026-06-24T10:50:35.298Z
-    summary: 实现 t1：将激活 Stage 1/2/4/5 改为'使用已加载内容'措辞(ADR-3)，改 3 个共享 section，保留全部文件引用与模板 token，未重编译
-    change_id: 20260624-activation-load-parallelization
-  - skill: /mvt-implement
-    completed_at: 2026-06-24T10:55:34.371Z
-    summary: 实现 t2：在 activation-load-context.md 头部加 Batch Load 并行前导 + activation_reads param(ADR-1/2)，引擎实测有/无 param 渲染均正确
-    change_id: 20260624-activation-load-parallelization
-  - skill: /mvt-implement
-    completed_at: 2026-06-24T11:01:15.607Z
-    summary: 一次实现 t3/t4/t5：16个preflight manifest接入activation_reads(8个非preflight未污染,均机验)、单项目快捷路径(保留_all)、mvt-status存在性检查+glob为准(保留missing标记)
-    change_id: 20260624-activation-load-parallelization
-  - skill: /mvt-update-plan
-    completed_at: 2026-06-24T11:10:31.820Z
-    summary: 标记 t1-t5 完成(ADR-3措辞/ADR-1-2前导+param/16 manifest接入/单项目快捷路径/mvt-status加固)，current_tasks 推进到 t7
-    change_id: 20260624-activation-load-parallelization
-  - skill: /mvt-implement
-    completed_at: 2026-06-24T11:12:53.913Z
-    summary: 实现 t7：activation-load-context.md 加 Wave 2 两波加载模型(ADR-6)，extended_context 区分变更产物并行/发现型 deferred，修 Stage 1 不一致，引擎实测有/无 param 渲染均正确
-    change_id: 20260624-activation-load-parallelization
-  - skill: /mvt-implement
-    completed_at: 2026-06-24T11:27:49.805Z
-    summary: 实现 t8(ADR-7)：三个 activation section 合并为 activation-protocol.md，24 manifest 迁移+删旧文件；Stage5 改用 {{?has_preflight}} 包裹(引擎同名嵌套不可靠，偏离ADR-7已记录)；顺带修 t3 给 create-skill 误加 activation_reads 的bug
-    change_id: 20260624-activation-load-parallelization
-  - skill: /mvt-implement
-    completed_at: 2026-06-24T11:48:31.664Z
-    summary: 记录 post-t8 收尾到 implementation.md：F1 activation-protocol 精简为 Load/Resolve 两区块(review Approve with comments)，F2 修 mvt-create-skill 三处陈旧引用(含引用类型根本错误)，并列出 ADR-8/t6基线/S-1 待办
-    change_id: 20260624-activation-load-parallelization
-  - skill: /mvt-update-plan
-    completed_at: 2026-06-25T01:56:53.599Z
-    summary: 标记 t7(两波加载)、t8(三section合并+create-skill引用修复)完成，current_tasks 推进到 t6 验证关卡
-    change_id: 20260624-activation-load-parallelization
-  - skill: /mvt-design
-    completed_at: 2026-06-25T02:03:20.446Z
-    summary: 补 ADR-8：激活协议精简为 Load/Resolve 两区块、has_preflight 门控(修正 ADR-7 被引擎推翻的 {{?checks}} 方案)、mvt-create-skill 引用产物概念约束；并给 ADR-7 加 superseded 脚注
-    change_id: 20260624-activation-load-parallelization
   - skill: /mvt-test
     completed_at: 2026-06-25T02:07:39.815Z
     summary: t6 验证通过：build exit0、vitest 284/284(修复1个旧Stage断言改为Load/Resolve)、24技能重编译矩阵全过(语义等价、preflight门控正确)，plan 8/8 完成
     change_id: 20260624-activation-load-parallelization
-active_epic:
-  id: epic-20260608-my
-  title: My Epic
-  created_at: 2026-06-08T14:23:35.337Z
-  epic_path: C:/Program Files/Git/some/path
-epics:
-  - id: epic-20260608-my-epic
-    title: My Epic
-    epic_path: ""
-    status: active
-    updated_at: 2026-06-08T14:23:33.720Z
-  - id: epic-20260608-new
-    title: New Epic
-    epic_path: ""
-    status: active
-    updated_at: 2026-06-08T14:23:33.849Z
+  - skill: /mvt-cleanup
+    completed_at: 2026-06-25T02:26:19.557Z
+    summary: 归档已完成变更 20260622-session-archive-sync 产物至 _archived
+    change_id: 20260624-activation-load-parallelization
+  - skill: /mvt-refactor
+    completed_at: 2026-06-25T07:43:30.824Z
+    summary: 核验 MVTT skills prompt audit 问题是否存在
+    change_id: ""
+  - skill: /mvt-fix
+    completed_at: 2026-06-25T07:58:35.932Z
+    summary: 修复 MVTT skills prompt audit 中确认存在的问题
+    change_id: ""
+  - skill: /mvt-refactor
+    completed_at: 2026-06-25T09:15:10.236Z
+    summary: 重构 mvt-config：取消 args 模式改为交互菜单，移除 reset 操作
+    change_id: ""
+  - skill: /mvt-fix
+    completed_at: 2026-06-25T09:21:02.597Z
+    summary: 修复 mvt-config 评审 W1(写入不变量补全引导式设置路径)+S1(删除不可达 list 校验行)
+    change_id: ""
+  - skill: /mvt-review
+    completed_at: 2026-06-25T10:57:47.073Z
+    summary: 深度审计24个MVTT技能prompt(修复后现状)：确认5高危+11中危+9低危，落盘 skills-prompt-audit-2026-06-25-v2.md
+    change_id: ""
+  - skill: /mvt-review
+    completed_at: 2026-06-25T11:04:19.534Z
+    summary: 核验 skills-prompt-audit v2 报告 25 条问题：24 条属实合理，仅 L1 对 mvt-help 误判(无 Extended Context 块)；H3/M10/M11/L8 须改 source 层
+    change_id: ""
+  - skill: /mvt-fix
+    completed_at: 2026-06-25T11:22:18.961Z
+    summary: 修复 audit v2 全部16项高+中危(改 sources/ 后重新装配12个技能):H1/H2加session.yaml到Wave1, H3/M10修死路径与误述, H4/M5/M6 epic写前校验门控+碰撞+分歧, H5 bug-detect可持久化供fix跨会话读取, M1-M4/M7-M9/M11 各类一致性修复; 测试285通过(1预存计时flake隔离通过)
+    change_id: ""
+  - skill: /mvt-fix
+    completed_at: 2026-06-26T04:11:21.306Z
+    summary: 修复 mvt-update-plan State Update 段无条件 --update-change --close-change 的缺陷：改为按 plan_status 二选一，并与 Step 5 epic 流程对齐
+    change_id: ""
+active_epic: null
+epics: null

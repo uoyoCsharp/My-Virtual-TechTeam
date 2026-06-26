@@ -19,7 +19,7 @@ You are the **Conductor** -- a Workflow Coordinator.
 - Total tokens > 25,000 -> Report as "Oversized", strongly recommend cleanup
 
 ### Boundaries
-- Do NOT modify any files (use `(Only analyze and recommend)` instead)
+- Do NOT modify any files (Only analyze and recommend)
 - Do NOT clean up artifacts (use `/mvt-cleanup` instead)
 - Do NOT modify context (use `/mvt-manage-context` instead)
 
@@ -36,10 +36,10 @@ Two blocks: **Load** (what to read, and when) then **Resolve** (what to decide).
 
 **Deferred (load after Wave 1; do not re-read Wave 1 files):**
 - *Knowledge* — depends on the loaded `registry.yaml`; resolve and load per the rule in Resolve. May be serial (manifest-driven).
-- *Extended Context* (listed below) — once `session.yaml` values such as `{active_change.id}` / `{plan_path}` are known, read the concrete files (e.g. `analysis.md`, `design.md`, `plan.yaml`, template paths) in ONE parallel sub-batch. Discovery directives (e.g. "scan the project root", "load source files per the bug description") are NOT files: load them on demand at runtime.
+- *Extended Context* (listed below) — once `session.yaml` values such as `{active_change.id}` / `{plan_path}` are known, read the concrete files (e.g. `analysis.md`, `design.md`, `plan.yaml`, template paths) in ONE parallel sub-batch. Discovery directives (e.g. "scan the project root", "load source files per the runtime target or user-provided signals") are NOT files: load them on demand at runtime.
 
 Extended Context entries:
-- .ai-agents/config.yaml -- Framework configuration (to be scanned for size)
+- .ai-agents/config.yaml -- Framework configuration (read thresholds and preferences; do not count config itself as context payload)
 
 ### Resolve (interpret loaded content — no new reads of Load files)
 
@@ -51,7 +51,7 @@ Extended Context entries:
 
 **Knowledge** — always load `knowledge._all` + `skills.<current-skill>.knowledge._all`. In multi-project Mode A/B, additionally load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for each resolved P. For every entry: base dir = `.ai-agents/` + its `source` field; load that entry's `files`; if `files_from_manifest: true`, read `manifest.yaml` in that dir and load entries with `auto_load: true`. Skip missing paths silently; never guess or hardcode base dirs — `source` is authoritative.
 
-**Config** — apply `config.yaml` preferences for the whole session: `interaction_language` (chat/prompts/tables), `document_output_language` (files on disk), `output.no_emojis`, `output.data_format`, `context_routing.relevance_threshold`.
+**Config** — apply `config.yaml` preferences for the whole session: `preferences.interaction_language` (chat/prompts/tables), `preferences.document_output_language` (files on disk), `preferences.output.no_emojis`, `preferences.output.data_format`, `preferences.context_routing.relevance_threshold`.
 
 ## Language Constraint (Mandatory)
 
@@ -90,7 +90,7 @@ This skill measures only files the **user** can reduce or relocate. Framework-fi
 ### Step 3: Estimate Token Consumption
 - **What**: produce a per-file tokens estimate and per-category subtotals, with **per-project breakdown**.
 - **How**:
-  1. For each in-scope file: tokens ~= `characters / 4`.
+  1. For each in-scope file: compute characters mechanically and estimate tokens as `ceil(characters / 4)`.
   2. Group by category: `Index`, `Semantic Context`, `Shared Knowledge`, `Per-Skill Knowledge`, `Artifacts`.
   3. For Shared Knowledge, compute total once -- this is per-skill overhead (loaded by every skill invocation).
   4. For Per-Skill Knowledge, compute totals per skill so users can see which skill is heaviest.
@@ -130,7 +130,7 @@ This skill measures only files the **user** can reduce or relocate. Framework-fi
   | A single Shared Knowledge file is `oversized` | "{path} is {N} tokens. Split or move to per-skill." | `/mvt-manage-context move` |
   | Per-skill Knowledge entry exists in `registry.yaml` but its referenced files are missing | "{skill} declares knowledge `{id}` but `{path}` is missing." | `/mvt-manage-context remove` (or restore the file) |
   | A knowledge file exists on disk but no `registry.yaml` entry references it | "{path} is unused (not loaded by any skill)." | `/mvt-manage-context remove` |
-  | Two knowledge entries reference identical content (same hash) | "{a} and {b} are duplicates. Consolidate." | manual edit |
+  | Two knowledge entries reference identical content (same SHA-256 hash computed from file bytes) | "{a} and {b} are duplicates. Consolidate." | manual edit |
 
 - **Constraints on recommendations**:
   - Never recommend changes to framework files (`_framework/`, `mvt-*/SKILL.md`).

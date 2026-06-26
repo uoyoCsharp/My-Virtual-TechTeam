@@ -19,8 +19,8 @@ preferences:
 
   # Session history limits
   history_limits:
-    history: 20             # Max history entries (1-100)
-    changes: 20             # Max changes entries (1-100)
+    history: 10              # Max history entries (1-100)
+    changes: 10             # Max changes entries (1-100)
 
   # Planning granularity for /mvt-plan-dev
   # Options: coarse (fewer, larger tasks) | medium (balanced) | fine (more, smaller tasks)
