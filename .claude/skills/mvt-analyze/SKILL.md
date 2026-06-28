@@ -203,7 +203,7 @@ Write the artifact to: `.ai-agents/workspace/artifacts/{change-id}/analysis.md`
 After the skill's main task, run the session update script **exactly once**:
 
 ```bash
-node .ai-agents/scripts/session-update.cjs --skill mvt-analyze --summary "<concise one-line summary>" --new-change "<active_change.title>" --change-id <active_change.id> --epic-id <active_epic.id>
+node .ai-agents/scripts/session-update.cjs --skill mvt-analyze --summary "<concise one-line summary>" --new-change "<active_change.title>" --change-id <active_change.id> [--epic-id <active_epic.id>]
 ```
 
 Write `--summary` as one concise line in the configured `interaction_language`.
@@ -212,7 +212,7 @@ Write `--summary` as one concise line in the configured `interaction_language`.
 
 - Use only the flags rendered in the command above; do not invent extra session-update flags.
 - `--new-change` and `--change-id` are required together; they set `active_change.{id,title,created_at}` and snapshot any prior active change into `changes[]`.
-- `--epic-id` with `--new-change` links the new active change to its parent epic; do not use it outside `--new-epic` or `--new-change`.
+- `--epic-id` with `--new-change` links the new active change to its parent epic; include it only when `active_epic.id` is non-empty. Do not pass `--epic-id` with an empty placeholder.
 
 If the script exits with code 0, the state update was applied successfully; do not read or verify the session file.
 

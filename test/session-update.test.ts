@@ -150,6 +150,16 @@ describe("session-update.cjs (epic flags)", () => {
       expect(res.stderr).toMatch(/--epic-id/);
     });
 
+    it("rejects --epic-id without a value", () => {
+      writeSession(baseSession());
+      const res = update([
+        "--new-epic", "My Epic",
+        "--epic-id",
+      ]);
+      expect(res.status).toBe(1);
+      expect(res.stderr).toMatch(/--epic-id requires a non-empty value/i);
+    });
+
     it("snapshots old active_epic into epics[]", () => {
       const session = baseSession();
       session.active_epic = {
@@ -315,6 +325,21 @@ describe("session-update.cjs (epic flags)", () => {
 
       const s = readSession();
       expect(s.active_change.epic_id).toBe("epic-20260608-demo");
+    });
+
+    it("rejects --epic-id without a value instead of writing boolean true", () => {
+      writeSession(baseSession());
+      const res = update([
+        "--new-change", "Sub-change",
+        "--change-id", "20260608-sub",
+        "--epic-id",
+      ]);
+
+      expect(res.status).toBe(1);
+      expect(res.stderr).toMatch(/--epic-id requires a non-empty value/i);
+
+      const s = readSession();
+      expect(s.active_change.epic_id).toBe("");
     });
 
     it("writes epic_id to history entry", () => {
@@ -785,5 +810,116 @@ describe("session-update.cjs (remove flags: active_change isolation)", () => {
     expect(ids).toContain("20260601-active");
     expect(ids).not.toContain("20260601-old");
     expect(s.changes.find((c: any) => c.id === "20260601-active").status).toBe("done");
+  });
+});
+
+describe("session-update.cjs (flag value validation)", () => {
+  let tmpDir: string;
+  let workspaceDir: string;
+  let sessionPath: string;
+
+  beforeEach(() => {
+    tmpDir = mkdtempSync(path.join(os.tmpdir(), "mvtt-session-flag-val-"));
+    workspaceDir = path.join(tmpDir, ".ai-agents", "workspace");
+    mkdirSync(workspaceDir, { recursive: true });
+    sessionPath = path.join(workspaceDir, "session.yaml");
+  });
+
+  afterEach(() => {
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  function writeSession(session: Session): void {
+    writeFileSync(sessionPath, stringifyYaml(session), "utf-8");
+  }
+
+  function readSession(): any {
+    return parseYaml(readFileSync(sessionPath, "utf-8"));
+  }
+
+  function run(args: string[]): { status: number; stdout: string; stderr: string } {
+    const res = spawnSync("node", [SCRIPT, ...args], {
+      encoding: "utf-8",
+      cwd: tmpDir,
+    });
+    return {
+      status: res.status ?? -1,
+      stdout: res.stdout ?? "",
+      stderr: res.stderr ?? "",
+    };
+  }
+
+  function update(extra: string[]): { status: number; stdout: string; stderr: string } {
+    return run(["--skill", "test", "--summary", "test", ...extra]);
+  }
+
+  it("rejects --skill without a value", () => {
+    writeSession(baseSession());
+    const res = run(["--summary", "test"]);
+    expect(res.status).toBe(1);
+    expect(res.stderr).toMatch(/requires a non-empty value|Missing required argument/i);
+  });
+
+  it("rejects --summary without a value", () => {
+    writeSession(baseSession());
+    const res = run(["--skill", "test"]);
+    expect(res.status).toBe(1);
+    expect(res.stderr).toMatch(/requires a non-empty value|Missing required argument/i);
+  });
+
+  it("rejects --new-change without a value", () => {
+    writeSession(baseSession());
+    const res = update(["--new-change", "--change-id", "x"]);
+    expect(res.status).toBe(1);
+    expect(res.stderr).toMatch(/--new-change requires a non-empty value/i);
+  });
+
+  it("rejects --change-id without a value", () => {
+    writeSession(baseSession());
+    const res = update(["--new-change", "Test", "--change-id"]);
+    expect(res.status).toBe(1);
+    expect(res.stderr).toMatch(/--change-id requires a non-empty value/i);
+  });
+
+  it("rejects --new-epic without a value", () => {
+    writeSession(baseSession());
+    const res = update(["--new-epic", "--epic-id", "epic-x"]);
+    expect(res.status).toBe(1);
+    expect(res.stderr).toMatch(/--new-epic requires a non-empty value/i);
+  });
+
+  it("rejects --set-plan-path without a value", () => {
+    writeSession(baseSession());
+    const res = update(["--set-plan-path"]);
+    expect(res.status).toBe(1);
+    expect(res.stderr).toMatch(/--set-plan-path requires a non-empty value/i);
+  });
+
+  it("rejects --set-change-status without a value", () => {
+    writeSession(baseSession());
+    const res = update(["--set-change-status"]);
+    expect(res.status).toBe(1);
+    expect(res.stderr).toMatch(/--set-change-status requires a non-empty value/i);
+  });
+
+  it("rejects --truncate-history without a value", () => {
+    writeSession(baseSession());
+    const res = update(["--truncate-history"]);
+    expect(res.status).toBe(1);
+    expect(res.stderr).toMatch(/--truncate-history requires a non-empty value/i);
+  });
+
+  it("rejects --set-epic-path without a value", () => {
+    writeSession(baseSession());
+    const res = update(["--set-epic-path"]);
+    expect(res.status).toBe(1);
+    expect(res.stderr).toMatch(/--set-epic-path requires a non-empty value/i);
+  });
+
+  it("rejects --set-epic-status without a value", () => {
+    writeSession(baseSession());
+    const res = update(["--set-epic-status"]);
+    expect(res.status).toBe(1);
+    expect(res.stderr).toMatch(/--set-epic-status requires a non-empty value/i);
   });
 });

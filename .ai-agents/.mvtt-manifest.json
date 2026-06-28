@@ -1,13 +1,13 @@
 {
-  "mvtt_version": "2.1.0",
+  "mvtt_version": "2.2.1",
   "installed_at": "2026-06-10T06:40:54.542Z",
-  "last_updated_at": "2026-06-26T05:33:10.054Z",
+  "last_updated_at": "2026-06-28T12:01:23.957Z",
   "platforms": [
     "claude"
   ],
   "files": {
     ".claude/skills/mvt-analyze/SKILL.md": {
-      "hash": "sha256:c647f8d837d8805bd30a955735b6875e905b906689abe33d872af077120eb375",
+      "hash": "sha256:d758733748c5f07acaec66c36cfd0db43c90dea4e44f82be24546c341d626417",
       "category": "generated"
     },
     ".claude/skills/mvt-analyze-code/SKILL.md": {
@@ -147,7 +147,7 @@
       "category": "generated"
     },
     ".ai-agents/scripts/plan-update.cjs": {
-      "hash": "sha256:e4bd8401aec0e2632d98f3a62fbd0bdc251e198c8998d57c9dcdbe2e01f96361",
+      "hash": "sha256:66199fc2256bbfbe41683f7c7c1a384679069b4e44c7194bfa3e4ab2f8e7a209",
       "category": "generated"
     },
     ".ai-agents/scripts/plan-update.md": {
@@ -155,7 +155,7 @@
       "category": "generated"
     },
     ".ai-agents/scripts/session-update.cjs": {
-      "hash": "sha256:841322bd94d2b4cffac4f1c18f5e14b520a210378882a12d67cff2c2cba84782",
+      "hash": "sha256:a0cfe8aa2e01aa85461114d900e7d3c738a7f5f6d00069296a2f3f82dfc0f4d0",
       "category": "generated"
     },
     ".ai-agents/config.yaml": {
@@ -163,7 +163,7 @@
       "category": "create_once"
     },
     ".ai-agents/workspace/session.yaml": {
-      "hash": "sha256:8d6c224672a413af84c1d7166ae5622a9084a3ea9d788c639f6ff7dec87f0846",
+      "hash": "sha256:b861f184dd041fc0945b1378fb092a2c5c10ec9b8c643ee4d4352f5e419d9428",
       "category": "create_once"
     },
     ".ai-agents/workspace/project-context.yaml": {

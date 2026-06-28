@@ -7349,7 +7349,8 @@ var ERRORS = {
   CLOSE_NEW_EPIC_CONFLICT: () => "--close-epic and --new-epic are mutually exclusive",
   NO_ACTIVE_EPIC: (flag) => `${flag} requires an active epic (active_epic.id is empty)`,
   EPIC_ID_ORPHAN: () => "--epic-id (for sub-change) requires --new-change",
-  MISSING_REMOVE_VALUE: () => "--remove-change / --remove-epic requires a non-empty value"
+  MISSING_REMOVE_VALUE: () => "--remove-change / --remove-epic requires a non-empty value",
+  MISSING_FLAG_VALUE: (flag) => `${flag} requires a non-empty value`
 };
 var DEFAULT_LIMITS = {
   history: 20,
@@ -7388,6 +7389,9 @@ function parseIdList(value) {
   if (value == null) return [];
   return String(value).split(",").map((s) => s.trim()).filter(Boolean);
 }
+function hasValue(value) {
+  return value !== void 0 && value !== true && String(value).trim() !== "";
+}
 function loadHistoryLimits(configPath) {
   const limits = { ...DEFAULT_LIMITS };
   if (!(0, import_node_fs.existsSync)(configPath)) return limits;
@@ -7413,11 +7417,22 @@ function loadHistoryLimits(configPath) {
 }
 function validate(args) {
   if (!args.skill) return ERRORS.MISSING_SKILL();
+  if (args.skill === true) return ERRORS.MISSING_FLAG_VALUE("--skill");
   if (!args.summary) return ERRORS.MISSING_SUMMARY();
+  if (args.summary === true) return ERRORS.MISSING_FLAG_VALUE("--summary");
+  if (args["new-change"] !== void 0 && !hasValue(args["new-change"])) return ERRORS.MISSING_FLAG_VALUE("--new-change");
   if (args["new-change"] && !args["change-id"]) return ERRORS.CHANGE_ID_REQUIRED();
+  if (args["change-id"] !== void 0 && !hasValue(args["change-id"])) return ERRORS.MISSING_FLAG_VALUE("--change-id");
   if (args["new-epic"] && !args["epic-id"]) return ERRORS.EPIC_ID_REQUIRED();
+  if (args["new-epic"] !== void 0 && !hasValue(args["new-epic"])) return ERRORS.MISSING_FLAG_VALUE("--new-epic");
+  if (args["epic-id"] !== void 0 && !hasValue(args["epic-id"])) return ERRORS.MISSING_FLAG_VALUE("--epic-id");
   if (args["close-epic"] && args["new-epic"]) return ERRORS.CLOSE_NEW_EPIC_CONFLICT();
   if (args["epic-id"] && !args["new-change"] && !args["new-epic"]) return ERRORS.EPIC_ID_ORPHAN();
+  for (const flag of ["set-plan-path", "set-change-status", "truncate-history", "set-epic-path", "set-epic-status"]) {
+    if (args[flag] !== void 0 && !hasValue(args[flag])) {
+      return ERRORS.MISSING_FLAG_VALUE(`--${flag}`);
+    }
+  }
   if (args["remove-change"] !== void 0 && (args["remove-change"] === true || !String(args["remove-change"]).trim())) {
     return ERRORS.MISSING_REMOVE_VALUE();
   }

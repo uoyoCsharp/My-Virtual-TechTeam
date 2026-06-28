@@ -41,6 +41,7 @@ const ERRORS = {
   NO_ACTIVE_EPIC: (flag) => `${flag} requires an active epic (active_epic.id is empty)`,
   EPIC_ID_ORPHAN: () => "--epic-id (for sub-change) requires --new-change",
   MISSING_REMOVE_VALUE: () => "--remove-change / --remove-epic requires a non-empty value",
+  MISSING_FLAG_VALUE: (flag) => `${flag} requires a non-empty value`,
 };
 
 // ── Defaults ────────────────────────────────────────────────────────────────
@@ -94,6 +95,10 @@ function parseIdList(value) {
     .filter(Boolean);
 }
 
+function hasValue(value) {
+  return value !== undefined && value !== true && String(value).trim() !== "";
+}
+
 // ── Config Loading ──────────────────────────────────────────────────────────
 function loadHistoryLimits(configPath) {
   const limits = { ...DEFAULT_LIMITS };
@@ -126,13 +131,25 @@ function loadHistoryLimits(configPath) {
 // ── Validation ──────────────────────────────────────────────────────────────
 function validate(args) {
   if (!args.skill) return ERRORS.MISSING_SKILL();
+  if (args.skill === true) return ERRORS.MISSING_FLAG_VALUE("--skill");
   if (!args.summary) return ERRORS.MISSING_SUMMARY();
+  if (args.summary === true) return ERRORS.MISSING_FLAG_VALUE("--summary");
+  if (args["new-change"] !== undefined && !hasValue(args["new-change"])) return ERRORS.MISSING_FLAG_VALUE("--new-change");
   if (args["new-change"] && !args["change-id"]) return ERRORS.CHANGE_ID_REQUIRED();
+  if (args["change-id"] !== undefined && !hasValue(args["change-id"])) return ERRORS.MISSING_FLAG_VALUE("--change-id");
 
   // Epic combo validation
   if (args["new-epic"] && !args["epic-id"]) return ERRORS.EPIC_ID_REQUIRED();
+  if (args["new-epic"] !== undefined && !hasValue(args["new-epic"])) return ERRORS.MISSING_FLAG_VALUE("--new-epic");
+  if (args["epic-id"] !== undefined && !hasValue(args["epic-id"])) return ERRORS.MISSING_FLAG_VALUE("--epic-id");
   if (args["close-epic"] && args["new-epic"]) return ERRORS.CLOSE_NEW_EPIC_CONFLICT();
   if (args["epic-id"] && !args["new-change"] && !args["new-epic"]) return ERRORS.EPIC_ID_ORPHAN();
+
+  for (const flag of ["set-plan-path", "set-change-status", "truncate-history", "set-epic-path", "set-epic-status"]) {
+    if (args[flag] !== undefined && !hasValue(args[flag])) {
+      return ERRORS.MISSING_FLAG_VALUE(`--${flag}`);
+    }
+  }
 
   // Remove flags require non-empty values
   if (

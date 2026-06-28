@@ -9,7 +9,7 @@ This skill is read-only and does NOT modify `.ai-agents/workspace/session.yaml`.
 After the skill's main task, run the session update script **exactly once**:
 
 ```bash
-node .ai-agents/scripts/session-update.cjs --skill {{current_skill}} --summary "<concise one-line summary>"{{#update_active_change}} --new-change "<active_change.title>" --change-id <active_change.id>{{#link_subchange_to_epic}} --epic-id <active_epic.id>{{/link_subchange_to_epic}}{{/update_active_change}}{{#set_plan_path}} --set-plan-path ".ai-agents/workspace/artifacts/{active_change.id}/plan.yaml"{{/set_plan_path}}{{#update_change}} --update-change{{/update_change}}{{#close_change}} --close-change{{/close_change}}{{#set_change_status}} --set-change-status <status>{{/set_change_status}}{{#new_epic}} --new-epic "<epic_title>" --epic-id <epic_id>{{/new_epic}}{{#set_epic_path}} --set-epic-path <epic_path>{{/set_epic_path}}{{#set_epic_status}} --set-epic-status <status>{{/set_epic_status}}{{#close_epic}} --close-epic{{/close_epic}}{{#no_change}} --no-change{{/no_change}}{{#set_synced}} --set-synced{{/set_synced}}{{#truncate_history}} --truncate-history <count>{{/truncate_history}}{{#update_initialized_at}} --set-initialized{{/update_initialized_at}}{{#remove_change}} --remove-change <ids>{{/remove_change}}{{#remove_epic}} --remove-epic <ids>{{/remove_epic}}
+node .ai-agents/scripts/session-update.cjs --skill {{current_skill}} --summary "<concise one-line summary>"{{#update_active_change}} --new-change "<active_change.title>" --change-id <active_change.id>{{#link_subchange_to_epic}} [--epic-id <active_epic.id>]{{/link_subchange_to_epic}}{{/update_active_change}}{{#set_plan_path}} --set-plan-path ".ai-agents/workspace/artifacts/{active_change.id}/plan.yaml"{{/set_plan_path}}{{#update_change}} --update-change{{/update_change}}{{#close_change}} --close-change{{/close_change}}{{#set_change_status}} --set-change-status <status>{{/set_change_status}}{{#new_epic}} --new-epic "<epic_title>" --epic-id <epic_id>{{/new_epic}}{{#set_epic_path}} --set-epic-path <epic_path>{{/set_epic_path}}{{#set_epic_status}} --set-epic-status <status>{{/set_epic_status}}{{#close_epic}} --close-epic{{/close_epic}}{{#no_change}} --no-change{{/no_change}}{{#set_synced}} --set-synced{{/set_synced}}{{#truncate_history}} --truncate-history <count>{{/truncate_history}}{{#update_initialized_at}} --set-initialized{{/update_initialized_at}}{{#remove_change}} --remove-change <ids>{{/remove_change}}{{#remove_epic}} --remove-epic <ids>{{/remove_epic}}
 
 ```
 
@@ -64,7 +64,7 @@ Write `--summary` as one concise line in the configured `interaction_language`.
 - `--remove-epic <ids>` removes entries with matching `id` from `session.epics[]` (comma-separated for multiple ids); does NOT touch `active_epic`. Unknown ids are silently skipped; if all ids are unknown, a warning is written to stderr (exit code remains 0).
 {{/remove_epic}}
 {{#link_subchange_to_epic}}
-- `--epic-id` with `--new-change` links the new active change to its parent epic; do not use it outside `--new-epic` or `--new-change`.
+- `--epic-id` with `--new-change` links the new active change to its parent epic; include it only when `active_epic.id` is non-empty. Do not pass `--epic-id` with an empty placeholder.
 {{/link_subchange_to_epic}}
 
 If the script exits with code 0, the state update was applied successfully; do not read or verify the session file.

@@ -116,16 +116,20 @@ function parseArgs(argv) {
   return args;
 }
 
+function hasValue(value) {
+  return value !== undefined && value !== true && String(value).trim() !== "";
+}
+
 function validateArgs(args) {
   if (args.validate) return null;
-  if (!args.plan || args.plan === true) return ERRORS.MISSING_PLAN();
-  if (!args.task || args.task === true) return ERRORS.MISSING_TASK();
-  const hasStatus = args.status && args.status !== true;
+  if (!hasValue(args.plan)) return ERRORS.MISSING_PLAN();
+  if (!hasValue(args.task)) return ERRORS.MISSING_TASK();
+  const hasStatus = hasValue(args.status);
   const hasMutation = hasStatus ||
-    (args.artifacts && args.artifacts !== true) ||
-    (args.notes && args.notes !== true) ||
-    (args["deliverables-pointer"] && args["deliverables-pointer"] !== true) ||
-    (args["mark-deliverable-stale"] && args["mark-deliverable-stale"] !== true);
+    hasValue(args.artifacts) ||
+    hasValue(args.notes) ||
+    hasValue(args["deliverables-pointer"]) ||
+    hasValue(args["mark-deliverable-stale"]);
   if (!hasMutation) return ERRORS.MISSING_STATUS();
   if (args.status === true) return ERRORS.MISSING_STATUS();
   if (hasStatus && !VALID_STATUSES.includes(args.status)) return ERRORS.INVALID_STATUS(args.status);
@@ -137,11 +141,11 @@ function applyUpdate(plan, args, now) {
   const task = plan.tasks.find((t) => t.id === args.task);
 
   const oldStatus = task.status;
-  if (args.status && args.status !== true) {
+  if (hasValue(args.status)) {
     task.status = args.status;
   }
 
-  if (args.artifacts && args.artifacts !== true) {
+  if (hasValue(args.artifacts)) {
     const incoming = args.artifacts
       .split(",")
       .map((s) => s.trim())
@@ -163,12 +167,12 @@ function applyUpdate(plan, args, now) {
     }
   }
 
-  if (args.notes && args.notes !== true) {
+  if (hasValue(args.notes)) {
     task.notes = args.notes;
   }
 
   // completed_at consistency: set only on status updates.
-  if (args.status && args.status !== true) {
+  if (hasValue(args.status)) {
     if (args.status === "done" && !task.completed_at) {
       task.completed_at = now;
     } else if (args.status !== "done") {
@@ -177,7 +181,7 @@ function applyUpdate(plan, args, now) {
   }
 
   // --deliverables-pointer current
-  if (args["deliverables-pointer"] && args["deliverables-pointer"] !== true) {
+  if (hasValue(args["deliverables-pointer"])) {
     if (args["deliverables-pointer"] !== "current") {
       return { error: ERRORS.INVALID_DELIVERABLES_POINTER(args["deliverables-pointer"]) };
     }
@@ -186,7 +190,7 @@ function applyUpdate(plan, args, now) {
 
   // --mark-deliverable-stale <task_id>[,task_id2,...]
   // Supports comma-separated list of downstream task ids.
-  if (args["mark-deliverable-stale"] && args["mark-deliverable-stale"] !== true) {
+  if (hasValue(args["mark-deliverable-stale"])) {
     const staleIds = args["mark-deliverable-stale"]
       .split(",")
       .map((s) => s.trim())
@@ -551,7 +555,7 @@ function main() {
 
   // Parse --projects; if not provided, derive from tasks
   let projectList = null;
-  if (args.projects && args.projects !== true) {
+  if (hasValue(args.projects)) {
     projectList = args.projects.split(",").map((s) => s.trim()).filter(Boolean);
   } else {
     // Derive project list from task.project arrays so that validation

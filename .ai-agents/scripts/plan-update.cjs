@@ -7397,12 +7397,15 @@ function parseArgs(argv) {
   }
   return args2;
 }
+function hasValue(value) {
+  return value !== void 0 && value !== true && String(value).trim() !== "";
+}
 function validateArgs(args2) {
   if (args2.validate) return null;
-  if (!args2.plan || args2.plan === true) return ERRORS.MISSING_PLAN();
-  if (!args2.task || args2.task === true) return ERRORS.MISSING_TASK();
-  const hasStatus = args2.status && args2.status !== true;
-  const hasMutation = hasStatus || args2.artifacts && args2.artifacts !== true || args2.notes && args2.notes !== true || args2["deliverables-pointer"] && args2["deliverables-pointer"] !== true || args2["mark-deliverable-stale"] && args2["mark-deliverable-stale"] !== true;
+  if (!hasValue(args2.plan)) return ERRORS.MISSING_PLAN();
+  if (!hasValue(args2.task)) return ERRORS.MISSING_TASK();
+  const hasStatus = hasValue(args2.status);
+  const hasMutation = hasStatus || hasValue(args2.artifacts) || hasValue(args2.notes) || hasValue(args2["deliverables-pointer"]) || hasValue(args2["mark-deliverable-stale"]);
   if (!hasMutation) return ERRORS.MISSING_STATUS();
   if (args2.status === true) return ERRORS.MISSING_STATUS();
   if (hasStatus && !VALID_STATUSES.includes(args2.status)) return ERRORS.INVALID_STATUS(args2.status);
@@ -7411,10 +7414,10 @@ function validateArgs(args2) {
 function applyUpdate(plan, args2, now) {
   const task = plan.tasks.find((t) => t.id === args2.task);
   const oldStatus = task.status;
-  if (args2.status && args2.status !== true) {
+  if (hasValue(args2.status)) {
     task.status = args2.status;
   }
-  if (args2.artifacts && args2.artifacts !== true) {
+  if (hasValue(args2.artifacts)) {
     const incoming = args2.artifacts.split(",").map((s) => s.trim()).filter(Boolean);
     if (incoming.length) {
       if (!task.artifacts || typeof task.artifacts !== "object") {
@@ -7432,23 +7435,23 @@ function applyUpdate(plan, args2, now) {
       }
     }
   }
-  if (args2.notes && args2.notes !== true) {
+  if (hasValue(args2.notes)) {
     task.notes = args2.notes;
   }
-  if (args2.status && args2.status !== true) {
+  if (hasValue(args2.status)) {
     if (args2.status === "done" && !task.completed_at) {
       task.completed_at = now;
     } else if (args2.status !== "done") {
       task.completed_at = null;
     }
   }
-  if (args2["deliverables-pointer"] && args2["deliverables-pointer"] !== true) {
+  if (hasValue(args2["deliverables-pointer"])) {
     if (args2["deliverables-pointer"] !== "current") {
       return { error: ERRORS.INVALID_DELIVERABLES_POINTER(args2["deliverables-pointer"]) };
     }
     task.deliverables = { freshness: "current" };
   }
-  if (args2["mark-deliverable-stale"] && args2["mark-deliverable-stale"] !== true) {
+  if (hasValue(args2["mark-deliverable-stale"])) {
     const staleIds = args2["mark-deliverable-stale"].split(",").map((s) => s.trim()).filter(Boolean);
     for (const staleTaskId of staleIds) {
       const staleTask = plan.tasks.find((t) => t.id === staleTaskId);
@@ -7706,7 +7709,7 @@ function main() {
     process.exit(1);
   }
   let projectList = null;
-  if (args2.projects && args2.projects !== true) {
+  if (hasValue(args2.projects)) {
     projectList = args2.projects.split(",").map((s) => s.trim()).filter(Boolean);
   } else {
     projectList = deriveProjectList(plan.tasks);

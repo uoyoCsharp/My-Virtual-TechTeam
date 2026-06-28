@@ -4,14 +4,6 @@ session:
 active_change: null
 changes: null
 history:
-  - skill: /mvt-test
-    completed_at: 2026-06-25T02:07:39.815Z
-    summary: t6 验证通过：build exit0、vitest 284/284(修复1个旧Stage断言改为Load/Resolve)、24技能重编译矩阵全过(语义等价、preflight门控正确)，plan 8/8 完成
-    change_id: 20260624-activation-load-parallelization
-  - skill: /mvt-cleanup
-    completed_at: 2026-06-25T02:26:19.557Z
-    summary: 归档已完成变更 20260622-session-archive-sync 产物至 _archived
-    change_id: 20260624-activation-load-parallelization
   - skill: /mvt-refactor
     completed_at: 2026-06-25T07:43:30.824Z
     summary: 核验 MVTT skills prompt audit 问题是否存在
@@ -43,6 +35,14 @@ history:
   - skill: /mvt-fix
     completed_at: 2026-06-26T04:11:21.306Z
     summary: 修复 mvt-update-plan State Update 段无条件 --update-change --close-change 的缺陷：改为按 plan_status 二选一，并与 Step 5 epic 流程对齐
+    change_id: ""
+  - skill: /mvt-review
+    completed_at: 2026-06-28T11:05:07.578Z
+    summary: 评审 epic_id:true 修复范围+其余3脚本布尔值风险：session-update 已修复，epic-update 低危未导致数据污染，plan-update 已有 !=true 防护，W2 测试覆盖缺口
+    change_id: ""
+  - skill: /mvt-fix
+    completed_at: 2026-06-28T11:11:46.479Z
+    summary: 修复 W2(补全10个缺值参数测试)+S1(plan-update.js统一 hasValue 校验风格) — 48测试全绿
     change_id: ""
 active_epic: null
 epics: null
