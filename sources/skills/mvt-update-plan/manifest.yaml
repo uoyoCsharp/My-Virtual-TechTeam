@@ -35,6 +35,12 @@ sections:
           skill: "/mvt-implement"
 
   - type: shared
+    source: sections/turn-boundary-contract.md
+    params:
+      role: Architect
+      this_skill: mvt-update-plan
+
+  - type: shared
     source: sections/activation-protocol.md
     params:
       activation_reads:

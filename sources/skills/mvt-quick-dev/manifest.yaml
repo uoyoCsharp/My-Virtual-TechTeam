@@ -35,6 +35,12 @@ sections:
           skill: "/mvt-review"
 
   - type: shared
+    source: sections/turn-boundary-contract.md
+    params:
+      role: Developer
+      this_skill: mvt-quick-dev
+
+  - type: shared
     source: sections/activation-protocol.md
     params:
       activation_reads:

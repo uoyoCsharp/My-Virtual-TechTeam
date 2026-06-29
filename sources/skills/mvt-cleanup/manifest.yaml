@@ -33,6 +33,12 @@ sections:
         - scope: "write implementation code"
           skill: "/mvt-implement"
 
+  - type: shared
+    source: sections/turn-boundary-contract.md
+    params:
+      role: Conductor
+      this_skill: mvt-cleanup
+
   - type: inline
     content: |
       ## Variants

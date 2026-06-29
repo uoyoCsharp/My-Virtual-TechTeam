@@ -42,6 +42,12 @@ sections:
           guidance: "use the recommended next skill"
 
   - type: shared
+    source: sections/turn-boundary-contract.md
+    params:
+      role: Conductor
+      this_skill: mvt-resume
+
+  - type: shared
     source: sections/activation-protocol.md
     params:
       activation_reads:

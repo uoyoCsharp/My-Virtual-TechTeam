@@ -33,6 +33,12 @@ sections:
           guidance: "constraint"
 
   - type: shared
+    source: sections/turn-boundary-contract.md
+    params:
+      role: Conductor
+      this_skill: mvt-template
+
+  - type: shared
     source: sections/activation-protocol.md
     params:
       extended_context:

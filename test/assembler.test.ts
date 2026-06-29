@@ -423,4 +423,56 @@ describe("assembler", () => {
       }
     });
   });
+
+  describe("turn-boundary-contract (change 20260629)", () => {
+    // In-scope = references role-header.md AND can pause for user input.
+    // Excluded = pure read-out/utility skills that never wait (status, check-context) or have no role-header (help).
+    const IN_SCOPE = [
+      "mvt-analyze", "mvt-analyze-code", "mvt-bug-detect", "mvt-cleanup", "mvt-config",
+      "mvt-create-skill", "mvt-decompose", "mvt-design", "mvt-fix", "mvt-implement",
+      "mvt-init", "mvt-manage-context", "mvt-plan-dev", "mvt-quick-dev", "mvt-refactor",
+      "mvt-resume", "mvt-review", "mvt-sync-context", "mvt-template", "mvt-test", "mvt-update-plan",
+    ];
+    const EXCLUDED = ["mvt-status", "mvt-check-context", "mvt-help"];
+
+    it("renders the contract for every in-scope skill with both rules", () => {
+      for (const skill of IN_SCOPE) {
+        const output = buildSkill(skill);
+        expect(output, skill).toContain("## Turn Boundary Contract (Mandatory for interactive pauses)");
+        expect(output, skill).toContain("**Rule 1");
+        expect(output, skill).toContain("**Rule 2");
+        expect(output, skill).toContain("⟦Role Lock⟧");
+      }
+    });
+
+    it("substitutes role and this_skill into the role-lock notice", () => {
+      const analyze = buildSkill("mvt-analyze");
+      expect(analyze).toContain("I remain **Analyst** (`/mvt-analyze`)");
+      const decompose = buildSkill("mvt-decompose");
+      expect(decompose).toContain("I remain **Strategist** (`/mvt-decompose`)");
+    });
+
+    it("references the Boundaries above instead of re-rendering them (no duplication)", () => {
+      const output = buildSkill("mvt-analyze");
+      // The contract points at the Role section's Boundaries rather than listing Do-NOTs again.
+      expect(output).toContain("The Boundaries in my Role section above stay in force");
+      // The skill's specific Do-NOT line appears once (from role-header), not a second time inside the contract.
+      const occurrences = output.split("Do NOT make architecture decisions").length - 1;
+      expect(occurrences).toBe(1);
+    });
+
+    it("leaves no unresolved mustache placeholders in any in-scope skill", () => {
+      for (const skill of IN_SCOPE) {
+        const output = buildSkill(skill);
+        expect(output, skill).not.toMatch(/\{\{/);
+      }
+    });
+
+    it("does not render the contract for excluded skills", () => {
+      for (const skill of EXCLUDED) {
+        const output = buildSkill(skill);
+        expect(output, skill).not.toContain("Turn Boundary Contract");
+      }
+    });
+  });
 });

@@ -35,6 +35,12 @@ sections:
         - scope: "skip edge cases or negative tests"
           guidance: "never"
 
+  - type: shared
+    source: sections/turn-boundary-contract.md
+    params:
+      role: Tester
+      this_skill: mvt-test
+
   - type: inline
     content: |
       ## Variants

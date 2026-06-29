@@ -34,6 +34,12 @@ sections:
         - scope: "manage shared / per-skill knowledge files"
           skill: "/mvt-manage-context"
 
+  - type: shared
+    source: sections/turn-boundary-contract.md
+    params:
+      role: Conductor
+      this_skill: mvt-sync-context
+
   - type: inline
     content: |
       ### When to Use

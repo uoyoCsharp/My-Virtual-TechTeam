@@ -33,6 +33,12 @@ sections:
           skill: "/mvt-analyze"
 
   - type: shared
+    source: sections/turn-boundary-contract.md
+    params:
+      role: Strategist
+      this_skill: mvt-decompose
+
+  - type: shared
     source: sections/activation-protocol.md
     params:
       activation_reads:

@@ -35,6 +35,12 @@ sections:
         - scope: "write implementation code"
           skill: "/mvt-implement"
 
+  - type: shared
+    source: sections/turn-boundary-contract.md
+    params:
+      role: Analyst
+      this_skill: mvt-analyze-code
+
   - type: inline
     content: |
       ## Invocation

@@ -36,6 +36,12 @@ sections:
           skill: "/mvt-bug-detect"
 
   - type: shared
+    source: sections/turn-boundary-contract.md
+    params:
+      role: Developer
+      this_skill: mvt-fix
+
+  - type: shared
     source: sections/activation-protocol.md
     params:
       activation_reads:

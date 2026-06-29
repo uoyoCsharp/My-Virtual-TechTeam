@@ -1,21 +1,21 @@
 {
-  "mvtt_version": "2.2.1",
+  "mvtt_version": "2.2.2",
   "installed_at": "2026-06-10T06:40:54.542Z",
-  "last_updated_at": "2026-06-28T12:01:23.957Z",
+  "last_updated_at": "2026-06-29T07:13:09.593Z",
   "platforms": [
     "claude"
   ],
   "files": {
     ".claude/skills/mvt-analyze/SKILL.md": {
-      "hash": "sha256:d758733748c5f07acaec66c36cfd0db43c90dea4e44f82be24546c341d626417",
+      "hash": "sha256:16c0b0b84ed9ca8b22099e344ea4059e2ac704cfaef37ce99c9f0db51bf96b2f",
       "category": "generated"
     },
     ".claude/skills/mvt-analyze-code/SKILL.md": {
-      "hash": "sha256:0f2c11b3190008dfbf69b9ded508c747da162be40c642f663388b3014c499732",
+      "hash": "sha256:8da1474d32b80fc67fc30afc41ebfc7030aa0a3b9e446600ccd7249c04c5598b",
       "category": "generated"
     },
     ".claude/skills/mvt-bug-detect/SKILL.md": {
-      "hash": "sha256:51ec333ab1ea9ed495c6f927445dea726b3c21d119bf04950486b500b1b23057",
+      "hash": "sha256:9de948785a77df5cf9cd1d877a080578336d644c08272ca2ddba7cef9d9d10b9",
       "category": "generated"
     },
     ".claude/skills/mvt-check-context/SKILL.md": {
@@ -23,27 +23,27 @@
       "category": "generated"
     },
     ".claude/skills/mvt-cleanup/SKILL.md": {
-      "hash": "sha256:5ad85b2e359c18de8ad29dab97875443bad194e3e9fbe0fa9a214bc8556d0a9d",
+      "hash": "sha256:1ff676be36c21a4a84f138f62e34e44939e41dbaf9569e997f1230d33ea93644",
       "category": "generated"
     },
     ".claude/skills/mvt-config/SKILL.md": {
-      "hash": "sha256:4c7c31e498e3895ef1d77ad050b34a29aff3a2d57dfd69f0ef539cb282414b6e",
+      "hash": "sha256:0d88b0ecb84e79645d9cda3a39ce879bb9614f9048dd90878feb35be1facb649",
       "category": "generated"
     },
     ".claude/skills/mvt-create-skill/SKILL.md": {
-      "hash": "sha256:e5834484e81b2797f13a2b96e6501a31fd52e887b679c43d8f16cde80722687e",
+      "hash": "sha256:2f2db43319a36097471ec560e52ec7a3d4de76f710de7206c9968e7726b808d7",
       "category": "generated"
     },
     ".claude/skills/mvt-decompose/SKILL.md": {
-      "hash": "sha256:a327072add3421af18e1fb9974011611f30c0f32fd0809a2932b5ae4f794401d",
+      "hash": "sha256:1747e0fd9ae02f9ea67a6aa0cb28e20f014bcc045effa3188b775265dd89ae12",
       "category": "generated"
     },
     ".claude/skills/mvt-design/SKILL.md": {
-      "hash": "sha256:91313b904353e66df5faf4042a907cb39a2173e4e011179af3ae3058fea880da",
+      "hash": "sha256:54108aa750ed772c86ac9b56f7e8676c843f3a8fec7ceb38aba5d0a66543f4f8",
       "category": "generated"
     },
     ".claude/skills/mvt-fix/SKILL.md": {
-      "hash": "sha256:f19c6ebc4c9cf5ebceaeb6933d792472c2064d0cefe3c7d2800c1736b518a590",
+      "hash": "sha256:0a44b130705776cc1377848dd72aebebc1ab37738f39bd20e0bb6dfae9fedf93",
       "category": "generated"
     },
     ".claude/skills/mvt-help/SKILL.md": {
@@ -51,35 +51,35 @@
       "category": "generated"
     },
     ".claude/skills/mvt-implement/SKILL.md": {
-      "hash": "sha256:76dedb93c4713f33d2fe9f6f98ad97b6b467f14e12679540188c6a06821ebc7b",
+      "hash": "sha256:9a0f412ccf0c29f423af4db0e9498c9513fbe9599bf5933a1724edc46cedfae7",
       "category": "generated"
     },
     ".claude/skills/mvt-init/SKILL.md": {
-      "hash": "sha256:313aea04c0a22ac510fd79b78db1436f2882608acc58d582859d271ee9aabc7a",
+      "hash": "sha256:6c16e5ac8bf2446951cce4ca65093c65ded54f6bc09e01765ea98924e71c2636",
       "category": "generated"
     },
     ".claude/skills/mvt-manage-context/SKILL.md": {
-      "hash": "sha256:7c6e66e587100f888811a1876bcf8380c658cd5539d783deafab9ddde81d2c52",
+      "hash": "sha256:f9f1c8834caf3f60e6ddf6d09b3bdd82de00964c467cc6787359826355eb704e",
       "category": "generated"
     },
     ".claude/skills/mvt-plan-dev/SKILL.md": {
-      "hash": "sha256:d08bf7dd2d910dbf280769f9af84382d5c9da2dc2d999549e6ccae6ac12c2d9a",
+      "hash": "sha256:3ea3b350cb8f416cee30cef38cf1c7ce97962ac23faa188174e62b0c663e46a3",
       "category": "generated"
     },
     ".claude/skills/mvt-quick-dev/SKILL.md": {
-      "hash": "sha256:389385f36e5f886140b41d5bd044b22594820d5141de6bf7242a631a3618f5fa",
+      "hash": "sha256:84f531955bd3d72a53e7a4ebf049232015681e103f3d9b06f1a312ed3ec5dd4b",
       "category": "generated"
     },
     ".claude/skills/mvt-refactor/SKILL.md": {
-      "hash": "sha256:d89f451f2d839b1bcc650e6f088c19551130869e15651cd3363f1605ee570aee",
+      "hash": "sha256:e7a4772f1193c6383d7c77b882580c05ad88ab9540ad39b963af19f121180e5e",
       "category": "generated"
     },
     ".claude/skills/mvt-resume/SKILL.md": {
-      "hash": "sha256:7659b38a038dff8217356cdc82bd69669bef7f3fbbff8b1641d8c4d2c2d406e5",
+      "hash": "sha256:461649d4f96a94d88094b897e85090a49248f3c42af809a290bc33b94e6703a6",
       "category": "generated"
     },
     ".claude/skills/mvt-review/SKILL.md": {
-      "hash": "sha256:8d68dd84d9af2b2ec62ed1b037d8aa6a9779333ce30a9d2bb81ebf41224b7c15",
+      "hash": "sha256:ee45ec9b0b8e8ebbfb0377b82e1f06a36e83b613f482495726a089d0082e35e6",
       "category": "generated"
     },
     ".claude/skills/mvt-status/SKILL.md": {
@@ -87,19 +87,19 @@
       "category": "generated"
     },
     ".claude/skills/mvt-sync-context/SKILL.md": {
-      "hash": "sha256:aa1620e5f92adc9e7353df8b4a719b5a484bb9e95ff74ab7008b8d226cd8305f",
+      "hash": "sha256:cbbece03c0f083eea2851405f2a23379691ee899fe66d08a75f5f464bc90fdfa",
       "category": "generated"
     },
     ".claude/skills/mvt-template/SKILL.md": {
-      "hash": "sha256:173b468444772979e7e99503817cf07de1a64ac0713b82e3bbe5c52911a36b54",
+      "hash": "sha256:236bd6eb0590dff85a22525f2cfa702d9b6956e515994b32216861485795b4d4",
       "category": "generated"
     },
     ".claude/skills/mvt-test/SKILL.md": {
-      "hash": "sha256:070d9ba3769eb66794d33822080bb48f18f65ddc58f0494dbeb49d580a9f2d4e",
+      "hash": "sha256:e94fd385791be3b4688f1f966762596700a3f735e468f7620367e1d1725f9efe",
       "category": "generated"
     },
     ".claude/skills/mvt-update-plan/SKILL.md": {
-      "hash": "sha256:cc201519b2c53f5a95f3b2fefba87e078dec994d15394b297262c3d3e778dc39",
+      "hash": "sha256:55c71006033eeb75bb54a7cc1b807b44d026bc0bd81532797dac2e7b8d63f80b",
       "category": "generated"
     },
     ".ai-agents/skills/_templates/analyze-output.md": {
@@ -159,11 +159,11 @@
       "category": "generated"
     },
     ".ai-agents/config.yaml": {
-      "hash": "sha256:0b8b752bb7652ff1b505b1965b581e950bfa60c5b88d54554cf4206faf6c22c0",
+      "hash": "sha256:dfd32e405849ccc29d2363809fbf97cf04a7179a39bf15ea7a1dc223bbbdeaf2",
       "category": "create_once"
     },
     ".ai-agents/workspace/session.yaml": {
-      "hash": "sha256:b861f184dd041fc0945b1378fb092a2c5c10ec9b8c643ee4d4352f5e419d9428",
+      "hash": "sha256:53eae8bdad17e7dd836451c3cce88a7111740962202e536cc6aebfb736fbe82c",
       "category": "create_once"
     },
     ".ai-agents/workspace/project-context.yaml": {

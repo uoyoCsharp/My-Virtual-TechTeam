@@ -41,6 +41,12 @@ sections:
           guidance: "framework files are read-only"
 
   - type: shared
+    source: sections/turn-boundary-contract.md
+    params:
+      role: Conductor
+      this_skill: mvt-manage-context
+
+  - type: shared
     source: sections/activation-protocol.md
 
   - type: shared

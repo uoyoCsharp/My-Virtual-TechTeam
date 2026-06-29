@@ -35,6 +35,12 @@ sections:
         - scope: "modify source code"
           guidance: "this is a read-only review"
 
+  - type: shared
+    source: sections/turn-boundary-contract.md
+    params:
+      role: Reviewer
+      this_skill: mvt-review
+
   - type: inline
     content: |
       ## Aspect Options

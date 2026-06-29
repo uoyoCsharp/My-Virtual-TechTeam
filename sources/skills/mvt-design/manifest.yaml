@@ -34,6 +34,12 @@ sections:
         - scope: "review code"
           skill: "/mvt-review"
 
+  - type: shared
+    source: sections/turn-boundary-contract.md
+    params:
+      role: Architect
+      this_skill: mvt-design
+
   - type: inline
     content: |
       ## Variants
