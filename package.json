@@ -1,6 +1,6 @@
 {
   "name": "@uoyo/mvtt",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "description": "My Virtual Tech Team - AI-guided prompt orchestration framework",
   "type": "module",
   "bin": {

@@ -4,10 +4,6 @@ session:
 active_change: null
 changes: null
 history:
-  - skill: /mvt-refactor
-    completed_at: 2026-06-25T07:43:30.824Z
-    summary: 核验 MVTT skills prompt audit 问题是否存在
-    change_id: ""
   - skill: /mvt-fix
     completed_at: 2026-06-25T07:58:35.932Z
     summary: 修复 MVTT skills prompt audit 中确认存在的问题
@@ -43,6 +39,10 @@ history:
   - skill: /mvt-fix
     completed_at: 2026-06-28T11:11:46.479Z
     summary: 修复 W2(补全10个缺值参数测试)+S1(plan-update.js统一 hasValue 校验风格) — 48测试全绿
+    change_id: ""
+  - skill: /mvt-fix
+    completed_at: 2026-07-01T06:54:24.014Z
+    summary: 修复 mvt-consult 评审的 W1(README英文本计数)+S1(同步中文README)+S2(示例改用通用createOrder例子)+S3(精简manifest描述)
     change_id: ""
 active_epic: null
 epics: null

@@ -29,6 +29,8 @@ skills:
     description: "Update one task in the active plan.yaml: status, artifacts, notes; auto-advance current_task."
   mvt-bug-detect:
     description: "Diagnose a bug (root cause, severity, impact scope) without applying fixes."
+  mvt-consult:
+    description: "Answer questions about project logic and verify implementation details, grounded in knowledge and source code."
   mvt-implement:
     description: "Implement features from architecture design; write production code."
     template: ".ai-agents/skills/_templates/implement-output.md"

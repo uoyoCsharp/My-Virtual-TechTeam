@@ -2,7 +2,7 @@
 
 > **Stop repeating context. Ship features end-to-end.**
 >
-> 24 specialized AI skills that share a persistent workspace — covering the full development lifecycle from requirements to tested code.
+> 25 specialized AI skills that share a persistent workspace — covering the full development lifecycle from requirements to tested code.
 
 **English** | [中文](README.zh-CN.md)
 
@@ -228,7 +228,7 @@ Read this as: `T3` and `T4` run in parallel (both only need `T2`); `T5` waits fo
 
 ## Skills Working as a Team
 
-MVTT's 24 skills aren't 24 independent commands — they're an **integrated team** that shares one project notebook. Every skill's output becomes the next skill's input, so context compounds instead of evaporating.
+MVTT's 25 skills aren't 25 independent commands — they're an **integrated team** that shares one project notebook. Every skill's output becomes the next skill's input, so context compounds instead of evaporating.
 
 ### One Feature, Six Skills, One Continuous Flow
 
@@ -279,7 +279,7 @@ Each recipe is a **starting point** — `/mvt-help` suggests the next step based
 - **Built-in handoffs** — the artifact from one skill (analysis doc, design spec, plan.yaml) is explicitly read by the next. Nothing gets lost in the conversation.
 - **Interruptible** — stop mid-workflow, come back days later, `/mvt-resume` picks up exactly where you left off, with full state restored.
 
-## The 24 Skills
+## The 25 Skills
 
 ### Workflow — Full Development Lifecycle
 
@@ -300,6 +300,7 @@ Each recipe is a **starting point** — `/mvt-help` suggests the next step based
 | Skill | Use when... | What it does |
 |-------|-------------|--------------|
 | `/mvt-bug-detect` | Suspect a bug, want diagnosis before any change | Investigates root cause and impact, makes no code changes |
+| `/mvt-consult` | Want to understand project logic or verify a detail | Answers from knowledge, checks source when it matters, no code changes |
 | `/mvt-fix` | Bug confirmed, ready to resolve | Diagnoses and fixes with full context awareness |
 | `/mvt-refactor` | Want to restructure, keep behavior unchanged | Refactors with awareness of architecture decisions |
 | `/mvt-quick-dev` | 1–3 file change, well-scoped, architecturally neutral | Goes straight to implementation, no full workflow |
@@ -371,7 +372,7 @@ preferences:
 
 ### How is MVTT different from a well-written CLAUDE.md?
 
-A CLAUDE.md gives Claude **instructions**. MVTT gives Claude a **team** — 24 specialized skills with shared memory, dedicated templates, and a handoff protocol. CLAUDE.md is a memo; MVTT is an org chart. You can use both; they don't conflict.
+A CLAUDE.md gives Claude **instructions**. MVTT gives Claude a **team** — 25 specialized skills with shared memory, dedicated templates, and a handoff protocol. CLAUDE.md is a memo; MVTT is an org chart. You can use both; they don't conflict.
 
 ### Does it explode my token usage?
 
@@ -393,9 +394,9 @@ Yes. `npx @uoyo/mvtt install` adds MVTT to any repo. It doesn't change your code
 
 `mvtt uninstall` removes the generated framework files but preserves your `.ai-agents/workspace/` and `.ai-agents/knowledge/`. Nothing you've written is lost.
 
-### Why 24 skills? Isn't that overkill?
+### Why 25 skills? Isn't that overkill?
 
-Most teams use 5–8 skills regularly. The other 15–19 are there for specific situations (epic decomposition, context sync, output templating) — you don't need to learn them up front. Run `/mvt-help` and it tells you exactly which one to use next.
+Most teams use 5–8 skills regularly. The other 16–20 are there for specific situations (epic decomposition, context sync, output templating) — you don't need to learn them up front. Run `/mvt-help` and it tells you exactly which one to use next.
 
 ## Community & Roadmap
 

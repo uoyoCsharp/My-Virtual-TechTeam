@@ -1,7 +1,7 @@
 {
-  "mvtt_version": "2.2.2",
+  "mvtt_version": "2.2.3",
   "installed_at": "2026-06-10T06:40:54.542Z",
-  "last_updated_at": "2026-06-29T07:13:09.593Z",
+  "last_updated_at": "2026-07-01T06:58:13.308Z",
   "platforms": [
     "claude"
   ],
@@ -28,6 +28,10 @@
     },
     ".claude/skills/mvt-config/SKILL.md": {
       "hash": "sha256:0d88b0ecb84e79645d9cda3a39ce879bb9614f9048dd90878feb35be1facb649",
+      "category": "generated"
+    },
+    ".claude/skills/mvt-consult/SKILL.md": {
+      "hash": "sha256:13c7fae24e4df6b7c8b4e5389d89be55999689090a0841b62c954b31e01b9e12",
       "category": "generated"
     },
     ".claude/skills/mvt-create-skill/SKILL.md": {
@@ -135,7 +139,7 @@
       "category": "create_once"
     },
     ".ai-agents/registry.yaml": {
-      "hash": "sha256:66b9cce5ef15a0bfa900cfd4032d195519c6dc145a0a1c2bd214e5b2a7d2851a",
+      "hash": "sha256:5531282ed9981821e21fc2a7b948cb076f13ae25925a01b6f78c0505634a265a",
       "category": "create_once"
     },
     ".ai-agents/scripts/epic-update.cjs": {
@@ -163,7 +167,7 @@
       "category": "create_once"
     },
     ".ai-agents/workspace/session.yaml": {
-      "hash": "sha256:53eae8bdad17e7dd836451c3cce88a7111740962202e536cc6aebfb736fbe82c",
+      "hash": "sha256:638b13afe8a2ab0f87285e7aae83e70877a040fbe5655a85b9982a77f501f8f2",
       "category": "create_once"
     },
     ".ai-agents/workspace/project-context.yaml": {

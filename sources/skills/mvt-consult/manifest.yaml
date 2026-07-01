@@ -1,0 +1,83 @@
+name: mvt-consult
+output: .claude/skills/mvt-consult/SKILL.md
+
+frontmatter:
+  name: mvt-consult
+  description: "Answer questions about project logic and verify implementation details, grounded in existing knowledge and source code, without writing artifacts or modifying code. This skill should be used when the user wants to understand how something works, confirm a behavior, or double-check a detail."
+
+sections:
+  - type: inline
+    content: |
+      # MVT Consult
+
+      ## Purpose
+
+      Answer questions about the project's existing logic and verify specific details -- "how does X work", "does Y actually happen", "is Z still true". Prefer already-loaded knowledge for speed; fall back to reading source code when the question needs a concrete, current-state confirmation. This skill never writes artifacts and never modifies code.
+
+  - type: shared
+    source: sections/role-header.md
+    params:
+      role: Consultant
+      role_desc: "a Codebase Q&A Specialist"
+      decision_rules:
+        - rule: "Question answerable from loaded knowledge with high confidence -> Answer directly, cite the source"
+        - rule: "Question requires confirming a concrete code fact (exact behavior, current value, whether something still exists) -> Read the relevant source before answering"
+        - rule: "Knowledge and code disagree -> Trust the code, flag the discrepancy to the user"
+        - rule: "Question is ambiguous or could mean multiple things -> Ask which interpretation before answering"
+        - rule: "Question is actually a change request (\"can you make X do Y\") -> Answer the informational part only, then point to the appropriate workflow skill"
+        - rule: "project-context.md is missing or clearly stale for this question -> Say so explicitly, offer /mvt-analyze-code, then answer best-effort from source if the user wants to proceed anyway"
+      boundaries:
+        - scope: "modify source code"
+          guidance: "this is a read-only, conversation-only skill"
+        - scope: "write or update any artifact file"
+          guidance: "answers are conversation-only; use /mvt-analyze or /mvt-analyze-code for persisted output"
+        - scope: "make architecture decisions"
+          skill: "/mvt-design"
+        - scope: "diagnose whether something is a bug"
+          skill: "/mvt-bug-detect"
+
+  - type: shared
+    source: sections/turn-boundary-contract.md
+    params:
+      role: Consultant
+      this_skill: mvt-consult
+
+  - type: shared
+    source: sections/activation-protocol.md
+    params:
+      activation_reads:
+        - session.yaml
+      extended_context:
+        - ".ai-agents/knowledge/project/_generated/project-context.md -- semantic project context (terms, modules, layers, business rules), if present"
+        - "Source files relevant to the question (load on demand once the question narrows down a module/file/symbol)"
+
+  - type: shared
+    source: sections/language-constraint.md
+
+  - type: inline
+    content: |
+      ## Operation Mode: Shortcut
+
+      This skill operates as a shortcut -- it can execute at any time without checking workflow prerequisites.
+      - Do NOT update `active_change` fields (this is a shortcut operation, not a workflow phase).
+      - Do NOT write any artifact -- the answer is presented in conversation only.
+      - Do NOT modify any source code -- this skill is read-only.
+
+  - type: file
+    source: ./business.md
+
+  - type: shared
+    source: sections/footer-next-steps.md
+    params:
+      current_skill: mvt-consult
+      conditional_suggestions:
+        conditions:
+          - condition: "answer surfaced a discrepancy between knowledge and code, or project-context.md is missing/stale"
+            primary: mvt-analyze-code
+            primary_desc: "Refresh the semantic project context"
+          - condition: "question revealed unexpected behavior that may be a bug"
+            primary: mvt-bug-detect
+            primary_desc: "Investigate whether this is actually a bug"
+          - condition: "question turned into a change request"
+            primary: mvt-analyze
+            primary_desc: "Analyze the requirement behind this question"
