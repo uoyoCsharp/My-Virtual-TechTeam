@@ -57,13 +57,16 @@ sections:
           field: "active_change.id"
           condition: "active_change.id is non-empty"
           level: "WARN"
-          message: "An active change already exists. Decomposing will create a new epic alongside it. Continue? (y/n)"
+          message: "An active change already exists. Decomposing will create a new epic alongside it. Confirm — choices Continue / Cancel."
 
   - type: shared
     source: sections/language-constraint.md
 
   - type: shared
     source: sections/output-format-constraint.md
+
+  - type: shared
+    source: sections/confirmation-prompt.md
 
   - type: file
     source: ./business.md

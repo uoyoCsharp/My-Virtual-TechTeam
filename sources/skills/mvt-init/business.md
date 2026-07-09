@@ -137,9 +137,9 @@ If any validation fails → report the specific error and offer to retry or skip
 
 When `mvt-init` is executed and existing MVTT artifacts are detected:
 
-1. **Prompt user**: "Existing MVTT configuration found. Refresh to re-scan project structure? (y/n)"
-   - If `n` -> stop, no changes made.
-   - If `y` -> proceed with refresh.
+1. **Prompt user** — choices `Refresh` / `Cancel`: "Existing MVTT configuration found. Refresh to re-scan project structure?"
+   - If `Cancel` -> stop, no changes made.
+   - If `Refresh` -> proceed with refresh.
 
 2. **Re-scan** project structure using Steps 1-3 above.
 

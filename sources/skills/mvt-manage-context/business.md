@@ -32,7 +32,7 @@ The registry uses project-keyed knowledge maps. Every knowledge block (top-level
 | global | specific skill | `skills.{name}.knowledge._all` |
 | project-specific | specific skill | `skills.{name}.knowledge.{projectName}` |
 
-**`_all` promotion confirmation**: routing to `knowledge._all` or `skills.{name}.knowledge._all` means the entry will be loaded by every skill across every project (or every project for that skill). When the add flow routes to `_all`, prompt: "This knowledge will be loaded by ALL skills across ALL projects. Confirm? (y/n)" -- default to **n** for project-specific entries, default to **y** only when the user explicitly chose scope=global.
+**`_all` promotion confirmation**: routing to `knowledge._all` or `skills.{name}.knowledge._all` means the entry will be loaded by every skill across every project (or every project for that skill). When the add flow routes to `_all`, confirm — choices `Confirm` / `Cancel`: "This knowledge will be loaded by ALL skills across ALL projects." -- default to **Cancel** for project-specific entries, default to **Confirm** only when the user explicitly chose scope=global.
 
 ---
 

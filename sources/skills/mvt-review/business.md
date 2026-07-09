@@ -97,9 +97,9 @@ This step applies only when the workspace has multiple projects (`projects.lengt
 - Each finding must include: file, line range, severity, observation, recommendation.
 
 ### Step 7: Write Artifact
-- **Confirm before writing**: when an `active_change` exists (so an artifact would be written), present the review result in the conversation first (verdict + Critical/Warning/Suggestion counts), then ask the user whether to persist it: `Write the review artifact to {path}? (y/n)`.
-  - If the user declines (n), do NOT write any file under `artifacts/`. Keep the full review in the conversation only, and note that no artifact was persisted. Then continue to Step 8.
-  - If the user confirms (y), write the artifact as described below.
+- **Confirm before writing**: when an `active_change` exists (so an artifact would be written), present the review result in the conversation first (verdict + Critical/Warning/Suggestion counts), then confirm — choices `Write` / `Skip`: "Write the review artifact to {path}?"
+  - If the user chooses Skip, do NOT write any file under `artifacts/`. Keep the full review in the conversation only, and note that no artifact was persisted. Then continue to Step 8.
+  - If the user chooses Write, write the artifact as described below.
   - When no `active_change` exists, there is no artifact to write — skip the prompt and keep the full review in the conversation only (no artifact).
 - **Path and template**: as defined in the **Artifact Structure** section below; this applies only when an `active_change` exists. Follow the HTML comments in the template for what each section should contain; strip comments from the final artifact.
 - **Required coverage**: cover only content that is applicable to this review. Preserve enough information for the user to understand what was reviewed, the verdict, material findings, skipped checks, and the recommended next step. Do not create empty or artificial sections just because an item is named here; if the template omits or renames a section, place applicable content in the closest relevant section.

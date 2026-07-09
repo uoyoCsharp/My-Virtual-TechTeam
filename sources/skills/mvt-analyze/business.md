@@ -8,7 +8,7 @@ In this state the user is starting a new sub-change within an existing epic. Rea
 |----------|-------------|----------|
 | A | Empty | Auto-use `current_change` child's scope from `epic.yaml` as the requirement input. Proceed to Step 3. |
 | B | Supplements current child | Merge user message with `current_change` child's scope. Proceed to Step 3. |
-| C | Points to different child | Locate target in `children[]`. If `depends_on` has unfinished prerequisites → warn and ask to confirm forced reorder (y/n). If deps satisfied → confirm switch (y/n). On confirmed reorder: call the Epic Update Script in `--switch-active` mode with `node .ai-agents/scripts/epic-update.cjs --epic <epic_path> --switch-active <target_id>`. If target not in `children[]` → offer to treat as independent change (exit epic-child mode) or use `--add-child` mode to append it as a new child. Read `.ai-agents/scripts/epic-update.md` only if a required mode or flag is not rendered here. Do NOT hand-edit `epic.yaml`, advance `current_change`, or read `.cjs`/`.js` source. |
+| C | Points to different child | Locate target in `children[]`. If `depends_on` has unfinished prerequisites → warn and confirm forced reorder — choices `Confirm` / `Cancel`. If deps satisfied → confirm switch with the same `Confirm` / `Cancel` choices. On confirmed reorder: call the Epic Update Script in `--switch-active` mode with `node .ai-agents/scripts/epic-update.cjs --epic <epic_path> --switch-active <target_id>`. If target not in `children[]` → offer to treat as independent change (exit epic-child mode) or use `--add-child` mode to append it as a new child. Read `.ai-agents/scripts/epic-update.md` only if a required mode or flag is not rendered here. Do NOT hand-edit `epic.yaml`, advance `current_change`, or read `.cjs`/`.js` source. |
 
 ## Execution Flow
 
@@ -40,10 +40,10 @@ In this state the user is starting a new sub-change within an existing epic. Rea
 
   | Condition | Action |
   |-----------|--------|
-  | Epic detection hits | Ask: "This looks like an epic-level requirement (multiple independent capability domains). Use `/mvt-decompose` to decompose it first? (y / n / show-signals)" |
-  | `y` | Do NOT write `analysis.md`. Guide to `/mvt-decompose`. |
-  | `n` | Continue standard analysis (Steps 4-7). Cheap reversal path. |
-  | `show-signals` | Display matched signals, re-prompt. |
+  | Epic detection hits | Confirm — choices `Yes` / `No` / `Show signals`: "This looks like an epic-level requirement (multiple independent capability domains). Use `/mvt-decompose` to decompose it first?" |
+  | `Yes` | Do NOT write `analysis.md`. Guide to `/mvt-decompose`. |
+  | `No` | Continue standard analysis (Steps 4-7). Cheap reversal path. |
+  | `Show signals` | Display matched signals, re-prompt. |
   | Epic misses | Fall through to Step 4 (Quick Path Detection). |
 
 - **Epic-child mode note**: When operating in epic-child mode (scenarios A or B from the pre-check), Step 3 should treat the selected child scope as the intended change boundary. Do not re-route to `/mvt-decompose` unless the user explicitly expands the request beyond that child or the scope is clearly still epic-scale (e.g., the child scope itself contains multiple independent capability domains that were not part of the original decomposition rationale).
@@ -84,14 +84,14 @@ In this state the user is starting a new sub-change within an existing epic. Rea
 
   | Condition | Action |
   |-----------|--------|
-  | ALL criteria pass | Ask user: "This appears to be a simple change (1-3 files, no architectural impact). Use /mvt-quick-dev for faster execution? (y / n / show-criteria)" |
+  | ALL criteria pass | Confirm — choices `Yes` / `No` / `Show criteria`: "This appears to be a simple change (1-3 files, no architectural impact). Use /mvt-quick-dev for faster execution?" |
   | ANY criterion fails | Proceed with standard analysis flow (Steps 5-7) |
   | Ambiguous (2-3 criteria unclear) | Proceed with standard analysis; do NOT offer quick path |
 
 - **On user choice**:
-  - "y" -- Do NOT write an analysis artifact. Summarize the requirement understanding in conversation and recommend `/mvt-quick-dev` directly. Set `active_change` if one doesn't exist, so `/mvt-quick-dev` can reference the current work context.
-  - "n" -- Continue with full analysis flow (Steps 5-7).
-  - "show-criteria" -- Display the assessment results (pass/fail per criterion), then re-prompt with y/n.
+  - `Yes` -- Do NOT write an analysis artifact. Summarize the requirement understanding in conversation and recommend `/mvt-quick-dev` directly. Set `active_change` if one doesn't exist, so `/mvt-quick-dev` can reference the current work context.
+  - `No` -- Continue with full analysis flow (Steps 5-7).
+  - `Show criteria` -- Display the assessment results (pass/fail per criterion), then re-prompt with the same `Yes` / `No` / `Show criteria` choices.
 
 ### Step 5: Detect Ambiguities
 - Check for unclear requirements

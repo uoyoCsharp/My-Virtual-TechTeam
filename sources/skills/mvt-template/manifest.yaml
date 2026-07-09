@@ -47,6 +47,9 @@ sections:
   - type: shared
     source: sections/language-constraint.md
 
+  - type: shared
+    source: sections/confirmation-prompt.md
+
   - type: file
     source: ./business.md
 

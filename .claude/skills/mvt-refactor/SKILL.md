@@ -106,6 +106,19 @@ Persisted markdown output MUST follow these rendering rules. Scope: artifact fil
 
 This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from templates or source material.
 
+## Confirmation Prompts
+
+At every confirmation or choice point in this skill, present the named choices as selectable options — never as an open "type y/n" question. Any `choices A / B / ...` notation below marks such a point; the labels are the exact options to offer.
+
+- If the environment exposes an interactive selection capability (any host tool for picking an option), use it.
+- Otherwise, list the choices as a numbered menu and accept the number or the label:
+  ```
+  1) A
+  2) B
+  ```
+
+Presentation is all that changes — the choices and their meaning stay as written at each point.
+
 ## Operation Mode: Shortcut
 
 This skill operates as a shortcut — it can execute at any time without checking workflow prerequisites.
@@ -186,7 +199,7 @@ This step applies only when the workspace has multiple projects (`projects.lengt
   - Refactoring type and risk level.
   - Number of callers and a list of the top 5 affected files.
   - Behavior-preservation strategy (Step 6).
-  - One yes/no prompt: `Proceed with this refactor? (y / n / show-plan)`.
+  - One confirmation — choices `Proceed` / `Cancel` / `Show plan`: "Proceed with this refactor?"
 
 ### Step 8: Plan and Execute Incrementally
 - **What**: apply the change in the smallest reversible steps.

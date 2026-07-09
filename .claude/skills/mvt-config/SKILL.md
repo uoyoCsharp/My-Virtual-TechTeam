@@ -86,6 +86,19 @@ Use `preferences.interaction_language` for every chat reply, question, prompt, s
 
 Use `preferences.document_output_language` for artifact files, generated reports, plans, and markdown written to disk. If absent, fall back to `interaction_language`. Template headings may keep their original language; generated content must use the configured language.
 
+## Confirmation Prompts
+
+At every confirmation or choice point in this skill, present the named choices as selectable options — never as an open "type y/n" question. Any `choices A / B / ...` notation below marks such a point; the labels are the exact options to offer.
+
+- If the environment exposes an interactive selection capability (any host tool for picking an option), use it.
+- Otherwise, list the choices as a numbered menu and accept the number or the label:
+  ```
+  1) A
+  2) B
+  ```
+
+Presentation is all that changes — the choices and their meaning stay as written at each point.
+
 ## Configuration Keys
 
 ### User Preferences
@@ -157,7 +170,7 @@ Used by Step 4 and by each stage of Step 5.
    | `int` | Parse as integer; check range when range is documented (e.g., `relevance_threshold` must be 0-100) |
 
 3. **Preview**: render `key: <current> -> <new>` on a single line.
-4. **Confirm**: prompt `Apply this change? (y/n)`. On `n`, discard and return.
+4. **Confirm** — choices `Apply` / `Cancel`: "Apply this change?" On `Cancel`, discard and return.
 5. **Write atomically**:
    - Read the current file, mutate only the targeted key, preserve all other content and formatting (do NOT rewrite the whole file from a template -- the user may have comments).
    - Write to a temp file in the same directory, then rename. On any error, do not touch the original.

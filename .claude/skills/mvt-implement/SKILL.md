@@ -61,7 +61,7 @@ Two blocks: **Load** (what to read, and when) then **Resolve** (what to decide).
 
 **Config** — apply `config.yaml` preferences for the whole session: `preferences.interaction_language` (chat/prompts/tables), `preferences.document_output_language` (files on disk), `preferences.output.no_emojis`, `preferences.output.data_format`, `preferences.context_routing.relevance_threshold`.
 
-**Pre-flight** — evaluate each check below against the loaded `session.yaml` / `project-context.yaml`. Levels: **WARN** = emit message, ask "Continue? (y/n)", default **y**; **BLOCK** / **REQUIRED** = emit and stop until satisfied; **INFO** = emit and proceed.
+**Pre-flight** — evaluate each check below against the loaded `session.yaml` / `project-context.yaml`. Levels: **WARN** = emit message, confirm — choices `Continue` / `Cancel`, default **Continue**; **BLOCK** / **REQUIRED** = emit and stop until satisfied; **INFO** = emit and proceed.
 
 | # | Condition | Level | Message |
 |---|-----------|-------|---------|
@@ -91,6 +91,19 @@ Persisted markdown output MUST follow these rendering rules. Scope: artifact fil
 - **Headings**: Use Markdown heading hierarchy (`#` -> `##` -> `###`) without skipping levels; do not replace headings with bold text.
 
 This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from templates or source material.
+
+## Confirmation Prompts
+
+At every confirmation or choice point in this skill, present the named choices as selectable options — never as an open "type y/n" question. Any `choices A / B / ...` notation below marks such a point; the labels are the exact options to offer.
+
+- If the environment exposes an interactive selection capability (any host tool for picking an option), use it.
+- Otherwise, list the choices as a numbered menu and accept the number or the label:
+  ```
+  1) A
+  2) B
+  ```
+
+Presentation is all that changes — the choices and their meaning stay as written at each point.
 
 ## Execution Flow
 
@@ -171,9 +184,9 @@ This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from 
 
 > These are hard guards. Do NOT prompt the user about deliverables unless BOTH guards pass.
 
-- **Prompt the user**:
-  - If `task.deliverables` already exists (re-implementation / rescope): "Implementation changed, and downstream task(s) {ids} depend on it. Update deliverables? (y/n)"
-  - If this is the first time (no `deliverables` field on the task): "Downstream task(s) {ids} will consume this task's output. Generate deliverables? (default y)"
+- **Prompt the user** — choices `Yes` / `No`:
+  - If `task.deliverables` already exists (re-implementation / rescope): "Implementation changed, and downstream task(s) {ids} depend on it. Update deliverables?"
+  - If this is the first time (no `deliverables` field on the task): "Downstream task(s) {ids} will consume this task's output. Generate deliverables?" (default: Yes)
 - **On confirmation**, append a deliverables subsection under the task's existing `## Task: {id}` section in `implementation.md` (if multi-task plan) or as a dedicated section (if single-task). Use this soft skeleton:
 
   ```markdown

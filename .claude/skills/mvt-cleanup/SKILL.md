@@ -71,7 +71,7 @@ Extended Context entries:
 
 **Config** — apply `config.yaml` preferences for the whole session: `preferences.interaction_language` (chat/prompts/tables), `preferences.document_output_language` (files on disk), `preferences.output.no_emojis`, `preferences.output.data_format`, `preferences.context_routing.relevance_threshold`.
 
-**Pre-flight** — evaluate each check below against the loaded `session.yaml` / `project-context.yaml`. Levels: **WARN** = emit message, ask "Continue? (y/n)", default **y**; **BLOCK** / **REQUIRED** = emit and stop until satisfied; **INFO** = emit and proceed.
+**Pre-flight** — evaluate each check below against the loaded `session.yaml` / `project-context.yaml`. Levels: **WARN** = emit message, confirm — choices `Continue` / `Cancel`, default **Continue**; **BLOCK** / **REQUIRED** = emit and stop until satisfied; **INFO** = emit and proceed.
 
 | # | Condition | Level | Message |
 |---|-----------|-------|---------|
@@ -100,6 +100,19 @@ Persisted markdown output MUST follow these rendering rules. Scope: artifact fil
 - **Headings**: Use Markdown heading hierarchy (`#` -> `##` -> `###`) without skipping levels; do not replace headings with bold text.
 
 This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from templates or source material.
+
+## Confirmation Prompts
+
+At every confirmation or choice point in this skill, present the named choices as selectable options — never as an open "type y/n" question. Any `choices A / B / ...` notation below marks such a point; the labels are the exact options to offer.
+
+- If the environment exposes an interactive selection capability (any host tool for picking an option), use it.
+- Otherwise, list the choices as a numbered menu and accept the number or the label:
+  ```
+  1) A
+  2) B
+  ```
+
+Presentation is all that changes — the choices and their meaning stay as written at each point.
 
 ## Execution Flow
 
@@ -162,9 +175,9 @@ This check ensures `/mvt-sync-context` has processed a change's knowledge before
 - If the Step 2 warning list is non-empty, prepend it to the confirmation prompt:
   > WARNING: The following changes have NOT been synced by `/mvt-sync-context`. Archiving them will permanently lose their knowledge for aggregation:
   > - {change-id}: {title}
-  > Options: `y` = archive anyway, `n` = cancel, `sync-first` = abort and run `/mvt-sync-context` first, `show-details` = per-file breakdown.
-- If no unsynced warnings, use the standard prompt: `Apply cleanup plan? (y / n / show-details)`. `show-details` prints the per-file actions, then re-asks.
-- User chooses `sync-first` → stop cleanup, print "Run `/mvt-sync-context` first, then re-run `/mvt-cleanup`." and exit.
+  > Present choices `Archive anyway` / `Cancel` / `Sync first` / `Show details`.
+- If no unsynced warnings, use the standard confirmation — choices `Apply` / `Cancel` / `Show details`: "Apply cleanup plan?". `Show details` prints the per-file actions, then re-asks.
+- User chooses `Sync first` → stop cleanup, print "Run `/mvt-sync-context` first, then re-run `/mvt-cleanup`." and exit.
 - Do NOT silently delete. Do NOT skip confirmation when `--dry-run` is absent.
 
 ### Step 7: Execute the Plan
@@ -249,7 +262,7 @@ Replace `10` with the actual `config.yaml > preferences.history_limits.history` 
 |------|----------|
 | `active_change.id` directory matches a "stale completed" rule | Skip cleanup of the active change; never archive in-progress work |
 | `--dry-run` set | Stop after Step 5; do not request confirmation; do not modify any file |
-| Plan would archive ALL artifacts (workspace becomes empty) | Require an extra confirmation: `This will archive every artifact. Continue? (y/n)` |
+| Plan would archive ALL artifacts (workspace becomes empty) | Require an extra confirmation — choices `Continue` / `Cancel`: "This will archive every artifact." |
 | User aborts at Step 6 confirmation | Report "no changes applied" |
 | `artifacts/_archived/{id}/` already exists from a prior run | Preserve existing content; merge or skip with a note — do not overwrite |
 | File targeted for action no longer exists (concurrent removal) | Skip with a note; do not error out the whole run |

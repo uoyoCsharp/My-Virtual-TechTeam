@@ -77,9 +77,9 @@
 
 > These are hard guards. Do NOT prompt the user about deliverables unless BOTH guards pass.
 
-- **Prompt the user**:
-  - If `task.deliverables` already exists (re-implementation / rescope): "Implementation changed, and downstream task(s) {ids} depend on it. Update deliverables? (y/n)"
-  - If this is the first time (no `deliverables` field on the task): "Downstream task(s) {ids} will consume this task's output. Generate deliverables? (default y)"
+- **Prompt the user** — choices `Yes` / `No`:
+  - If `task.deliverables` already exists (re-implementation / rescope): "Implementation changed, and downstream task(s) {ids} depend on it. Update deliverables?"
+  - If this is the first time (no `deliverables` field on the task): "Downstream task(s) {ids} will consume this task's output. Generate deliverables?" (default: Yes)
 - **On confirmation**, append a deliverables subsection under the task's existing `## Task: {id}` section in `implementation.md` (if multi-task plan) or as a dedicated section (if single-task). Use this soft skeleton:
 
   ```markdown

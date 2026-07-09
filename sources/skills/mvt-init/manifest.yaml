@@ -73,6 +73,9 @@ sections:
   - type: shared
     source: sections/output-format-constraint.md
 
+  - type: shared
+    source: sections/confirmation-prompt.md
+
   - type: file
     source: ./business.md
 

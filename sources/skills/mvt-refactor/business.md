@@ -72,7 +72,7 @@ This step applies only when the workspace has multiple projects (`projects.lengt
   - Refactoring type and risk level.
   - Number of callers and a list of the top 5 affected files.
   - Behavior-preservation strategy (Step 6).
-  - One yes/no prompt: `Proceed with this refactor? (y / n / show-plan)`.
+  - One confirmation — choices `Proceed` / `Cancel` / `Show plan`: "Proceed with this refactor?"
 
 ### Step 8: Plan and Execute Incrementally
 - **What**: apply the change in the smallest reversible steps.

@@ -75,6 +75,19 @@ Use `preferences.interaction_language` for every chat reply, question, prompt, s
 
 Use `preferences.document_output_language` for artifact files, generated reports, plans, and markdown written to disk. If absent, fall back to `interaction_language`. Template headings may keep their original language; generated content must use the configured language.
 
+## Confirmation Prompts
+
+At every confirmation or choice point in this skill, present the named choices as selectable options — never as an open "type y/n" question. Any `choices A / B / ...` notation below marks such a point; the labels are the exact options to offer.
+
+- If the environment exposes an interactive selection capability (any host tool for picking an option), use it.
+- Otherwise, list the choices as a numbered menu and accept the number or the label:
+  ```
+  1) A
+  2) B
+  ```
+
+Presentation is all that changes — the choices and their meaning stay as written at each point.
+
 ## Execution Flow
 
 ### Step 1: Load Inputs
@@ -134,15 +147,15 @@ Use `preferences.document_output_language` for artifact files, generated reports
       - If the default template had frontmatter, the customized version must keep a parseable frontmatter block and retain the original frontmatter keys. If the default template had no frontmatter, do not require one.
       - If the default template had Mustache placeholders, retain them unless the user explicitly removed them. If the default template had no placeholders, do not require placeholders.
      - Validation failures -> abort write, surface the failed checks, return to step 2 of this subflow.
-  5. **Confirm and write**: prompt `Save customized template to .ai-agents/skills/_templates/custom/<name>? (y/n)`. On `y`, write atomically (temp + rename). Backup any existing custom file as `<name>.bak` first.
+  5. **Confirm and write** — choices `Save` / `Cancel`: "Save customized template to .ai-agents/skills/_templates/custom/<name>?" On `Save`, write atomically (temp + rename). Backup any existing custom file as `<name>.bak` first.
 
 #### 4c. Reset
 - **What**: revert to the default template.
 - **How**:
   1. If no custom file exists, report "Already default, nothing to reset" and stop.
   2. Show a one-line summary of what will be deleted (`<path>`, last modified date).
-  3. Require explicit confirmation: `Delete custom override <name>? (y/n)`.
-  4. On `y`, delete the file. Do NOT keep a backup -- user must use git for recovery.
+  3. Require explicit confirmation — choices `Delete` / `Cancel`: "Delete custom override <name>?"
+  4. On `Delete`, delete the file. Do NOT keep a backup -- user must use git for recovery.
   5. Report success and the new status (`Default`).
 
 #### 4d. Export

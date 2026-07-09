@@ -116,6 +116,19 @@ Persisted markdown output MUST follow these rendering rules. Scope: artifact fil
 
 This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from templates or source material.
 
+## Confirmation Prompts
+
+At every confirmation or choice point in this skill, present the named choices as selectable options — never as an open "type y/n" question. Any `choices A / B / ...` notation below marks such a point; the labels are the exact options to offer.
+
+- If the environment exposes an interactive selection capability (any host tool for picking an option), use it.
+- Otherwise, list the choices as a numbered menu and accept the number or the label:
+  ```
+  1) A
+  2) B
+  ```
+
+Presentation is all that changes — the choices and their meaning stay as written at each point.
+
 ## Execution Flow
 
 ### Step 1: Parse Subcommand
@@ -150,7 +163,7 @@ The registry uses project-keyed knowledge maps. Every knowledge block (top-level
 | global | specific skill | `skills.{name}.knowledge._all` |
 | project-specific | specific skill | `skills.{name}.knowledge.{projectName}` |
 
-**`_all` promotion confirmation**: routing to `knowledge._all` or `skills.{name}.knowledge._all` means the entry will be loaded by every skill across every project (or every project for that skill). When the add flow routes to `_all`, prompt: "This knowledge will be loaded by ALL skills across ALL projects. Confirm? (y/n)" -- default to **n** for project-specific entries, default to **y** only when the user explicitly chose scope=global.
+**`_all` promotion confirmation**: routing to `knowledge._all` or `skills.{name}.knowledge._all` means the entry will be loaded by every skill across every project (or every project for that skill). When the add flow routes to `_all`, confirm — choices `Confirm` / `Cancel`: "This knowledge will be loaded by ALL skills across ALL projects." -- default to **Cancel** for project-specific entries, default to **Confirm** only when the user explicitly chose scope=global.
 
 ---
 

@@ -93,9 +93,9 @@ This step applies only when the workspace has multiple projects (`projects.lengt
 
 ### Step 10: Write Artifact
 - **Scope of this step**: this gate concerns ONLY the test-design record artifact (`test-design.md`). The actual test files were already written to the project tree in Step 7 and are NOT affected by the choice below.
-- **Confirm before writing**: when an `active_change` exists (so an artifact would be written), present the test-design summary in the conversation first (target scope, scenario/case counts, coverage gaps, any implementation issues), then ask the user whether to persist it: `Write the test-design artifact to {path}? (y/n)`.
-  - If the user declines (n), do NOT write any file under `artifacts/`. Keep the full test design in the conversation only, and note that no artifact was persisted. Then continue to Step 11.
-  - If the user confirms (y), write the artifact as described below.
+- **Confirm before writing**: when an `active_change` exists (so an artifact would be written), present the test-design summary in the conversation first (target scope, scenario/case counts, coverage gaps, any implementation issues), then confirm — choices `Write` / `Skip`: "Write the test-design artifact to {path}?"
+  - If the user chooses Skip, do NOT write any file under `artifacts/`. Keep the full test design in the conversation only, and note that no artifact was persisted. Then continue to Step 11.
+  - If the user chooses Write, write the artifact as described below.
   - When no `active_change` exists, there is no artifact to write — skip the prompt and keep the full test design in the conversation only (no artifact).
 - **Path and template**: as defined in the **Artifact Structure** section below; this applies only when an `active_change` exists. Follow the HTML comments in the template for what each section should contain; strip comments from the final artifact.
 - **Required coverage**: cover only content that is applicable to this test effort. Preserve enough information for the user to understand the target scope, chosen framework/layout, scenarios and runnable test cases, granularity choices, coverage gaps when `--coverage` is set, implementation issues when found, and practical run commands when tests are generated. Do not create empty or artificial sections just because an item is named here; if the template omits or renames a section, place applicable content in the closest relevant section.

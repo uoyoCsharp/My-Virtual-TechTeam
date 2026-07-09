@@ -78,7 +78,7 @@
   - The design adds a new external dependency.
 - **When to write silently**:
   - Single-module addition that fits existing layers, no ADR escalations, no breaking change.
-- **Confirmation format**: present a one-screen summary -- module boundary changes, deployment/runtime boundary changes, ADRs requiring review, external dependencies, and a single yes/no prompt. Do not dump the full artifact.
+- **Confirmation format**: present a one-screen summary -- module boundary changes, deployment/runtime boundary changes, ADRs requiring review, external dependencies -- then confirm — choices `Yes` / `No`. Do not dump the full artifact.
 
 ### Step 7: Write Artifact
 - **Path and template**: as defined in the **Artifact Structure** section below. Follow the HTML comments in the template for what each section should contain; strip comments from the final artifact.

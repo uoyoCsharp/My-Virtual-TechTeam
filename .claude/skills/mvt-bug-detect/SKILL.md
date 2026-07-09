@@ -105,7 +105,15 @@ This skill operates as a shortcut — it can execute at any time without checkin
 - Extract concrete signals from the bug description: error message text, stack trace frames, file paths, function/class names, input data.
 - For each signal, locate matching code (Grep / Glob).
 - Build a candidate file list with one-line justification per file.
-- Read recent git state (`git diff HEAD`, `git log -n 10 --oneline`) to surface recent changes that may correlate with the issue.
+- Decide whether recent git state is needed, using the table below. Walk top-to-bottom; the first match wins:
+
+  | Condition | Action |
+  |-----------|--------|
+  | Description/clarification mentions a recent change, deploy, or release | Read git state (scoped, see below) |
+  | User states the issue is old/unrelated to recent changes | Skip -- proceed to Step 3 |
+  | Candidate files are precise and the issue resembles long-standing logic (e.g. an existing edge case) | Skip -- proceed to Step 3 |
+
+  When reading git state, scope it to the candidate files rather than the whole repo: `git log -n 10 --oneline -- <candidate-files>` and `git diff HEAD -- <candidate-files>`.
 
 ### Step 3: Reproduction Verification
 

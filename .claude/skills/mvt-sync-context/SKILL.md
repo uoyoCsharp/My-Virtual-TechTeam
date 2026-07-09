@@ -77,7 +77,7 @@ Extended Context entries:
 
 **Config** — apply `config.yaml` preferences for the whole session: `preferences.interaction_language` (chat/prompts/tables), `preferences.document_output_language` (files on disk), `preferences.output.no_emojis`, `preferences.output.data_format`, `preferences.context_routing.relevance_threshold`.
 
-**Pre-flight** — evaluate each check below against the loaded `session.yaml` / `project-context.yaml`. Levels: **WARN** = emit message, ask "Continue? (y/n)", default **y**; **BLOCK** / **REQUIRED** = emit and stop until satisfied; **INFO** = emit and proceed.
+**Pre-flight** — evaluate each check below against the loaded `session.yaml` / `project-context.yaml`. Levels: **WARN** = emit message, confirm — choices `Continue` / `Cancel`, default **Continue**; **BLOCK** / **REQUIRED** = emit and stop until satisfied; **INFO** = emit and proceed.
 
 | # | Condition | Level | Message |
 |---|-----------|-------|---------|
@@ -107,6 +107,19 @@ Persisted markdown output MUST follow these rendering rules. Scope: artifact fil
 - **Headings**: Use Markdown heading hierarchy (`#` -> `##` -> `###`) without skipping levels; do not replace headings with bold text.
 
 This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from templates or source material.
+
+## Confirmation Prompts
+
+At every confirmation or choice point in this skill, present the named choices as selectable options — never as an open "type y/n" question. Any `choices A / B / ...` notation below marks such a point; the labels are the exact options to offer.
+
+- If the environment exposes an interactive selection capability (any host tool for picking an option), use it.
+- Otherwise, list the choices as a numbered menu and accept the number or the label:
+  ```
+  1) A
+  2) B
+  ```
+
+Presentation is all that changes — the choices and their meaning stay as written at each point.
 
 ## Document Profile: project-context.md
 
@@ -262,7 +275,7 @@ Before classifying extracted items against the section map, normalize each item 
 - **7c**: per row, user picks an existing section, types a new section name, or `skip`.
 - **7d**: default = accept; user can drop indices.
 
-Then ask: **"Run optional read-only code verification before applying? (y/n)"**
+Then confirm — choices `Yes` / `No`: **"Run optional read-only code verification before applying?"**
 
 ### Step 9: (Optional) Read-only Code Verification
 

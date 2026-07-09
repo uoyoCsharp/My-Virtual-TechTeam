@@ -65,7 +65,7 @@ Extended Context entries:
 
 **Config** — apply `config.yaml` preferences for the whole session: `preferences.interaction_language` (chat/prompts/tables), `preferences.document_output_language` (files on disk), `preferences.output.no_emojis`, `preferences.output.data_format`, `preferences.context_routing.relevance_threshold`.
 
-**Pre-flight** — evaluate each check below against the loaded `session.yaml` / `project-context.yaml`. Levels: **WARN** = emit message, ask "Continue? (y/n)", default **y**; **BLOCK** / **REQUIRED** = emit and stop until satisfied; **INFO** = emit and proceed.
+**Pre-flight** — evaluate each check below against the loaded `session.yaml` / `project-context.yaml`. Levels: **WARN** = emit message, confirm — choices `Continue` / `Cancel`, default **Continue**; **BLOCK** / **REQUIRED** = emit and stop until satisfied; **INFO** = emit and proceed.
 
 | # | Condition | Level | Message |
 |---|-----------|-------|---------|
@@ -94,6 +94,19 @@ Persisted markdown output MUST follow these rendering rules. Scope: artifact fil
 - **Headings**: Use Markdown heading hierarchy (`#` -> `##` -> `###`) without skipping levels; do not replace headings with bold text.
 
 This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from templates or source material.
+
+## Confirmation Prompts
+
+At every confirmation or choice point in this skill, present the named choices as selectable options — never as an open "type y/n" question. Any `choices A / B / ...` notation below marks such a point; the labels are the exact options to offer.
+
+- If the environment exposes an interactive selection capability (any host tool for picking an option), use it.
+- Otherwise, list the choices as a numbered menu and accept the number or the label:
+  ```
+  1) A
+  2) B
+  ```
+
+Presentation is all that changes — the choices and their meaning stay as written at each point.
 
 ## Operation Mode: Shortcut
 
@@ -215,7 +228,7 @@ This step applies only when the workspace has multiple projects (`projects.lengt
   - The fix deletes existing behavior (not just adjusts it).
 - **When to apply silently**:
   - One-liner / single-file class AND fix is purely additive or correctional AND reproduction was verified.
-- **Confirmation prompt format**: present `Root cause: ...`, `Proposed change: <files + summary>`, `Risk: <regression scope>`, then ask `Apply? (y / n / show-diff)`.
+- **Confirmation prompt format**: present `Root cause: ...`, `Proposed change: <files + summary>`, `Risk: <regression scope>`, then confirm — choices `Apply` / `Cancel` / `Show diff`.
 
 ### Step 8: Apply the Fix
 - For source 1a (review.md): apply fixes per finding; re-run the review's relevant checks (not reproduction) to confirm each fix addresses its finding.
@@ -225,9 +238,9 @@ This step applies only when the workspace has multiple projects (`projects.lengt
 - If repro still fails -> revert, return to Step 3 with the new evidence.
 
 ### Step 9: Write Fix Notes
-- **Confirm before writing**: when an `active_change` exists (so an artifact would be written), present the fix notes content in the conversation first, then ask the user whether to persist it: `Write the fix notes to {path}? (y/n)`.
-  - If the user declines (n), do NOT write any file under `artifacts/`. Keep the fix notes in the conversation only, and note that no artifact was persisted. Then continue to Step 10.
-  - If the user confirms (y), write the artifact as described below.
+- **Confirm before writing**: when an `active_change` exists (so an artifact would be written), present the fix notes content in the conversation first, then confirm — choices `Write` / `Skip`: "Write the fix notes to {path}?"
+  - If the user chooses Skip, do NOT write any file under `artifacts/`. Keep the fix notes in the conversation only, and note that no artifact was persisted. Then continue to Step 10.
+  - If the user chooses Write, write the artifact as described below.
   - When no `active_change` exists, there is no artifact to write — skip the prompt and keep the notes inline (existing shortcut behavior).
 - **Path**: `.ai-agents/workspace/artifacts/{change-id}/fix-notes.md` if an `active_change` exists; otherwise inline in the conversation only (no artifact -- shortcut operation).
 - **Structure** (each section is a single paragraph or list):

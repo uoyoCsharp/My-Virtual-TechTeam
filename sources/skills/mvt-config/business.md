@@ -49,7 +49,7 @@ Used by Step 4 and by each stage of Step 5.
    | `int` | Parse as integer; check range when range is documented (e.g., `relevance_threshold` must be 0-100) |
 
 3. **Preview**: render `key: <current> -> <new>` on a single line.
-4. **Confirm**: prompt `Apply this change? (y/n)`. On `n`, discard and return.
+4. **Confirm** — choices `Apply` / `Cancel`: "Apply this change?" On `Cancel`, discard and return.
 5. **Write atomically**:
    - Read the current file, mutate only the targeted key, preserve all other content and formatting (do NOT rewrite the whole file from a template -- the user may have comments).
    - Write to a temp file in the same directory, then rename. On any error, do not touch the original.

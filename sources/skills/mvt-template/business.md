@@ -57,15 +57,15 @@
       - If the default template had frontmatter, the customized version must keep a parseable frontmatter block and retain the original frontmatter keys. If the default template had no frontmatter, do not require one.
       - If the default template had Mustache placeholders, retain them unless the user explicitly removed them. If the default template had no placeholders, do not require placeholders.
      - Validation failures -> abort write, surface the failed checks, return to step 2 of this subflow.
-  5. **Confirm and write**: prompt `Save customized template to .ai-agents/skills/_templates/custom/<name>? (y/n)`. On `y`, write atomically (temp + rename). Backup any existing custom file as `<name>.bak` first.
+  5. **Confirm and write** — choices `Save` / `Cancel`: "Save customized template to .ai-agents/skills/_templates/custom/<name>?" On `Save`, write atomically (temp + rename). Backup any existing custom file as `<name>.bak` first.
 
 #### 4c. Reset
 - **What**: revert to the default template.
 - **How**:
   1. If no custom file exists, report "Already default, nothing to reset" and stop.
   2. Show a one-line summary of what will be deleted (`<path>`, last modified date).
-  3. Require explicit confirmation: `Delete custom override <name>? (y/n)`.
-  4. On `y`, delete the file. Do NOT keep a backup -- user must use git for recovery.
+  3. Require explicit confirmation — choices `Delete` / `Cancel`: "Delete custom override <name>?"
+  4. On `Delete`, delete the file. Do NOT keep a backup -- user must use git for recovery.
   5. Report success and the new status (`Default`).
 
 #### 4d. Export

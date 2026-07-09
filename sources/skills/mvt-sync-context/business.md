@@ -122,7 +122,7 @@ Before classifying extracted items against the section map, normalize each item 
 - **7c**: per row, user picks an existing section, types a new section name, or `skip`.
 - **7d**: default = accept; user can drop indices.
 
-Then ask: **"Run optional read-only code verification before applying? (y/n)"**
+Then confirm — choices `Yes` / `No`: **"Run optional read-only code verification before applying?"**
 
 ### Step 9: (Optional) Read-only Code Verification
 

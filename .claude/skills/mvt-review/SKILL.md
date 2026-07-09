@@ -82,7 +82,7 @@ Extended Context entries:
 
 **Config** — apply `config.yaml` preferences for the whole session: `preferences.interaction_language` (chat/prompts/tables), `preferences.document_output_language` (files on disk), `preferences.output.no_emojis`, `preferences.output.data_format`, `preferences.context_routing.relevance_threshold`.
 
-**Pre-flight** — evaluate each check below against the loaded `session.yaml` / `project-context.yaml`. Levels: **WARN** = emit message, ask "Continue? (y/n)", default **y**; **BLOCK** / **REQUIRED** = emit and stop until satisfied; **INFO** = emit and proceed.
+**Pre-flight** — evaluate each check below against the loaded `session.yaml` / `project-context.yaml`. Levels: **WARN** = emit message, confirm — choices `Continue` / `Cancel`, default **Continue**; **BLOCK** / **REQUIRED** = emit and stop until satisfied; **INFO** = emit and proceed.
 
 | # | Condition | Level | Message |
 |---|-----------|-------|---------|
@@ -112,6 +112,19 @@ Persisted markdown output MUST follow these rendering rules. Scope: artifact fil
 - **Headings**: Use Markdown heading hierarchy (`#` -> `##` -> `###`) without skipping levels; do not replace headings with bold text.
 
 This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from templates or source material.
+
+## Confirmation Prompts
+
+At every confirmation or choice point in this skill, present the named choices as selectable options — never as an open "type y/n" question. Any `choices A / B / ...` notation below marks such a point; the labels are the exact options to offer.
+
+- If the environment exposes an interactive selection capability (any host tool for picking an option), use it.
+- Otherwise, list the choices as a numbered menu and accept the number or the label:
+  ```
+  1) A
+  2) B
+  ```
+
+Presentation is all that changes — the choices and their meaning stay as written at each point.
 
 ## Execution Flow
 
@@ -212,9 +225,9 @@ This step applies only when the workspace has multiple projects (`projects.lengt
 - Each finding must include: file, line range, severity, observation, recommendation.
 
 ### Step 7: Write Artifact
-- **Confirm before writing**: when an `active_change` exists (so an artifact would be written), present the review result in the conversation first (verdict + Critical/Warning/Suggestion counts), then ask the user whether to persist it: `Write the review artifact to {path}? (y/n)`.
-  - If the user declines (n), do NOT write any file under `artifacts/`. Keep the full review in the conversation only, and note that no artifact was persisted. Then continue to Step 8.
-  - If the user confirms (y), write the artifact as described below.
+- **Confirm before writing**: when an `active_change` exists (so an artifact would be written), present the review result in the conversation first (verdict + Critical/Warning/Suggestion counts), then confirm — choices `Write` / `Skip`: "Write the review artifact to {path}?"
+  - If the user chooses Skip, do NOT write any file under `artifacts/`. Keep the full review in the conversation only, and note that no artifact was persisted. Then continue to Step 8.
+  - If the user chooses Write, write the artifact as described below.
   - When no `active_change` exists, there is no artifact to write — skip the prompt and keep the full review in the conversation only (no artifact).
 - **Path and template**: as defined in the **Artifact Structure** section below; this applies only when an `active_change` exists. Follow the HTML comments in the template for what each section should contain; strip comments from the final artifact.
 - **Required coverage**: cover only content that is applicable to this review. Preserve enough information for the user to understand what was reviewed, the verdict, material findings, skipped checks, and the recommended next step. Do not create empty or artificial sections just because an item is named here; if the template omits or renames a section, place applicable content in the closest relevant section.

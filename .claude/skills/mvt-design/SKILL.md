@@ -74,7 +74,7 @@ Extended Context entries:
 
 **Config** — apply `config.yaml` preferences for the whole session: `preferences.interaction_language` (chat/prompts/tables), `preferences.document_output_language` (files on disk), `preferences.output.no_emojis`, `preferences.output.data_format`, `preferences.context_routing.relevance_threshold`.
 
-**Pre-flight** — evaluate each check below against the loaded `session.yaml` / `project-context.yaml`. Levels: **WARN** = emit message, ask "Continue? (y/n)", default **y**; **BLOCK** / **REQUIRED** = emit and stop until satisfied; **INFO** = emit and proceed.
+**Pre-flight** — evaluate each check below against the loaded `session.yaml` / `project-context.yaml`. Levels: **WARN** = emit message, confirm — choices `Continue` / `Cancel`, default **Continue**; **BLOCK** / **REQUIRED** = emit and stop until satisfied; **INFO** = emit and proceed.
 
 | # | Condition | Level | Message |
 |---|-----------|-------|---------|
@@ -106,6 +106,19 @@ Persisted markdown output MUST follow these rendering rules. Scope: artifact fil
 - **Headings**: Use Markdown heading hierarchy (`#` -> `##` -> `###`) without skipping levels; do not replace headings with bold text.
 
 This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from templates or source material.
+
+## Confirmation Prompts
+
+At every confirmation or choice point in this skill, present the named choices as selectable options — never as an open "type y/n" question. Any `choices A / B / ...` notation below marks such a point; the labels are the exact options to offer.
+
+- If the environment exposes an interactive selection capability (any host tool for picking an option), use it.
+- Otherwise, list the choices as a numbered menu and accept the number or the label:
+  ```
+  1) A
+  2) B
+  ```
+
+Presentation is all that changes — the choices and their meaning stay as written at each point.
 
 ## Execution Flow
 
@@ -187,7 +200,7 @@ This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from 
   - The design adds a new external dependency.
 - **When to write silently**:
   - Single-module addition that fits existing layers, no ADR escalations, no breaking change.
-- **Confirmation format**: present a one-screen summary -- module boundary changes, deployment/runtime boundary changes, ADRs requiring review, external dependencies, and a single yes/no prompt. Do not dump the full artifact.
+- **Confirmation format**: present a one-screen summary -- module boundary changes, deployment/runtime boundary changes, ADRs requiring review, external dependencies -- then confirm — choices `Yes` / `No`. Do not dump the full artifact.
 
 ### Step 7: Write Artifact
 - **Path and template**: as defined in the **Artifact Structure** section below. Follow the HTML comments in the template for what each section should contain; strip comments from the final artifact.

@@ -19,7 +19,7 @@
   | Condition | Action |
   |-----------|--------|
   | Clearly epic-scale | Continue to Step 3 |
-  | Clearly too small | Suggest: "This looks like a standard change. Use `/mvt-analyze` instead? (y/n)" |
+  | Clearly too small | Confirm — choices `Yes` / `No`: "This looks like a standard change. Use `/mvt-analyze` instead?" |
   | Ambiguous | Offer choice: "Decompose as epic (2-8 children) or analyze as single change?" |
 
 ### Step 3: Epic Analysis
@@ -49,7 +49,7 @@
   1. **Child story table**: the same table that will appear in `epic.md`
   2. **Dependency diagram**: Mermaid flowchart of child dependencies
   3. **Suggested starting child**: "Start with: `{first_child_title}` (`{first_child_id}`)"
-- **Wait for user confirmation**: ask "Proceed with this decomposition? (y/n)". Default to **y** if the user does not respond.
+- **Wait for user confirmation** — choices `Yes` / `No`: "Proceed with this decomposition?". Default to **Yes** if the user does not respond.
 - **On decline or revision request**: do NOT write any files. Revise the decomposition based on user feedback and re-present, or abort if the user chooses to cancel.
 - **On confirmation**: proceed to Step 6.
 

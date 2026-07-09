@@ -59,13 +59,13 @@ Two blocks: **Load** (what to read, and when) then **Resolve** (what to decide).
 
 **Config** — apply `config.yaml` preferences for the whole session: `preferences.interaction_language` (chat/prompts/tables), `preferences.document_output_language` (files on disk), `preferences.output.no_emojis`, `preferences.output.data_format`, `preferences.context_routing.relevance_threshold`.
 
-**Pre-flight** — evaluate each check below against the loaded `session.yaml` / `project-context.yaml`. Levels: **WARN** = emit message, ask "Continue? (y/n)", default **y**; **BLOCK** / **REQUIRED** = emit and stop until satisfied; **INFO** = emit and proceed.
+**Pre-flight** — evaluate each check below against the loaded `session.yaml` / `project-context.yaml`. Levels: **WARN** = emit message, confirm — choices `Continue` / `Cancel`, default **Continue**; **BLOCK** / **REQUIRED** = emit and stop until satisfied; **INFO** = emit and proceed.
 
 | # | Condition | Level | Message |
 |---|-----------|-------|---------|
 | 1 | `session.initialized_at is empty` | WARN | Session not initialized. Run `/mvt-init` first. |
 | 2 | `projects[] in project-context.yaml is empty` | WARN | Project not initialized. Run `/mvt-init` first. |
-| 3 | `active_change.id is non-empty` | WARN | An active change already exists. Decomposing will create a new epic alongside it. Continue? (y/n) |
+| 3 | `active_change.id is non-empty` | WARN | An active change already exists. Decomposing will create a new epic alongside it. Confirm — choices Continue / Cancel. |
 
 ## Language Constraint (Mandatory)
 
@@ -91,6 +91,19 @@ Persisted markdown output MUST follow these rendering rules. Scope: artifact fil
 
 This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from templates or source material.
 
+## Confirmation Prompts
+
+At every confirmation or choice point in this skill, present the named choices as selectable options — never as an open "type y/n" question. Any `choices A / B / ...` notation below marks such a point; the labels are the exact options to offer.
+
+- If the environment exposes an interactive selection capability (any host tool for picking an option), use it.
+- Otherwise, list the choices as a numbered menu and accept the number or the label:
+  ```
+  1) A
+  2) B
+  ```
+
+Presentation is all that changes — the choices and their meaning stay as written at each point.
+
 ## Execution Flow
 
 ### Step 1: Load Requirements
@@ -112,7 +125,7 @@ This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from 
   | Condition | Action |
   |-----------|--------|
   | Clearly epic-scale | Continue to Step 3 |
-  | Clearly too small | Suggest: "This looks like a standard change. Use `/mvt-analyze` instead? (y/n)" |
+  | Clearly too small | Confirm — choices `Yes` / `No`: "This looks like a standard change. Use `/mvt-analyze` instead?" |
   | Ambiguous | Offer choice: "Decompose as epic (2-8 children) or analyze as single change?" |
 
 ### Step 3: Epic Analysis
@@ -142,7 +155,7 @@ This constraint is NON-NEGOTIABLE and overrides formatting habits inferred from 
   1. **Child story table**: the same table that will appear in `epic.md`
   2. **Dependency diagram**: Mermaid flowchart of child dependencies
   3. **Suggested starting child**: "Start with: `{first_child_title}` (`{first_child_id}`)"
-- **Wait for user confirmation**: ask "Proceed with this decomposition? (y/n)". Default to **y** if the user does not respond.
+- **Wait for user confirmation** — choices `Yes` / `No`: "Proceed with this decomposition?". Default to **Yes** if the user does not respond.
 - **On decline or revision request**: do NOT write any files. Revise the decomposition based on user feedback and re-present, or abort if the user chooses to cancel.
 - **On confirmation**: proceed to Step 6.
 

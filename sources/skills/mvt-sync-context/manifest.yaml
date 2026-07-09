@@ -79,6 +79,9 @@ sections:
     source: sections/output-format-constraint.md
 
   - type: shared
+    source: sections/confirmation-prompt.md
+
+  - type: shared
     source: sections/project-context-profile.md
 
   - type: file
