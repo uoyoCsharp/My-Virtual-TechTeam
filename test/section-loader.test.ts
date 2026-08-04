@@ -70,6 +70,13 @@ B`;
     expect(result).toBe("A\nB");
   });
 
+  it("preserves the line ending when a false block is inline", () => {
+    const template = `A{{#show}} visible{{/show}}
+B`;
+    const result = applyParams(template, { show: false });
+    expect(result).toBe("A\nB");
+  });
+
   it("keeps block content for truthy non-array values", () => {
     const template = `{{#enabled}}
 Content here: {{name}}

@@ -33,12 +33,13 @@ function expandBlocks(
   template: string,
   params: Record<string, unknown>,
 ): string {
-  return template.replace(BLOCK_PATTERN, (match, key: string, rawBody: string) => {
+  return template.replace(BLOCK_PATTERN, (match, key: string, rawBody: string, offset: number) => {
     const val = params[key];
-    if (val === undefined || val === null || val === false) return "";
-    if (Array.isArray(val) && val.length === 0) return "";
-    const body = rawBody.replace(/^\n/, "").replace(/\n$/, "");
     const suffix = match.endsWith("\n") ? "\n" : "";
+    const removedSuffix = offset > 0 && template[offset - 1] !== "\n" ? suffix : "";
+    if (val === undefined || val === null || val === false) return removedSuffix;
+    if (Array.isArray(val) && val.length === 0) return removedSuffix;
+    const body = rawBody.replace(/^\n/, "").replace(/\n$/, "");
     if (Array.isArray(val)) {
       const items = val
         .map((item) => {
@@ -61,10 +62,11 @@ function expandInverted(
   template: string,
   params: Record<string, unknown>,
 ): string {
-  return template.replace(INVERTED_PATTERN, (match, key: string, rawBody: string) => {
-    if (isTruthyNonEmpty(params[key])) return "";
-    const body = rawBody.replace(/^\n/, "").replace(/\n$/, "");
+  return template.replace(INVERTED_PATTERN, (match, key: string, rawBody: string, offset: number) => {
     const suffix = match.endsWith("\n") ? "\n" : "";
+    const removedSuffix = offset > 0 && template[offset - 1] !== "\n" ? suffix : "";
+    if (isTruthyNonEmpty(params[key])) return removedSuffix;
+    const body = rawBody.replace(/^\n/, "").replace(/\n$/, "");
     return applyParams(body, params) + suffix;
   });
 }
@@ -73,10 +75,11 @@ function expandConditionals(
   template: string,
   params: Record<string, unknown>,
 ): string {
-  return template.replace(COND_PATTERN, (match, key: string, rawBody: string) => {
-    if (!isTruthyNonEmpty(params[key])) return "";
-    const body = rawBody.replace(/^\n/, "").replace(/\n$/, "");
+  return template.replace(COND_PATTERN, (match, key: string, rawBody: string, offset: number) => {
     const suffix = match.endsWith("\n") ? "\n" : "";
+    const removedSuffix = offset > 0 && template[offset - 1] !== "\n" ? suffix : "";
+    if (!isTruthyNonEmpty(params[key])) return removedSuffix;
+    const body = rawBody.replace(/^\n/, "").replace(/\n$/, "");
     return body + suffix;
   });
 }

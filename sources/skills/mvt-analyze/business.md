@@ -1,3 +1,9 @@
+## Active Change Conflict Preflight
+
+Run this before generating a change id, loading epic-child scope, or writing `analysis.md`. If `active_change.id` is empty, continue normally. If the request continues the active work, reuse that id. If it is a different request, offer `Continue current change` / `Finalize current change` / `Abandon current change` / `Cancel`.
+
+`Continue current change` reuses the active id. `Finalize current change` and `Abandon current change` write no artifact and direct the user to `/mvt-update-plan`; after that lifecycle transition, the user reruns `/mvt-analyze`. `Cancel` writes no artifact.
+
 ## Epic-Child Mode (Pre-check)
 
 **When**: `active_epic.id` is non-empty AND `active_change.id` is empty.
@@ -103,5 +109,5 @@ In this state the user is starting a new sub-change within an existing epic. Rea
 - If no ambiguities -> Skip this step
 
 ### Step 7: Update Workspace
-1. Generate change-id: `{YYYYMMDD}-{slug}` format (e.g., `20260425-user-authentication`). Slug constraints: lowercase ASCII, kebab-case, `[a-z0-9-]+`, 1-4 words.
+1. Reuse `active_change.id` when Active Change Conflict Preflight selected `Continue current change`; otherwise generate change-id: `{YYYYMMDD}-{slug}` format (e.g., `20260425-user-authentication`). Slug constraints: lowercase ASCII, kebab-case, `[a-z0-9-]+`, 1-4 words.
 2. Write artifact: `.ai-agents/workspace/artifacts/{change-id}/analysis.md`

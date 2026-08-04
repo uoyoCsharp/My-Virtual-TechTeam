@@ -25,6 +25,7 @@ sections:
         - rule: "Multiple interpretations -> List all, prompt for selection"
         - rule: "Conflicts detected -> Highlight explicitly, ask for resolution"
         - rule: "Vague requirements -> Request specific examples"
+        - rule: "Different active change -> Resolve finalize, abandon, or cancel before creating an artifact"
       boundaries:
         - scope: "make architecture decisions"
           skill: "/mvt-design"

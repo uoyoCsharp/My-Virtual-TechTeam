@@ -109,6 +109,13 @@ describe("install (via materialize + manifest)", () => {
     expect(Object.keys(manifest!.files).length).toBeGreaterThan(25);
   });
 
+  it("materializes the new bundled scanner and checker scripts with docs", () => {
+    materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
+    for (const name of ["artifact-scan.cjs", "artifact-scan.md", "workspace-state-check.cjs", "workspace-state-check.md"]) {
+      expect(existsSync(path.join(tmpDir, ".ai-agents/scripts", name))).toBe(true);
+    }
+  });
+
   it("installCommand writes language to config.yaml (non-TTY defaults to en-US)", async () => {
     const originalCwd = process.cwd();
     process.chdir(tmpDir);

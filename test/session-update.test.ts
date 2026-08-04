@@ -437,7 +437,7 @@ describe("session-update.cjs (epic flags)", () => {
       expect(s.active_change.plan_path).toBe("/path/plan.yaml");
     });
 
-    it("resets created_at and plan_path when switching to a different change", () => {
+    it("rejects switching to a different active change without writing", () => {
       const session = baseSession();
       session.active_change = {
         id: "20260608-old",
@@ -447,17 +447,16 @@ describe("session-update.cjs (epic flags)", () => {
         epic_id: "",
       };
       writeSession(session);
+      const before = readFileSync(sessionPath, "utf-8");
 
-      update([
+      const res = update([
         "--new-change", "New Change",
         "--change-id", "20260608-new",
       ]);
 
-      const s = readSession();
-      expect(s.active_change.id).toBe("20260608-new");
-      expect(s.active_change.created_at).not.toBe("2026-06-08T10:00:00Z");
-      expect(s.active_change.plan_path).toBe("");
-      expect(s.active_change.epic_id).toBe("");
+      expect(res.status).toBe(1);
+      expect(res.stderr).toMatch(/cannot replace/i);
+      expect(readFileSync(sessionPath, "utf-8")).toBe(before);
     });
   });
 
@@ -811,6 +810,28 @@ describe("session-update.cjs (remove flags: active_change isolation)", () => {
     expect(ids).not.toContain("20260601-old");
     expect(s.changes.find((c: any) => c.id === "20260601-active").status).toBe("done");
   });
+
+  it("rejects --update-change when the active id is also removed", () => {
+    const session = baseSession();
+    session.active_change = {
+      id: "20260601-active",
+      title: "Active",
+      created_at: "2026-06-05T10:00:00Z",
+      plan_path: "/path/plan.yaml",
+      epic_id: "",
+    };
+    session.changes = [
+      { id: "20260601-active", title: "Active", plan_path: "/path/plan.yaml", status: "active", updated_at: "2026-06-05T10:00:00Z", epic_id: "" },
+    ];
+    writeSession(session);
+    const before = readFileSync(sessionPath, "utf-8");
+
+    const res = update(["--update-change", "--remove-change", "20260601-active"]);
+
+    expect(res.status).toBe(1);
+    expect(res.stderr).toContain("cannot be removed in the same lifecycle operation");
+    expect(readFileSync(sessionPath, "utf-8")).toBe(before);
+  });
 });
 
 describe("session-update.cjs (flag value validation)", () => {
@@ -921,5 +942,108 @@ describe("session-update.cjs (flag value validation)", () => {
     const res = update(["--set-epic-status"]);
     expect(res.status).toBe(1);
     expect(res.stderr).toMatch(/--set-epic-status requires a non-empty value/i);
+  });
+});
+
+describe("session-update.cjs (lifecycle repairs)", () => {
+  let tmpDir: string;
+  let workspaceDir: string;
+  let sessionPath: string;
+
+  beforeEach(() => {
+    tmpDir = mkdtempSync(path.join(os.tmpdir(), "mvtt-session-lifecycle-"));
+    workspaceDir = path.join(tmpDir, ".ai-agents", "workspace");
+    mkdirSync(workspaceDir, { recursive: true });
+    sessionPath = path.join(workspaceDir, "session.yaml");
+  });
+
+  afterEach(() => {
+    rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  function writeSession(session: Session): void {
+    writeFileSync(sessionPath, stringifyYaml(session), "utf-8");
+  }
+
+  function readSession(): any {
+    return parseYaml(readFileSync(sessionPath, "utf-8"));
+  }
+
+  function update(extra: string[]): { status: number; stdout: string; stderr: string } {
+    const result = spawnSync("node", [SCRIPT, "--skill", "test", "--summary", "test", ...extra], {
+      encoding: "utf-8",
+      cwd: tmpDir,
+    });
+    return { status: result.status ?? -1, stdout: result.stdout ?? "", stderr: result.stderr ?? "" };
+  }
+
+  it("rejects an empty close-change without appending history", () => {
+    writeSession(baseSession());
+    const before = readFileSync(sessionPath, "utf-8");
+
+    const result = update(["--close-change"]);
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/requires an active change/i);
+    expect(readFileSync(sessionPath, "utf-8")).toBe(before);
+  });
+
+  it("abandons the active change and records an abandoned index entry", () => {
+    const session = baseSession();
+    session.active_change = {
+      id: "20260804-abandon", title: "Abandon", created_at: "2026-08-04T00:00:00Z", plan_path: "", epic_id: "",
+    };
+    writeSession(session);
+
+    expect(update(["--abandon-change"]).status).toBe(0);
+    const updated = readSession();
+    expect(updated.active_change.id).toBe("");
+    expect(updated.changes).toMatchObject([{ id: "20260804-abandon", status: "abandoned" }]);
+    expect(updated.history.at(-1).change_id).toBe("20260804-abandon");
+  });
+
+  it("prunes empty ids and applies validated repairs before history is written", () => {
+    const session = baseSession({
+      changes: [
+        { id: "", title: "", plan_path: "", status: "active", updated_at: "2026-08-01T00:00:00Z", epic_id: "" },
+        { id: "20260804-stale", title: "Stale", plan_path: "", status: "active", updated_at: "2026-08-01T00:00:00Z", epic_id: "" },
+      ],
+    });
+    writeSession(session);
+
+    expect(update(["--prune-empty-changes", "--repair-change-statuses", "20260804-stale=done"]).status).toBe(0);
+    expect(readSession().changes).toMatchObject([{ id: "20260804-stale", status: "done" }]);
+  });
+
+  it("rejects repair/remove collisions atomically", () => {
+    const session = baseSession({
+      changes: [{ id: "20260804-stale", title: "Stale", plan_path: "", status: "active", updated_at: "2026-08-01T00:00:00Z", epic_id: "" }],
+    });
+    writeSession(session);
+    const before = readFileSync(sessionPath, "utf-8");
+
+    const result = update(["--repair-change-statuses", "20260804-stale=done", "--remove-change", "20260804-stale"]);
+
+    expect(result.status).toBe(1);
+    expect(result.stderr).toMatch(/both repaired and removed/i);
+    expect(readFileSync(sessionPath, "utf-8")).toBe(before);
+  });
+
+  it("closes the active change and epic in one session write", () => {
+    const session = baseSession();
+    session.active_change = {
+      id: "20260804-child", title: "Child", created_at: "2026-08-04T00:00:00Z", plan_path: "", epic_id: "epic-1",
+    };
+    session.active_epic = {
+      id: "epic-1", title: "Epic", created_at: "2026-08-04T00:00:00Z", epic_path: "/epic.yaml",
+    };
+    writeSession(session);
+
+    expect(update(["--close-change", "--close-epic"]).status).toBe(0);
+    const updated = readSession();
+    expect(updated.changes).toMatchObject([{ id: "20260804-child", status: "done" }]);
+    expect(updated.epics).toMatchObject([{ id: "epic-1", status: "done" }]);
+    expect(updated.active_change.id).toBe("");
+    expect(updated.active_epic.id).toBe("");
   });
 });

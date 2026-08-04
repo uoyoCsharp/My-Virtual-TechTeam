@@ -60,6 +60,52 @@ describe("update (via re-materialize)", () => {
     expect(content).not.toBe("tampered");
   });
 
+  it("update restores tampered new bundled scripts and their docs", () => {
+    const initial = materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
+    writeInstallationManifest(tmpDir, "2.0.0", initial, null);
+
+    for (const name of ["artifact-scan.cjs", "artifact-scan.md", "workspace-state-check.cjs", "workspace-state-check.md"]) {
+      const target = path.join(tmpDir, ".ai-agents/scripts", name);
+      expect(existsSync(target)).toBe(true);
+      writeFileSync(target, "tampered", "utf-8");
+    }
+
+    const originalCwd = process.cwd();
+    process.chdir(tmpDir);
+    try {
+      updateCommand();
+    } finally {
+      process.chdir(originalCwd);
+    }
+
+    for (const name of ["artifact-scan.cjs", "artifact-scan.md", "workspace-state-check.cjs", "workspace-state-check.md"]) {
+      const target = path.join(tmpDir, ".ai-agents/scripts", name);
+      const content = readFileSync(target, "utf-8");
+      expect(content).not.toBe("tampered");
+    }
+  });
+
+  it("same-version update restores missing generated files", async () => {
+    const initial = materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
+    writeInstallationManifest(tmpDir, "2.2.4", initial, null);
+
+    const scannerPath = path.join(tmpDir, ".ai-agents/scripts/artifact-scan.cjs");
+    const skillPath = path.join(tmpDir, ".claude/skills/mvt-update-plan/SKILL.md");
+    rmSync(scannerPath);
+    rmSync(skillPath);
+
+    const originalCwd = process.cwd();
+    process.chdir(tmpDir);
+    try {
+      await updateCommand();
+    } finally {
+      process.chdir(originalCwd);
+    }
+
+    expect(existsSync(scannerPath)).toBe(true);
+    expect(readFileSync(skillPath, "utf-8")).toContain("### Step 1: Classify the Lifecycle Route");
+  });
+
   it("removes stale generated files (e.g. retired skills)", () => {
     const initial = materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const stalePath = ".claude/skills/mvt-add-context/SKILL.md";

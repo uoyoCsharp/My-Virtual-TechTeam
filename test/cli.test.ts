@@ -203,10 +203,11 @@ describe("CLI commands (in-process)", () => {
       expect(r.stdout.join("\n")).toContain("Up to date");
     });
 
-    it("says nothing to update when versions match", async () => {
+    it("refreshes generated files when versions match", async () => {
       await captureIO(tmpDir, () => installCommand());
       const r = await captureIO(tmpDir, () => updateCommand());
-      expect(r.stdout.join("\n")).toContain("Nothing to update");
+      expect(r.stdout.join("\n")).toContain("Refreshing MVTT");
+      expect(r.stdout.join("\n")).toContain("Update complete");
     });
   });
 

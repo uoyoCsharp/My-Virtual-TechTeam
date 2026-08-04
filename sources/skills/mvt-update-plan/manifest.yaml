@@ -3,7 +3,7 @@ output: .claude/skills/mvt-update-plan/SKILL.md
 
 frontmatter:
   name: mvt-update-plan
-  description: "Update a single task in the active change's plan.yaml: change status, attach artifacts, leave notes, and auto-advance current_tasks. This skill should be used after a workflow skill finishes work that maps to a plan task, or whenever the user wants to mark a task as done, blocked, or skipped."
+  description: "Update tasks or complete the lifecycle of the active change. Use this skill to change plan task status, finalize or abandon plan-backed and plan-less changes, recover missing plans, and advance or defer epic children."
 
 sections:
   - type: inline
@@ -12,7 +12,7 @@ sections:
 
       ## Purpose
 
-      Apply incremental updates to the active plan.yaml: mark a task done/blocked/skipped, attach the artifacts produced, and let the skill auto-advance `current_tasks` to the next executable task. AI may invoke this skill on the user's behalf when the user replies to a soft-prompt with `done` / `blocked: <reason>`.
+      Apply incremental updates to the active plan or perform an explicit active-change lifecycle transition. Task updates can mark work done/blocked/skipped and auto-advance `current_tasks`; lifecycle routes can keep open, finalize, abandon, recover, or transition an epic child.
 
   - type: shared
     source: sections/role-header.md
@@ -24,7 +24,8 @@ sections:
         - rule: "Task id missing AND only one task is in_progress -> Default to that task"
         - rule: "Target status would create an invalid current_tasks -> Recompute current_tasks automatically"
         - rule: "All tasks become done -> Set plan.status = done, current_tasks = {}"
-        - rule: "active_change.plan_path is empty -> Stop and suggest /mvt-plan-dev"
+        - rule: "active_change.plan_path is empty -> Enter intentional plan-less lifecycle routing"
+        - rule: "active_change.plan_path is non-empty but missing or invalid -> Enter explicit recovery routing"
 
       boundaries:
         - scope: "create new tasks or restructure the plan"
@@ -54,9 +55,9 @@ sections:
           level: "WARN"
           message: "Session not initialized. Run `/mvt-init` first."
         - order: "2"
-          field: "active_change.plan_path"
+          field: "active_change.id"
           level: "BLOCK"
-          message: "No active plan. Run `/mvt-plan-dev` to create one."
+          message: "No active change. Run `/mvt-analyze` first."
 
   - type: shared
     source: sections/language-constraint.md
@@ -68,7 +69,7 @@ sections:
     content: |
       ## Operation Mode: Shortcut
 
-      This skill operates as a shortcut — it can execute at any time when an active plan exists.
+      This skill operates as a shortcut — it can execute whenever an active change exists.
       - Performs surgical edits only — never overwrites the whole plan structure.
       - Re-validates the resulting plan before writing; aborts on validation failure.
 
@@ -79,7 +80,9 @@ sections:
     content: |
       ## Output Format
 
-      Render an inline summary (no external template). Structure:
+      Render exactly one inline summary shape (no external template).
+
+      When Step 4 updated a task, use:
 
       ```markdown
       ## Plan Update
@@ -99,7 +102,22 @@ sections:
       Current tasks: {new_current_tasks_map_or_"(plan complete)"}
 
       ### Next
-      {one-line guidance: continue to next task, resolve blocker, or run /mvt-cleanup}
+      {one-line guidance based on the selected lifecycle route}
+      ```
+
+      When Steps 2-4 were skipped, use:
+
+      ```markdown
+      ## Lifecycle Update
+
+      - **Change**: {active_change.id} -- {active_change.title}
+      - **Plan state**: {plan-less | already done | recovery | in progress}
+      - **Action**: {kept open | finalized | abandoned | repair requested | cancelled}
+      - **Epic transition**: {result_or_"(none)"}
+      - **Session update**: {applied_flags_and_result_or_"(not run)"}
+
+      ### Next
+      {one-line guidance based on the selected lifecycle route}
       ```
 
       Every response MUST end with a Suggested Next Steps section.
@@ -108,7 +126,7 @@ sections:
     source: sections/session-update.md
     params:
       current_skill: mvt-update-plan
-      update_change: true
+      runtime_lifecycle: true
 
   - type: shared
     source: sections/script-usage-rule.md
@@ -122,13 +140,18 @@ sections:
       current_skill: mvt-update-plan
       conditional_suggestions:
         conditions:
-          - condition: "plan_done"
-            primary: mvt-cleanup
-            primary_desc: "All tasks complete -- clean up artifacts and prepare to start the next change"
+          - condition: "plan_done AND change kept open"
+            primary: mvt-review
+            primary_desc: "Review the completed plan while the change remains active"
+          - condition: "change finalized"
+            primary: mvt-sync-context
+            primary_desc: "Aggregate the finalized change before cleanup"
           - condition: "default"
             primary: mvt-implement
             primary_desc: "Continue with the next task from current_tasks"
         alternatives:
+          - skill: mvt-test
+            desc: "Validate completed work before finalizing the change"
           - skill: mvt-resume
             desc: "Refresh context after task transitions"
           - skill: mvt-status

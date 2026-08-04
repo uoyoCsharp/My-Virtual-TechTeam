@@ -7364,7 +7364,7 @@ var VALID_CHILD_STATUSES = ["pending", "active", "done", "abandoned"];
 var TERMINAL_STATUSES = ["done", "abandoned"];
 var ERRORS = {
   MISSING_EPIC: () => "Missing required argument: --epic (or --validate <path>)",
-  NO_OPERATION: () => "No operation specified. Use --complete-child, --set-child-status, --switch-active, --add-child, or --validate.",
+  NO_OPERATION: () => "No operation specified. Use --complete-child, --abandon-child, --set-child-status, --switch-active, --add-child, or --validate.",
   EPIC_NOT_FOUND: (p) => `Epic file not found at ${p}.`,
   EPIC_PARSE_FAILED: (detail) => `Failed to parse epic.yaml: ${detail}`,
   CHILD_NOT_FOUND: (id, valid) => `Child "${id}" not found. Valid children: ${valid.length ? valid.join(", ") : "(none)"}.`,
@@ -7376,7 +7376,8 @@ var ERRORS = {
   MULTIPLE_ACTIVE: () => "Cannot activate: another child is already active. Use --switch-active for atomic reorder.",
   UNRESOLVED_DEPS: (id, deps) => `Cannot activate "${id}": unresolved depends_on: ${deps.join(", ")}`,
   ADD_CHILD_MISSING: () => "--add-child requires an id argument",
-  ADD_CHILD_TITLE_MISSING: (id) => `--add-child "${id}" requires --child-title`
+  ADD_CHILD_TITLE_MISSING: (id) => `--add-child "${id}" requires --child-title`,
+  DEFER_REQUIRES_COMPLETE: () => "--defer-next requires --complete-child <change_id>"
 };
 function parseArgs(argv) {
   const args = {};
@@ -7432,7 +7433,9 @@ function parseArgs(argv) {
 }
 function validateArgs(args) {
   if (!args.epic && !args.validate) return ERRORS.MISSING_EPIC();
-  const hasOp = args["complete-child"] || args["set-child-status"] || args["switch-active"] || args["add-child"] || args.validate;
+  if (args["defer-next"] && !args["complete-child"])
+    return ERRORS.DEFER_REQUIRES_COMPLETE();
+  const hasOp = args["complete-child"] || args["abandon-child"] || args["set-child-status"] || args["switch-active"] || args["add-child"] || args.validate;
   if (!hasOp) return ERRORS.NO_OPERATION();
   if (args["set-child-status"] && !args["child-status"]) return ERRORS.MISSING_CHILD_STATUS();
   if (args["child-status"] && !VALID_CHILD_STATUSES.includes(args["child-status"]))
@@ -7509,6 +7512,13 @@ function validateEpic(epic) {
   }
   return errors;
 }
+function updateTerminalEpicStatus(epic) {
+  const children = epic.children || [];
+  const allTerminal = children.length > 0 && children.every((c) => TERMINAL_STATUSES.includes(c.status));
+  if (!allTerminal) return false;
+  epic.status = children.every((c) => c.status === "abandoned") ? "abandoned" : "done";
+  return true;
+}
 function recomputeCurrentChange(epic) {
   const children = epic.children || [];
   const resolvedIds = new Set(
@@ -7522,21 +7532,42 @@ function recomputeCurrentChange(epic) {
     epic.current_change = next.change_id;
   } else {
     epic.current_change = "";
-    const allTerminal = children.length > 0 && children.every((c) => TERMINAL_STATUSES.includes(c.status));
-    if (allTerminal) epic.status = "done";
+    updateTerminalEpicStatus(epic);
   }
   return next ? next.change_id : "";
 }
-function completeChild(epic, changeId, now) {
+function completeChild(epic, changeId, now, deferNext) {
   const child = (epic.children || []).find((c) => c.change_id === changeId);
   if (!child) return { error: ERRORS.CHILD_NOT_FOUND(changeId, (epic.children || []).map((c) => c.change_id)) };
   const oldStatus = child.status;
   child.status = "done";
   child.completed_at = now;
-  const nextId = recomputeCurrentChange(epic);
+  let nextId;
+  if (deferNext) {
+    epic.current_change = "";
+    updateTerminalEpicStatus(epic);
+    nextId = "";
+  } else {
+    nextId = recomputeCurrentChange(epic);
+  }
   const doneCount = (epic.children || []).filter((c) => c.status === "done").length;
   return {
     child: { change_id: changeId, old_status: oldStatus, new_status: "done" },
+    current_change: nextId,
+    epic_status: epic.status,
+    progress: { done: doneCount, total: (epic.children || []).length }
+  };
+}
+function abandonChild(epic, changeId, now) {
+  const child = (epic.children || []).find((c) => c.change_id === changeId);
+  if (!child) return { error: ERRORS.CHILD_NOT_FOUND(changeId, (epic.children || []).map((c) => c.change_id)) };
+  const oldStatus = child.status;
+  child.status = "abandoned";
+  child.completed_at = now;
+  const nextId = recomputeCurrentChange(epic);
+  const doneCount = (epic.children || []).filter((c) => c.status === "done").length;
+  return {
+    child: { change_id: changeId, old_status: oldStatus, new_status: "abandoned" },
     current_change: nextId,
     epic_status: epic.status,
     progress: { done: doneCount, total: (epic.children || []).length }
@@ -7653,7 +7684,9 @@ function main() {
   const now = (/* @__PURE__ */ new Date()).toISOString();
   let result;
   if (args["complete-child"]) {
-    result = completeChild(epic, args["complete-child"], now);
+    result = completeChild(epic, args["complete-child"], now, Boolean(args["defer-next"]));
+  } else if (args["abandon-child"]) {
+    result = abandonChild(epic, args["abandon-child"], now);
   } else if (args["set-child-status"]) {
     result = setChildStatus(epic, args["set-child-status"], args["child-status"], now);
   } else if (args["switch-active"]) {
@@ -7683,59 +7716,6 @@ function main() {
     process.stderr.write(ERRORS.EPIC_WRITE_FAILED(e.message) + "\n");
     process.exit(1);
   }
-  let sessionSync = null;
-  if (epic.status === "done") {
-    sessionSync = syncSessionOnEpicClose(epic, epicPath, now);
-  }
-  process.stdout.write(
-    JSON.stringify({ ok: true, ...result, session_sync: sessionSync }) + "\n"
-  );
-}
-function syncSessionOnEpicClose(epic, epicPath, now) {
-  const projectRoot = findProjectRootFromPath(epicPath);
-  if (!projectRoot) {
-    return { ok: false, reason: "no-project-root" };
-  }
-  const sessionPath = (0, import_node_path.join)(projectRoot, ".ai-agents", "workspace", "session.yaml");
-  if (!(0, import_node_fs.existsSync)(sessionPath)) {
-    return { ok: false, reason: "session-missing" };
-  }
-  let session;
-  try {
-    session = (0, import_yaml.parse)((0, import_node_fs.readFileSync)(sessionPath, "utf-8"));
-  } catch (e) {
-    return { ok: false, reason: "parse-failed", detail: e.message };
-  }
-  if (!session || typeof session !== "object") {
-    return { ok: false, reason: "session-not-object" };
-  }
-  const epicId = epic.epic_id;
-  if (session.active_epic?.id !== epicId) {
-    return { ok: true, applied: false, reason: "active_epic-not-matching" };
-  }
-  session.epics = session.epics || [];
-  const epicIdx = session.epics.findIndex((e) => e.id === epicId);
-  if (epicIdx >= 0) {
-    session.epics[epicIdx].status = "done";
-    session.epics[epicIdx].updated_at = now;
-  }
-  session.active_epic = {
-    id: "",
-    title: "",
-    created_at: "",
-    epic_path: ""
-  };
-  const sessionTmp = sessionPath + ".tmp";
-  try {
-    (0, import_node_fs.writeFileSync)(sessionTmp, (0, import_yaml.stringify)(session, { lineWidth: 200 }), "utf-8");
-    (0, import_node_fs.renameSync)(sessionTmp, sessionPath);
-  } catch (e) {
-    try {
-      if ((0, import_node_fs.existsSync)(sessionTmp)) (0, import_node_fs.unlinkSync)(sessionTmp);
-    } catch {
-    }
-    return { ok: false, reason: "write-failed", detail: e.message };
-  }
-  return { ok: true, applied: true, epic_id: epicId };
+  process.stdout.write(JSON.stringify({ ok: true, ...result }) + "\n");
 }
 main();

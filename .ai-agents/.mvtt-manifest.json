@@ -1,13 +1,13 @@
 {
   "mvtt_version": "2.2.4",
   "installed_at": "2026-06-10T06:40:54.542Z",
-  "last_updated_at": "2026-07-09T10:20:22.690Z",
+  "last_updated_at": "2026-08-04T04:54:18.934Z",
   "platforms": [
     "claude"
   ],
   "files": {
     ".claude/skills/mvt-analyze/SKILL.md": {
-      "hash": "sha256:6ef35f1f6bee2230c7ea6ac9a2380f23d61b7f76c32fbd27645d81d2c6a6ea1b",
+      "hash": "sha256:133c579c66b8867eab59f492d6b9ca6f7526561c45659e33bba3e8bb9f41aa9c",
       "category": "generated"
     },
     ".claude/skills/mvt-analyze-code/SKILL.md": {
@@ -19,11 +19,11 @@
       "category": "generated"
     },
     ".claude/skills/mvt-check-context/SKILL.md": {
-      "hash": "sha256:1ca92261a6d74be99fd45a21de4458649e19735571f76217b6e303023caf65f0",
+      "hash": "sha256:a0b5f3384a8cc640f5d60f8d77b5e3254bbf66574844314b864c1724e42a96ab",
       "category": "generated"
     },
     ".claude/skills/mvt-cleanup/SKILL.md": {
-      "hash": "sha256:221aa89980f082a349c54c98fa18d393adf55cb63c8fb11f1ef51ed08155e0f7",
+      "hash": "sha256:6a255b7159b8f12e06e98b3ddaf1d8f3d60f248821c9043e8f647f1d19791a79",
       "category": "generated"
     },
     ".claude/skills/mvt-config/SKILL.md": {
@@ -67,7 +67,7 @@
       "category": "generated"
     },
     ".claude/skills/mvt-plan-dev/SKILL.md": {
-      "hash": "sha256:dd59e995cc557e89d440e42683d4414a337859d91cdeb0a36d10cb0caa4cb1d0",
+      "hash": "sha256:a13b7a559d6fcb18c93c2f81f44350a30c8c8022abdb03e0759944fa36634613",
       "category": "generated"
     },
     ".claude/skills/mvt-quick-dev/SKILL.md": {
@@ -79,7 +79,7 @@
       "category": "generated"
     },
     ".claude/skills/mvt-resume/SKILL.md": {
-      "hash": "sha256:c9941d64822586f9702b1e5ee3bd09ee975590430e5e814423e3e63661ceb95e",
+      "hash": "sha256:95537fa857de7aa743a8a299c567c6ac071f1aa2e12343a4924e0f3d5940cc4f",
       "category": "generated"
     },
     ".claude/skills/mvt-review/SKILL.md": {
@@ -87,11 +87,11 @@
       "category": "generated"
     },
     ".claude/skills/mvt-status/SKILL.md": {
-      "hash": "sha256:564c04de089e19734513b834c49eb73aa1c348bd9855c9d9a6deefa0fbf7d8d0",
+      "hash": "sha256:ab86180926fde2245b197aeeaae74ec165c85386e21b0d2bd0b8130f6852834c",
       "category": "generated"
     },
     ".claude/skills/mvt-sync-context/SKILL.md": {
-      "hash": "sha256:faa73397b13a7a2ea02e5072bbd0936b1c5d55258ca16d4bfd8ad5e6d7ca3d1b",
+      "hash": "sha256:83e7f67fdb90ccdef00d1ee7c877e425c3ca8be19ece6131d56756df959f0b30",
       "category": "generated"
     },
     ".claude/skills/mvt-template/SKILL.md": {
@@ -103,7 +103,7 @@
       "category": "generated"
     },
     ".claude/skills/mvt-update-plan/SKILL.md": {
-      "hash": "sha256:f75b19b9e2975d52fa4ea257c5da6bd9a21a2559ff7bd52390cdcdd35a4adeb3",
+      "hash": "sha256:46cc18f0d669a01dd800ab737c5a65a56e7d280a616a1df4ff131166784ce1f1",
       "category": "generated"
     },
     ".ai-agents/skills/_templates/analyze-output.md": {
@@ -139,15 +139,23 @@
       "category": "create_once"
     },
     ".ai-agents/registry.yaml": {
-      "hash": "sha256:5531282ed9981821e21fc2a7b948cb076f13ae25925a01b6f78c0505634a265a",
+      "hash": "sha256:6e56e985c748b91d250ed8f25e7c108952318a5942615c31ed1148fe66115823",
       "category": "create_once"
     },
+    ".ai-agents/scripts/artifact-scan.cjs": {
+      "hash": "sha256:b8b2b90c0881f5f41bc1b6dc1181c5c77962d41b6a2f9ae1bedd4963af86cce9",
+      "category": "generated"
+    },
+    ".ai-agents/scripts/artifact-scan.md": {
+      "hash": "sha256:ef94a6cdb9980756ca0a42a1e71d1ceda6e9546e020f4c508f8e2e5820b6b74b",
+      "category": "generated"
+    },
     ".ai-agents/scripts/epic-update.cjs": {
-      "hash": "sha256:e6d1c68fd51a56812a69a31239745c31110930df5e32554370fda922511d5a84",
+      "hash": "sha256:9c8f91dd8a088d1e990d8577d5f6b68be68b02fbe7dbbff3a8bea94578c2cc53",
       "category": "generated"
     },
     ".ai-agents/scripts/epic-update.md": {
-      "hash": "sha256:44a6e453ff271f5539ea9c3c8a55a756334dd551c2a684906321d510a3e9b667",
+      "hash": "sha256:5d1b20ff3033d5052e7e9256ac01a97e5f1355e375616ac859a9fd9bf64a5d1a",
       "category": "generated"
     },
     ".ai-agents/scripts/plan-update.cjs": {
@@ -159,7 +167,19 @@
       "category": "generated"
     },
     ".ai-agents/scripts/session-update.cjs": {
-      "hash": "sha256:a0cfe8aa2e01aa85461114d900e7d3c738a7f5f6d00069296a2f3f82dfc0f4d0",
+      "hash": "sha256:b0997d25c0698d5e94af1b75882bff9a13ac7e67a92bd746cb87e0ff185ddc6c",
+      "category": "generated"
+    },
+    ".ai-agents/scripts/session-update.md": {
+      "hash": "sha256:d37015f0ad6a25b5b288f1336276682894a22d1135ff0351ac8cea48c367e1a8",
+      "category": "generated"
+    },
+    ".ai-agents/scripts/workspace-state-check.cjs": {
+      "hash": "sha256:28d22649c3d83f41752c1079bdcfbf81af5545a80f3bcc38e74470d3aa635c88",
+      "category": "generated"
+    },
+    ".ai-agents/scripts/workspace-state-check.md": {
+      "hash": "sha256:c4b9c3652667fd83bc41cb9d6fd0151b01372ea0d077a6c7678428dcb40911f6",
       "category": "generated"
     },
     ".ai-agents/config.yaml": {
@@ -167,7 +187,7 @@
       "category": "create_once"
     },
     ".ai-agents/workspace/session.yaml": {
-      "hash": "sha256:638b13afe8a2ab0f87285e7aae83e70877a040fbe5655a85b9982a77f501f8f2",
+      "hash": "sha256:feca36c95782bcbd94ccf12df41fbdfe95b226557ee6c1e2bd2c93cb99f4dd48",
       "category": "create_once"
     },
     ".ai-agents/workspace/project-context.yaml": {

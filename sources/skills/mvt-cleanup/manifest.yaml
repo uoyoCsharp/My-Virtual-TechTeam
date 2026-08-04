@@ -79,10 +79,7 @@ sections:
     source: sections/session-update.md
     params:
       current_skill: mvt-cleanup
-      truncate_history: true
-      close_change: true
-      remove_change: true
-      remove_epic: true
+      runtime_cleanup: true
 
   - type: shared
     source: sections/footer-next-steps.md

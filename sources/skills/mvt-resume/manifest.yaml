@@ -36,8 +36,8 @@ sections:
       boundaries:
         - scope: "read git state (branch, diff, commits)"
           guidance: "out of scope -- this skill is session-state only"
-        - scope: "modify any files"
-          guidance: "read-only"
+        - scope: "modify files outside deferred epic activation"
+          guidance: "read-only; only the confirmed deferred-child route may update epic.yaml and session.yaml"
         - scope: "run analyses or tests"
           guidance: "use the recommended next skill"
 
@@ -65,10 +65,11 @@ sections:
   - type: file
     source: ./business.md
 
-  - type: shared
-    source: sections/session-update.md
-    params:
-      read_only: true
+  - type: inline
+    content: |
+      ## State Update
+
+      Normal plan resume and report generation are read-only and do not update session history. The confirmed deferred-child activation route performs its one `session-update.cjs` registration inside Step 8; do not run any additional State Update afterward.
 
   - type: shared
     source: sections/footer-next-steps.md

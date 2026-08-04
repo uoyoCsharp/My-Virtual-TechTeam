@@ -30,7 +30,7 @@ You are the **Conductor** -- a Workflow Coordinator.
 
 ### Boundaries
 - Do NOT read git state (branch, diff, commits) (out of scope -- this skill is session-state only)
-- Do NOT modify any files (read-only)
+- Do NOT modify files outside deferred epic activation (read-only; only the confirmed deferred-child route may update epic.yaml and session.yaml)
 - Do NOT run analyses or tests (use the recommended next skill)
 
 ## Turn Boundary Contract (Mandatory for interactive pauses)
@@ -112,8 +112,8 @@ After extracting session data in Step 1, check for epic state:
 
 Scan for in-progress plans using two sources:
 
-1. **Index path**: For each entry in `changes[]`, read its `plan_path` if the file exists.
-2. **Fallback scan**: Glob `.ai-agents/workspace/artifacts/*/plan.yaml`, read any files not already covered by (1). **Skip any paths under `artifacts/_archived/`** — those are completed changes archived by `/mvt-cleanup` and should not appear as resume candidates.
+1. Run `node .ai-agents/scripts/artifact-scan.cjs --mode plans`; its JSON `entries` are the only live plan inputs.
+2. Enrich scanner-confirmed paths from `changes[]`; do not read indexed paths absent from scanner output and do not perform a fallback glob.
 
 For each found plan.yaml, read and filter:
 - Include only plans where `plan.status == "in_progress"`.
@@ -195,6 +195,14 @@ Render inline using the seven sections below. No external template is required.
 
 ### Step 8: Edge Cases
 
+- **Deferred epic**: if `active_epic.id` is non-empty, `active_change.id` is empty, and `epic.yaml.current_change` is empty, select the first dependency-ready pending child in array order. Confirm `Activate child` / `Cancel`; on activation call `epic-update.cjs --switch-active <id>`, then register it exactly once with:
+
+	```bash
+	node .ai-agents/scripts/session-update.cjs --skill mvt-resume --summary "<concise one-line activation summary>" --new-change "<child.title>" --change-id <child.change_id> --epic-id <active_epic.id>
+	```
+
+	If the session call fails after activation, report divergence and stop without replaying epic-update. Do not run another State Update after this command.
+
 - **No session**: report "No session found. Run `/mvt-init` to start a project."
 - **No active plans**: report "No active plans found. Start a new change with `/mvt-analyze` or run `/mvt-status` to check project state."
 - **Selected change but referenced artifacts missing**: warn "Artifact directory `{path}` not found -- task state may be stale. Verify with `/mvt-status` or run `/mvt-cleanup`."
@@ -206,7 +214,7 @@ Render inline using the seven sections below. No external template is required.
 
 ## State Update
 
-This skill is read-only and does NOT modify `.ai-agents/workspace/session.yaml`.
+Normal plan resume and report generation are read-only and do not update session history. The confirmed deferred-child activation route performs its one `session-update.cjs` registration inside Step 8; do not run any additional State Update afterward.
 
 ## Suggested Next Steps
 

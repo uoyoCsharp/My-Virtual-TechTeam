@@ -208,10 +208,10 @@ describe("assembler", () => {
       expect(output).toContain("blocked");
     });
 
-    it("preflight blocks when no active plan exists", () => {
+    it("routes an empty plan path instead of blocking it", () => {
       const output = buildSkill("mvt-update-plan");
-      expect(output).toContain("active_change.plan_path");
-      expect(output).toContain("/mvt-plan-dev");
+      expect(output).toContain("intentional plan-less lifecycle");
+      expect(output).not.toContain("No active plan. Run `/mvt-plan-dev` to create one.");
     });
 
     it("requires re-validation before writing back", () => {
@@ -231,7 +231,8 @@ describe("assembler", () => {
     it("describes multi-plan discovery step", () => {
       const output = buildSkill("mvt-resume");
       expect(output).toContain("### Step 2: Discover Pending Plans");
-      expect(output).toContain("artifacts/*/plan.yaml");
+      expect(output).toContain("artifact-scan.cjs --mode plans");
+      expect(output).not.toContain("artifacts/*/plan.yaml");
     });
 
     it("documents candidate selection branching (0/1/N)", () => {
@@ -273,10 +274,11 @@ describe("assembler", () => {
   });
 
   describe("mvt-status (Phase 4 multi-change dashboard)", () => {
-    it("discovers all plans from changes and fallback glob", () => {
+    it("discovers all plans from scanner output without a fallback glob", () => {
       const output = buildSkill("mvt-status");
       expect(output).toContain("### Step 3: Discover All Plans");
-      expect(output).toContain("artifacts/*/plan.yaml");
+      expect(output).toContain("artifact-scan.cjs --mode plans");
+      expect(output).not.toContain("artifacts/*/plan.yaml");
     });
 
     it("renders Changes Overview table", () => {
@@ -409,7 +411,7 @@ describe("assembler", () => {
     it("mvt-cleanup omits session-only Script Usage Rule", () => {
       const output = buildSkill("mvt-cleanup");
       expect(output).toContain("session-update.cjs");
-      expect(output).toContain("--close-change");
+      expect(output).not.toContain("--close-change");
       expect(output).toContain("--truncate-history");
       expect(output).not.toContain("## Script Usage Rule");
       expect(output).not.toContain("plan-update.cjs");
@@ -420,6 +422,102 @@ describe("assembler", () => {
       for (const skill of ["mvt-update-plan", "mvt-implement", "mvt-decompose", "mvt-analyze", "mvt-sync-context"]) {
         const output = buildSkill(skill);
         expect(output).toMatch(/Do NOT [^\n]*(?:hand-edit|read `\.cjs`\/`\.js` source|read `\.cjs` or `\.js` source)/);
+      }
+    });
+  });
+
+  describe("lifecycle routing and scanner discovery (change 20260804)", () => {
+    it("mvt-update-plan renders finalize, defer, abandon, and recovery routes", () => {
+      const output = buildSkill("mvt-update-plan");
+      expect(output).toContain("### Step 5: Lifecycle Routing");
+      expect(output).toContain("Complete and defer next");
+      expect(output).toContain("--defer-next");
+      expect(output).toContain("--abandon-child");
+      expect(output).toContain("--abandon-change");
+      expect(output).toContain("--close-epic");
+      expect(output).toContain("Repair plan");
+      expect(output).toContain("Never use `--set-child-status`");
+      expect(output).not.toContain("--set-child-status <active_change.id>");
+      expect(output).not.toMatch(/epic-update\.cjs[^\n]*--set-child-status/);
+      expect(output.indexOf("### Step 1: Classify the Lifecycle Route"))
+        .toBeLessThan(output.indexOf("### Step 2: Resolve Task Update"));
+    });
+
+    it("mvt-update-plan exposes abandonment for an in-progress change", () => {
+      const output = buildSkill("mvt-update-plan");
+      const inProgressStart = output.indexOf("#### In-progress plan remains open");
+      const recoveryStart = output.indexOf("#### Missing or invalid non-empty plan path");
+      const inProgressRoute = output.slice(inProgressStart, recoveryStart);
+      expect(inProgressRoute).toContain("explicit abandonment request");
+      expect(inProgressRoute).toContain("Abandon change");
+      expect(inProgressRoute).toContain("Abandon and advance");
+      expect(inProgressRoute).toContain("--abandon-change");
+      expect(inProgressRoute).toContain("--abandon-child");
+    });
+
+    it("mvt-update-plan uses a lifecycle-only output when no task changed", () => {
+      const output = buildSkill("mvt-update-plan");
+      expect(output).toContain("## Lifecycle Update");
+      expect(output).toContain("Never fabricate a task id");
+      expect(output).toContain("When Steps 2-4 were skipped");
+    });
+
+    it("mvt-update-plan routes keep-open through a single session update", () => {
+      const output = buildSkill("mvt-update-plan");
+      expect(output).toContain("Keep open");
+      expect(output).toContain("--update-change");
+      expect(output).toContain("exactly once");
+      expect(output).toContain("<route-selected lifecycle flags>\n```");
+    });
+
+    it("mvt-update-plan documents divergence without a compensating write", () => {
+      const output = buildSkill("mvt-update-plan");
+      expect(output).toContain("report the exact divergence");
+      expect(output).toContain("compensating");
+    });
+
+    it("mvt-analyze renders the active-change conflict preflight", () => {
+      const output = buildSkill("mvt-analyze");
+      expect(output).toContain("## Active Change Conflict Preflight");
+      expect(output).toContain("Continue current change");
+      expect(output).toContain("Finalize current change");
+      expect(output).toContain("Abandon current change");
+    });
+
+    it("mvt-resume renders deferred epic activation through switch-active", () => {
+      const output = buildSkill("mvt-resume");
+      expect(output).toContain("**Deferred epic**");
+      expect(output).toContain("--switch-active");
+      expect(output).toContain("--new-change");
+      expect(output).toContain("--epic-id");
+      expect(output).toContain("only the confirmed deferred-child route may update");
+      expect(output).not.toContain("This skill is read-only and does NOT modify");
+    });
+
+    it("mvt-cleanup consumes checker findings before a single repair write", () => {
+      const output = buildSkill("mvt-cleanup");
+      expect(output).toContain("workspace-state-check.cjs");
+      expect(output).toContain("--repair-change-statuses");
+      expect(output).toContain("prune-empty-changes");
+      expect(output).toContain("manual review");
+      expect(output).toContain("<action-selected cleanup flags>");
+      expect(output).toContain("<action-selected cleanup flags>\n```");
+      expect(output).not.toContain("Walk `.ai-agents/workspace/artifacts/`");
+    });
+
+    it("mvt-sync-context and mvt-check-context use scanner-only discovery", () => {
+      const sync = buildSkill("mvt-sync-context");
+      expect(sync).toContain("artifact-scan.cjs --mode change-dirs");
+      expect(sync).not.toContain("Fallback scan");
+      expect(sync).not.toContain("artifacts/*/");
+      const check = buildSkill("mvt-check-context");
+      expect(check).toContain("artifact-scan.cjs --mode files");
+    });
+
+    it("no discovery workflow retains a fallback recursive artifact glob", () => {
+      for (const skill of ["mvt-status", "mvt-resume", "mvt-sync-context", "mvt-check-context"]) {
+        const output = buildSkill(skill);
+        expect(output, skill).not.toContain("artifacts/*/plan.yaml");
       }
     });
   });

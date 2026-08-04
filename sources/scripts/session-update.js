@@ -42,6 +42,18 @@ const ERRORS = {
   EPIC_ID_ORPHAN: () => "--epic-id (for sub-change) requires --new-change",
   MISSING_REMOVE_VALUE: () => "--remove-change / --remove-epic requires a non-empty value",
   MISSING_FLAG_VALUE: (flag) => `${flag} requires a non-empty value`,
+  ACTIVE_CHANGE_CONFLICT: () => "--new-change cannot replace a different active change; finalize or abandon it first.",
+  NO_ACTIVE_CHANGE: (flag) => `${flag} requires an active change (active_change.id is empty)`,
+  CHANGE_LIFECYCLE_CONFLICT: () => "Only one of --update-change, --close-change, or --abandon-change may be used.",
+  CHANGE_NEW_LIFECYCLE_CONFLICT: () => "--new-change cannot be combined with --close-change or --abandon-change.",
+  EPIC_LIFECYCLE_CONFLICT: () => "Only one of --close-epic or --abandon-epic may be used.",
+  EPIC_NEW_LIFECYCLE_CONFLICT: () => "--new-epic cannot be combined with --close-epic or --abandon-epic.",
+  INVALID_CHANGE_STATUS: (value) => `Invalid change status "${value}". Must be one of: active, done, abandoned.`,
+  INVALID_EPIC_STATUS: (value) => `Invalid epic status "${value}". Must be one of: active, done, abandoned.`,
+  INVALID_REPAIR: (value) => `Invalid --repair-change-statuses entry "${value}". Use <id>=<active|done|abandoned>.`,
+  REPAIR_CHANGE_NOT_FOUND: (id) => `--repair-change-statuses references unknown change id "${id}".`,
+  REPAIR_REMOVE_CONFLICT: (id) => `Change id "${id}" cannot be both repaired and removed.`,
+  ACTIVE_REMOVE_CONFLICT: (id) => `Active change id "${id}" cannot be removed in the same lifecycle operation.`,
 };
 
 // ── Defaults ────────────────────────────────────────────────────────────────
@@ -54,6 +66,9 @@ const LIMIT_RANGES = {
   history: { min: 1, max: 100 },
   changes: { min: 1, max: 100 },
 };
+
+const VALID_CHANGE_STATUSES = new Set(["active", "done", "abandoned"]);
+const VALID_EPIC_STATUSES = new Set(["active", "done", "abandoned"]);
 
 // ── Project Root Resolution ─────────────────────────────────────────────────
 function findProjectRoot(cwd) {
@@ -97,6 +112,65 @@ function parseIdList(value) {
 
 function hasValue(value) {
   return value !== undefined && value !== true && String(value).trim() !== "";
+}
+
+function parseRepairStatuses(value) {
+  if (value == null) return { repairs: [], error: null };
+  if (!hasValue(value)) return { repairs: [], error: ERRORS.MISSING_FLAG_VALUE("--repair-change-statuses") };
+
+  const repairs = [];
+  const seen = new Set();
+  for (const item of String(value).split(",").map((entry) => entry.trim()).filter(Boolean)) {
+    const match = /^([^=\s]+)=(active|done|abandoned)$/.exec(item);
+    if (!match || seen.has(match[1])) return { repairs: [], error: ERRORS.INVALID_REPAIR(item) };
+    seen.add(match[1]);
+    repairs.push({ id: match[1], status: match[2] });
+  }
+  return repairs.length
+    ? { repairs, error: null }
+    : { repairs: [], error: ERRORS.MISSING_FLAG_VALUE("--repair-change-statuses") };
+}
+
+function emptyActiveChange() {
+  return { id: "", title: "", created_at: "", plan_path: "", epic_id: "" };
+}
+
+function emptyActiveEpic() {
+  return { id: "", title: "", created_at: "", epic_path: "" };
+}
+
+function upsertChange(session, change, status, now) {
+  session.changes = session.changes || [];
+  const entry = {
+    id: change.id,
+    title: change.title || "",
+    plan_path: change.plan_path || "",
+    status,
+    updated_at: now,
+    epic_id: change.epic_id || "",
+  };
+  const index = session.changes.findIndex((item) => item.id === change.id);
+  if (index >= 0) session.changes[index] = entry;
+  else session.changes.push(entry);
+}
+
+function upsertEpic(session, epic, status, now) {
+  session.epics = session.epics || [];
+  const entry = {
+    id: epic.id,
+    title: epic.title || "",
+    epic_path: epic.epic_path || "",
+    status,
+    updated_at: now,
+  };
+  const index = session.epics.findIndex((item) => item.id === epic.id);
+  if (index >= 0) session.epics[index] = entry;
+  else session.epics.push(entry);
+}
+
+function sortAndTruncate(entries, limit) {
+  entries.sort((a, b) => a.updated_at.localeCompare(b.updated_at));
+  if (entries.length > limit) entries.splice(0, entries.length - limit);
 }
 
 // ── Config Loading ──────────────────────────────────────────────────────────
@@ -150,6 +224,27 @@ function validate(args) {
       return ERRORS.MISSING_FLAG_VALUE(`--${flag}`);
     }
   }
+  if (args["set-change-status"] && !VALID_CHANGE_STATUSES.has(args["set-change-status"])) {
+    return ERRORS.INVALID_CHANGE_STATUS(args["set-change-status"]);
+  }
+  if (args["set-epic-status"] && !VALID_EPIC_STATUSES.has(args["set-epic-status"])) {
+    return ERRORS.INVALID_EPIC_STATUS(args["set-epic-status"]);
+  }
+
+  const repair = parseRepairStatuses(args["repair-change-statuses"]);
+  if (repair.error) return repair.error;
+
+  const changeLifecycleCount = [args["update-change"], args["close-change"], args["abandon-change"]]
+    .filter(Boolean).length;
+  if (changeLifecycleCount > 1) return ERRORS.CHANGE_LIFECYCLE_CONFLICT();
+  if (args["new-change"] && (args["close-change"] || args["abandon-change"])) {
+    return ERRORS.CHANGE_NEW_LIFECYCLE_CONFLICT();
+  }
+
+  if (args["close-epic"] && args["abandon-epic"]) return ERRORS.EPIC_LIFECYCLE_CONFLICT();
+  if (args["new-epic"] && (args["close-epic"] || args["abandon-epic"])) {
+    return ERRORS.EPIC_NEW_LIFECYCLE_CONFLICT();
+  }
 
   // Remove flags require non-empty values
   if (
@@ -163,6 +258,36 @@ function validate(args) {
     && (args["remove-epic"] === true || !String(args["remove-epic"]).trim())
   ) {
     return ERRORS.MISSING_REMOVE_VALUE();
+  }
+
+  return null;
+}
+
+function validateAgainstSession(args, session) {
+  const activeChange = session.active_change || {};
+  const activeEpic = session.active_epic || {};
+  const repair = parseRepairStatuses(args["repair-change-statuses"]);
+  const removeChangeIds = new Set(parseIdList(args["remove-change"]));
+
+  if (args["new-change"] && activeChange.id && activeChange.id !== args["change-id"]) {
+    return ERRORS.ACTIVE_CHANGE_CONFLICT();
+  }
+  if (args["update-change"] && !activeChange.id) return ERRORS.NO_ACTIVE_CHANGE("--update-change");
+  if (args["close-change"] && !activeChange.id) return ERRORS.NO_ACTIVE_CHANGE("--close-change");
+  if (args["abandon-change"] && !activeChange.id) return ERRORS.NO_ACTIVE_CHANGE("--abandon-change");
+  if ((args["update-change"] || args["close-change"] || args["abandon-change"]) && removeChangeIds.has(activeChange.id)) {
+    return ERRORS.ACTIVE_REMOVE_CONFLICT(activeChange.id);
+  }
+  if ((args["close-epic"] || args["abandon-epic"]) && !activeEpic.id) {
+    return ERRORS.NO_ACTIVE_EPIC(args["close-epic"] ? "--close-epic" : "--abandon-epic");
+  }
+
+  const changes = Array.isArray(session.changes) ? session.changes : [];
+  for (const repairEntry of repair.repairs) {
+    if (removeChangeIds.has(repairEntry.id)) return ERRORS.REPAIR_REMOVE_CONFLICT(repairEntry.id);
+    if (!repairEntry.id || !changes.some((entry) => entry.id === repairEntry.id)) {
+      return ERRORS.REPAIR_CHANGE_NOT_FOUND(repairEntry.id);
+    }
   }
 
   return null;
@@ -202,55 +327,20 @@ function main() {
     process.exit(1);
   }
 
-  const now = new Date().toISOString();
-
-  // ── Mandatory updates ──────────────────────────────────────────────────
-
-  // history append + truncate
-  session.history = session.history || [];
-  // Use --no-change to force empty change_id, otherwise fall back to active_change.id
-  const activeChangeId = args["no-change"] ? "" : (args["change-id"] || session.active_change?.id || "");
-  session.history.push({
-    skill: `/${args.skill}`,
-    completed_at: now,
-    summary: args.summary,
-    change_id: activeChangeId,
-  });
-  if (session.history.length > limits.history) {
-    session.history = session.history.slice(-limits.history);
+  const sessionValidationError = validateAgainstSession(args, session);
+  if (sessionValidationError) {
+    process.stderr.write(sessionValidationError + "\n");
+    process.exit(1);
   }
+
+  const now = new Date().toISOString();
+  const historyChangeId = args["no-change"] ? "" : (args["change-id"] || session.active_change?.id || "");
 
   // ── Conditional updates ────────────────────────────────────────────────
 
-  // --new-change: auto-snapshot old active_change, then set new one
+  // --new-change: the session-aware validation above rejects replacement.
   if (args["new-change"]) {
     session.active_change = session.active_change || {};
-
-    // Auto-snapshot: if there's an existing active_change with an id, upsert into changes[]
-    if (session.active_change.id) {
-      session.changes = session.changes || [];
-      const existingIdx = session.changes.findIndex(
-        (e) => e.id === session.active_change.id
-      );
-      const snapshotEntry = {
-        id: session.active_change.id,
-        title: session.active_change.title || "",
-        plan_path: session.active_change.plan_path || "",
-        status: "active",
-        updated_at: now,
-        epic_id: session.active_change.epic_id || "",
-      };
-      if (existingIdx >= 0) {
-        session.changes[existingIdx] = snapshotEntry;
-      } else {
-        session.changes.push(snapshotEntry);
-      }
-      // Sort + truncate changes
-      session.changes.sort((a, b) => a.updated_at.localeCompare(b.updated_at));
-      if (session.changes.length > limits.changes) {
-        session.changes = session.changes.slice(-limits.changes);
-      }
-    }
 
     // Now set new active_change (preserve fields only when re-invoking on same change)
     const isSameChange = session.active_change.id === args["change-id"];
@@ -283,71 +373,37 @@ function main() {
     session.active_change.plan_path = args["set-plan-path"];
   }
 
+  // --prune-empty-changes: remove legacy invalid index entries only when requested
+  if (args["prune-empty-changes"]) {
+    session.changes = (session.changes || []).filter((entry) => entry?.id && String(entry.id).trim());
+  }
+
+  // --repair-change-statuses: apply validated, explicit historical repairs
+  const repair = parseRepairStatuses(args["repair-change-statuses"]);
+  for (const repairEntry of repair.repairs) {
+    const index = session.changes.findIndex((entry) => entry.id === repairEntry.id);
+    session.changes[index].status = repairEntry.status;
+    session.changes[index].updated_at = now;
+  }
+
   // --update-change: upsert active_change into changes[] + truncate
   if (args["update-change"]) {
-    session.changes = session.changes || [];
     const ac = session.active_change || {};
-    const existingIdx = session.changes.findIndex(
-      (e) => e.id === ac.id
-    );
-    const entry = {
-      id: ac.id || "",
-      title: ac.title || "",
-      plan_path: ac.plan_path || "",
-      status: "active",
-      updated_at: now,
-      epic_id: ac.epic_id || "",
-    };
-    if (existingIdx >= 0) {
-      session.changes[existingIdx] = entry;
-    } else {
-      session.changes.push(entry);
-    }
-    // Sort by updated_at ascending, then truncate to limit
-    session.changes.sort(
-      (a, b) => a.updated_at.localeCompare(b.updated_at)
-    );
-    if (session.changes.length > limits.changes) {
-      session.changes = session.changes.slice(-limits.changes);
-    }
+    upsertChange(session, ac, "active", now);
   }
 
   // --close-change: snapshot active_change to changes[] with status:done, clear active_change
   if (args["close-change"]) {
-    session.changes = session.changes || [];
     const ac = session.active_change || {};
-    if (ac.id) {
-      const existingIdx = session.changes.findIndex(
-        (e) => e.id === ac.id
-      );
-      const entry = {
-        id: ac.id,
-        title: ac.title || "",
-        plan_path: ac.plan_path || "",
-        status: "done",
-        updated_at: now,
-        epic_id: ac.epic_id || "",
-      };
-      if (existingIdx >= 0) {
-        session.changes[existingIdx] = entry;
-      } else {
-        session.changes.push(entry);
-      }
-      session.changes.sort(
-        (a, b) => a.updated_at.localeCompare(b.updated_at)
-      );
-      if (session.changes.length > limits.changes) {
-        session.changes = session.changes.slice(-limits.changes);
-      }
-    }
-    // Clear active_change
-    session.active_change = {
-      id: "",
-      title: "",
-      created_at: "",
-      plan_path: "",
-      epic_id: "",
-    };
+    upsertChange(session, ac, "done", now);
+    session.active_change = emptyActiveChange();
+  }
+
+  // --abandon-change: snapshot active_change to changes[] with status:abandoned, clear active_change
+  if (args["abandon-change"]) {
+    const ac = session.active_change || {};
+    upsertChange(session, ac, "abandoned", now);
+    session.active_change = emptyActiveChange();
   }
 
   // --set-change-status: set status on changes[] entry matching active_change.id
@@ -361,17 +417,6 @@ function main() {
       if (existingIdx >= 0) {
         session.changes[existingIdx].status = args["set-change-status"];
         session.changes[existingIdx].updated_at = now;
-      }
-    }
-  }
-
-  // --truncate-history: keep last N history entries, discard older
-  if (args["truncate-history"]) {
-    const n = Number(args["truncate-history"]);
-    if (Number.isInteger(n) && n > 0) {
-      session.history = session.history || [];
-      if (session.history.length > n) {
-        session.history = session.history.slice(-n);
       }
     }
   }
@@ -438,22 +483,14 @@ function main() {
 
   // --close-epic: set matching epics[] entry to done, clear active_epic
   if (args["close-epic"]) {
-    session.epics = session.epics || [];
-    session.active_epic = session.active_epic || {};
-    const aeId = session.active_epic.id;
-    if (aeId) {
-      const epicIdx = session.epics.findIndex((e) => e.id === aeId);
-      if (epicIdx >= 0) {
-        session.epics[epicIdx].status = "done";
-        session.epics[epicIdx].updated_at = now;
-      }
-    }
-    session.active_epic = {
-      id: "",
-      title: "",
-      created_at: "",
-      epic_path: "",
-    };
+    upsertEpic(session, session.active_epic || {}, "done", now);
+    session.active_epic = emptyActiveEpic();
+  }
+
+  // --abandon-epic: snapshot active_epic to epics[] with status:abandoned, clear active_epic
+  if (args["abandon-epic"]) {
+    upsertEpic(session, session.active_epic || {}, "abandoned", now);
+    session.active_epic = emptyActiveEpic();
   }
 
   // --remove-change <ids>: filter session.changes[]
@@ -488,6 +525,25 @@ function main() {
         `Warning: --remove-epic requested ids [${rawIds}] not found; no entries removed.\n`,
       );
     }
+  }
+
+  // Sort and truncate lifecycle indexes after all requested mutations.
+  session.changes = session.changes || [];
+  session.epics = session.epics || [];
+  sortAndTruncate(session.changes, limits.changes);
+  sortAndTruncate(session.epics, limits.changes);
+
+  // History is appended only after every command/session validation has passed.
+  session.history = session.history || [];
+  session.history.push({
+    skill: `/${args.skill}`,
+    completed_at: now,
+    summary: args.summary,
+    change_id: historyChangeId,
+  });
+  const historyLimit = args["truncate-history"] ? Number(args["truncate-history"]) : limits.history;
+  if (Number.isInteger(historyLimit) && historyLimit > 0 && session.history.length > historyLimit) {
+    session.history = session.history.slice(-historyLimit);
   }
 
   // ── Write back atomically ─────────────────────────────────────────────

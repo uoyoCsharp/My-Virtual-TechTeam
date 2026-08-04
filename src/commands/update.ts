@@ -42,14 +42,6 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     return;
   }
 
-  if (existing.mvtt_version === version) {
-    console.log(bilingual(
-      `Already at v${version}. Nothing to update.`,
-      `已是 v${version}。无需更新。`,
-    ));
-    return;
-  }
-
   const modified: string[] = [];
   for (const [relPath, record] of Object.entries(existing.files)) {
     if (record.category !== "generated") continue;
@@ -92,10 +84,15 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     backup = response;
   }
 
-  console.log(bilingual(
-    `Updating MVTT from v${existing.mvtt_version} to v${version}...`,
-    `正在将 MVTT 从 v${existing.mvtt_version} 更新到 v${version}...`,
-  ));
+  console.log(existing.mvtt_version === version
+    ? bilingual(
+      `Refreshing MVTT v${version} generated files...`,
+      `正在刷新 MVTT v${version} 生成文件...`,
+    )
+    : bilingual(
+      `Updating MVTT from v${existing.mvtt_version} to v${version}...`,
+      `正在将 MVTT 从 v${existing.mvtt_version} 更新到 v${version}...`,
+    ));
 
   const platforms = readInstalledPlatforms(existing);
   const spinner = startSpinner(
