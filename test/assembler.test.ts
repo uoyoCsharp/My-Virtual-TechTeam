@@ -156,6 +156,16 @@ describe("assembler", () => {
       expect(output).not.toContain("Argument values");
       expect(output).not.toContain(".ai-agents/scripts/session-update.md");
     });
+
+    it("documents silent implement mode across confirmation points", () => {
+      const output = buildSkill("mvt-implement");
+      expect(output).toContain("preferences.silent.implement");
+      expect(output).toContain("skip the preview confirmation");
+      expect(output).toContain("skip the scope confirmation");
+      expect(output).toContain("skip the deliverables prompt");
+      expect(output).toContain("conversation notes");
+      expect(output).toContain("generate deliverables when downstream dependents exist");
+    });
   });
 
   describe("mvt-plan-dev", () => {
@@ -184,6 +194,15 @@ describe("assembler", () => {
       expect(output).toContain("coarse");
       expect(output).toContain("medium");
       expect(output).toContain("fine");
+    });
+
+    it("documents pre-write confirmation and silent plan mode", () => {
+      const output = buildSkill("mvt-plan-dev");
+      expect(output).toContain("preferences.silent.plan_dev");
+      expect(output).toContain("Confirm and write");
+      expect(output).toContain("Revise");
+      expect(output).toContain("Cancel");
+      expect(output).toContain("do not overwrite");
     });
 
     it("preflight blocks when active_change is missing", () => {

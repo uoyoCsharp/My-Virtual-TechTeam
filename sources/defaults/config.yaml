@@ -25,3 +25,8 @@ preferences:
   # Options: coarse (fewer, larger tasks) | medium (balanced) | fine (more, smaller tasks)
   planning:
     granularity: medium
+
+  # Skip confirmation prompts for selected skills when explicitly enabled.
+  silent:
+    plan_dev: false
+    implement: false

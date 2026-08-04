@@ -2,58 +2,47 @@ session:
   initialized_at: 2026-06-05T08:12:06.624Z
   last_synced_at: 2026-06-08T02:44:34.674Z
 active_change:
-  id: 20260804-mvtt-workflow-bugs
-  title: MVTT Workflow Bug Remediation
-  created_at: 2026-08-04T02:56:39.452Z
-  plan_path: .ai-agents/workspace/artifacts/20260804-mvtt-workflow-bugs/plan.yaml
-  epic_id: ""
-changes:
-  - id: 20260804-mvtt-workflow-bugs
-    title: MVTT Workflow Bug Remediation
-    plan_path: .ai-agents/workspace/artifacts/20260804-mvtt-workflow-bugs/plan.yaml
-    status: active
-    updated_at: 2026-08-04T03:53:38.415Z
-    epic_id: ""
+changes: []
 history:
+  - skill: /mvt-analyze
+    completed_at: 2026-08-04T06:10:54.658Z
+    summary: 分析完成：plan-dev 写前确认 + implement/plan-dev 按 skill 静默执行配置，4 项澄清已确认（per-skill 开关、全确认点覆盖、静默下危险操作一并跳过、默认保持确认）。
+    change_id: 20260804-confirm-and-silent
+  - skill: /mvt-design
+    completed_at: 2026-08-04T06:12:02.852Z
+    summary: 设计完成：plan-dev 新增 Step 6a 写前确认（Confirm/Revise/Cancel），preferences.silent 按 skill 双开关，4 个 ADR（per-skill 开关、缺失默认 false、静默再生保守中止、静默仅跳过确认点），footprint 7 文件建议走 plan-dev。
+    change_id: 20260804-confirm-and-silent
+  - skill: /mvt-plan-dev
+    completed_at: 2026-08-04T06:16:08.628Z
+    summary: 创建静默模式与 plan 写前确认实施计划：3 个任务，当前 t1 配置与 plan-dev 确认流程实现。
+    change_id: 20260804-confirm-and-silent
   - skill: /mvt-implement
-    completed_at: 2026-08-04T03:50:42.157Z
-    summary: 实现 t4 生命周期 workflow 路由，加入 active-change 门控、defer/abandon 路径与单一 session writer 约束。
-    change_id: 20260804-mvtt-workflow-bugs
+    completed_at: 2026-08-04T06:17:15.173Z
+    summary: 完成 t1：新增 per-skill 静默默认配置与 plan-dev 校验后写前确认；静默再生中止而不覆盖，assembler 聚焦测试和构建通过。
+    change_id: 20260804-confirm-and-silent
   - skill: /mvt-update-plan
-    completed_at: 2026-08-04T03:51:27.730Z
-    summary: 标记 t4 生命周期 workflow 路由完成，计划推进至 t5 discovery、cleanup 与 resume 迁移。
-    change_id: 20260804-mvtt-workflow-bugs
+    completed_at: 2026-08-04T06:20:14.506Z
+    summary: 标记 t1 完成并推进至 t2：plan-dev 写前确认与静默默认配置已实现，当前任务为 implement 静默路由。
+    change_id: 20260804-confirm-and-silent
   - skill: /mvt-implement
-    completed_at: 2026-08-04T03:53:02.098Z
-    summary: 实现 t5 scanner-only discovery、cleanup 单次修复写入与 deferred epic resume 路由。
-    change_id: 20260804-mvtt-workflow-bugs
+    completed_at: 2026-08-04T06:21:24.712Z
+    summary: 完成 t2：mvt-implement 三处确认点（预览、范围、deliverables）接入 preferences.silent.implement 门控，静默下以对话笔记与默认值替代，assembler 聚焦测试 70 项与构建通过。
+    change_id: 20260804-confirm-and-silent
   - skill: /mvt-update-plan
-    completed_at: 2026-08-04T03:53:38.415Z
-    summary: 标记 t5 discovery、cleanup 与 resume 迁移完成，计划推进至最终 t6 集成验证。
-    change_id: 20260804-mvtt-workflow-bugs
+    completed_at: 2026-08-04T06:22:39.841Z
+    summary: 标记 t2 完成并推进至 t3：mvt-implement 静默路由已实现，当前任务为物化与全量验证。
+    change_id: 20260804-confirm-and-silent
   - skill: /mvt-test
-    completed_at: 2026-08-04T03:58:15.508Z
-    summary: 完成 t6 集成验证：更新 assembler/install/update 覆盖为 scanner-only 与生命周期路由断言，完整套件 324 项通过。
-    change_id: 20260804-mvtt-workflow-bugs
+    completed_at: 2026-08-04T06:24:29.159Z
+    summary: 完成 t3 物化与验证：mvtt update 重新生成 plan-dev/implement SKILL.md 且含新契约，npm run build 通过，全量套件 14 文件 331 项测试全绿、无 skip/only。
+    change_id: 20260804-confirm-and-silent
   - skill: /mvt-review
-    completed_at: 2026-08-04T04:03:58.057Z
-    summary: 完成本次变更审查：发现 5 个关键 prompt/生命周期冲突和 1 个测试覆盖警告，结论为 Request changes。
-    change_id: 20260804-mvtt-workflow-bugs
-  - skill: /mvt-fix
-    completed_at: 2026-08-04T04:18:57.190Z
-    summary: 修复 prompt 生命周期冲突、scanner fallback、session 校验及同版本 update 物化问题，完整测试 326 项通过。
-    change_id: 20260804-mvtt-workflow-bugs
-  - skill: /mvt-review
-    completed_at: 2026-08-04T04:22:50.230Z
-    summary: 复审修复结果：主要问题已解决并部署，发现 1 个 Critical（in-progress plan 无 abandon 路由）和 1 个 Warning 及若干提示项，结论 Request changes。
-    change_id: 20260804-mvtt-workflow-bugs
-  - skill: /mvt-review
-    completed_at: 2026-08-04T04:51:03.672Z
-    summary: 复核上一轮 review：确认 1 个 Critical、1 个 Warning 和 4 个 Suggestion；撤回 plan-status fallback 建议，结论仍为 Request changes。
-    change_id: 20260804-mvtt-workflow-bugs
-  - skill: /mvt-fix
-    completed_at: 2026-08-04T04:55:13.484Z
-    summary: 补齐 in-progress abandon 路由和 lifecycle-only 输出，同步描述与推荐并增强测试，完整套件 329 项通过。
-    change_id: 20260804-mvtt-workflow-bugs
+    completed_at: 2026-08-04T06:25:37.239Z
+    summary: 审查结论 Request changes：发现 1 个 Critical（implement 静默模式直接跳 Step 4，绕过结构性偏差门控）和 1 个 Warning（plan-dev 显式 regeneration 路径不可达）；用户选择不写 review artifact。
+    change_id: 20260804-confirm-and-silent
+  - skill: /mvt-update-plan
+    completed_at: 2026-08-04T06:27:51.243Z
+    summary: 完成变更并 finalize：3 个任务全部 done（写前确认、双 skill 静默配置、物化与全量验证 331 项测试通过）。审查发现的 Critical/Warning 尚未修复，已在变更中留档。
+    change_id: 20260804-confirm-and-silent
 active_epic: null
 epics: []
