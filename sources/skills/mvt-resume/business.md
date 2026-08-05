@@ -16,9 +16,21 @@ After extracting session data in Step 1, check for epic state:
 
 | Condition | Action |
 |-----------|--------|
-| `active_change.id` non-empty AND `active_change.epic_id` non-empty | Set `within_epic = true`. Continue to Step 2 (normal plan-based resume). In Step 7, include an Epic Context section. |
-| `active_change.id` empty AND `active_epic.id` non-empty (epic-pending) | Read `epic.yaml` via `active_epic.epic_path`. If unreadable, warn and jump to Step 8 with the "epic-pending but epic.yaml missing" edge case. Otherwise, identify the child referenced by `epic.yaml.current_change` as the resume target. Skip Steps 2-6 and go directly to Step 7 with a simplified report containing: (1) **Epic State** -- epic title, id, status, progress (done/total); (2) **Current Sub-change** -- title, scope, depends_on status of each dependency; (3) **Resume Point** -- "Resuming epic: {title}. Next sub-change: {current_change_title}. Run `/mvt-analyze` to start."; (4) **Recommended Next Step** -- `/mvt-analyze` -- Start the next sub-change in the epic. |
+| `active_change.id` non-empty AND `active_change.epic_id` non-empty | Set `within_epic = true`; resolve the parent epic path from `active_epic` or `session.epics[]`; select `active_change.id`; continue to Step 2 after restoration. |
+| `active_change.id` empty AND `active_epic.id` non-empty (epic-pending) | Read `active_epic.epic_path` and select `epic.yaml.current_change`; if unreadable, use the Step 8 missing-epic branch. After restoration, skip Steps 2-6 and render the simplified Step 7 report. |
 | Neither | Continue to Step 2 (normal flow). |
+
+For either epic path, restore the selected child with exactly:
+
+```bash
+node .ai-agents/scripts/requirement-source.cjs --effective-context <epic_path> --child <change_id>
+```
+
+- Consume only `child`, `context`, `sources`, and `warnings`; never traverse references in the prompt.
+- Display warnings and non-`unchanged` source statuses without replacing the snapshot. Report ordered `context` as the baseline, or `child.scope` when empty.
+- On non-zero exit, retain the plan resume path and add a bounded stderr warning; never invent context.
+
+For epic-pending, the simplified report contains: **Epic State** (title, id, status, progress); **Current Sub-change** (title, scope, dependency statuses, restored projection); **Resume Point** (next child and `/mvt-analyze`); and **Recommended Next Step** (`/mvt-analyze`).
 
 ### Step 2: Discover Pending Plans
 
@@ -98,7 +110,7 @@ And the **Current Task Detail** section:
 Render inline using the seven sections below. No external template is required.
 
 1. **Active Task** -- name, change-id, started_at (from selected plan)
-2. **Epic Context** (if `within_epic` is true) -- epic title, id, progress (done/total children), current position within the epic. Resolve the parent epic path: compare `active_change.epic_id` to `active_epic.id`. If they match, use `active_epic.epic_path`. If they do not match, search `session.epics[]` for an entry with `id == active_change.epic_id` and use its `epic_path`. If neither path exists, render the plan resume and add a bounded warning: "Epic context could not be loaded (epic_id: {active_change.epic_id})." Read `epic.yaml` via the resolved path and render: "This change is part of epic: **{epic_title}** ({done}/{total} sub-changes done). Current: {active_child_title}."
+2. **Epic Context** (if `within_epic`) -- epic title/id/progress, current child intent/scope, and the restored projection. If the parent path is unavailable, keep the plan report and warn: "Epic context could not be loaded (epic_id: {active_change.epic_id})."
 3. **Plan Progress** -- task table + counts + current task detail
 4. **Recent Skill History** -- last 5 entries from history (filtered to selected change if applicable)
 5. **Recent Artifacts** -- the top 5 artifacts collected in Step 4 (path, mtime, size)

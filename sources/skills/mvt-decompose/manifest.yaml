@@ -83,9 +83,9 @@ sections:
 
       **epic.yaml** (structured):
       Write to: `.ai-agents/workspace/artifacts/{epic_id}/epic.yaml`
-      Schema:
+      New-epic creation contract (`epic.yaml` is authoritative):
       ```yaml
-      version: 1
+      version: 2
       epic_id: "{epic_id}"
       title: "{epic_title}"
       created_at: "{ISO timestamp}"
@@ -94,11 +94,25 @@ sections:
       vision: >
         {epic vision summary}
       current_change: "{first_active_child_id}"
+      requirement_context:
+        captured_at: "{ISO timestamp}"
+        sources:
+          - id: "src-001"
+            kind: "file" # file | conversation
+            reference: "{normalized reference}"
+            fingerprint: "sha256:{hex}" # file sources only
+        items:
+          - id: "ctx-001"
+            category: "goal" # goal | in_scope | out_of_scope | business_rule | constraint | example | decision
+            summary: "{self-contained requirement statement}"
+            source_ids: ["src-001"]
+        global_refs: ["ctx-001"]
       children:
         - change_id: "{YYYYMMDD}-{slug}"
           title: "{child title}"
           scope: >
             {child scope description}
+          context_refs: ["ctx-002"]
           status: active       # first child: active, rest: pending
           depends_on: []       # DAG dependencies
           project: ["<project-name>"] # use the sole project name from project-context.yaml > projects[].name

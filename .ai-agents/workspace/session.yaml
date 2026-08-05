@@ -2,47 +2,61 @@ session:
   initialized_at: 2026-06-05T08:12:06.624Z
   last_synced_at: 2026-06-08T02:44:34.674Z
 active_change:
-changes: []
+  id: ""
+  title: ""
+  created_at: ""
+  plan_path: ""
+  epic_id: ""
+changes:
+  - id: 20260805-epic-context-inheritance
+    title: Epic Requirement Context Inheritance
+    plan_path: .ai-agents/workspace/artifacts/20260805-epic-context-inheritance/plan.yaml
+    status: done
+    updated_at: 2026-08-05T08:58:25.234Z
+    epic_id: ""
 history:
-  - skill: /mvt-analyze
-    completed_at: 2026-08-04T06:10:54.658Z
-    summary: 分析完成：plan-dev 写前确认 + implement/plan-dev 按 skill 静默执行配置，4 项澄清已确认（per-skill 开关、全确认点覆盖、静默下危险操作一并跳过、默认保持确认）。
-    change_id: 20260804-confirm-and-silent
-  - skill: /mvt-design
-    completed_at: 2026-08-04T06:12:02.852Z
-    summary: 设计完成：plan-dev 新增 Step 6a 写前确认（Confirm/Revise/Cancel），preferences.silent 按 skill 双开关，4 个 ADR（per-skill 开关、缺失默认 false、静默再生保守中止、静默仅跳过确认点），footprint 7 文件建议走 plan-dev。
-    change_id: 20260804-confirm-and-silent
-  - skill: /mvt-plan-dev
-    completed_at: 2026-08-04T06:16:08.628Z
-    summary: 创建静默模式与 plan 写前确认实施计划：3 个任务，当前 t1 配置与 plan-dev 确认流程实现。
-    change_id: 20260804-confirm-and-silent
   - skill: /mvt-implement
-    completed_at: 2026-08-04T06:17:15.173Z
-    summary: 完成 t1：新增 per-skill 静默默认配置与 plan-dev 校验后写前确认；静默再生中止而不覆盖，assembler 聚焦测试和构建通过。
-    change_id: 20260804-confirm-and-silent
+    completed_at: 2026-08-05T08:32:20.342Z
+    summary: 完成 t3 上下文工作流接入：decompose 捕获来源并生成权威上下文映射，analyze/resume 统一消费 effective-context 中性投影；assembler 71/71 与构建通过，deliverables 已登记给 t4。
+    change_id: 20260805-epic-context-inheritance
   - skill: /mvt-update-plan
-    completed_at: 2026-08-04T06:20:14.506Z
-    summary: 标记 t1 完成并推进至 t2：plan-dev 写前确认与静默默认配置已实现，当前任务为 implement 静默路由。
-    change_id: 20260804-confirm-and-silent
-  - skill: /mvt-implement
-    completed_at: 2026-08-04T06:21:24.712Z
-    summary: 完成 t2：mvt-implement 三处确认点（预览、范围、deliverables）接入 preferences.silent.implement 门控，静默下以对话笔记与默认值替代，assembler 聚焦测试 70 项与构建通过。
-    change_id: 20260804-confirm-and-silent
-  - skill: /mvt-update-plan
-    completed_at: 2026-08-04T06:22:39.841Z
-    summary: 标记 t2 完成并推进至 t3：mvt-implement 静默路由已实现，当前任务为物化与全量验证。
-    change_id: 20260804-confirm-and-silent
+    completed_at: 2026-08-05T08:34:21.908Z
+    summary: 标记 t3（上下文工作流接入）完成并推进至 t4：assembler 71/71 与构建验证通过后，用户撤销了 t3 的五个源文件编辑；按用户明确决定仍将 t3 标记为 done，当前任务为物化与全量验证。
+    change_id: 20260805-epic-context-inheritance
   - skill: /mvt-test
-    completed_at: 2026-08-04T06:24:29.159Z
-    summary: 完成 t3 物化与验证：mvtt update 重新生成 plan-dev/implement SKILL.md 且含新契约，npm run build 通过，全量套件 14 文件 331 项测试全绿、无 skip/only。
-    change_id: 20260804-confirm-and-silent
+    completed_at: 2026-08-05T08:38:31.853Z
+    summary: 完成 t4 物化与全量验证：mvtt update 物化 49 个生成文件（requirement-source.cjs、assembled skills、templates 均刷新）；聚焦套件 177/177（requirement-source 39、epic-update 67、assembler 71）、全量 386/386 通过、无 skip/only，git diff
+      --check 无空白错误；工作树已含 t3 上下文集成（撤销未在磁盘生效）。
+    change_id: 20260805-epic-context-inheritance
   - skill: /mvt-review
-    completed_at: 2026-08-04T06:25:37.239Z
-    summary: 审查结论 Request changes：发现 1 个 Critical（implement 静默模式直接跳 Step 4，绕过结构性偏差门控）和 1 个 Warning（plan-dev 显式 regeneration 路径不可达）；用户选择不写 review artifact。
-    change_id: 20260804-confirm-and-silent
+    completed_at: 2026-08-05T08:40:44.170Z
+    summary: 完成全变更审查（14 文件）：Verdict Approve with comments——1 Warning（epic-update validateContext 缺 category/路径段/global_refs 类型三项校验，与 requirement-source 不镜像，建议 /mvt-fix）+ 3 Suggestion；prompt 零版本词、测试
+      386/386 通过、文档化偏差已接受；用户选择不写 review.md。
+    change_id: 20260805-epic-context-inheritance
+  - skill: /mvt-review
+    completed_at: 2026-08-05T08:42:17.690Z
+    summary: "复核上一轮审查：W1 三项 validator 差异属实；S1 属实但低风险，S2 是明确契约不应列为问题，S3 属实且应升级为 Warning（switch-active 可复活 terminal child 并保留 completed_at/误报 old_status）；prompt 实际无 v1/v2/legacy token，但 decompose 保留
+      version: 2 创建字段，原‘零版本词’表述过宽。"
+    change_id: 20260805-epic-context-inheritance
+  - skill: /mvt-fix
+    completed_at: 2026-08-05T08:46:23.382Z
+    summary: 已修复 Epic 上下文校验不一致和终态子变更可被重新激活的问题
+    change_id: 20260805-epic-context-inheritance
+  - skill: /mvt-review
+    completed_at: 2026-08-05T08:50:17.516Z
+    summary: 复核三个上下文 prompt 的精简度：发现 3 个 Warning 和 3 个 Suggestion，重点是消除 analyze 双重流程与 decompose 重复预览
+    change_id: 20260805-epic-context-inheritance
+  - skill: /mvt-refactor
+    completed_at: 2026-08-05T08:56:29.767Z
+    summary: 完成三个上下文 prompt 的等价精简：减少约 556 tokens，统一恢复流程并避免重复预览，全量测试 391/391 通过
+    change_id: 20260805-epic-context-inheritance
   - skill: /mvt-update-plan
-    completed_at: 2026-08-04T06:27:51.243Z
-    summary: 完成变更并 finalize：3 个任务全部 done（写前确认、双 skill 静默配置、物化与全量验证 331 项测试通过）。审查发现的 Critical/Warning 尚未修复，已在变更中留档。
-    change_id: 20260804-confirm-and-silent
+    completed_at: 2026-08-05T08:58:25.234Z
+    summary: 标记 t4 完成（4/4），计划状态 done，变更已正式结束
+    change_id: 20260805-epic-context-inheritance
+  - skill: /mvt-quick-dev
+    completed_at: 2026-08-05T09:02:09.534Z
+    summary: 为 mvt-refactor Step 10 增加写 notes 前的 Write/Skip 确认（与 mvt-fix 对齐），并补充对应 Edge Case；已物化 SKILL.md，assembler 71/71 通过
+    change_id: ""
 active_epic: null
 epics: []

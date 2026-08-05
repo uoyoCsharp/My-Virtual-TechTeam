@@ -21,7 +21,7 @@
  */
 
 import { readFileSync, writeFileSync, renameSync, unlinkSync, existsSync } from "node:fs";
-import { dirname, join, resolve } from "node:path";
+import { dirname, isAbsolute, join, resolve } from "node:path";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 
 // ── Project Discovery ──────────────────────────────────────────────────────
@@ -58,6 +58,15 @@ function loadSoleProject(projectRoot) {
 const VALID_CHILD_STATUSES = ["pending", "active", "done", "abandoned"];
 const VALID_EPIC_STATUSES = ["in_progress", "done", "abandoned"];
 const TERMINAL_STATUSES = ["done", "abandoned"];
+const VALID_CONTEXT_CATEGORIES = [
+  "goal",
+  "in_scope",
+  "out_of_scope",
+  "business_rule",
+  "constraint",
+  "example",
+  "decision",
+];
 
 const ERRORS = {
   MISSING_EPIC: () => "Missing required argument: --epic (or --validate <path>)",
@@ -75,8 +84,12 @@ const ERRORS = {
   MULTIPLE_ACTIVE: () => "Cannot activate: another child is already active. Use --switch-active for atomic reorder.",
   UNRESOLVED_DEPS: (id, deps) =>
     `Cannot activate "${id}": unresolved depends_on: ${deps.join(", ")}`,
+  INVALID_SWITCH_TARGET_STATUS: (id, status) =>
+    `Cannot activate "${id}": status "${status}" must be pending or active.`,
   ADD_CHILD_MISSING: () => "--add-child requires an id argument",
   ADD_CHILD_TITLE_MISSING: (id) => `--add-child "${id}" requires --child-title`,
+  ADD_CHILD_CONTEXT_REFS_REQUIRED: (id) =>
+    `--add-child "${id}" requires --child-context-refs for v2 epics`,
   DEFER_REQUIRES_COMPLETE: () => "--defer-next requires --complete-child <change_id>",
 };
 
@@ -101,12 +114,14 @@ function parseArgs(argv) {
       continue;
     }
 
-    if (arg === "--child-title" || arg === "--child-scope" || arg === "--child-depends-on") {
+    if (arg === "--child-title" || arg === "--child-scope" || arg === "--child-depends-on" || arg === "--child-context-refs") {
       const next = argv[i + 1];
       if (addChildren.length > 0 && next) {
         const current = addChildren[addChildren.length - 1];
         if (arg === "--child-depends-on") {
           current.depends_on = next.split(",").map((s) => s.trim()).filter(Boolean);
+        } else if (arg === "--child-context-refs") {
+          current.context_refs = next.split(",").map((s) => s.trim()).filter(Boolean);
         } else {
           // Strip "--child-" prefix: --child-title -> "title", --child-scope -> "scope"
           current[arg.slice(8)] = next;
@@ -206,6 +221,138 @@ function findCycle(children) {
   return null;
 }
 
+// ── Context validation ─────────────────────────────────────────────────────
+// Existence-based v1/v2 matrix (mirrors requirement-source.js):
+//   version 1 (or absent) without requirement_context -> legacy, no context checks.
+//   version 1 carrying a full requirement_context -> validated normally (migration-friendly).
+//   version 2 must contain requirement_context; every child needs context_refs.
+//   Anything else, or a v2 epic missing requirement_context, is invalid.
+function getVersion(epic) {
+  if (epic.version === undefined || epic.version === null || epic.version === "") return 1;
+  const n = Number(epic.version);
+  return Number.isNaN(n) ? null : n;
+}
+
+function segmentsValid(reference) {
+  return reference
+    .split("/")
+    .every((segment) => segment !== "" && segment !== "." && segment !== "..");
+}
+
+function validateContext(epic) {
+  const errors = [];
+  const version = getVersion(epic);
+
+  if (version === null || (version !== 1 && version !== 2)) {
+    errors.push(`Unsupported epic version "${String(epic.version)}" (must be 1 or 2)`);
+    return errors;
+  }
+
+  const hasContext =
+    epic.requirement_context !== undefined && epic.requirement_context !== null;
+  const children = Array.isArray(epic.children) ? epic.children : [];
+
+  if (version === 2 && !hasContext) {
+    errors.push("version 2 epic requires requirement_context");
+    return errors;
+  }
+  if (!hasContext) return errors; // legacy: no context to validate
+
+  const ctx = epic.requirement_context;
+  const sources = Array.isArray(ctx.sources) ? ctx.sources : [];
+  const items = Array.isArray(ctx.items) ? ctx.items : [];
+
+  if (sources.length === 0) errors.push("requirement_context.sources must be a non-empty array");
+  if (items.length === 0) errors.push("requirement_context.items must be a non-empty array");
+  if (
+    ctx.global_refs !== undefined &&
+    ctx.global_refs !== null &&
+    !Array.isArray(ctx.global_refs)
+  ) {
+    errors.push("requirement_context.global_refs must be an array");
+  }
+
+  const sourceIds = new Set();
+  for (const s of sources) {
+    if (!s || typeof s.id !== "string" || s.id === "") {
+      errors.push("Every source must have a non-empty string id");
+      continue;
+    }
+    if (sourceIds.has(s.id)) errors.push(`Duplicate source id "${s.id}"`);
+    sourceIds.add(s.id);
+
+    if (s.kind === "file") {
+      if (typeof s.reference !== "string" || s.reference === "") {
+        errors.push(`File source "${s.id}" requires a non-empty reference`);
+      } else if (!isAbsolute(s.reference)) {
+        const reference = s.reference.split("\\").join("/");
+        if (!segmentsValid(reference)) {
+          errors.push(
+            `File source "${s.id}" reference must not contain "." or ".." segments`
+          );
+        }
+      }
+      if (typeof s.fingerprint !== "string" || !/^sha256:[0-9a-f]{64}$/.test(s.fingerprint)) {
+        errors.push(`File source "${s.id}" requires a sha256:<hex> fingerprint`);
+      }
+    } else if (s.kind === "conversation") {
+      if (s.reference !== "conversation") {
+        errors.push(`Conversation source "${s.id}" must have reference "conversation"`);
+      }
+      if (s.fingerprint !== undefined && s.fingerprint !== null) {
+        errors.push(`Conversation source "${s.id}" must not have a fingerprint`);
+      }
+    } else {
+      errors.push(
+        `Source "${s.id}" has invalid kind "${s.kind}" (must be file or conversation)`
+      );
+    }
+  }
+
+  const itemIds = new Set();
+  for (const item of items) {
+    if (!item || typeof item.id !== "string" || item.id === "") {
+      errors.push("Every item must have a non-empty string id");
+      continue;
+    }
+    if (itemIds.has(item.id)) errors.push(`Duplicate item id "${item.id}"`);
+    itemIds.add(item.id);
+
+    if (!VALID_CONTEXT_CATEGORIES.includes(item.category)) {
+      errors.push(`Item "${item.id}" has invalid category "${item.category}"`);
+    }
+    if (typeof item.summary !== "string" || item.summary === "") {
+      errors.push(`Item "${item.id}" requires a non-empty summary`);
+    }
+    const refs = Array.isArray(item.source_ids) ? item.source_ids : [];
+    if (refs.length === 0) {
+      errors.push(`Item "${item.id}" requires at least one source_ids entry`);
+    }
+    for (const r of refs) {
+      if (!sourceIds.has(r)) errors.push(`Item "${item.id}" references unknown source "${r}"`);
+    }
+  }
+
+  const globalRefs = Array.isArray(ctx.global_refs) ? ctx.global_refs : [];
+  for (const ref of globalRefs) {
+    if (!itemIds.has(ref)) errors.push(`global_refs references unknown item "${ref}"`);
+  }
+
+  for (const c of children) {
+    const refs = Array.isArray(c.context_refs) ? c.context_refs : [];
+    if (version === 2 && refs.length === 0) {
+      errors.push(`Child "${c.change_id}" requires at least one context_refs entry`);
+    }
+    for (const r of refs) {
+      if (!itemIds.has(r)) {
+        errors.push(`Child "${c.change_id}" context_refs references unknown item "${r}"`);
+      }
+    }
+  }
+
+  return errors;
+}
+
 // ── Validation ──────────────────────────────────────────────────────────────
 function validateEpic(epic) {
   const errors = [];
@@ -259,6 +406,9 @@ function validateEpic(epic) {
   if (allTerminal && epic.status === "in_progress") {
     errors.push("All children are done/abandoned but epic status is still in_progress");
   }
+
+  // 7. Requirement context (v1/v2 matrix)
+  errors.push(...validateContext(epic));
 
   return errors;
 }
@@ -379,6 +529,11 @@ function switchActive(epic, changeId) {
   const children = epic.children || [];
   const target = children.find((c) => c.change_id === changeId);
   if (!target) return { error: ERRORS.CHILD_NOT_FOUND(changeId, children.map((c) => c.change_id)) };
+  if (!["pending", "active"].includes(target.status)) {
+    return { error: ERRORS.INVALID_SWITCH_TARGET_STATUS(changeId, target.status) };
+  }
+
+  const oldStatus = target.status;
 
   // Validate target's depends_on are resolved
   const resolvedIds = new Set(
@@ -398,7 +553,7 @@ function switchActive(epic, changeId) {
 
   const doneCount = children.filter((c) => c.status === "done").length;
   return {
-    child: { change_id: changeId, old_status: "pending", new_status: "active" },
+    child: { change_id: changeId, old_status: oldStatus, new_status: "active" },
     current_change: changeId,
     epic_status: epic.status,
     progress: { done: doneCount, total: children.length },
@@ -417,6 +572,17 @@ function addChild(epic, childrenToAdd, epicPath) {
   // legacy / unconfigured workspaces.
   const defaultProject = loadSoleProject(findProjectRootFromPath(epicPath)) || ["default"];
 
+  // v2 epics require explicit context refs for every new child; v1 keeps the
+  // legacy shape (context_refs optional, preserved when supplied).
+  const version = getVersion(epic);
+  if (version === 2) {
+    for (const child of childrenToAdd) {
+      if (!child.context_refs || child.context_refs.length === 0) {
+        return { error: ERRORS.ADD_CHILD_CONTEXT_REFS_REQUIRED(child.id) };
+      }
+    }
+  }
+
   for (const child of childrenToAdd) {
     if (!child.id || child.id === true) return { error: ERRORS.ADD_CHILD_MISSING() };
     if (!child.title) return { error: ERRORS.ADD_CHILD_TITLE_MISSING(child.id) };
@@ -433,6 +599,7 @@ function addChild(epic, childrenToAdd, epicPath) {
       project: defaultProject,
       scope: child.scope || "",
       completed_at: null,
+      ...(child.context_refs ? { context_refs: child.context_refs } : {}),
     });
   }
 

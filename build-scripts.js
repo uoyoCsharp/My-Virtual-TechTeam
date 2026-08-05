@@ -18,6 +18,7 @@ await build({
     "sources/scripts/epic-update.js",
     "sources/scripts/artifact-scan.js",
     "sources/scripts/workspace-state-check.js",
+    "sources/scripts/requirement-source.js",
   ],
   outdir: "dist/scripts",
   outExtension: { ".js": ".cjs" },

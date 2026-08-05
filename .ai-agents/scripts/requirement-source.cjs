@@ -3986,10 +3986,10 @@ var require_resolve_block_map = __commonJS({
       let offset = bm.offset;
       let commentEnd = null;
       for (const collItem of bm.items) {
-        const { start, key, sep, value } = collItem;
+        const { start, key, sep: sep2, value } = collItem;
         const keyProps = resolveProps.resolveProps(start, {
           indicator: "explicit-key-ind",
-          next: key ?? sep?.[0],
+          next: key ?? sep2?.[0],
           offset,
           onError,
           parentIndent: bm.indent,
@@ -4003,7 +4003,7 @@ var require_resolve_block_map = __commonJS({
             else if ("indent" in key && key.indent !== bm.indent)
               onError(offset, "BAD_INDENT", startColMsg);
           }
-          if (!keyProps.anchor && !keyProps.tag && !sep) {
+          if (!keyProps.anchor && !keyProps.tag && !sep2) {
             commentEnd = keyProps.end;
             if (keyProps.comment) {
               if (map.comment)
@@ -4027,7 +4027,7 @@ var require_resolve_block_map = __commonJS({
         ctx.atKey = false;
         if (utilMapIncludes.mapIncludes(ctx, map.items, keyNode))
           onError(keyStart, "DUPLICATE_KEY", "Map keys must be unique");
-        const valueProps = resolveProps.resolveProps(sep ?? [], {
+        const valueProps = resolveProps.resolveProps(sep2 ?? [], {
           indicator: "map-value-ind",
           next: value,
           offset: keyNode.range[2],
@@ -4043,7 +4043,7 @@ var require_resolve_block_map = __commonJS({
             if (ctx.options.strict && keyProps.start < valueProps.found.offset - 1024)
               onError(keyNode.range, "KEY_OVER_1024_CHARS", "The : indicator must be at most 1024 chars after the start of an implicit block mapping key");
           }
-          const valueNode = value ? composeNode(ctx, value, valueProps, onError) : composeEmptyNode(ctx, offset, sep, null, valueProps, onError);
+          const valueNode = value ? composeNode(ctx, value, valueProps, onError) : composeEmptyNode(ctx, offset, sep2, null, valueProps, onError);
           if (ctx.schema.compat)
             utilFlowIndentCheck.flowIndentCheck(bm.indent, value, onError);
           offset = valueNode.range[2];
@@ -4134,7 +4134,7 @@ var require_resolve_end = __commonJS({
       let comment = "";
       if (end) {
         let hasSpace = false;
-        let sep = "";
+        let sep2 = "";
         for (const token of end) {
           const { source, type } = token;
           switch (type) {
@@ -4148,13 +4148,13 @@ var require_resolve_end = __commonJS({
               if (!comment)
                 comment = cb;
               else
-                comment += sep + cb;
-              sep = "";
+                comment += sep2 + cb;
+              sep2 = "";
               break;
             }
             case "newline":
               if (comment)
-                sep += source;
+                sep2 += source;
               hasSpace = true;
               break;
             default:
@@ -4197,18 +4197,18 @@ var require_resolve_flow_collection = __commonJS({
       let offset = fc.offset + fc.start.source.length;
       for (let i = 0; i < fc.items.length; ++i) {
         const collItem = fc.items[i];
-        const { start, key, sep, value } = collItem;
+        const { start, key, sep: sep2, value } = collItem;
         const props = resolveProps.resolveProps(start, {
           flow: fcName,
           indicator: "explicit-key-ind",
-          next: key ?? sep?.[0],
+          next: key ?? sep2?.[0],
           offset,
           onError,
           parentIndent: fc.indent,
           startOnNewline: false
         });
         if (!props.found) {
-          if (!props.anchor && !props.tag && !sep && !value) {
+          if (!props.anchor && !props.tag && !sep2 && !value) {
             if (i === 0 && props.comma)
               onError(props.comma, "UNEXPECTED_TOKEN", `Unexpected , in ${fcName}`);
             else if (i < fc.items.length - 1)
@@ -4262,8 +4262,8 @@ var require_resolve_flow_collection = __commonJS({
             }
           }
         }
-        if (!isMap && !sep && !props.found) {
-          const valueNode = value ? composeNode(ctx, value, props, onError) : composeEmptyNode(ctx, props.end, sep, null, props, onError);
+        if (!isMap && !sep2 && !props.found) {
+          const valueNode = value ? composeNode(ctx, value, props, onError) : composeEmptyNode(ctx, props.end, sep2, null, props, onError);
           coll.items.push(valueNode);
           offset = valueNode.range[2];
           if (isBlock(value))
@@ -4275,7 +4275,7 @@ var require_resolve_flow_collection = __commonJS({
           if (isBlock(key))
             onError(keyNode.range, "BLOCK_IN_FLOW", blockMsg);
           ctx.atKey = false;
-          const valueProps = resolveProps.resolveProps(sep ?? [], {
+          const valueProps = resolveProps.resolveProps(sep2 ?? [], {
             flow: fcName,
             indicator: "map-value-ind",
             next: value,
@@ -4286,8 +4286,8 @@ var require_resolve_flow_collection = __commonJS({
           });
           if (valueProps.found) {
             if (!isMap && !props.found && ctx.options.strict) {
-              if (sep)
-                for (const st of sep) {
+              if (sep2)
+                for (const st of sep2) {
                   if (st === valueProps.found)
                     break;
                   if (st.type === "newline") {
@@ -4304,7 +4304,7 @@ var require_resolve_flow_collection = __commonJS({
             else
               onError(valueProps.start, "MISSING_CHAR", `Missing , or : between ${fcName} items`);
           }
-          const valueNode = value ? composeNode(ctx, value, valueProps, onError) : valueProps.found ? composeEmptyNode(ctx, valueProps.end, sep, null, valueProps, onError) : null;
+          const valueNode = value ? composeNode(ctx, value, valueProps, onError) : valueProps.found ? composeEmptyNode(ctx, valueProps.end, sep2, null, valueProps, onError) : null;
           if (valueNode) {
             if (isBlock(value))
               onError(valueNode.range, "BLOCK_IN_FLOW", blockMsg);
@@ -4484,7 +4484,7 @@ var require_resolve_block_scalar = __commonJS({
           chompStart = i + 1;
       }
       let value = "";
-      let sep = "";
+      let sep2 = "";
       let prevMoreIndented = false;
       for (let i = 0; i < contentStart; ++i)
         value += lines[i][0].slice(trimIndent) + "\n";
@@ -4501,24 +4501,24 @@ var require_resolve_block_scalar = __commonJS({
           indent = "";
         }
         if (type === Scalar.Scalar.BLOCK_LITERAL) {
-          value += sep + indent.slice(trimIndent) + content;
-          sep = "\n";
+          value += sep2 + indent.slice(trimIndent) + content;
+          sep2 = "\n";
         } else if (indent.length > trimIndent || content[0] === "	") {
-          if (sep === " ")
-            sep = "\n";
-          else if (!prevMoreIndented && sep === "\n")
-            sep = "\n\n";
-          value += sep + indent.slice(trimIndent) + content;
-          sep = "\n";
+          if (sep2 === " ")
+            sep2 = "\n";
+          else if (!prevMoreIndented && sep2 === "\n")
+            sep2 = "\n\n";
+          value += sep2 + indent.slice(trimIndent) + content;
+          sep2 = "\n";
           prevMoreIndented = true;
         } else if (content === "") {
-          if (sep === "\n")
+          if (sep2 === "\n")
             value += "\n";
           else
-            sep = "\n";
+            sep2 = "\n";
         } else {
-          value += sep + content;
-          sep = " ";
+          value += sep2 + content;
+          sep2 = " ";
           prevMoreIndented = false;
         }
       }
@@ -4700,25 +4700,25 @@ var require_resolve_flow_scalar = __commonJS({
       if (!match)
         return source;
       let res = match[1];
-      let sep = " ";
+      let sep2 = " ";
       let pos = first.lastIndex;
       line.lastIndex = pos;
       while (match = line.exec(source)) {
         if (match[1] === "") {
-          if (sep === "\n")
-            res += sep;
+          if (sep2 === "\n")
+            res += sep2;
           else
-            sep = "\n";
+            sep2 = "\n";
         } else {
-          res += sep + match[1];
-          sep = " ";
+          res += sep2 + match[1];
+          sep2 = " ";
         }
         pos = line.lastIndex;
       }
       const last = /[ \t]*(.*)/sy;
       last.lastIndex = pos;
       match = last.exec(source);
-      return res + sep + (match?.[1] ?? "");
+      return res + sep2 + (match?.[1] ?? "");
     }
     function doubleQuotedValue(source, onError) {
       let res = "";
@@ -5525,14 +5525,14 @@ var require_cst_stringify = __commonJS({
         }
       }
     }
-    function stringifyItem({ start, key, sep, value }) {
+    function stringifyItem({ start, key, sep: sep2, value }) {
       let res = "";
       for (const st of start)
         res += st.source;
       if (key)
         res += stringifyToken(key);
-      if (sep)
-        for (const st of sep)
+      if (sep2)
+        for (const st of sep2)
           res += st.source;
       if (value)
         res += stringifyToken(value);
@@ -6682,18 +6682,18 @@ var require_parser = __commonJS({
         if (this.type === "map-value-ind") {
           const prev = getPrevProps(this.peek(2));
           const start = getFirstKeyStartProps(prev);
-          let sep;
+          let sep2;
           if (scalar.end) {
-            sep = scalar.end;
-            sep.push(this.sourceToken);
+            sep2 = scalar.end;
+            sep2.push(this.sourceToken);
             delete scalar.end;
           } else
-            sep = [this.sourceToken];
+            sep2 = [this.sourceToken];
           const map = {
             type: "block-map",
             offset: scalar.offset,
             indent: scalar.indent,
-            items: [{ start, key: scalar, sep }]
+            items: [{ start, key: scalar, sep: sep2 }]
           };
           this.onKeyLine = true;
           this.stack[this.stack.length - 1] = map;
@@ -6846,15 +6846,15 @@ var require_parser = __commonJS({
                 } else if (isFlowToken(it.key) && !includesToken(it.sep, "newline")) {
                   const start2 = getFirstKeyStartProps(it.start);
                   const key = it.key;
-                  const sep = it.sep;
-                  sep.push(this.sourceToken);
+                  const sep2 = it.sep;
+                  sep2.push(this.sourceToken);
                   delete it.key;
                   delete it.sep;
                   this.stack.push({
                     type: "block-map",
                     offset: this.offset,
                     indent: this.indent,
-                    items: [{ start: start2, key, sep }]
+                    items: [{ start: start2, key, sep: sep2 }]
                   });
                 } else if (start.length > 0) {
                   it.sep = it.sep.concat(start, this.sourceToken);
@@ -7048,13 +7048,13 @@ var require_parser = __commonJS({
             const prev = getPrevProps(parent);
             const start = getFirstKeyStartProps(prev);
             fixFlowSeqItems(fc);
-            const sep = fc.end.splice(1, fc.end.length);
-            sep.push(this.sourceToken);
+            const sep2 = fc.end.splice(1, fc.end.length);
+            sep2.push(this.sourceToken);
             const map = {
               type: "block-map",
               offset: fc.offset,
               indent: fc.indent,
-              items: [{ start, key: fc, sep }]
+              items: [{ start, key: fc, sep: sep2 }]
             };
             this.onKeyLine = true;
             this.stack[this.stack.length - 1] = map;
@@ -7332,37 +7332,13 @@ var require_dist = __commonJS({
   }
 });
 
-// sources/scripts/epic-update.js
+// sources/scripts/requirement-source.js
 var import_node_fs = require("node:fs");
+var import_node_crypto = require("node:crypto");
 var import_node_path = require("node:path");
 var import_yaml = __toESM(require_dist(), 1);
-function findProjectRootFromPath(filePath) {
-  let dir = (0, import_node_path.resolve)((0, import_node_path.dirname)(filePath));
-  while (true) {
-    if ((0, import_node_fs.existsSync)((0, import_node_path.join)(dir, ".ai-agents"))) return dir;
-    const parent = (0, import_node_path.dirname)(dir);
-    if (parent === dir) return null;
-    dir = parent;
-  }
-}
-function loadSoleProject(projectRoot) {
-  if (!projectRoot) return null;
-  const ctxPath = (0, import_node_path.join)(projectRoot, ".ai-agents/workspace/project-context.yaml");
-  if (!(0, import_node_fs.existsSync)(ctxPath)) return null;
-  try {
-    const ctx = (0, import_yaml.parse)((0, import_node_fs.readFileSync)(ctxPath, "utf-8"));
-    const projects = ctx?.projects;
-    if (!Array.isArray(projects) || projects.length !== 1) return null;
-    const name = projects[0]?.name;
-    if (typeof name !== "string" || name === "") return null;
-    return [name];
-  } catch {
-    return null;
-  }
-}
-var VALID_CHILD_STATUSES = ["pending", "active", "done", "abandoned"];
-var TERMINAL_STATUSES = ["done", "abandoned"];
-var VALID_CONTEXT_CATEGORIES = [
+var VALID_KINDS = ["file", "conversation"];
+var VALID_CATEGORIES = [
   "goal",
   "in_scope",
   "out_of_scope",
@@ -7372,120 +7348,71 @@ var VALID_CONTEXT_CATEGORIES = [
   "decision"
 ];
 var ERRORS = {
-  MISSING_EPIC: () => "Missing required argument: --epic (or --validate <path>)",
-  NO_OPERATION: () => "No operation specified. Use --complete-child, --abandon-child, --set-child-status, --switch-active, --add-child, or --validate.",
+  NO_OPERATION: () => "No operation specified. Use --fingerprint, --verify-epic, or --effective-context.",
+  CONFLICTING_MODES: (modes) => `Conflicting modes: --${modes.join(", --")}. Use exactly one mode per invocation.`,
+  MISSING_FINGERPRINT_PATH: () => "Missing required argument: --fingerprint <source_path>",
+  MISSING_VERIFY_PATH: () => "Missing required argument: --verify-epic <epic_path>",
+  MISSING_EFFECTIVE_PATH: () => "Missing required argument: --effective-context <epic_path>",
+  CHILD_REQUIRED: () => "--effective-context requires --child <change_id>",
+  CHILD_WITHOUT_MODE: () => "--child requires --effective-context",
   EPIC_NOT_FOUND: (p) => `Epic file not found at ${p}.`,
-  EPIC_PARSE_FAILED: (detail) => `Failed to parse epic.yaml: ${detail}`,
-  CHILD_NOT_FOUND: (id, valid) => `Child "${id}" not found. Valid children: ${valid.length ? valid.join(", ") : "(none)"}.`,
-  VALIDATION_FAILED: (errs) => `Epic validation failed:
+  EPIC_PARSE_FAILED: (detail) => `Failed to parse epic YAML: ${detail}`,
+  CONTEXT_VALIDATION_FAILED: (errs) => `Epic context validation failed:
   - ${errs.join("\n  - ")}`,
-  EPIC_WRITE_FAILED: (detail) => `Failed to write epic.yaml: ${detail}`,
-  INVALID_CHILD_STATUS: (val) => `Invalid --child-status "${val}". Must be one of: ${VALID_CHILD_STATUSES.join(", ")}.`,
-  MISSING_CHILD_STATUS: () => "--set-child-status requires --child-status <status>",
-  MULTIPLE_ACTIVE: () => "Cannot activate: another child is already active. Use --switch-active for atomic reorder.",
-  UNRESOLVED_DEPS: (id, deps) => `Cannot activate "${id}": unresolved depends_on: ${deps.join(", ")}`,
-  INVALID_SWITCH_TARGET_STATUS: (id, status) => `Cannot activate "${id}": status "${status}" must be pending or active.`,
-  ADD_CHILD_MISSING: () => "--add-child requires an id argument",
-  ADD_CHILD_TITLE_MISSING: (id) => `--add-child "${id}" requires --child-title`,
-  ADD_CHILD_CONTEXT_REFS_REQUIRED: (id) => `--add-child "${id}" requires --child-context-refs for v2 epics`,
-  DEFER_REQUIRES_COMPLETE: () => "--defer-next requires --complete-child <change_id>"
+  CHILD_NOT_FOUND: (id, valid) => `Child "${id}" not found. Valid children: ${valid.length ? valid.join(", ") : "(none)"}.`,
+  SOURCE_NOT_FOUND: (p) => `Source file not found at ${p}.`,
+  SOURCE_NOT_REGULAR: (p) => `Source is not a readable regular file: ${p}.`,
+  SOURCE_UNREADABLE: (p, detail) => `Source file is not readable: ${p} (${detail}).`
 };
-function parseArgs(argv) {
-  const args = {};
-  const addChildren = [];
-  for (let i = 2; i < argv.length; i++) {
-    const arg = argv[i];
-    if (arg === "--add-child") {
-      const next = argv[i + 1];
-      if (next && !next.startsWith("--")) {
-        addChildren.push({ id: next });
-        i++;
-      } else {
-        addChildren.push({ id: true });
-      }
-      continue;
-    }
-    if (arg === "--child-title" || arg === "--child-scope" || arg === "--child-depends-on" || arg === "--child-context-refs") {
-      const next = argv[i + 1];
-      if (addChildren.length > 0 && next) {
-        const current = addChildren[addChildren.length - 1];
-        if (arg === "--child-depends-on") {
-          current.depends_on = next.split(",").map((s) => s.trim()).filter(Boolean);
-        } else if (arg === "--child-context-refs") {
-          current.context_refs = next.split(",").map((s) => s.trim()).filter(Boolean);
-        } else {
-          current[arg.slice(8)] = next;
-        }
-        i++;
-      }
-      continue;
-    }
-    if (arg.startsWith("--")) {
-      const key = arg.slice(2);
-      const next = argv[i + 1];
-      if (key === "set-child-status" && next && !next.startsWith("--")) {
-        args[key] = next;
-        i++;
-        const statusVal = argv[i + 1];
-        if (statusVal && !statusVal.startsWith("--")) {
-          args["child-status"] = statusVal;
-          i++;
-        }
-        continue;
-      }
-      if (next && !next.startsWith("--")) {
-        args[key] = next;
-        i++;
-      } else {
-        args[key] = true;
-      }
-    }
-  }
-  if (addChildren.length > 0) args["add-child"] = addChildren;
-  return args;
+function toPosix(p) {
+  return p.split(import_node_path.sep).join("/");
 }
-function validateArgs(args) {
-  if (!args.epic && !args.validate) return ERRORS.MISSING_EPIC();
-  if (args["defer-next"] && !args["complete-child"])
-    return ERRORS.DEFER_REQUIRES_COMPLETE();
-  const hasOp = args["complete-child"] || args["abandon-child"] || args["set-child-status"] || args["switch-active"] || args["add-child"] || args.validate;
-  if (!hasOp) return ERRORS.NO_OPERATION();
-  if (args["set-child-status"] && !args["child-status"]) return ERRORS.MISSING_CHILD_STATUS();
-  if (args["child-status"] && !VALID_CHILD_STATUSES.includes(args["child-status"]))
-    return ERRORS.INVALID_CHILD_STATUS(args["child-status"]);
-  return null;
+function findWorkspaceRoot(start) {
+  let dir = (0, import_node_path.resolve)(start);
+  while (true) {
+    if ((0, import_node_fs.existsSync)((0, import_node_path.join)(dir, ".ai-agents"))) return dir;
+    const parent = (0, import_node_path.dirname)(dir);
+    if (parent === dir) return null;
+    dir = parent;
+  }
 }
-function findCycle(children) {
-  const idSet = new Set(children.map((c) => c.change_id));
-  const inDegree = new Map(children.map((c) => [c.change_id, 0]));
-  const adj = new Map(children.map((c) => [c.change_id, []]));
-  for (const c of children) {
-    for (const dep of c.depends_on || []) {
-      if (idSet.has(dep)) {
-        adj.get(dep).push(c.change_id);
-        inDegree.set(c.change_id, (inDegree.get(c.change_id) || 0) + 1);
-      }
-    }
+function isInside(parent, child) {
+  const rel = (0, import_node_path.relative)(parent, child);
+  return rel !== "" && !rel.startsWith("..") && !(0, import_node_path.isAbsolute)(rel);
+}
+function normalizeSourceReference(absPath, workspaceRoot) {
+  if (workspaceRoot && isInside(workspaceRoot, absPath)) {
+    return {
+      reference: toPosix((0, import_node_path.relative)(workspaceRoot, absPath)),
+      reference_base: "workspace"
+    };
   }
-  const queue = [];
-  for (const [id, deg] of inDegree) {
-    if (deg === 0) queue.push(id);
+  return { reference: toPosix(absPath), reference_base: "absolute" };
+}
+function resolveStoredReference(reference, workspaceRoot, epicPath) {
+  if ((0, import_node_path.isAbsolute)(reference)) return (0, import_node_path.resolve)(reference);
+  const base = workspaceRoot || (0, import_node_path.dirname)((0, import_node_path.resolve)(epicPath));
+  return (0, import_node_path.resolve)(base, reference);
+}
+function sha256Hex(buffer) {
+  return `sha256:${(0, import_node_crypto.createHash)("sha256").update(buffer).digest("hex")}`;
+}
+function fingerprintFile(absPath) {
+  let st;
+  try {
+    st = (0, import_node_fs.statSync)(absPath);
+  } catch (e) {
+    if (e.code === "ENOENT") return { error: ERRORS.SOURCE_NOT_FOUND(absPath) };
+    return { error: ERRORS.SOURCE_UNREADABLE(absPath, e.code || e.message) };
   }
-  let processed = 0;
-  while (queue.length > 0) {
-    const node = queue.shift();
-    processed++;
-    for (const neighbor of adj.get(node) || []) {
-      const newDeg = inDegree.get(neighbor) - 1;
-      inDegree.set(neighbor, newDeg);
-      if (newDeg === 0) queue.push(neighbor);
-    }
+  if (!st.isFile()) return { error: ERRORS.SOURCE_NOT_REGULAR(absPath) };
+  let buffer;
+  try {
+    buffer = (0, import_node_fs.readFileSync)(absPath);
+  } catch (e) {
+    return { error: ERRORS.SOURCE_UNREADABLE(absPath, e.code || e.message) };
   }
-  if (processed < children.length) {
-    const inCycle = children.filter((c) => inDegree.get(c.change_id) > 0).map((c) => c.change_id);
-    return ["cycle", ...inCycle];
-  }
-  return null;
+  return { size: buffer.length, fingerprint: sha256Hex(buffer) };
 }
 function getVersion(epic) {
   if (epic.version === void 0 || epic.version === null || epic.version === "") return 1;
@@ -7493,7 +7420,7 @@ function getVersion(epic) {
   return Number.isNaN(n) ? null : n;
 }
 function segmentsValid(reference) {
-  return reference.split("/").every((segment) => segment !== "" && segment !== "." && segment !== "..");
+  return reference.split("/").every((seg) => seg !== "" && seg !== "." && seg !== "..");
 }
 function validateContext(epic) {
   const errors = [];
@@ -7508,29 +7435,42 @@ function validateContext(epic) {
     errors.push("version 2 epic requires requirement_context");
     return errors;
   }
-  if (!hasContext) return errors;
+  if (!hasContext) {
+    return errors;
+  }
   const ctx = epic.requirement_context;
-  const sources = Array.isArray(ctx.sources) ? ctx.sources : [];
-  const items = Array.isArray(ctx.items) ? ctx.items : [];
-  if (sources.length === 0) errors.push("requirement_context.sources must be a non-empty array");
-  if (items.length === 0) errors.push("requirement_context.items must be a non-empty array");
+  const sources = Array.isArray(ctx.sources) ? ctx.sources : null;
+  const items = Array.isArray(ctx.items) ? ctx.items : null;
+  if (!sources || sources.length === 0) {
+    errors.push("requirement_context.sources must be a non-empty array");
+  }
+  if (!items || items.length === 0) {
+    errors.push("requirement_context.items must be a non-empty array");
+  }
   if (ctx.global_refs !== void 0 && ctx.global_refs !== null && !Array.isArray(ctx.global_refs)) {
     errors.push("requirement_context.global_refs must be an array");
   }
+  const globalRefs = Array.isArray(ctx.global_refs) ? ctx.global_refs : [];
   const sourceIds = /* @__PURE__ */ new Set();
-  for (const s of sources) {
+  for (const s of sources || []) {
     if (!s || typeof s.id !== "string" || s.id === "") {
       errors.push("Every source must have a non-empty string id");
       continue;
     }
     if (sourceIds.has(s.id)) errors.push(`Duplicate source id "${s.id}"`);
     sourceIds.add(s.id);
+    if (!VALID_KINDS.includes(s.kind)) {
+      errors.push(
+        `Source "${s.id}" has invalid kind "${s.kind}" (must be file or conversation)`
+      );
+      continue;
+    }
     if (s.kind === "file") {
       if (typeof s.reference !== "string" || s.reference === "") {
         errors.push(`File source "${s.id}" requires a non-empty reference`);
       } else if (!(0, import_node_path.isAbsolute)(s.reference)) {
-        const reference = s.reference.split("\\").join("/");
-        if (!segmentsValid(reference)) {
+        const ref = s.reference.split("\\").join("/");
+        if (!segmentsValid(ref)) {
           errors.push(
             `File source "${s.id}" reference must not contain "." or ".." segments`
           );
@@ -7539,28 +7479,24 @@ function validateContext(epic) {
       if (typeof s.fingerprint !== "string" || !/^sha256:[0-9a-f]{64}$/.test(s.fingerprint)) {
         errors.push(`File source "${s.id}" requires a sha256:<hex> fingerprint`);
       }
-    } else if (s.kind === "conversation") {
+    } else {
       if (s.reference !== "conversation") {
         errors.push(`Conversation source "${s.id}" must have reference "conversation"`);
       }
       if (s.fingerprint !== void 0 && s.fingerprint !== null) {
         errors.push(`Conversation source "${s.id}" must not have a fingerprint`);
       }
-    } else {
-      errors.push(
-        `Source "${s.id}" has invalid kind "${s.kind}" (must be file or conversation)`
-      );
     }
   }
   const itemIds = /* @__PURE__ */ new Set();
-  for (const item of items) {
+  for (const item of items || []) {
     if (!item || typeof item.id !== "string" || item.id === "") {
       errors.push("Every item must have a non-empty string id");
       continue;
     }
     if (itemIds.has(item.id)) errors.push(`Duplicate item id "${item.id}"`);
     itemIds.add(item.id);
-    if (!VALID_CONTEXT_CATEGORIES.includes(item.category)) {
+    if (!VALID_CATEGORIES.includes(item.category)) {
       errors.push(`Item "${item.id}" has invalid category "${item.category}"`);
     }
     if (typeof item.summary !== "string" || item.summary === "") {
@@ -7574,7 +7510,6 @@ function validateContext(epic) {
       if (!sourceIds.has(r)) errors.push(`Item "${item.id}" references unknown source "${r}"`);
     }
   }
-  const globalRefs = Array.isArray(ctx.global_refs) ? ctx.global_refs : [];
   for (const ref of globalRefs) {
     if (!itemIds.has(ref)) errors.push(`global_refs references unknown item "${ref}"`);
   }
@@ -7591,194 +7526,120 @@ function validateContext(epic) {
   }
   return errors;
 }
-function validateEpic(epic) {
-  const errors = [];
-  const children = Array.isArray(epic.children) ? epic.children : [];
-  const ids = children.map((c) => c.change_id);
-  const dupes = ids.filter((id, i) => ids.indexOf(id) !== i);
-  if (dupes.length) errors.push(`Duplicate change_ids: ${[...new Set(dupes)].join(", ")}`);
-  const idSet = new Set(ids);
-  for (const c of children) {
-    for (const d of c.depends_on || []) {
-      if (!idSet.has(d)) {
-        errors.push(`Child "${c.change_id}" depends_on unknown child "${d}"`);
+function verifySources(epic, workspaceRoot, epicPath) {
+  const sources = [];
+  const warnings = [];
+  for (const s of epic.requirement_context.sources) {
+    if (s.kind === "conversation") {
+      sources.push({ id: s.id, status: "unchanged", reference: "conversation" });
+      continue;
+    }
+    const abs = resolveStoredReference(s.reference, workspaceRoot, epicPath);
+    let st;
+    try {
+      st = (0, import_node_fs.statSync)(abs);
+    } catch (e) {
+      if (e.code === "ENOENT") {
+        sources.push({ id: s.id, status: "missing", reference: s.reference });
+        warnings.push({
+          source_id: s.id,
+          code: "source_missing",
+          message: `Requirement source "${s.id}" is missing at ${s.reference}.`
+        });
+      } else {
+        sources.push({ id: s.id, status: "unverifiable", reference: s.reference });
+        warnings.push({
+          source_id: s.id,
+          code: "source_unverifiable",
+          message: `Requirement source "${s.id}" cannot be verified at ${s.reference} (${e.code || e.message}).`
+        });
       }
+      continue;
+    }
+    if (!st.isFile()) {
+      sources.push({ id: s.id, status: "unverifiable", reference: s.reference });
+      warnings.push({
+        source_id: s.id,
+        code: "source_unverifiable",
+        message: `Requirement source "${s.id}" is not a readable regular file at ${s.reference}.`
+      });
+      continue;
+    }
+    let buffer;
+    try {
+      buffer = (0, import_node_fs.readFileSync)(abs);
+    } catch (e) {
+      sources.push({ id: s.id, status: "unverifiable", reference: s.reference });
+      warnings.push({
+        source_id: s.id,
+        code: "source_unverifiable",
+        message: `Requirement source "${s.id}" is not readable at ${s.reference} (${e.code || e.message}).`
+      });
+      continue;
+    }
+    if (sha256Hex(buffer) === s.fingerprint) {
+      sources.push({ id: s.id, status: "unchanged", reference: s.reference });
+    } else {
+      sources.push({ id: s.id, status: "changed", reference: s.reference });
+      warnings.push({
+        source_id: s.id,
+        code: "source_changed",
+        message: `Requirement source "${s.id}" has changed since decomposition (${s.reference}).`
+      });
     }
   }
-  const cycle = findCycle(children);
-  if (cycle) errors.push(`Dependency cycle: ${cycle.join(" -> ")}`);
-  if (epic.current_change) {
-    const target = children.find((c) => c.change_id === epic.current_change);
-    if (!target) {
-      errors.push(`current_change "${epic.current_change}" does not reference a child`);
-    } else if (!["pending", "active"].includes(target.status)) {
-      errors.push(
-        `current_change "${epic.current_change}" has status "${target.status}" (must be pending or active)`
-      );
+  return { sources, warnings };
+}
+function projectEffectiveContext(epic, child) {
+  const ctx = epic.requirement_context;
+  const itemsById = new Map((ctx.items || []).map((i) => [i.id, i]));
+  const ordered = [];
+  const seen = /* @__PURE__ */ new Set();
+  for (const ref of [...ctx.global_refs || [], ...child.context_refs || []]) {
+    if (seen.has(ref)) continue;
+    seen.add(ref);
+    const item = itemsById.get(ref);
+    if (item) ordered.push(item);
+  }
+  return ordered.map((i) => ({
+    id: i.id,
+    category: i.category,
+    summary: i.summary,
+    source_ids: i.source_ids
+  }));
+}
+function parseArgs(argv) {
+  const args = {};
+  for (let i = 2; i < argv.length; i++) {
+    const arg = argv[i];
+    if (!arg.startsWith("--")) continue;
+    const key = arg.slice(2);
+    const next = argv[i + 1];
+    if (next && !next.startsWith("--")) {
+      args[key] = next;
+      i++;
+    } else {
+      args[key] = true;
     }
   }
-  const activeCount = children.filter((c) => c.status === "active").length;
-  if (activeCount > 1) {
-    errors.push(
-      `Multiple active children (${activeCount}): ${children.filter((c) => c.status === "active").map((c) => c.change_id).join(", ")}`
-    );
-  }
-  const allTerminal = children.length > 0 && children.every((c) => TERMINAL_STATUSES.includes(c.status));
-  if (allTerminal && epic.status === "in_progress") {
-    errors.push("All children are done/abandoned but epic status is still in_progress");
-  }
-  errors.push(...validateContext(epic));
-  return errors;
+  return args;
 }
-function updateTerminalEpicStatus(epic) {
-  const children = epic.children || [];
-  const allTerminal = children.length > 0 && children.every((c) => TERMINAL_STATUSES.includes(c.status));
-  if (!allTerminal) return false;
-  epic.status = children.every((c) => c.status === "abandoned") ? "abandoned" : "done";
-  return true;
-}
-function recomputeCurrentChange(epic) {
-  const children = epic.children || [];
-  const resolvedIds = new Set(
-    children.filter((c) => TERMINAL_STATUSES.includes(c.status)).map((c) => c.change_id)
+function validateArgs(args) {
+  const modes = ["fingerprint", "verify-epic", "effective-context"].filter(
+    (m) => args[m] !== void 0
   );
-  const next = children.find(
-    (c) => c.status === "pending" && (c.depends_on || []).every((d) => resolvedIds.has(d))
-  );
-  if (next) {
-    next.status = "active";
-    epic.current_change = next.change_id;
-  } else {
-    epic.current_change = "";
-    updateTerminalEpicStatus(epic);
+  if (modes.length === 0) return ERRORS.NO_OPERATION();
+  if (modes.length > 1) return ERRORS.CONFLICTING_MODES(modes);
+  if (args.fingerprint === true) return ERRORS.MISSING_FINGERPRINT_PATH();
+  if (args["verify-epic"] === true) return ERRORS.MISSING_VERIFY_PATH();
+  if (args["effective-context"] === true) return ERRORS.MISSING_EFFECTIVE_PATH();
+  if (args["effective-context"] !== void 0 && (args.child === void 0 || args.child === true)) {
+    return ERRORS.CHILD_REQUIRED();
   }
-  return next ? next.change_id : "";
-}
-function completeChild(epic, changeId, now, deferNext) {
-  const child = (epic.children || []).find((c) => c.change_id === changeId);
-  if (!child) return { error: ERRORS.CHILD_NOT_FOUND(changeId, (epic.children || []).map((c) => c.change_id)) };
-  const oldStatus = child.status;
-  child.status = "done";
-  child.completed_at = now;
-  let nextId;
-  if (deferNext) {
-    epic.current_change = "";
-    updateTerminalEpicStatus(epic);
-    nextId = "";
-  } else {
-    nextId = recomputeCurrentChange(epic);
+  if (args.child !== void 0 && args["effective-context"] === void 0) {
+    return ERRORS.CHILD_WITHOUT_MODE();
   }
-  const doneCount = (epic.children || []).filter((c) => c.status === "done").length;
-  return {
-    child: { change_id: changeId, old_status: oldStatus, new_status: "done" },
-    current_change: nextId,
-    epic_status: epic.status,
-    progress: { done: doneCount, total: (epic.children || []).length }
-  };
-}
-function abandonChild(epic, changeId, now) {
-  const child = (epic.children || []).find((c) => c.change_id === changeId);
-  if (!child) return { error: ERRORS.CHILD_NOT_FOUND(changeId, (epic.children || []).map((c) => c.change_id)) };
-  const oldStatus = child.status;
-  child.status = "abandoned";
-  child.completed_at = now;
-  const nextId = recomputeCurrentChange(epic);
-  const doneCount = (epic.children || []).filter((c) => c.status === "done").length;
-  return {
-    child: { change_id: changeId, old_status: oldStatus, new_status: "abandoned" },
-    current_change: nextId,
-    epic_status: epic.status,
-    progress: { done: doneCount, total: (epic.children || []).length }
-  };
-}
-function setChildStatus(epic, changeId, status, now) {
-  const child = (epic.children || []).find((c) => c.change_id === changeId);
-  if (!child) return { error: ERRORS.CHILD_NOT_FOUND(changeId, (epic.children || []).map((c) => c.change_id)) };
-  if (status === "active") {
-    const existing = (epic.children || []).find(
-      (c) => c.status === "active" && c.change_id !== changeId
-    );
-    if (existing) return { error: ERRORS.MULTIPLE_ACTIVE() };
-  }
-  const oldStatus = child.status;
-  child.status = status;
-  if (status === "done") child.completed_at = now;
-  else if (oldStatus === "done" && status !== "done") child.completed_at = null;
-  if (status === "active") epic.current_change = changeId;
-  const doneCount = (epic.children || []).filter((c) => c.status === "done").length;
-  return {
-    child: { change_id: changeId, old_status: oldStatus, new_status: status },
-    current_change: epic.current_change || "",
-    epic_status: epic.status,
-    progress: { done: doneCount, total: (epic.children || []).length }
-  };
-}
-function switchActive(epic, changeId) {
-  const children = epic.children || [];
-  const target = children.find((c) => c.change_id === changeId);
-  if (!target) return { error: ERRORS.CHILD_NOT_FOUND(changeId, children.map((c) => c.change_id)) };
-  if (!["pending", "active"].includes(target.status)) {
-    return { error: ERRORS.INVALID_SWITCH_TARGET_STATUS(changeId, target.status) };
-  }
-  const oldStatus = target.status;
-  const resolvedIds = new Set(
-    children.filter((c) => TERMINAL_STATUSES.includes(c.status)).map((c) => c.change_id)
-  );
-  const unresolved = (target.depends_on || []).filter((d) => !resolvedIds.has(d));
-  if (unresolved.length) return { error: ERRORS.UNRESOLVED_DEPS(changeId, unresolved) };
-  for (const c of children) {
-    if (c.status === "active" && c.change_id !== changeId) {
-      c.status = "pending";
-    }
-  }
-  target.status = "active";
-  epic.current_change = changeId;
-  const doneCount = children.filter((c) => c.status === "done").length;
-  return {
-    child: { change_id: changeId, old_status: oldStatus, new_status: "active" },
-    current_change: changeId,
-    epic_status: epic.status,
-    progress: { done: doneCount, total: children.length }
-  };
-}
-function addChild(epic, childrenToAdd, epicPath) {
-  if (!Array.isArray(childrenToAdd) || childrenToAdd.length === 0) {
-    return { error: ERRORS.ADD_CHILD_MISSING() };
-  }
-  epic.children = epic.children || [];
-  const defaultProject = loadSoleProject(findProjectRootFromPath(epicPath)) || ["default"];
-  const version = getVersion(epic);
-  if (version === 2) {
-    for (const child of childrenToAdd) {
-      if (!child.context_refs || child.context_refs.length === 0) {
-        return { error: ERRORS.ADD_CHILD_CONTEXT_REFS_REQUIRED(child.id) };
-      }
-    }
-  }
-  for (const child of childrenToAdd) {
-    if (!child.id || child.id === true) return { error: ERRORS.ADD_CHILD_MISSING() };
-    if (!child.title) return { error: ERRORS.ADD_CHILD_TITLE_MISSING(child.id) };
-    if (epic.children.some((c) => c.change_id === child.id)) {
-      return { error: `Duplicate change_id "${child.id}" in children` };
-    }
-    epic.children.push({
-      change_id: child.id,
-      title: child.title,
-      status: "pending",
-      depends_on: child.depends_on || [],
-      project: defaultProject,
-      scope: child.scope || "",
-      completed_at: null,
-      ...child.context_refs ? { context_refs: child.context_refs } : {}
-    });
-  }
-  const doneCount = epic.children.filter((c) => c.status === "done").length;
-  return {
-    child: { change_id: childrenToAdd[childrenToAdd.length - 1].id, new_status: "pending" },
-    current_change: epic.current_change || "",
-    epic_status: epic.status,
-    progress: { done: doneCount, total: epic.children.length }
-  };
+  return null;
 }
 function main() {
   const args = parseArgs(process.argv);
@@ -7787,7 +7648,27 @@ function main() {
     process.stderr.write(argErr + "\n");
     process.exit(1);
   }
-  const epicPath = args.epic || args.validate;
+  if (args.fingerprint) {
+    const absPath = (0, import_node_path.resolve)(args.fingerprint);
+    const root = findWorkspaceRoot((0, import_node_path.dirname)(absPath)) || findWorkspaceRoot(process.cwd());
+    const { reference, reference_base } = normalizeSourceReference(absPath, root);
+    const result = fingerprintFile(absPath);
+    if (result.error) {
+      process.stderr.write(result.error + "\n");
+      process.exit(1);
+    }
+    process.stdout.write(
+      JSON.stringify({
+        ok: true,
+        reference,
+        reference_base,
+        fingerprint: result.fingerprint,
+        size: result.size
+      }) + "\n"
+    );
+    process.exit(0);
+  }
+  const epicPath = args["verify-epic"] || args["effective-context"];
   if (!(0, import_node_fs.existsSync)(epicPath)) {
     process.stderr.write(ERRORS.EPIC_NOT_FOUND(epicPath) + "\n");
     process.exit(1);
@@ -7803,50 +7684,66 @@ function main() {
     process.stderr.write(ERRORS.EPIC_PARSE_FAILED("not a valid YAML object") + "\n");
     process.exit(1);
   }
-  if (args.validate) {
-    const errors2 = validateEpic(epic);
-    if (errors2.length) {
-      process.stderr.write(ERRORS.VALIDATION_FAILED(errors2) + "\n");
-      process.exit(1);
+  const errors = validateContext(epic);
+  if (errors.length) {
+    process.stderr.write(ERRORS.CONTEXT_VALIDATION_FAILED(errors) + "\n");
+    process.exit(1);
+  }
+  const hasContext = epic.requirement_context !== void 0 && epic.requirement_context !== null;
+  const workspaceRoot = findWorkspaceRoot((0, import_node_path.dirname)((0, import_node_path.resolve)(epicPath)));
+  const contextUnavailableWarning = [
+    {
+      source_id: null,
+      code: "context_unavailable",
+      message: "Original requirement context is unavailable; child scope is used as the baseline."
     }
-    process.stdout.write(JSON.stringify({ ok: true, valid: true }) + "\n");
+  ];
+  if (args["verify-epic"]) {
+    if (!hasContext) {
+      process.stdout.write(
+        JSON.stringify({ ok: true, sources: [], warnings: contextUnavailableWarning }) + "\n"
+      );
+    } else {
+      const { sources: sources2, warnings: warnings2 } = verifySources(epic, workspaceRoot, epicPath);
+      process.stdout.write(JSON.stringify({ ok: true, sources: sources2, warnings: warnings2 }) + "\n");
+    }
     process.exit(0);
   }
-  const now = (/* @__PURE__ */ new Date()).toISOString();
-  let result;
-  if (args["complete-child"]) {
-    result = completeChild(epic, args["complete-child"], now, Boolean(args["defer-next"]));
-  } else if (args["abandon-child"]) {
-    result = abandonChild(epic, args["abandon-child"], now);
-  } else if (args["set-child-status"]) {
-    result = setChildStatus(epic, args["set-child-status"], args["child-status"], now);
-  } else if (args["switch-active"]) {
-    result = switchActive(epic, args["switch-active"]);
-  } else if (args["add-child"]) {
-    result = addChild(epic, args["add-child"], args.epic);
-  }
-  if (result.error) {
-    process.stderr.write(result.error + "\n");
+  const childId = args.child;
+  const children = Array.isArray(epic.children) ? epic.children : [];
+  const child = children.find((c) => c.change_id === childId);
+  if (!child) {
+    process.stderr.write(ERRORS.CHILD_NOT_FOUND(childId, children.map((c) => c.change_id)) + "\n");
     process.exit(1);
   }
-  const errors = validateEpic(epic);
-  if (errors.length) {
-    process.stderr.write(ERRORS.VALIDATION_FAILED(errors) + "\n");
-    process.exit(1);
+  const childOut = {
+    change_id: child.change_id,
+    title: child.title,
+    scope: child.scope
+  };
+  if (!hasContext) {
+    process.stdout.write(
+      JSON.stringify({
+        ok: true,
+        child: childOut,
+        context: [],
+        sources: [],
+        warnings: contextUnavailableWarning
+      }) + "\n"
+    );
+    process.exit(0);
   }
-  epic.updated_at = now;
-  const tmpPath = epicPath + ".tmp";
-  try {
-    (0, import_node_fs.writeFileSync)(tmpPath, (0, import_yaml.stringify)(epic, { lineWidth: 200 }), "utf-8");
-    (0, import_node_fs.renameSync)(tmpPath, epicPath);
-  } catch (e) {
-    try {
-      if ((0, import_node_fs.existsSync)(tmpPath)) (0, import_node_fs.unlinkSync)(tmpPath);
-    } catch {
-    }
-    process.stderr.write(ERRORS.EPIC_WRITE_FAILED(e.message) + "\n");
-    process.exit(1);
-  }
-  process.stdout.write(JSON.stringify({ ok: true, ...result }) + "\n");
+  const { sources, warnings } = verifySources(epic, workspaceRoot, epicPath);
+  const context = projectEffectiveContext(epic, child);
+  process.stdout.write(
+    JSON.stringify({
+      ok: true,
+      child: childOut,
+      context,
+      sources,
+      warnings
+    }) + "\n"
+  );
+  process.exit(0);
 }
 main();

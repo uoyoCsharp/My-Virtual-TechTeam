@@ -25,7 +25,7 @@ node .ai-agents/scripts/epic-update.cjs --epic <epic_path> --switch-active <chan
 
 # Mode 6 — Add one or more children to an existing epic
 node .ai-agents/scripts/epic-update.cjs --epic <epic_path> \
-  --add-child <id> --child-title "<title>" --child-scope "<scope>" [--child-depends-on "dep1,dep2"] \
+  --add-child <id> --child-title "<title>" --child-scope "<scope>" [--child-depends-on "dep1,dep2"] [--child-context-refs "ctx-001,ctx-002"] \
   [--add-child <id2> --child-title "<title2>" --child-scope "<scope2>" ...]
 
 # Read-only validation (no write)
@@ -47,6 +47,7 @@ node .ai-agents/scripts/epic-update.cjs --validate <epic_path>
 | `--child-title` | title for the child added by the preceding `--add-child` | `"Cart"` |
 | `--child-scope` | scope description for the child added by the preceding `--add-child` | `"Shopping cart CRUD and checkout flow"` |
 | `--child-depends-on` | optional; comma-separated prerequisite child `change_id` values | `"20260608-sub"` |
+| `--child-context-refs` | **required** when the epic has a `requirement_context`; optional otherwise; comma-separated `requirement_context` item ids the new child needs | `"ctx-001,ctx-002"` |
 | `--validate` | path to an `epic.yaml` to validate (read-only) | same as `--epic` |
 
 ## Parameter semantics
@@ -58,7 +59,7 @@ node .ai-agents/scripts/epic-update.cjs --validate <epic_path>
 | `--abandon-child` | An active or pending child should not be completed | Sets the child `status: abandoned`, sets `completed_at`, and advances to the first dependency-ready pending child using the same deterministic array order as completion. |
 | `--set-child-status` + `--child-status` | Mark a child `done` or `abandoned` without advancing `current_change` (e.g. defer mode) | Sets the child's status only; `current_change` unchanged. |
 | `--switch-active` | Reorder to a different child (dependencies permitting) | Sets the target child `active`, others `pending`, updates `current_change`. Rejects if the target's `depends_on` have unfinished prerequisites. |
-| `--add-child` (+ `--child-title` / `--child-scope` / `--child-depends-on`) | Append one or more children to an existing epic | Adds entries to `children[]`; validates id uniqueness + DAG; defaults `project` to the sole project name when single-project. |
+| `--add-child` (+ `--child-title` / `--child-scope` / `--child-depends-on` / `--child-context-refs`) | Append one or more children to an existing epic | Adds entries to `children[]`; validates id uniqueness + DAG; defaults `project` to the sole project name when single-project. For epics with a `requirement_context`, `--child-context-refs` is **required** and every referenced item id must exist in `requirement_context.items`; otherwise it stays optional (and is preserved when supplied). |
 | `--validate` | Verify `epic.yaml` integrity (e.g. after `/mvt-decompose` writes it) | Read-only check; no write. Reports DAG/structure errors on stderr. |
 
 When every child is terminal, the epic becomes `abandoned` if every child is abandoned; otherwise it becomes `done`.

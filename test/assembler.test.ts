@@ -417,6 +417,27 @@ describe("assembler", () => {
       expect(output).not.toContain("plan-update.cjs");
     });
 
+    it("renders neutral epic requirement context capture and restoration contracts", () => {
+      const decompose = buildSkill("mvt-decompose");
+      expect(decompose).toContain("requirement-source.cjs --fingerprint");
+      expect(decompose).toContain("requirement_context:");
+      expect(decompose).toContain("context_refs:");
+      expect(decompose).toContain("`epic.yaml` is authoritative");
+
+      for (const skill of ["mvt-analyze", "mvt-resume"]) {
+        const output = buildSkill(skill);
+        expect(output).toContain(
+          "requirement-source.cjs --effective-context <epic_path> --child <change_id>",
+        );
+        expect(output).toContain("`child`, `context`, `sources`, and `warnings`");
+        expect(output).toContain("child.scope");
+      }
+
+      for (const skill of [decompose, buildSkill("mvt-analyze"), buildSkill("mvt-resume")]) {
+        expect(skill).not.toMatch(/\b(?:v1|v2|legacy)\b/i);
+      }
+    });
+
     it("mvt-sync-context omits Script Usage Rule while keeping project plan reminder", () => {
       const output = buildSkill("mvt-sync-context");
       expect(output).not.toContain("## Script Usage Rule");

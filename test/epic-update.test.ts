@@ -21,6 +21,7 @@ interface Child {
   project: string[];
   scope: string;
   completed_at: string | null;
+  context_refs?: string[];
 }
 
 interface Epic {
@@ -33,6 +34,12 @@ interface Epic {
   vision: string;
   current_change: string;
   children: Child[];
+  requirement_context?: {
+    captured_at?: string;
+    sources: { id: string; kind: string; reference: string; fingerprint?: string }[];
+    items: { id: string; category: string; summary: string; source_ids: string[] }[];
+    global_refs?: string[];
+  };
 }
 
 function baseEpic(overrides: Partial<Epic> = {}): Epic {
@@ -72,6 +79,60 @@ function baseEpic(overrides: Partial<Epic> = {}): Epic {
         project: ["default"],
         scope: "Third scope",
         completed_at: null,
+      },
+    ],
+    ...overrides,
+  };
+}
+
+function baseV2Epic(overrides: Partial<Epic> = {}): Epic {
+  return {
+    version: 2,
+    epic_id: "epic-20260608-demo",
+    title: "Demo Epic",
+    created_at: "2026-06-08T10:00:00Z",
+    updated_at: "2026-06-08T10:00:00Z",
+    status: "in_progress",
+    vision: "Demo epic for testing",
+    current_change: "c1",
+    requirement_context: {
+      captured_at: "2026-06-08T10:00:00Z",
+      sources: [
+        {
+          id: "src-001",
+          kind: "file",
+          reference: "requirements/source.md",
+          fingerprint: "sha256:" + "a".repeat(64),
+        },
+        { id: "src-002", kind: "conversation", reference: "conversation" },
+      ],
+      items: [
+        { id: "ctx-001", category: "goal", summary: "Global goal", source_ids: ["src-002"] },
+        { id: "ctx-002", category: "constraint", summary: "Child constraint", source_ids: ["src-001"] },
+        { id: "ctx-003", category: "decision", summary: "Child decision", source_ids: ["src-002"] },
+      ],
+      global_refs: ["ctx-001"],
+    },
+    children: [
+      {
+        change_id: "c1",
+        title: "First child",
+        status: "active",
+        depends_on: [],
+        project: ["default"],
+        scope: "First scope",
+        completed_at: null,
+        context_refs: ["ctx-002", "ctx-003"],
+      },
+      {
+        change_id: "c2",
+        title: "Second child",
+        status: "pending",
+        depends_on: ["c1"],
+        project: ["default"],
+        scope: "Second scope",
+        completed_at: null,
+        context_refs: ["ctx-002"],
       },
     ],
     ...overrides,
@@ -480,8 +541,25 @@ describe("epic-update.cjs", () => {
       writeEpic(baseEpic()); // c1 is active
       const res = op(["--switch-active", "c1"]);
       expect(res.status).toBe(0);
+      expect(JSON.parse(res.stdout).child.old_status).toBe("active");
       const epic = readEpic();
       expect(epic.children[0].status).toBe("active");
+    });
+
+    it.each(["done", "abandoned"])("rejects a %s target", (status) => {
+      const epic = baseEpic();
+      epic.children[2].status = status;
+      epic.children[2].completed_at = "2026-06-08T10:00:00Z";
+      writeEpic(epic);
+
+      const res = op(["--switch-active", "c3"]);
+      expect(res.status).toBe(1);
+      expect(res.stderr).toMatch(/must be pending or active/i);
+
+      const unchanged = readEpic();
+      expect(unchanged.children[0].status).toBe("active");
+      expect(unchanged.children[2].status).toBe(status);
+      expect(unchanged.children[2].completed_at).toBe("2026-06-08T10:00:00Z");
     });
 
     it("rejects unknown change_id", () => {
@@ -704,6 +782,186 @@ describe("epic-update.cjs", () => {
       const res = op(["--complete-child", "c1"]);
       expect(res.status).toBe(1);
       // File should not have been modified by the failing operation
+    });
+  });
+
+  // ── v2 requirement context ────────────────────────────────────────────────
+
+  describe("v2 requirement context validation", () => {
+    it("validates a valid v2 epic", () => {
+      writeEpic(baseV2Epic());
+      const res = run(["--validate", epicPath]);
+      expect(res.status).toBe(0);
+      expect(JSON.parse(res.stdout).valid).toBe(true);
+    });
+
+    it("rejects a v2 epic without requirement_context", () => {
+      const epic = baseV2Epic() as any;
+      delete epic.requirement_context;
+      writeEpic(epic);
+      const res = run(["--validate", epicPath]);
+      expect(res.status).toBe(1);
+      expect(res.stderr).toMatch(/version 2 epic requires requirement_context/i);
+    });
+
+    it("rejects a v2 child without context_refs", () => {
+      const epic = baseV2Epic();
+      delete (epic.children[0] as any).context_refs;
+      writeEpic(epic);
+      const res = run(["--validate", epicPath]);
+      expect(res.status).toBe(1);
+      expect(res.stderr).toMatch(/requires at least one context_refs/i);
+    });
+
+    it("rejects a child context_refs referencing an unknown item", () => {
+      const epic = baseV2Epic();
+      epic.children[0].context_refs = ["ctx-unknown"];
+      writeEpic(epic);
+      const res = run(["--validate", epicPath]);
+      expect(res.status).toBe(1);
+      expect(res.stderr).toMatch(/references unknown item/i);
+    });
+
+    it("rejects a global_refs entry referencing an unknown item", () => {
+      const epic = baseV2Epic();
+      epic.requirement_context!.global_refs = ["ctx-unknown"];
+      writeEpic(epic);
+      const res = run(["--validate", epicPath]);
+      expect(res.status).toBe(1);
+      expect(res.stderr).toMatch(/references unknown item/i);
+    });
+
+    it("rejects global_refs when it is not an array", () => {
+      const epic = baseV2Epic();
+      (epic.requirement_context as any).global_refs = "ctx-001";
+      writeEpic(epic);
+      const res = run(["--validate", epicPath]);
+      expect(res.status).toBe(1);
+      expect(res.stderr).toMatch(/global_refs must be an array/i);
+    });
+
+    it("rejects an invalid context item category", () => {
+      const epic = baseV2Epic();
+      epic.requirement_context!.items[0].category = "unsupported";
+      writeEpic(epic);
+      const res = run(["--validate", epicPath]);
+      expect(res.status).toBe(1);
+      expect(res.stderr).toMatch(/invalid category/i);
+    });
+
+    it("rejects a relative source reference with parent segments", () => {
+      const epic = baseV2Epic();
+      epic.requirement_context!.sources[0].reference = "../outside.md";
+      writeEpic(epic);
+      const res = run(["--validate", epicPath]);
+      expect(res.status).toBe(1);
+      expect(res.stderr).toMatch(/must not contain "\." or "\.\." segments/i);
+    });
+
+    it("rejects duplicate source ids", () => {
+      const epic = baseV2Epic();
+      epic.requirement_context!.sources[1].id = "src-001";
+      writeEpic(epic);
+      const res = run(["--validate", epicPath]);
+      expect(res.status).toBe(1);
+      expect(res.stderr).toMatch(/duplicate source id/i);
+    });
+
+    it("rejects duplicate item ids", () => {
+      const epic = baseV2Epic();
+      epic.requirement_context!.items[1].id = "ctx-001";
+      writeEpic(epic);
+      const res = run(["--validate", epicPath]);
+      expect(res.status).toBe(1);
+      expect(res.stderr).toMatch(/duplicate item id/i);
+    });
+
+    it("rejects a file source without a fingerprint", () => {
+      const epic = baseV2Epic();
+      delete (epic.requirement_context!.sources[0] as any).fingerprint;
+      writeEpic(epic);
+      const res = run(["--validate", epicPath]);
+      expect(res.status).toBe(1);
+      expect(res.stderr).toMatch(/sha256:<hex> fingerprint/i);
+    });
+
+    it("rejects a conversation source that carries a fingerprint", () => {
+      const epic = baseV2Epic();
+      (epic.requirement_context!.sources[1] as any).fingerprint = "sha256:" + "a".repeat(64);
+      writeEpic(epic);
+      const res = run(["--validate", epicPath]);
+      expect(res.status).toBe(1);
+      expect(res.stderr).toMatch(/conversation/i);
+    });
+
+    it("rejects an unsupported epic version", () => {
+      writeEpic(baseV2Epic({ version: 3 }));
+      const res = run(["--validate", epicPath]);
+      expect(res.status).toBe(1);
+      expect(res.stderr).toMatch(/unsupported epic version/i);
+    });
+
+    it("accepts a v1 epic carrying a complete requirement_context (migration-friendly)", () => {
+      writeEpic(baseV2Epic({ version: 1 }));
+      const res = run(["--validate", epicPath]);
+      expect(res.status).toBe(0);
+    });
+  });
+
+  // ── v2 add-child context refs ────────────────────────────────────────────
+
+  describe("v2 add-child context refs", () => {
+    it("requires --child-context-refs when adding a child to a v2 epic", () => {
+      writeEpic(baseV2Epic());
+      const res = op([
+        "--add-child", "c4",
+        "--child-title", "Fourth",
+        "--child-scope", "Scope",
+      ]);
+      expect(res.status).toBe(1);
+      expect(res.stderr).toMatch(/requires --child-context-refs/i);
+    });
+
+    it("appends a v2 child with context_refs", () => {
+      writeEpic(baseV2Epic());
+      const res = op([
+        "--add-child", "c4",
+        "--child-title", "Fourth",
+        "--child-scope", "Scope",
+        "--child-context-refs", "ctx-002,ctx-003",
+      ]);
+      expect(res.status).toBe(0);
+      const epic = readEpic();
+      expect(epic.children).toHaveLength(3);
+      expect(epic.children[2].change_id).toBe("c4");
+      expect(epic.children[2].context_refs).toEqual(["ctx-002", "ctx-003"]);
+    });
+
+    it("rejects unknown item ids in --child-context-refs via post-mutation validation", () => {
+      writeEpic(baseV2Epic());
+      const res = op([
+        "--add-child", "c4",
+        "--child-title", "Fourth",
+        "--child-scope", "Scope",
+        "--child-context-refs", "ctx-unknown",
+      ]);
+      expect(res.status).toBe(1);
+      expect(res.stderr).toMatch(/unknown item/i);
+      // File must not have been modified by the failing operation.
+      expect(readEpic().children).toHaveLength(2);
+    });
+
+    it("keeps v1 add-child optional and preserves the legacy child shape", () => {
+      writeEpic(baseV2Epic({ version: 1 }));
+      const res = op([
+        "--add-child", "c4",
+        "--child-title", "Fourth",
+        "--child-scope", "Scope",
+      ]);
+      expect(res.status).toBe(0);
+      const epic = readEpic();
+      expect(epic.children).toHaveLength(3);
+      expect(epic.children[2].context_refs).toBeUndefined();
     });
   });
 

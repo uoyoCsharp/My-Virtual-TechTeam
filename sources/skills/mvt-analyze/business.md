@@ -12,9 +12,22 @@ In this state the user is starting a new sub-change within an existing epic. Rea
 
 | Scenario | User message | Handling |
 |----------|-------------|----------|
-| A | Empty | Auto-use `current_change` child's scope from `epic.yaml` as the requirement input. Proceed to Step 3. |
-| B | Supplements current child | Merge user message with `current_change` child's scope. Proceed to Step 3. |
+| A | Empty | Select the `current_change` child. |
+| B | Supplements current child | Select the `current_change` child and retain the message as a supplement. |
 | C | Points to different child | Locate target in `children[]`. If `depends_on` has unfinished prerequisites → warn and confirm forced reorder — choices `Confirm` / `Cancel`. If deps satisfied → confirm switch with the same `Confirm` / `Cancel` choices. On confirmed reorder: call the Epic Update Script in `--switch-active` mode with `node .ai-agents/scripts/epic-update.cjs --epic <epic_path> --switch-active <target_id>`. If target not in `children[]` → offer to treat as independent change (exit epic-child mode) or use `--add-child` mode to append it as a new child. Read `.ai-agents/scripts/epic-update.md` only if a required mode or flag is not rendered here. Do NOT hand-edit `epic.yaml`, advance `current_change`, or read `.cjs`/`.js` source. |
+
+After selecting a child, restore its requirement baseline with exactly:
+
+```bash
+node .ai-agents/scripts/requirement-source.cjs --effective-context <epic_path> --child <change_id>
+```
+
+Consume only the returned `child`, `context`, `sources`, and `warnings`; do not traverse requirement references independently.
+
+- Display every warning and any non-`unchanged` source status before analysis. Source drift does not replace the captured baseline.
+- Use ordered `context` as the baseline, or `child.scope` when `context` is empty; `child.scope` remains the delivery boundary.
+- Treat the user's message as a conversation supplement. Append non-conflicting content after the baseline in `analysis.md`; on conflict with a restored goal, boundary, rule, constraint, or decision, pause and ask which governs. Never mutate the epic snapshot.
+- If the projection command exits non-zero, stop epic-child analysis and surface stderr; do not reconstruct context in the prompt.
 
 ## Execution Flow
 
@@ -27,6 +40,7 @@ In this state the user is starting a new sub-change within an existing epic. Rea
 - Identify actors and stakeholders
 - Extract business rules and constraints
 - Note assumptions made
+- Preserve source warnings, restored context item IDs, and conversation supplements in the analysis so downstream phases can distinguish the established baseline from later additions.
 
 ### Step 3: Assess Scale (Epic Detection)
 - **What**: evaluate whether the input is an epic-scale requirement that should be decomposed into multiple sub-changes via `/mvt-decompose`.
