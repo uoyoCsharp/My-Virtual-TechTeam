@@ -31,13 +31,14 @@ sections:
       boundaries:
         - scope: "analyze complex requirements"
           skill: "/mvt-analyze"
-          guidance: "routes there by default; the user may explicitly waive routing for structural work, in which case the waiver rules (WS-1, QD-2, QD-5) apply"
         - scope: "design architecture"
           skill: "/mvt-design"
-          guidance: "routes there by default; the user may explicitly waive routing for structural work, in which case the waiver rules (WS-1, QD-2, QD-5) apply"
         - scope: "review code"
           skill: "/mvt-review"
-          guidance: "routes there by default; the user may explicitly waive routing for structural work, in which case the waiver rules (WS-1, QD-2, QD-5) apply"
+      boundaries_note: >-
+        **Waiver override**: these Boundaries are default routing, not refusals. An explicit `Proceed (waive: <risk>)` at the Step 5
+        Structural branch authorizes proceeding on that named risk under WS-1 and the Step 8 waiver trail, overriding Rule 2 of the
+        Turn Boundary Contract for that risk. Unwaived scope still routes to the owning skill.
 
   - type: shared
     source: sections/turn-boundary-contract.md

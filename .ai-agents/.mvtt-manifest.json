@@ -1,13 +1,13 @@
 {
   "mvtt_version": "2.3.0",
   "installed_at": "2026-06-10T06:40:54.542Z",
-  "last_updated_at": "2026-09-11T07:07:16.026Z",
+  "last_updated_at": "2026-09-11T09:54:01.853Z",
   "platforms": [
     "claude"
   ],
   "files": {
     ".claude/skills/mvt-analyze/SKILL.md": {
-      "hash": "sha256:9d611500c43e11d206f6c80618cffef061c9e7d80d5105b1727301e9a16af2d2",
+      "hash": "sha256:5e9023ddd600e672cb4ac907e063c6d57aa521720078fde386a48301d6777372",
       "category": "generated"
     },
     ".claude/skills/mvt-analyze-code/SKILL.md": {
@@ -71,7 +71,7 @@
       "category": "generated"
     },
     ".claude/skills/mvt-quick-dev/SKILL.md": {
-      "hash": "sha256:01066d36393d3b473145ad20535e977e9fe9ee6a6d6181dbad3cfa485f85b352",
+      "hash": "sha256:6dfaf714b26763539c103ad3e66eaec5ce32c36b8c29d7774f5a87a1ec807122",
       "category": "generated"
     },
     ".claude/skills/mvt-refactor/SKILL.md": {
@@ -195,7 +195,7 @@
       "category": "create_once"
     },
     ".ai-agents/workspace/session.yaml": {
-      "hash": "sha256:9043e9438c8df8c3ab338678bd3b5a6cc320447367c372b2465c3cda9e7870e6",
+      "hash": "sha256:2775cb475eaff6cfa3322807172348bb4aa455c380e9a7e6d34a6aa7d93c33b7",
       "category": "create_once"
     },
     ".ai-agents/workspace/project-context.yaml": {

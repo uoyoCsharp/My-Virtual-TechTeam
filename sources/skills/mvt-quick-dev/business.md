@@ -5,29 +5,29 @@
   - User's change description (free text or file path).
 - **Fallback**: if no project context exists (no `project-context.md`), proceed as "context-light" (skip layer compliance checks).
 
-### Step 2: Classify Complexity
-- **What**: determine the change tier based on scope signals in the user's description. This classification is provisional; Step 5 re-derives the verdict from the resolved file list and is decisive.
-- **How**: apply the classification table below. Walk signals top-to-bottom; the first match wins.
+### Step 2: Classify Scope and Impact
+- **What**: assign a provisional tier from the change description. Step 5 re-derives it from the resolved file list and decides.
+- **How**: apply the classification table below. Blast radius selects preview and verification depth; architectural impact decides whether a warning fires. Structural signals dominate lower tiers.
 
   | Tier | Criteria | Behavior |
   |------|----------|----------|
   | **Trivial** | 1 file, no new concepts, no interface change, ≤10 lines affected | Implement directly, conversation-only |
   | **Simple** | 1-3 files, no new module, no interface break, existing patterns sufficient | Implement after showing plan, conversation-only |
-  | **Mechanical Sweep** | Any file count, one declared 1:1 transform, no logic change; symbols resolved via reflection, dynamic dispatch, or string lookup are excluded | Declare pattern, implement, prove zero residue |
+  | **Mechanical Sweep** | Any file count, one declared 1:1 transform, no logic change, architecturally neutral | Declare pattern (exclude symbols resolved via reflection, dynamic dispatch, or string lookup), implement, prove zero residue |
   | **Wide** | More than 3 files, architecturally neutral, single concept | Mandatory plan preview plus confirmation; never a STOP |
   | **Structural** | New module, interface change, new dependency, cross-layer or cross-repo edit, or external contract change | Specific warning plus decision menu |
 
-  Scope signals (heuristic — provisional, Step 5 re-derives from the resolved file list):
+  Scope signals (heuristic):
 
-  | Signal | Suggests |
-  |--------|----------|
+  | Signal | Maps to |
+  |--------|---------|
   | Mentions specific file/symbol | Trivial/Simple |
   | "add a field/property/column" | Simple |
   | "change label/text/color" | Trivial |
   | "new API/endpoint/module" | Structural |
   | "refactor/redesign/migrate" | Mechanical Sweep if a single 1:1 transform is declared, else Structural |
   | "integration with X" | Structural |
-  | Affects >1 module (per `project-context.md`) | Wide if architecturally neutral, else Structural |
+  | Affects >1 module (per `project-context.md`) | Structural if not neutral; else Wide when >3 files, Simple within 3 |
   | Introduces new dependency | Structural |
 
 - **Branches**:
@@ -68,6 +68,7 @@ This step applies only when the workspace has multiple projects (`projects.lengt
 - **How**:
   1. For each target from Step 3, decide: `create | modify | delete`, and write a one-line intent.
   2. Topologically order by dependency if multiple files are involved.
+  3. Re-derive the tier from the resolved file list using the Step 2 table; this overrides the Step 2 provisional tier. Any Structural signal dominates a lower tier that also matches — take the Structural branch, then apply the lower tier's mechanics (e.g. sweep pattern plus residue proof) after the waiver is granted.
 - **Branches**:
 
   | Condition | Action |
@@ -78,10 +79,15 @@ This step applies only when the workspace has multiple projects (`projects.lengt
   | Wide tier | Show an expanded preview (file list with one-line intent, risk note, rollback story); confirm — choices `Proceed` / `Split into batches` / `Cancel`; default `Proceed` |
   | Structural tier | Show a warning per the Warning Schema below plus the mandated countermeasure; confirm — choices `Proceed (waive: <risk>)` / `Split into batches` / `Switch to standard workflow` / `Cancel`; no default, explicit choice required |
   | Mixed unrelated intents | Decline as one invocation; offer to split into separate invocations |
-  | Ambiguous scope | Ask for specifics; not a gate |
   | Target physically unreachable | Surface the limitation; user decides (provide path / narrow scope / stop) |
 
-### Warning Schema (WS-1)
+- **On menu choice**:
+  - `Proceed` / `Proceed (waive: <risk>)` -- continue to Step 6.
+  - `Split into batches` -- split into 2-3 batches, each independently small and reversible; run the band's verification between batches.
+  - `Switch to standard workflow` -- stop, write nothing, recommend `/mvt-analyze`.
+  - `Cancel` -- stop, write nothing, report the plan as not applied.
+
+#### Warning Schema (WS-1)
 
 One block per structural signal, fields in order:
 
@@ -91,7 +97,9 @@ One block per structural signal, fields in order:
 | `affected_surface` | Contracts, call sites, repos touched |
 | `consequence` | What breaks or drifts if wrong |
 | `countermeasure` | What to do before editing: enumerate call sites, locate module placement, record rationale, or record exemption |
-| `waiver_text` | The exact `waive: <risk>` token the user approves (canonical tokens: `new-module`, `interface-change`, `new-dependency`, `cross-layer-edit`, `cross-repo-edit`, `external-contract-change`) |
+| `waiver_text` | The exact `waive: <risk>` token the user approves; Step 9 records the same token as `waived: <risk>` |
+
+Canonical `<risk>` tokens, used verbatim in both places: `new-module`, `interface-change`, `new-dependency`, `cross-layer-edit`, `cross-repo-edit`, `external-contract-change`.
 
 ### Step 6: Implement
 - **What**: write/modify the planned files.
@@ -107,13 +115,15 @@ One block per structural signal, fields in order:
 - **What**: verification scaled to the change band before reporting completion.
 - **How**: apply the band for this change:
 
-  | Band | Verification |
-  |------|--------------|
-  | 1-3 files, neutral | Type-check suggested; suggest the test command but do not auto-run unless user explicitly approved |
-  | Wide (4+ files) | Type-check required; relevant tests suggested or run on approval; one commit per concept |
-  | Mechanical sweep | Mandatory batch command proving zero residue of the old pattern; single commit |
-  | Structural | Countermeasure from the Step 5 warning executed; type-check required; small reversible steps |
-  | Cross-repo | Per-repo verification where tooling exists, otherwise explicitly mark `unverified in <repo>`; one commit per repo |
+  | Band | Verification | Commit |
+  |------|--------------|--------|
+  | Trivial / Simple | Type-check suggested; suggest the test command but do not auto-run unless user explicitly approved | As usual |
+  | Wide | Type-check required; relevant tests suggested or run on approval | One commit per concept |
+  | Mechanical Sweep | Mandatory batch command proving zero residue of the old pattern | Single commit |
+  | Structural | Countermeasure from the Step 5 warning executed; type-check required | Small reversible steps |
+  | Cross-repo | Per-repo verification where tooling exists, otherwise explicitly mark `unverified in <repo>` | One commit per repo |
+
+  Several bands may apply (e.g. Structural plus Cross-repo) -- apply all of them.
 
   1. If a type-checker is configured for the project (`tsc`, `mypy`, `cargo check`, etc.), run it as required by the band above. Surface failures.
   2. For frontend/UI changes, note that user should verify in browser; do NOT claim "tested" based on type-check alone.
@@ -123,11 +133,10 @@ One block per structural signal, fields in order:
 - **How**: output a brief summary containing:
   - Files touched: `path | action`
   - Verification status: type-check result, test suggestion
-  - Waivers granted: append the approved `waive: <risk>` token(s) to the session-update `--summary`; omit when none were granted
-- **No artifact is written. No document is generated.** This is a conversation-only skill.
+  - Waivers granted: the approved `<risk>` token(s), or none
 
 ### Step 9: State Update
-Apply the State Update rules defined in the **State Update** section below.
+Apply the State Update rules defined in the **State Update** section below. When waivers were granted, append `waived: <risk>[, <risk>...]` to the `--summary` using the approved WS-1 tokens (e.g. `waived: cross-layer-edit, external-contract-change`).
 
 ## Edge Cases & Errors
 
@@ -137,7 +146,7 @@ Apply the State Update rules defined in the **State Update** section below.
 | Target file doesn't exist | Ask whether it is a new file or a wrong path; do not silently create |
 | Implementation reveals unplanned structural scope | Pause, reclassify the new scope, and re-confirm before touching it; do not silently absorb it |
 | Active change is in the middle of `/mvt-implement` | Warn about potential conflicts; ask user to confirm before proceeding |
-| No `active_change` and change is Simple | Proceed without creating an `active_change`; conversation-only result |
+| No `active_change` (any tier) | Proceed without creating an `active_change`; conversation-only result |
 | Change touches a file also being modified in an active plan | Surface the conflict; user must resolve outside this skill |
 | User wants to save progress notes | Direct them to the standard workflow (`/mvt-analyze` -> `/mvt-design` -> `/mvt-implement`) which produces artifacts |
 | Sweep target discovered mid-implementation to use dynamic lookup | Stop sweep treatment for that symbol, reclassify the affected file as Structural, re-confirm before touching it |

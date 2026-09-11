@@ -21,30 +21,6 @@ changes:
     updated_at: 2026-09-11T09:03:22.682Z
     epic_id: ""
 history:
-  - skill: /mvt-analyze
-    completed_at: 2026-09-11T06:38:22.370Z
-    summary: 完成 quick-dev 准入放宽需求分析并写入 analysis.md：双轴分类、零硬STOP、豁免留痕，含 analyze 路由联动
-    change_id: 20260911-quick-dev-flexibility
-  - skill: /mvt-design
-    completed_at: 2026-09-11T06:43:21.076Z
-    summary: 完成 quick-dev 准入放宽架构设计并写入 design.md：7 个 ADR、双轴分级与豁免菜单契约，待排期实施
-    change_id: 20260911-quick-dev-flexibility
-  - skill: /mvt-review
-    completed_at: 2026-09-11T06:47:11.163Z
-    summary: 审查 quick-dev 准入放宽设计：Verdict Approve with comments——2 Warning（Wide 档 >10 文件缺口、Step2 信号表映射缺失）+ 7 Suggestion；用户选择不写 review.md
-    change_id: 20260911-quick-dev-flexibility
-  - skill: /mvt-design
-    completed_at: 2026-09-11T06:51:58.681Z
-    summary: 按审查结论修订 design.md：补 Wide 档 4+、QD-1b 信号映射与 7 项契约精确化，复验通过
-    change_id: 20260911-quick-dev-flexibility
-  - skill: /mvt-plan-dev
-    completed_at: 2026-09-11T06:53:36.630Z
-    summary: 生成 quick-dev 准入放宽实施计划：4 任务（改写×2、物化验证、复核），当前 t1
-    change_id: 20260911-quick-dev-flexibility
-  - skill: /mvt-implement
-    completed_at: 2026-09-11T07:01:24.975Z
-    summary: 完成 t1/t2：quick-dev 五档门控与 analyze 路由改写，assembler 71/71，无交付物
-    change_id: 20260911-quick-dev-flexibility
   - skill: /mvt-update-plan
     completed_at: 2026-09-11T07:04:34.945Z
     summary: 标记 t1/t2 完成（门控改写与路由对齐均已验证），推进到 t3
@@ -62,5 +38,30 @@ history:
     summary: 复核 quick-dev/analyze 重新生成的 SKILL.md：Request changes——1 Critical（QD-4 Boundaries 仍为硬禁止，与豁免路径矛盾）+ 3 Warning（waive/waived 词汇分裂、first-match-wins 遮蔽结构信号、analyze 残留 simple change 标签）+ 7
       Suggestion；用户选择不写 review.md
     change_id: 20260911-quick-dev-flexibility
+  - skill: /mvt-fix
+    completed_at: 2026-09-11T09:22:48.724Z
+    summary: 修复 t4 复核发现：role-header 新增可选 boundaries_note 承载豁免覆盖（解 C1）、waived 令牌统一、结构信号优先于扫掠/Wide、analyze 去 simple change 标签，另修 S1-S6；重新生成后 391/391，其余 23 技能产物零变化，用户选择不写 fix-notes.md
+    change_id: 20260911-quick-dev-flexibility
+  - skill: /mvt-fix
+    completed_at: 2026-09-11T09:34:56.554Z
+    summary: 按指令密度复核收缩提示词：删 3 条 guidance 与 QD-2/QD-5 悬空引用、boundaries_note 与 Step2 各压缩过半、优先级规则单一化到 Step 5、去 8 处解释性语句，净减约200词；391/391，爆炸半径仍为 2 文件，fix-notes.md 已落盘
+    change_id: 20260911-quick-dev-flexibility
+  - skill: /mvt-review
+    completed_at: 2026-09-11T09:48:30.583Z
+    summary: 复核 quick-dev business.md 全文：Approve with comments——5 Warning（Step5 缺重新推导档位、菜单 Switch/Cancel 无处理指令、豁免令牌错置于 Step8、信号表与档位表冲突、Step7 band 与 tier 不对齐）+ 7 Suggestion；W4/S5/S7 需同步 design.md；用户选择不写
+      review.md
+    change_id: 20260911-quick-dev-flexibility
+  - skill: /mvt-quick-dev
+    completed_at: 2026-09-11T09:53:31.534Z
+    summary: 用 quick-dev 更新 analyze Step4 分支优先级：歧义优先，assembler 71/71
+    change_id: ""
+  - skill: /mvt-fix
+    completed_at: 2026-09-11T09:56:01.058Z
+    summary: 修复 quick-dev business.md 五处流程缺口与七项措辞：Step5 补重新推导档位、新增 On menu choice 四选项处理、豁免令牌移交 Step9、信号表与档位表矛盾消除、Band 表对齐 tier 并拆 Commit 列；自查修掉 WS-1 连带引用，391/391；design.md 累计 8 项偏离待 /mvt-design 校准
+    change_id: 20260911-quick-dev-flexibility
+  - skill: /mvt-quick-dev
+    completed_at: 2026-09-11T10:01:25.049Z
+    summary: 用 quick-dev 移除 analyze 结构分支的 waiver 选项：结构问题直走标准分析，assembler 71/71
+    change_id: ""
 active_epic: null
 epics: []

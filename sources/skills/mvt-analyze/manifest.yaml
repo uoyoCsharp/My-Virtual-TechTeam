@@ -33,7 +33,7 @@ sections:
           skill: "/mvt-design"
         - scope: "write implementation code"
           skill: "/mvt-implement"
-        - scope: "directly implement simple changes"
+        - scope: "directly implement changes that qualify for the quick path"
           skill: "/mvt-quick-dev"
 
   - type: shared
@@ -96,7 +96,7 @@ sections:
             primary_desc: "Decompose this epic-scale requirement into sub-changes"
           - condition: "user chose quick path in Step 4 (Quick Path Detection)"
             primary: "mvt-quick-dev"
-            primary_desc: "Implement this simple change quickly"
+            primary_desc: "Implement this change on the quick path (band as confirmed in Step 4)"
           - condition: "default"
             primary: "mvt-design"
             primary_desc: "Design architecture based on analysis"
