@@ -24,7 +24,7 @@ preferences:
   # Planning granularity for /mvt-plan-dev
   # Options: coarse (fewer, larger tasks) | medium (balanced) | fine (more, smaller tasks)
   planning:
-    granularity: medium
+    granularity: coarse
 
   # Skip confirmation prompts for selected skills when explicitly enabled.
   silent:

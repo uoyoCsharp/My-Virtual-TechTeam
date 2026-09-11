@@ -2,10 +2,10 @@ session:
   initialized_at: 2026-06-05T08:12:06.624Z
   last_synced_at: 2026-06-08T02:44:34.674Z
 active_change:
-  id: ""
-  title: ""
-  created_at: ""
-  plan_path: ""
+  id: 20260911-quick-dev-flexibility
+  title: Relax mvt-quick-dev admission model
+  created_at: 2026-09-11T06:38:22.370Z
+  plan_path: .ai-agents/workspace/artifacts/20260911-quick-dev-flexibility/plan.yaml
   epic_id: ""
 changes:
   - id: 20260805-epic-context-inheritance
@@ -14,49 +14,53 @@ changes:
     status: done
     updated_at: 2026-08-05T08:58:25.234Z
     epic_id: ""
+  - id: 20260911-quick-dev-flexibility
+    title: Relax mvt-quick-dev admission model
+    plan_path: .ai-agents/workspace/artifacts/20260911-quick-dev-flexibility/plan.yaml
+    status: active
+    updated_at: 2026-09-11T09:03:22.682Z
+    epic_id: ""
 history:
+  - skill: /mvt-analyze
+    completed_at: 2026-09-11T06:38:22.370Z
+    summary: 完成 quick-dev 准入放宽需求分析并写入 analysis.md：双轴分类、零硬STOP、豁免留痕，含 analyze 路由联动
+    change_id: 20260911-quick-dev-flexibility
+  - skill: /mvt-design
+    completed_at: 2026-09-11T06:43:21.076Z
+    summary: 完成 quick-dev 准入放宽架构设计并写入 design.md：7 个 ADR、双轴分级与豁免菜单契约，待排期实施
+    change_id: 20260911-quick-dev-flexibility
+  - skill: /mvt-review
+    completed_at: 2026-09-11T06:47:11.163Z
+    summary: 审查 quick-dev 准入放宽设计：Verdict Approve with comments——2 Warning（Wide 档 >10 文件缺口、Step2 信号表映射缺失）+ 7 Suggestion；用户选择不写 review.md
+    change_id: 20260911-quick-dev-flexibility
+  - skill: /mvt-design
+    completed_at: 2026-09-11T06:51:58.681Z
+    summary: 按审查结论修订 design.md：补 Wide 档 4+、QD-1b 信号映射与 7 项契约精确化，复验通过
+    change_id: 20260911-quick-dev-flexibility
+  - skill: /mvt-plan-dev
+    completed_at: 2026-09-11T06:53:36.630Z
+    summary: 生成 quick-dev 准入放宽实施计划：4 任务（改写×2、物化验证、复核），当前 t1
+    change_id: 20260911-quick-dev-flexibility
   - skill: /mvt-implement
-    completed_at: 2026-08-05T08:32:20.342Z
-    summary: 完成 t3 上下文工作流接入：decompose 捕获来源并生成权威上下文映射，analyze/resume 统一消费 effective-context 中性投影；assembler 71/71 与构建通过，deliverables 已登记给 t4。
-    change_id: 20260805-epic-context-inheritance
+    completed_at: 2026-09-11T07:01:24.975Z
+    summary: 完成 t1/t2：quick-dev 五档门控与 analyze 路由改写，assembler 71/71，无交付物
+    change_id: 20260911-quick-dev-flexibility
   - skill: /mvt-update-plan
-    completed_at: 2026-08-05T08:34:21.908Z
-    summary: 标记 t3（上下文工作流接入）完成并推进至 t4：assembler 71/71 与构建验证通过后，用户撤销了 t3 的五个源文件编辑；按用户明确决定仍将 t3 标记为 done，当前任务为物化与全量验证。
-    change_id: 20260805-epic-context-inheritance
-  - skill: /mvt-test
-    completed_at: 2026-08-05T08:38:31.853Z
-    summary: 完成 t4 物化与全量验证：mvtt update 物化 49 个生成文件（requirement-source.cjs、assembled skills、templates 均刷新）；聚焦套件 177/177（requirement-source 39、epic-update 67、assembler 71）、全量 386/386 通过、无 skip/only，git diff
-      --check 无空白错误；工作树已含 t3 上下文集成（撤销未在磁盘生效）。
-    change_id: 20260805-epic-context-inheritance
-  - skill: /mvt-review
-    completed_at: 2026-08-05T08:40:44.170Z
-    summary: 完成全变更审查（14 文件）：Verdict Approve with comments——1 Warning（epic-update validateContext 缺 category/路径段/global_refs 类型三项校验，与 requirement-source 不镜像，建议 /mvt-fix）+ 3 Suggestion；prompt 零版本词、测试
-      386/386 通过、文档化偏差已接受；用户选择不写 review.md。
-    change_id: 20260805-epic-context-inheritance
-  - skill: /mvt-review
-    completed_at: 2026-08-05T08:42:17.690Z
-    summary: "复核上一轮审查：W1 三项 validator 差异属实；S1 属实但低风险，S2 是明确契约不应列为问题，S3 属实且应升级为 Warning（switch-active 可复活 terminal child 并保留 completed_at/误报 old_status）；prompt 实际无 v1/v2/legacy token，但 decompose 保留
-      version: 2 创建字段，原‘零版本词’表述过宽。"
-    change_id: 20260805-epic-context-inheritance
-  - skill: /mvt-fix
-    completed_at: 2026-08-05T08:46:23.382Z
-    summary: 已修复 Epic 上下文校验不一致和终态子变更可被重新激活的问题
-    change_id: 20260805-epic-context-inheritance
-  - skill: /mvt-review
-    completed_at: 2026-08-05T08:50:17.516Z
-    summary: 复核三个上下文 prompt 的精简度：发现 3 个 Warning 和 3 个 Suggestion，重点是消除 analyze 双重流程与 decompose 重复预览
-    change_id: 20260805-epic-context-inheritance
-  - skill: /mvt-refactor
-    completed_at: 2026-08-05T08:56:29.767Z
-    summary: 完成三个上下文 prompt 的等价精简：减少约 556 tokens，统一恢复流程并避免重复预览，全量测试 391/391 通过
-    change_id: 20260805-epic-context-inheritance
+    completed_at: 2026-09-11T07:04:34.945Z
+    summary: 标记 t1/t2 完成（门控改写与路由对齐均已验证），推进到 t3
+    change_id: 20260911-quick-dev-flexibility
+  - skill: /mvt-implement
+    completed_at: 2026-09-11T07:08:38.727Z
+    summary: 完成 t3：物化双 SKILL.md 与注册表，全量 391/391，diff 干净，无交付物
+    change_id: 20260911-quick-dev-flexibility
   - skill: /mvt-update-plan
-    completed_at: 2026-08-05T08:58:25.234Z
-    summary: 标记 t4 完成（4/4），计划状态 done，变更已正式结束
-    change_id: 20260805-epic-context-inheritance
-  - skill: /mvt-quick-dev
-    completed_at: 2026-08-05T09:02:09.534Z
-    summary: 为 mvt-refactor Step 10 增加写 notes 前的 Write/Skip 确认（与 mvt-fix 对齐），并补充对应 Edge Case；已物化 SKILL.md，assembler 71/71 通过
-    change_id: ""
+    completed_at: 2026-09-11T09:03:22.682Z
+    summary: 标记 t3 完成（物化与全量验证通过），推进到 t4
+    change_id: 20260911-quick-dev-flexibility
+  - skill: /mvt-review
+    completed_at: 2026-09-11T09:11:13.419Z
+    summary: 复核 quick-dev/analyze 重新生成的 SKILL.md：Request changes——1 Critical（QD-4 Boundaries 仍为硬禁止，与豁免路径矛盾）+ 3 Warning（waive/waived 词汇分裂、first-match-wins 遮蔽结构信号、analyze 残留 simple change 标签）+ 7
+      Suggestion；用户选择不写 review.md
+    change_id: 20260911-quick-dev-flexibility
 active_epic: null
 epics: []

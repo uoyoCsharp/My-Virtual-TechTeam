@@ -69,49 +69,56 @@ Consume only the returned `child`, `context`, `sources`, and `warnings`; do not 
 - **Epic-child mode note**: When operating in epic-child mode (scenarios A or B from the pre-check), Step 3 should treat the selected child scope as the intended change boundary. Do not re-route to `/mvt-decompose` unless the user explicitly expands the request beyond that child or the scope is clearly still epic-scale (e.g., the child scope itself contains multiple independent capability domains that were not part of the original decomposition rationale).
 
 ### Step 4: Assess Complexity (Quick Path Detection)
-- **What**: evaluate whether this requirement qualifies as a simple change suitable for the quick development path via `/mvt-quick-dev`.
-- **How**: check each criterion in the table below. ALL criteria must pass for the quick path to be offered.
+- **What**: evaluate whether this requirement qualifies for the quick development path via `/mvt-quick-dev`, and if so, for which band.
+- **How**: check each criterion in the table below. Breadth selects the preview band; breadth alone never fails the quick path.
 
-  | Criterion | Pass condition |
-  |-----------|----------------|
-  | Scope | Affects ≤ 3 files (estimate from the requirement's mention of modules/features) |
-  | No new concepts | No new domain entities, no new API contracts, no new module boundaries |
-  | No architectural impact | No ADR needed; fits existing module/layer structure |
-  | Clear specification | No ambiguities detected in Step 2 (or all ambiguities resolved by user confirmation) |
-  | No integration concerns | No new external dependencies, no cross-service changes, no async/event flows |
-  | Single actor | Only one user role or system actor involved |
+  | Criterion | Assessment |
+  |-----------|------------|
+  | Scope | Estimate breadth only to select the preview band (Simple / Wide) |
+  | No new concepts | A concern (new entity, contract, or module boundary) is structural: offer with a warning, do not refuse |
+  | No architectural impact | A concern (ADR needed, layer misfit) is structural: offer with a warning, do not refuse |
+  | Clear specification | Unresolved ambiguities route to standard analysis; resolved ones proceed |
+  | No integration concerns | A concern (new dependency, cross-service change, async/event flow) is structural: offer with a warning, do not refuse |
+  | Single actor | Multiple actors alone never fail the path; assess breadth and structural concerns as usual |
 
 - **Worked Examples**:
 
-  - **Example 1 (PASS — offer quick path)**
+  - **Example 1 (PASS — offer quick path, Simple band)**
     > "Increase the password reset email expiration from 30 minutes to 2 hours."
-    - Scope: 1 config file ✓
+    - Scope: 1 config file ✓ (Simple band)
     - No new concepts ✓ (existing flow)
     - No architectural impact ✓
     - Clear specification ✓
     - No integration concerns ✓
     - Single actor ✓
-    → Offer `/mvt-quick-dev`.
+    → Offer `/mvt-quick-dev` (Simple band).
 
-  - **Example 2 (FAIL — proceed with standard analysis)**
+  - **Example 2 (STRUCTURAL — offer quick path with waiver, or standard analysis)**
     > "Add SSO login via Google for our user portal."
-    - Scope: ✗ touches auth middleware, user model, login UI, OAuth callback handler, config (5+ files)
-    - No new concepts: ✗ introduces external IdP and OAuth callback contract
-    - No integration concerns: ✗ new external dependency (Google IdP)
-    → Proceed with standard analysis flow (Steps 5-7).
+    - Scope: ✓ breadth only selects the band (Wide: auth middleware, user model, login UI, OAuth callback handler, config)
+    - No new concepts: structural concern — introduces external IdP and OAuth callback contract
+    - No integration concerns: structural concern — new external dependency (Google IdP)
+    → Offer `/mvt-quick-dev` with the structural warning, or proceed with standard analysis flow (Steps 5-7) per user choice.
 
 - **Branches**:
 
   | Condition | Action |
   |-----------|--------|
-  | ALL criteria pass | Confirm — choices `Yes` / `No` / `Show criteria`: "This appears to be a simple change (1-3 files, no architectural impact). Use /mvt-quick-dev for faster execution?" |
-  | ANY criterion fails | Proceed with standard analysis flow (Steps 5-7) |
+  | No structural concerns | Confirm with the band text — choices `Yes` / `No` / `Show criteria` |
+  | Structural concern | Offer the quick path with the structural warning, or continue standard analysis per user choice — choices `Quick-dev with waiver` / `Continue standard analysis` / `Show criteria` |
   | Ambiguous (2-3 criteria unclear) | Proceed with standard analysis; do NOT offer quick path |
+
+  Band texts (no file counts except the Wide-band note, no bare "simple change" label for non-Simple bands):
+  - Simple band: "This appears to be a clearly specified, reversible change (Simple band). Use /mvt-quick-dev for faster execution?"
+  - Wide band: "This is a clearly specified, reversible change, but wider than 3 files (Wide band: plan preview plus confirmation). Use /mvt-quick-dev for faster execution?"
+  - Structural concern: "This change touches <signal>. You may still use /mvt-quick-dev with an explicit waiver, or continue standard analysis."
 
 - **On user choice**:
   - `Yes` -- Do NOT write an analysis artifact. Summarize the requirement understanding in conversation and recommend `/mvt-quick-dev` directly. Set `active_change` if one doesn't exist, so `/mvt-quick-dev` can reference the current work context.
   - `No` -- Continue with full analysis flow (Steps 5-7).
-  - `Show criteria` -- Display the assessment results (pass/fail per criterion), then re-prompt with the same `Yes` / `No` / `Show criteria` choices.
+  - `Show criteria` -- Display the assessment results (pass/concern per criterion), then re-prompt with the same choices.
+  - `Quick-dev with waiver` -- Same as `Yes`, noting the waived structural concern for the waiver trail.
+  - `Continue standard analysis` -- Continue with full analysis flow (Steps 5-7).
 
 ### Step 5: Detect Ambiguities
 - Check for unclear requirements

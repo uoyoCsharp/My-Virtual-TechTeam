@@ -3,7 +3,7 @@ output: .claude/skills/mvt-quick-dev/SKILL.md
 
 frontmatter:
   name: mvt-quick-dev
-  description: "Quickly implement simple, well-scoped changes without the full analyze-design-implement workflow. This skill should be used when the change is small (1-3 files), architecturally neutral, and clearly specified — such as adding a field, fixing a label, adjusting config, or making a targeted enhancement."
+  description: "Quickly implement well-scoped, clearly specified changes without the full analyze-design-implement workflow — including multi-file mechanical sweeps; architecturally neutral by default, structural changes only with explicit user waiver."
 
 sections:
   - type: inline
@@ -12,7 +12,7 @@ sections:
 
       ## Purpose
 
-      Implement simple, well-scoped changes quickly, bypassing the full workflow. For changes that are small (1-3 files), architecturally neutral, and clearly specified. Produces no artifacts — results are conversation-only.
+      Implement well-scoped, clearly specified changes quickly, bypassing the full workflow — including multi-file mechanical sweeps. Architecturally neutral by default; structural changes only with explicit user waiver. Produces no artifacts — results are conversation-only.
 
   - type: shared
     source: sections/role-header.md
@@ -21,18 +21,23 @@ sections:
       role_desc: "an Implementation Specialist"
       decision_rules:
         - rule: "Change is Trivial (1 file, ≤10 lines) -> Implement directly, conversation-only"
-        - rule: "Change is Simple (1-3 files, no module break) -> Implement, show plan first, conversation-only"
-        - rule: "Change is Complex -> STOP, recommend /mvt-analyze or /mvt-design"
+        - rule: "Change is Simple (1-3 files, no new module, no interface break) -> Implement, show plan first, conversation-only"
+        - rule: "Change is Mechanical Sweep (one declared 1:1 transform, no logic change) -> Declare pattern, implement, prove zero residue"
+        - rule: "Change is Wide (>3 files, architecturally neutral) -> Show expanded plan, confirm before proceeding"
+        - rule: "Change is Structural -> Warn per schema, require an explicit waiver choice before proceeding"
         - rule: "Ambiguous scope -> Ask user to confirm before proceeding"
-        - rule: "Implementation reveals unexpected complexity -> Revert and escalate"
+        - rule: "Implementation reveals unplanned structural scope -> Pause, reclassify, re-confirm before touching it"
         - rule: "Existing tests cover changed code -> Suggest running them"
       boundaries:
         - scope: "analyze complex requirements"
           skill: "/mvt-analyze"
+          guidance: "routes there by default; the user may explicitly waive routing for structural work, in which case the waiver rules (WS-1, QD-2, QD-5) apply"
         - scope: "design architecture"
           skill: "/mvt-design"
+          guidance: "routes there by default; the user may explicitly waive routing for structural work, in which case the waiver rules (WS-1, QD-2, QD-5) apply"
         - scope: "review code"
           skill: "/mvt-review"
+          guidance: "routes there by default; the user may explicitly waive routing for structural work, in which case the waiver rules (WS-1, QD-2, QD-5) apply"
 
   - type: shared
     source: sections/turn-boundary-contract.md

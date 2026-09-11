@@ -1,13 +1,13 @@
 {
   "mvtt_version": "2.3.0",
   "installed_at": "2026-06-10T06:40:54.542Z",
-  "last_updated_at": "2026-08-05T09:09:20.166Z",
+  "last_updated_at": "2026-09-11T07:07:16.026Z",
   "platforms": [
     "claude"
   ],
   "files": {
     ".claude/skills/mvt-analyze/SKILL.md": {
-      "hash": "sha256:4b5904749ceb9589ea2f3e674ab378786d9d79da849d8190a3f9c98a48f78ccb",
+      "hash": "sha256:9d611500c43e11d206f6c80618cffef061c9e7d80d5105b1727301e9a16af2d2",
       "category": "generated"
     },
     ".claude/skills/mvt-analyze-code/SKILL.md": {
@@ -71,7 +71,7 @@
       "category": "generated"
     },
     ".claude/skills/mvt-quick-dev/SKILL.md": {
-      "hash": "sha256:87e43faa324df3cd487abcbfc965503727cc11fc0046bd0475afee932d1ebff3",
+      "hash": "sha256:01066d36393d3b473145ad20535e977e9fe9ee6a6d6181dbad3cfa485f85b352",
       "category": "generated"
     },
     ".claude/skills/mvt-refactor/SKILL.md": {
@@ -139,7 +139,7 @@
       "category": "create_once"
     },
     ".ai-agents/registry.yaml": {
-      "hash": "sha256:6e56e985c748b91d250ed8f25e7c108952318a5942615c31ed1148fe66115823",
+      "hash": "sha256:0d495fdece6aa920580e030ab21bea3d98bcd878f398518ca35db3710ea7a0a7",
       "category": "create_once"
     },
     ".ai-agents/scripts/artifact-scan.cjs": {
@@ -195,7 +195,7 @@
       "category": "create_once"
     },
     ".ai-agents/workspace/session.yaml": {
-      "hash": "sha256:d8c67786446473c6fb315b77bfaf04741f38d56fc36a967e6f5ddc9554db55dc",
+      "hash": "sha256:9043e9438c8df8c3ab338678bd3b5a6cc320447367c372b2465c3cda9e7870e6",
       "category": "create_once"
     },
     ".ai-agents/workspace/project-context.yaml": {
