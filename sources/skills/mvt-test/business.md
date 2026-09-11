@@ -93,6 +93,7 @@ This step applies only when the workspace has multiple projects (`projects.lengt
 
 ### Step 10: Write Artifact
 - **Scope of this step**: this gate concerns ONLY the test-design record artifact (`test-design.md`). The actual test files were already written to the project tree in Step 7 and are NOT affected by the choice below.
+- **Skip without asking**: if `mvt-test` is listed in `preferences.artifacts.skip`, skip the confirmation below (conversation-only, no artifact). Then continue to Step 11.
 - **Confirm before writing**: when an `active_change` exists (so an artifact would be written), present the test-design summary in the conversation first (target scope, scenario/case counts, coverage gaps, any implementation issues), then confirm — choices `Write` / `Skip`: "Write the test-design artifact to {path}?"
   - If the user chooses Skip, do NOT write any file under `artifacts/`. Keep the full test design in the conversation only, and note that no artifact was persisted. Then continue to Step 11.
   - If the user chooses Write, write the artifact as described below.

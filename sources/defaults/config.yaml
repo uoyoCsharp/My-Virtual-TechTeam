@@ -30,3 +30,7 @@ preferences:
   silent:
     plan_dev: false
     implement: false
+
+  # Listed skills skip artifact confirmation (conversation-only). Allowed: mvt-review, mvt-test, mvt-fix, mvt-refactor.
+  artifacts:
+    skip: []

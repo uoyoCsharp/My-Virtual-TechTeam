@@ -132,7 +132,6 @@ This skill operates as a shortcut — it can execute at any time without checkin
   - User-specified target (file path, symbol name, module, or "the code I just wrote").
 - **Recommended**:
   - Existing tests covering the target (search by file path, by symbol name, and by sibling test files).
-  - `git status` / `git diff` -- to know what is already modified before refactoring.
 - **Fallback**: if no target was specified, ask the user. Do not refactor speculatively.
 
 ### Step 2: Locate and Understand Target
@@ -220,6 +219,7 @@ This step applies only when the workspace has multiple projects (`projects.lengt
 - If anything regresses: revert the most recent sub-step, surface the regression, return to Step 8. Do not declare success.
 
 ### Step 10: Write Refactor Notes
+- **Skip without asking**: if `mvt-refactor` is listed in `preferences.artifacts.skip`, skip the confirmation below (conversation-only, no artifact). Then continue to Step 11.
 - **Confirm before writing**: when an `active_change` exists (so an artifact would be written), present the refactor notes content in the conversation first, then confirm — choices `Write` / `Skip`: "Write the refactor notes to {path}?"
   - If the user chooses Skip, do NOT write any file under `artifacts/`. Keep the refactor notes in the conversation only, and note that no artifact was persisted. Then continue to Step 11.
   - If the user chooses Write, write the artifact as described below.

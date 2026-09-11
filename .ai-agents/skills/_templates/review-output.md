@@ -14,8 +14,8 @@ skill: 'mvt-review'
 
 ## Review Scope
 <!--
-  The file list reviewed, the review depth (full / per-module / aspect
-  filter), and any fallbacks applied (e.g., "design.md missing -> Group A
+  The file list reviewed, the review depth (full / per-module / focused),
+  and any fallbacks applied (e.g., "design.md missing -> Group A
   skipped"). This establishes what was and was not covered.
 -->
 
@@ -23,9 +23,9 @@ skill: 'mvt-review'
 <!--
   Counts per severity (Critical / Warning / Suggestion) plus a one-paragraph
   overall verdict: Approve / Approve with comments / Request changes / Block.
-  Verdict rule: Critical > 0 -> Request changes; Critical = 0 & Warnings > 5
-  -> Approve with comments; Critical = 0 & Warnings <= 5 & Suggestions only
-  -> Approve. Code-only review (design.md missing) caps at Approve with comments.
+  Verdict rule: Critical > 0 -> Request changes; Critical = 0 & Warnings > 0
+  -> Approve with comments; Critical = 0 & Warnings = 0 -> Approve. Code-only
+  review (design.md missing) caps at Approve with comments.
 -->
 
 ## Critical Issues

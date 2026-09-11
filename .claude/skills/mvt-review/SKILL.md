@@ -14,10 +14,7 @@ Review code for quality, standards compliance, and best practices. Identify issu
 You are the **Reviewer** -- a Code Quality Guardian.
 
 ### Decision Rules
-- Critical issue found (security, data loss, crash) -> Mark as CRITICAL, require fix before merge
 - Layer violation found -> Flag for Architect, suggest `/mvt-design`
-- Minor style issue -> Note as suggestion, don't block
-- Subjective preference -> Mark as "non-blocking" optional improvement
 - Good code pattern found -> Highlight positively
 - Bug found -> Document with reproduction steps, suggest `/mvt-fix`
 - Insufficient test coverage -> Recommend specific scenarios, suggest `/mvt-test`
@@ -34,20 +31,6 @@ Skill instructions are injected per turn, so after you pause the next reply may 
 > ⟦Role Lock⟧ I remain **Reviewer** (`/mvt-review`) for your next reply. The Boundaries in my Role section above stay in force; for anything outside them (e.g. editing code), invoke the skill that owns it.
 
 **Rule 2 — At the start of every turn**, if the previous turn ended with a Role Lock and the current message is a reply to it (not a new `/mvt-*` command), stay in role and honor its Boundaries. Never act outside them — especially editing code — unless the user invokes the owning skill. If unsure, stay in-role and ask.
-
-## Aspect Options
-
-| Aspect | Focus Areas |
-|--------|-------------|
-| `architecture` | Layer compliance, module boundaries, dependency direction |
-| `security` | Input validation, injection prevention, authentication |
-| `quality` | Function size, duplication, dead code, maintainability |
-| `errors` | Error handling, swallowed errors, boundary behavior |
-| `edge-cases` | Boundary inputs, concurrency, resource lifecycle |
-| `naming` | Naming conventions, formatting, documentation |
-| `tests` | Test coverage, assertions, skipped tests |
-
-Usage: `/mvt-review` or `/mvt-review --aspect {type}`
 
 ## Activation Protocol
 
@@ -142,7 +125,6 @@ Presentation is all that changes — the choices and their meaning stay as writt
   | Source | Condition |
   |--------|-----------|
   | User-provided file paths | User passed paths/globs as arguments |
-  | `--aspect` filter | User specified an aspect; intersect aspect-relevant files with the active change's `Change Tracking` |
   | `implementation.md` -> `Files Touched` | Active change has implementation artifact |
   | `git diff --name-only main...HEAD` | Inside a feature branch |
   | `git diff --name-only HEAD~1` | Last-commit fallback |
@@ -167,7 +149,7 @@ This step applies only when the workspace has multiple projects (`projects.lengt
 
 ### Step 4: Determine Review Depth
 - **Default**: full review across all axes (Step 5).
-- `--aspect <name>`: narrow to a single axis. Supported aspects: `architecture`, `quality`, `errors`, `edge-cases`, `security`, `naming`, `tests`. Other aspects -> ask user to clarify.
+- **Focused review**: if the user explicitly asks to focus on one dimension (e.g. "focus on security", "only check error handling"), run only the matching check group(s) from Step 5 instead of the full checklist.
 - For files >300 lines, do a structural pass first (interfaces, exports, key paths) before line-level review; do not attempt line-by-line on huge files.
 
 ### Step 5: Run Review Checks
@@ -206,7 +188,7 @@ This step applies only when the workspace has multiple projects (`projects.lengt
   - No `skip` / `only` / commented-out tests left in.
   - Test names describe the scenario, not the function name.
 
-  **Group F -- Security** (if user requirements mention auth/data sensitivity OR `--aspect security`)
+  **Group F -- Security** (if user requirements mention auth/data sensitivity OR the user requests a security focus)
   - No secrets in code or test fixtures.
   - Input validation at every external boundary.
   - Auth/authz checks present on every protected endpoint or operation.
@@ -225,6 +207,7 @@ This step applies only when the workspace has multiple projects (`projects.lengt
 - Each finding must include: file, line range, severity, observation, recommendation.
 
 ### Step 7: Write Artifact
+- **Skip without asking**: if `mvt-review` is listed in `preferences.artifacts.skip`, skip the confirmation below (conversation-only, no artifact). Then continue to Step 8.
 - **Confirm before writing**: when an `active_change` exists (so an artifact would be written), present the review result in the conversation first (verdict + Critical/Warning/Suggestion counts), then confirm — choices `Write` / `Skip`: "Write the review artifact to {path}?"
   - If the user chooses Skip, do NOT write any file under `artifacts/`. Keep the full review in the conversation only, and note that no artifact was persisted. Then continue to Step 8.
   - If the user chooses Write, write the artifact as described below.
@@ -234,8 +217,7 @@ This step applies only when the workspace has multiple projects (`projects.lengt
 
 ### Step 8: Verdict Rule
 - Critical > 0 -> verdict is `Request changes`. Suggest `/mvt-fix`.
-- Critical = 0, Warnings > 5 -> verdict is `Approve with comments`.
-- Critical = 0, Warnings between 1 and 5 -> verdict is `Approve with comments`.
+- Critical = 0, Warnings > 0 -> verdict is `Approve with comments`.
 - Critical = 0, Warnings = 0 -> verdict is `Approve`.
 - Code-only review (design.md missing) -> verdict cannot be higher than `Approve with comments` (call it out explicitly).
 
@@ -252,7 +234,6 @@ Apply the State Update rules defined in the **State Update** section below.
 | Findings in the same file conflict (e.g., quality says "extract", architecture says "do not introduce a new module") | Defer to architecture; record the tension in `Suggestions` |
 | Implementation explicitly documents a deviation from design (in `Deviations from Design`) | Treat as accepted -- flag only if the deviation is itself problematic |
 | Reviewer finds bugs requiring discussion before fix | Mark Critical, but do NOT auto-invoke `/mvt-fix`; leave the call to the user |
-| User declines to write the artifact at Step 7 | Do not write any file under `artifacts/`; keep the review in the conversation only and note that no artifact was persisted |
 | `active_change` is missing entirely | Run the review and keep the result in the conversation only; do not write any artifact (no ad-hoc artifact path) |
 
 ## Artifact Structure

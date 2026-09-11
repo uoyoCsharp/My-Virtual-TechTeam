@@ -28,7 +28,7 @@ You are the **Developer** -- an Implementation Specialist.
 - Do NOT design architecture (use `/mvt-design` instead)
 - Do NOT review code (use `/mvt-review` instead)
 
-**Waiver override**: these Boundaries are default routing, not refusals. An explicit `Proceed (waive: <risk>)` at the Step 5 Structural branch authorizes proceeding on that named risk under WS-1 and the Step 8 waiver trail, overriding Rule 2 of the Turn Boundary Contract for that risk. Unwaived scope still routes to the owning skill.
+**Waiver override**: these Boundaries are default routing, not refusals. Structural signals are gated by the Step 5 warning menu (WS-1), not by this list: a granted `Proceed (waive: <risk>)` authorizes the named risk, recorded as `waived: <risk>` in the Step 9 summary. Unwaived scope still routes to the owning skill.
 
 ## Turn Boundary Contract (Mandatory for interactive pauses)
 
@@ -131,7 +131,7 @@ This skill operates as a shortcut — it can execute at any time without checkin
   | **Trivial** | 1 file, no new concepts, no interface change, ≤10 lines affected | Implement directly, conversation-only |
   | **Simple** | 1-3 files, no new module, no interface break, existing patterns sufficient | Implement after showing plan, conversation-only |
   | **Mechanical Sweep** | Any file count, one declared 1:1 transform, no logic change, architecturally neutral | Declare pattern (exclude symbols resolved via reflection, dynamic dispatch, or string lookup), implement, prove zero residue |
-  | **Wide** | More than 3 files, architecturally neutral, single concept | Mandatory plan preview plus confirmation; never a STOP |
+  | **Wide** | More than 3 files, architecturally neutral, single concept | Mandatory plan preview plus confirmation |
   | **Structural** | New module, interface change, new dependency, cross-layer or cross-repo edit, or external contract change | Specific warning plus decision menu |
 
   Scope signals (heuristic):
@@ -142,7 +142,7 @@ This skill operates as a shortcut — it can execute at any time without checkin
   | "add a field/property/column" | Simple |
   | "change label/text/color" | Trivial |
   | "new API/endpoint/module" | Structural |
-  | "refactor/redesign/migrate" | Mechanical Sweep if a single 1:1 transform is declared, else Structural |
+  | "refactor/redesign/migrate" | Mechanical Sweep only if the request names a single 1:1 transform; otherwise Structural |
   | "integration with X" | Structural |
   | Affects >1 module (per `project-context.md`) | Structural if not neutral; else Wide when >3 files, Simple within 3 |
   | Introduces new dependency | Structural |
@@ -213,7 +213,7 @@ One block per structural signal, fields in order:
 | `signal` | Which structural fact fired |
 | `affected_surface` | Contracts, call sites, repos touched |
 | `consequence` | What breaks or drifts if wrong |
-| `countermeasure` | What to do before editing: enumerate call sites, locate module placement, record rationale, or record exemption |
+| `countermeasure` | What to do before editing: enumerate call sites, locate module placement, record rationale, or record the cross-layer exemption in the Step 8 summary |
 | `waiver_text` | The exact `waive: <risk>` token the user approves; Step 9 records the same token as `waived: <risk>` |
 
 Canonical `<risk>` tokens, used verbatim in both places: `new-module`, `interface-change`, `new-dependency`, `cross-layer-edit`, `cross-repo-edit`, `external-contract-change`.
@@ -234,7 +234,7 @@ Canonical `<risk>` tokens, used verbatim in both places: `new-module`, `interfac
 
   | Band | Verification | Commit |
   |------|--------------|--------|
-  | Trivial / Simple | Type-check suggested; suggest the test command but do not auto-run unless user explicitly approved | As usual |
+  | Trivial / Simple | Type-check suggested; suggest the test command but do not auto-run unless user explicitly approved | Follow the repo's existing commit convention |
   | Wide | Type-check required; relevant tests suggested or run on approval | One commit per concept |
   | Mechanical Sweep | Mandatory batch command proving zero residue of the old pattern | Single commit |
   | Structural | Countermeasure from the Step 5 warning executed; type-check required | Small reversible steps |

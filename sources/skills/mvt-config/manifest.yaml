@@ -81,6 +81,7 @@ sections:
       | `preferences.history_limits.changes` | int | `10` | Max changes entries (1-100) |
       | `preferences.context_thresholds.*` | map | built-in thresholds | Optional context health thresholds read by `/mvt-check-context`; omitted keys use built-in defaults |
       | `preferences.planning.granularity` | enum | `medium` | Task decomposition granularity for `/mvt-plan-dev`. Qualitative AI guidance, not hard limits. Values: `coarse` (fewer, larger tasks), `medium` (balanced), `fine` (more, smaller tasks) |
+      | `preferences.artifacts.skip` | array-of-enum | `[]` | Skills that skip artifact confirmation (conversation-only). Allowed: `mvt-review`, `mvt-test`, `mvt-fix`, `mvt-refactor`. Empty = ask every time. Note: `mvt-test` covers only `test-design.md`; test files in the project tree are unaffected |
 
       ### Knowledge Settings
 

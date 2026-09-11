@@ -21,19 +21,6 @@ changes:
     updated_at: 2026-09-11T09:03:22.682Z
     epic_id: ""
 history:
-  - skill: /mvt-fix
-    completed_at: 2026-09-11T09:22:48.724Z
-    summary: 修复 t4 复核发现：role-header 新增可选 boundaries_note 承载豁免覆盖（解 C1）、waived 令牌统一、结构信号优先于扫掠/Wide、analyze 去 simple change 标签，另修 S1-S6；重新生成后 391/391，其余 23 技能产物零变化，用户选择不写 fix-notes.md
-    change_id: 20260911-quick-dev-flexibility
-  - skill: /mvt-fix
-    completed_at: 2026-09-11T09:34:56.554Z
-    summary: 按指令密度复核收缩提示词：删 3 条 guidance 与 QD-2/QD-5 悬空引用、boundaries_note 与 Step2 各压缩过半、优先级规则单一化到 Step 5、去 8 处解释性语句，净减约200词；391/391，爆炸半径仍为 2 文件，fix-notes.md 已落盘
-    change_id: 20260911-quick-dev-flexibility
-  - skill: /mvt-review
-    completed_at: 2026-09-11T09:48:30.583Z
-    summary: 复核 quick-dev business.md 全文：Approve with comments——5 Warning（Step5 缺重新推导档位、菜单 Switch/Cancel 无处理指令、豁免令牌错置于 Step8、信号表与档位表冲突、Step7 band 与 tier 不对齐）+ 7 Suggestion；W4/S5/S7 需同步 design.md；用户选择不写
-      review.md
-    change_id: 20260911-quick-dev-flexibility
   - skill: /mvt-quick-dev
     completed_at: 2026-09-11T09:53:31.534Z
     summary: 用 quick-dev 更新 analyze Step4 分支优先级：歧义优先，assembler 71/71
@@ -64,5 +51,17 @@ history:
     completed_at: 2026-09-11T14:12:10.637Z
     summary: 修复 77 项测试失败：根因为 git pull 更新 sources/scripts 后未重建 dist（缺 3 个新 bundle、旧 bundle 无新特性），执行 npm run build 后全量 391/391 恢复；无源码改动；.claude 生成物与提示词 round 3 物化仍待用户执行
     change_id: 20260911-quick-dev-flexibility
+  - skill: /mvt-quick-dev
+    completed_at: 2026-09-11T15:05:54.475Z
+    summary: 落地 artifacts.skip 数组配置：defaults 新增 preferences.artifacts.skip，四技能 Write 门命中即跳过确认走 Skip 分支，mvt-config 键表与校验配套；物化 5 个 SKILL.md，全量 391/391
+    change_id: ""
+  - skill: /mvt-quick-dev
+    completed_at: 2026-09-11T15:12:59.528Z
+    summary: 精简 artifacts.skip 新增文本：7 处压缩为括号式短句，物化 5 个 SKILL.md，全量 391/391
+    change_id: ""
+  - skill: /mvt-quick-dev
+    completed_at: 2026-09-11T15:47:54.146Z
+    summary: 移除 mvt-review 的 --aspect 并改为自然语言焦点复核；修复 O1a verdict 合档、O1b 模板口径对齐、O4a Edge 行去重、O4b Decision Rules 去重；更新后全量 391/391；实施中同文件并行编辑曾致一次合并异常，已逐处修复并全文核对
+    change_id: ""
 active_epic: null
 epics: []

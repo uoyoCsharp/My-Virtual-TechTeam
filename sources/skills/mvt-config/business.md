@@ -45,6 +45,7 @@ Used by Step 4 and by each stage of Step 5.
    | Type | Validation |
    |------|------------|
    | `enum` | Value MUST be in the allowed list. Reject with the allowed list shown. For `language` enums (`en-US` = English, `zh-CN` = 简体中文), reject other locale strings -- ask the user to pick from the allowed list (do not fuzzy-match) |
+   | `array-of-enum` | Every entry MUST be in the allowed list (`mvt-review`, `mvt-test`, `mvt-fix`, `mvt-refactor`). Reject unknown entries; drop duplicates silently |
    | `bool` | Accept exactly `true` / `false` (case-insensitive). Reject `yes`/`1`/`y` |
    | `int` | Parse as integer; check range when range is documented (e.g., `relevance_threshold` must be 0-100) |
 

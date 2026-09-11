@@ -162,7 +162,7 @@ Consume only the returned `child`, `context`, `sources`, and `warnings`; do not 
   | Weak (corroboration only) | Multiple actors with multiple independent main flows | -- |
   | Weak (corroboration only) | No single cohesive acceptance criterion | -- |
 
-- **Trigger**: any strong signal, OR (strong + 2+ weak). Weak signals alone never trigger.
+- **Trigger**: any strong signal. Weak signals alone never trigger.
 
 - **Branches**:
 
@@ -170,7 +170,7 @@ Consume only the returned `child`, `context`, `sources`, and `warnings`; do not 
   |-----------|--------|
   | Epic detection hits | Confirm — choices `Yes` / `No` / `Show signals`: "This looks like an epic-level requirement (multiple independent capability domains). Use `/mvt-decompose` to decompose it first?" |
   | `Yes` | Do NOT write `analysis.md`. Guide to `/mvt-decompose`. |
-  | `No` | Continue standard analysis (Steps 4-7). Cheap reversal path. |
+  | `No` | Continue standard analysis (Steps 4-7). |
   | `Show signals` | Display matched signals, re-prompt. |
   | Epic misses | Fall through to Step 4 (Quick Path Detection). |
 
@@ -178,16 +178,16 @@ Consume only the returned `child`, `context`, `sources`, and `warnings`; do not 
 
 ### Step 4: Assess Scope and Impact (Quick Path Detection)
 - **What**: evaluate whether this requirement qualifies for the quick development path via `/mvt-quick-dev`, and if so, for which band.
-- **How**: check each criterion in the table below. Breadth selects the preview band; breadth alone never fails the quick path. Assess rows top-to-bottom; the first matching row wins — ambiguity first (signals cannot be judged on an unclear spec), then structural concerns, then band routing.
+- **How**: check each criterion in the table below. Breadth selects the preview band; breadth alone never fails the quick path.
 
   | Criterion | Assessment |
   |-----------|------------|
   | Scope | Estimate breadth only to select the preview band (Simple / Wide) |
-  | No new concepts | A concern (new entity, contract, or module boundary) is structural: offer with a warning, do not refuse |
-  | No architectural impact | A concern (ADR needed, layer misfit) is structural: offer with a warning, do not refuse |
+  | No new concepts | A concern (new entity, contract, or module boundary) is structural: proceed to standard analysis; do not offer the quick path |
+  | No architectural impact | A concern (ADR needed, layer misfit) is structural: proceed to standard analysis; do not offer the quick path |
   | Clear specification | Unresolved ambiguities route to standard analysis; resolved ones proceed |
-  | No integration concerns | A concern (new dependency, cross-service change, async/event flow) is structural: offer with a warning, do not refuse |
-  | Single actor | Multiple actors alone never fail the path; assess breadth and structural concerns as usual |
+  | No integration concerns | A concern (new dependency, cross-service change, async/event flow) is structural: proceed to standard analysis; do not offer the quick path |
+  | Single actor | Multiple actors alone never fail the path |
 
 - **Worked Examples**:
 
@@ -201,7 +201,7 @@ Consume only the returned `child`, `context`, `sources`, and `warnings`; do not 
     - Single actor ✓
     → Offer `/mvt-quick-dev` (Simple band).
 
-  - **Example 2 (STRUCTURAL — offer quick path with waiver, or standard analysis)**
+  - **Example 2**
     > "Add SSO login via Google for our user portal."
     - Scope: ✓ breadth only selects the band (Wide: auth middleware, user model, login UI, OAuth callback handler, config)
     - No new concepts: structural concern — introduces external IdP and OAuth callback contract
@@ -209,26 +209,24 @@ Consume only the returned `child`, `context`, `sources`, and `warnings`; do not 
     - Clear specification ✓ (provider and target surface are named)
     - No integration concerns: structural concern — new external dependency (Google IdP)
     - Single actor ✓ (portal end user)
-    → Offer `/mvt-quick-dev` with the structural warning, or proceed with standard analysis flow (Steps 5-7) per user choice.
+    → Proceed with standard analysis flow.
 
 - **Branches** (top-to-bottom; first match wins):
 
   | Condition | Action |
   |-----------|--------|
   | Ambiguous (one or more criteria unclear) | Ask for the missing specifics, then re-assess; if still unresolved, continue standard analysis |
-  | Structural concern | Offer the quick path with the structural warning, or continue standard analysis per user choice — choices `Quick-dev with waiver` / `Continue standard analysis` / `Show criteria` |
+  | Structural concern | Proceed directly with standard analysis flow; do NOT offer the quick path |
   | No structural concerns | Confirm with the band text — choices `Yes` / `No` / `Show criteria` |
 
   Band texts (no file counts except the Wide-band note, no bare "simple change" label for non-Simple bands):
   - Simple band: "This appears to be a clearly specified, reversible change (Simple band). Use /mvt-quick-dev for faster execution?"
   - Wide band: "This is a clearly specified, reversible change, but wider than 3 files (Wide band: plan preview plus confirmation). Use /mvt-quick-dev for faster execution?"
-  - Structural concern: "This change touches <signal>. You may still use /mvt-quick-dev with an explicit waiver, or continue standard analysis."
 
 - **On user choice**:
   - `Yes` -- Do NOT write an analysis artifact. Summarize the requirement understanding in conversation and recommend `/mvt-quick-dev` directly. Set `active_change` if one doesn't exist, so `/mvt-quick-dev` can reference the current work context.
   - `No` -- Continue with full analysis flow (Steps 5-7).
   - `Show criteria` -- Display the assessment results (pass/concern per criterion), then re-prompt with the same choices.
-  - `Quick-dev with waiver` -- Same as `Yes`, noting the waived structural concern for the waiver trail.
   - `Continue standard analysis` -- Continue with full analysis flow (Steps 5-7).
 
 ### Step 5: Detect Ambiguities

@@ -114,6 +114,7 @@ Presentation is all that changes — the choices and their meaning stay as writt
 | `preferences.history_limits.changes` | int | `10` | Max changes entries (1-100) |
 | `preferences.context_thresholds.*` | map | built-in thresholds | Optional context health thresholds read by `/mvt-check-context`; omitted keys use built-in defaults |
 | `preferences.planning.granularity` | enum | `medium` | Task decomposition granularity for `/mvt-plan-dev`. Qualitative AI guidance, not hard limits. Values: `coarse` (fewer, larger tasks), `medium` (balanced), `fine` (more, smaller tasks) |
+| `preferences.artifacts.skip` | array-of-enum | `[]` | Skills that skip artifact confirmation (conversation-only). Allowed: `mvt-review`, `mvt-test`, `mvt-fix`, `mvt-refactor`. Empty = ask every time. Note: `mvt-test` covers only `test-design.md`; test files in the project tree are unaffected |
 
 ### Knowledge Settings
 
@@ -166,6 +167,7 @@ Used by Step 4 and by each stage of Step 5.
    | Type | Validation |
    |------|------------|
    | `enum` | Value MUST be in the allowed list. Reject with the allowed list shown. For `language` enums (`en-US` = English, `zh-CN` = 简体中文), reject other locale strings -- ask the user to pick from the allowed list (do not fuzzy-match) |
+   | `array-of-enum` | Every entry MUST be in the allowed list (`mvt-review`, `mvt-test`, `mvt-fix`, `mvt-refactor`). Reject unknown entries; drop duplicates silently |
    | `bool` | Accept exactly `true` / `false` (case-insensitive). Reject `yes`/`1`/`y` |
    | `int` | Parse as integer; check range when range is documented (e.g., `relevance_threshold` must be 0-100) |
 
