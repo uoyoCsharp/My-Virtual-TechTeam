@@ -54,7 +54,7 @@ Consume only the returned `child`, `context`, `sources`, and `warnings`; do not 
   | Weak (corroboration only) | Multiple actors with multiple independent main flows | -- |
   | Weak (corroboration only) | No single cohesive acceptance criterion | -- |
 
-- **Trigger**: any strong signal, OR (strong + 2+ weak). Weak signals alone never trigger.
+- **Trigger**: any strong signal. Weak signals alone never trigger.
 
 - **Branches**:
 
@@ -62,7 +62,7 @@ Consume only the returned `child`, `context`, `sources`, and `warnings`; do not 
   |-----------|--------|
   | Epic detection hits | Confirm — choices `Yes` / `No` / `Show signals`: "This looks like an epic-level requirement (multiple independent capability domains). Use `/mvt-decompose` to decompose it first?" |
   | `Yes` | Do NOT write `analysis.md`. Guide to `/mvt-decompose`. |
-  | `No` | Continue standard analysis (Steps 4-7). Cheap reversal path. |
+  | `No` | Continue standard analysis (Steps 4-7). |
   | `Show signals` | Display matched signals, re-prompt. |
   | Epic misses | Fall through to Step 4 (Quick Path Detection). |
 
@@ -79,7 +79,7 @@ Consume only the returned `child`, `context`, `sources`, and `warnings`; do not 
   | No architectural impact | A concern (ADR needed, layer misfit) is structural: proceed to standard analysis; do not offer the quick path |
   | Clear specification | Unresolved ambiguities route to standard analysis; resolved ones proceed |
   | No integration concerns | A concern (new dependency, cross-service change, async/event flow) is structural: proceed to standard analysis; do not offer the quick path |
-  | Single actor | Multiple actors alone never fail the path; assess breadth and structural concerns as usual |
+  | Single actor | Multiple actors alone never fail the path |
 
 - **Worked Examples**:
 

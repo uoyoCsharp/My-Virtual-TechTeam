@@ -36,9 +36,9 @@ sections:
         - scope: "review code"
           skill: "/mvt-review"
       boundaries_note: >-
-        **Waiver override**: these Boundaries are default routing, not refusals. An explicit `Proceed (waive: <risk>)` at the Step 5
-        Structural branch authorizes proceeding on that named risk under WS-1 and the Step 8 waiver trail, overriding Rule 2 of the
-        Turn Boundary Contract for that risk. Unwaived scope still routes to the owning skill.
+        **Waiver override**: these Boundaries are default routing, not refusals. Structural signals are gated by the Step 5 warning
+        menu (WS-1), not by this list: a granted `Proceed (waive: <risk>)` authorizes the named risk, recorded as `waived: <risk>` in
+        the Step 9 summary. Unwaived scope still routes to the owning skill.
 
   - type: shared
     source: sections/turn-boundary-contract.md

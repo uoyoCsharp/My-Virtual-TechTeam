@@ -21,23 +21,6 @@ changes:
     updated_at: 2026-09-11T09:03:22.682Z
     epic_id: ""
 history:
-  - skill: /mvt-update-plan
-    completed_at: 2026-09-11T07:04:34.945Z
-    summary: 标记 t1/t2 完成（门控改写与路由对齐均已验证），推进到 t3
-    change_id: 20260911-quick-dev-flexibility
-  - skill: /mvt-implement
-    completed_at: 2026-09-11T07:08:38.727Z
-    summary: 完成 t3：物化双 SKILL.md 与注册表，全量 391/391，diff 干净，无交付物
-    change_id: 20260911-quick-dev-flexibility
-  - skill: /mvt-update-plan
-    completed_at: 2026-09-11T09:03:22.682Z
-    summary: 标记 t3 完成（物化与全量验证通过），推进到 t4
-    change_id: 20260911-quick-dev-flexibility
-  - skill: /mvt-review
-    completed_at: 2026-09-11T09:11:13.419Z
-    summary: 复核 quick-dev/analyze 重新生成的 SKILL.md：Request changes——1 Critical（QD-4 Boundaries 仍为硬禁止，与豁免路径矛盾）+ 3 Warning（waive/waived 词汇分裂、first-match-wins 遮蔽结构信号、analyze 残留 simple change 标签）+ 7
-      Suggestion；用户选择不写 review.md
-    change_id: 20260911-quick-dev-flexibility
   - skill: /mvt-fix
     completed_at: 2026-09-11T09:22:48.724Z
     summary: 修复 t4 复核发现：role-header 新增可选 boundaries_note 承载豁免覆盖（解 C1）、waived 令牌统一、结构信号优先于扫掠/Wide、analyze 去 simple change 标签，另修 S1-S6；重新生成后 391/391，其余 23 技能产物零变化，用户选择不写 fix-notes.md
@@ -63,5 +46,23 @@ history:
     completed_at: 2026-09-11T10:01:25.049Z
     summary: 用 quick-dev 移除 analyze 结构分支的 waiver 选项：结构问题直走标准分析，assembler 71/71
     change_id: ""
+  - skill: /mvt-review
+    completed_at: 2026-09-11T13:36:20.104Z
+    summary: 复核上轮 review 结论：自查发现 2 项 Critical 均不成立（C1 误指 Rule 2、C2 把有意偏离当分裂），W3/W4/W6 不属实（W4 系混入未更新的生成物文本），实际 0 Critical / 2 Warning，改为 Approve with comments；用户选择不写 review.md
+    change_id: 20260911-quick-dev-flexibility
+  - skill: /mvt-review
+    completed_at: 2026-09-11T13:36:28.394Z
+    summary: 复核上轮 review 结论：0 Critical / 2 Warning —— 上轮 2 项 Critical 均不成立（C1 误指 Turn Boundary Rule 2，C2 把用户有意偏离误判为源/生成物分裂），W3/W4/W6 不属实（W4 系混入未更新的生成物文本），W1/W2/W5 降级为 Suggestion；结论改为 Approve with
+      comments，artifact 待定
+    change_id: 20260911-quick-dev-flexibility
+  - skill: /mvt-fix
+    completed_at: 2026-09-11T14:07:10.346Z
+    summary: 修复源提示词 8 处措辞（boundaries_note 与 Rule 2 解耦并改指 Step 9、删 never a STOP 与 Cheap reversal path、Sweep 声明限定于请求、exemption 具体化、Commit 列具体化、Epic 触发收敛、Single actor 去冗余）；组装 71/71、残留归零；全量 77 项既有失败经 stash
+      对照证实与本次无关；用户选择不写 fix-notes.md
+    change_id: 20260911-quick-dev-flexibility
+  - skill: /mvt-fix
+    completed_at: 2026-09-11T14:12:10.637Z
+    summary: 修复 77 项测试失败：根因为 git pull 更新 sources/scripts 后未重建 dist（缺 3 个新 bundle、旧 bundle 无新特性），执行 npm run build 后全量 391/391 恢复；无源码改动；.claude 生成物与提示词 round 3 物化仍待用户执行
+    change_id: 20260911-quick-dev-flexibility
 active_epic: null
 epics: []
