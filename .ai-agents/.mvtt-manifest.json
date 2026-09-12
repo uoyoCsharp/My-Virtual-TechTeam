@@ -1,7 +1,7 @@
 {
-  "mvtt_version": "2.3.0",
+  "mvtt_version": "2.3.1",
   "installed_at": "2026-06-10T06:40:54.542Z",
-  "last_updated_at": "2026-09-11T15:47:14.037Z",
+  "last_updated_at": "2026-09-12T13:52:53.639Z",
   "platforms": [
     "claude"
   ],
@@ -195,7 +195,7 @@
       "category": "create_once"
     },
     ".ai-agents/workspace/session.yaml": {
-      "hash": "sha256:4110ebb84c890699f6f62c4793457dfd56347e39dde9b5f10dabf7e172fd8af5",
+      "hash": "sha256:bd4c0f82bc6ab36a22c028c3fb7a4f8fde6c234f755b2a09d8fc0d6b591cf504",
       "category": "create_once"
     },
     ".ai-agents/workspace/project-context.yaml": {

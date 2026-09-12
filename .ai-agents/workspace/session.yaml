@@ -2,33 +2,13 @@ session:
   initialized_at: 2026-06-05T08:12:06.624Z
   last_synced_at: 2026-06-08T02:44:34.674Z
 active_change:
-  id: 20260911-quick-dev-flexibility
-  title: Relax mvt-quick-dev admission model
-  created_at: 2026-09-11T06:38:22.370Z
-  plan_path: .ai-agents/workspace/artifacts/20260911-quick-dev-flexibility/plan.yaml
+  id: ""
+  title: ""
+  created_at: ""
+  plan_path: ""
   epic_id: ""
-changes:
-  - id: 20260805-epic-context-inheritance
-    title: Epic Requirement Context Inheritance
-    plan_path: .ai-agents/workspace/artifacts/20260805-epic-context-inheritance/plan.yaml
-    status: done
-    updated_at: 2026-08-05T08:58:25.234Z
-    epic_id: ""
-  - id: 20260911-quick-dev-flexibility
-    title: Relax mvt-quick-dev admission model
-    plan_path: .ai-agents/workspace/artifacts/20260911-quick-dev-flexibility/plan.yaml
-    status: active
-    updated_at: 2026-09-11T09:03:22.682Z
-    epic_id: ""
+changes: []
 history:
-  - skill: /mvt-quick-dev
-    completed_at: 2026-09-11T09:53:31.534Z
-    summary: 用 quick-dev 更新 analyze Step4 分支优先级：歧义优先，assembler 71/71
-    change_id: ""
-  - skill: /mvt-fix
-    completed_at: 2026-09-11T09:56:01.058Z
-    summary: 修复 quick-dev business.md 五处流程缺口与七项措辞：Step5 补重新推导档位、新增 On menu choice 四选项处理、豁免令牌移交 Step9、信号表与档位表矛盾消除、Band 表对齐 tier 并拆 Commit 列；自查修掉 WS-1 连带引用，391/391；design.md 累计 8 项偏离待 /mvt-design 校准
-    change_id: 20260911-quick-dev-flexibility
   - skill: /mvt-quick-dev
     completed_at: 2026-09-11T10:01:25.049Z
     summary: 用 quick-dev 移除 analyze 结构分支的 waiver 选项：结构问题直走标准分析，assembler 71/71
@@ -62,6 +42,14 @@ history:
   - skill: /mvt-quick-dev
     completed_at: 2026-09-11T15:47:54.146Z
     summary: 移除 mvt-review 的 --aspect 并改为自然语言焦点复核；修复 O1a verdict 合档、O1b 模板口径对齐、O4a Edge 行去重、O4b Decision Rules 去重；更新后全量 391/391；实施中同文件并行编辑曾致一次合并异常，已逐处修复并全文核对
+    change_id: ""
+  - skill: /mvt-update-plan
+    completed_at: 2026-09-12T13:01:38.359Z
+    summary: 完成t4评审并终结变更20260911-quick-dev-flexibility
+    change_id: 20260911-quick-dev-flexibility
+  - skill: /mvt-cleanup
+    completed_at: 2026-09-12T13:41:06.623Z
+    summary: 归档并移除两个已完成变更
     change_id: ""
 active_epic: null
 epics: []
