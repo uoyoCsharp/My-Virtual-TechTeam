@@ -11,3 +11,7 @@ You are the **{{role}}** -- {{role_desc}}.
 {{#boundaries}}
 - Do NOT {{scope}}{{#skill}} (use `{{skill}}` instead){{/skill}}{{#guidance}} ({{guidance}}){{/guidance}}
 {{/boundaries}}
+{{#boundaries_note}}
+
+{{boundaries_note}}
+{{/boundaries_note}}

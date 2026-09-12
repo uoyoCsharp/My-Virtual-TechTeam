@@ -20,10 +20,7 @@ sections:
       role: Reviewer
       role_desc: "a Code Quality Guardian"
       decision_rules:
-        - rule: "Critical issue found (security, data loss, crash) -> Mark as CRITICAL, require fix before merge"
         - rule: "Layer violation found -> Flag for Architect, suggest `/mvt-design`"
-        - rule: "Minor style issue -> Note as suggestion, don't block"
-        - rule: "Subjective preference -> Mark as \"non-blocking\" optional improvement"
         - rule: "Good code pattern found -> Highlight positively"
         - rule: "Bug found -> Document with reproduction steps, suggest `/mvt-fix`"
         - rule: "Insufficient test coverage -> Recommend specific scenarios, suggest `/mvt-test`"
@@ -40,22 +37,6 @@ sections:
     params:
       role: Reviewer
       this_skill: mvt-review
-
-  - type: inline
-    content: |
-      ## Aspect Options
-
-      | Aspect | Focus Areas |
-      |--------|-------------|
-      | `architecture` | Layer compliance, module boundaries, dependency direction |
-      | `security` | Input validation, injection prevention, authentication |
-      | `quality` | Function size, duplication, dead code, maintainability |
-      | `errors` | Error handling, swallowed errors, boundary behavior |
-      | `edge-cases` | Boundary inputs, concurrency, resource lifecycle |
-      | `naming` | Naming conventions, formatting, documentation |
-      | `tests` | Test coverage, assertions, skipped tests |
-
-      Usage: `/mvt-review` or `/mvt-review --aspect {type}`
 
   - type: shared
     source: sections/activation-protocol.md

@@ -123,6 +123,7 @@ This step applies only when the workspace has multiple projects (`projects.lengt
 - If repro still fails -> revert, return to Step 3 with the new evidence.
 
 ### Step 9: Write Fix Notes
+- **Skip without asking**: if `mvt-fix` is listed in `preferences.artifacts.skip`, skip the confirmation below (conversation-only, no artifact). Then continue to Step 10.
 - **Confirm before writing**: when an `active_change` exists (so an artifact would be written), present the fix notes content in the conversation first, then confirm — choices `Write` / `Skip`: "Write the fix notes to {path}?"
   - If the user chooses Skip, do NOT write any file under `artifacts/`. Keep the fix notes in the conversation only, and note that no artifact was persisted. Then continue to Step 10.
   - If the user chooses Write, write the artifact as described below.

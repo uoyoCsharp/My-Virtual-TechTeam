@@ -24,9 +24,13 @@ preferences:
   # Planning granularity for /mvt-plan-dev
   # Options: coarse (fewer, larger tasks) | medium (balanced) | fine (more, smaller tasks)
   planning:
-    granularity: medium
+    granularity: coarse
 
   # Skip confirmation prompts for selected skills when explicitly enabled.
   silent:
     plan_dev: false
     implement: false
+
+  # Listed skills skip artifact confirmation (conversation-only). Allowed: mvt-review, mvt-test, mvt-fix, mvt-refactor.
+  artifacts:
+    skip: []

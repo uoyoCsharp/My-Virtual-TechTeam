@@ -39,7 +39,7 @@ skills:
   mvt-refactor:
     description: "Refactor existing code while preserving behavior."
   mvt-quick-dev:
-    description: "Quickly implement small, well-scoped changes (1-3 files) without the full workflow."
+    description: "Quickly implement well-scoped, clearly specified changes without the full analyze-design-implement workflow — including multi-file mechanical sweeps; architecturally neutral by default, structural changes only with explicit user waiver."
   mvt-review:
     description: "Review code for quality, standards compliance, and best practices."
     template: ".ai-agents/skills/_templates/review-output.md"

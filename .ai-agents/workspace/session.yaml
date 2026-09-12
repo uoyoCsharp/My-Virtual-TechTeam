@@ -7,56 +7,49 @@ active_change:
   created_at: ""
   plan_path: ""
   epic_id: ""
-changes:
-  - id: 20260805-epic-context-inheritance
-    title: Epic Requirement Context Inheritance
-    plan_path: .ai-agents/workspace/artifacts/20260805-epic-context-inheritance/plan.yaml
-    status: done
-    updated_at: 2026-08-05T08:58:25.234Z
-    epic_id: ""
+changes: []
 history:
-  - skill: /mvt-implement
-    completed_at: 2026-08-05T08:32:20.342Z
-    summary: 完成 t3 上下文工作流接入：decompose 捕获来源并生成权威上下文映射，analyze/resume 统一消费 effective-context 中性投影；assembler 71/71 与构建通过，deliverables 已登记给 t4。
-    change_id: 20260805-epic-context-inheritance
-  - skill: /mvt-update-plan
-    completed_at: 2026-08-05T08:34:21.908Z
-    summary: 标记 t3（上下文工作流接入）完成并推进至 t4：assembler 71/71 与构建验证通过后，用户撤销了 t3 的五个源文件编辑；按用户明确决定仍将 t3 标记为 done，当前任务为物化与全量验证。
-    change_id: 20260805-epic-context-inheritance
-  - skill: /mvt-test
-    completed_at: 2026-08-05T08:38:31.853Z
-    summary: 完成 t4 物化与全量验证：mvtt update 物化 49 个生成文件（requirement-source.cjs、assembled skills、templates 均刷新）；聚焦套件 177/177（requirement-source 39、epic-update 67、assembler 71）、全量 386/386 通过、无 skip/only，git diff
-      --check 无空白错误；工作树已含 t3 上下文集成（撤销未在磁盘生效）。
-    change_id: 20260805-epic-context-inheritance
-  - skill: /mvt-review
-    completed_at: 2026-08-05T08:40:44.170Z
-    summary: 完成全变更审查（14 文件）：Verdict Approve with comments——1 Warning（epic-update validateContext 缺 category/路径段/global_refs 类型三项校验，与 requirement-source 不镜像，建议 /mvt-fix）+ 3 Suggestion；prompt 零版本词、测试
-      386/386 通过、文档化偏差已接受；用户选择不写 review.md。
-    change_id: 20260805-epic-context-inheritance
-  - skill: /mvt-review
-    completed_at: 2026-08-05T08:42:17.690Z
-    summary: "复核上一轮审查：W1 三项 validator 差异属实；S1 属实但低风险，S2 是明确契约不应列为问题，S3 属实且应升级为 Warning（switch-active 可复活 terminal child 并保留 completed_at/误报 old_status）；prompt 实际无 v1/v2/legacy token，但 decompose 保留
-      version: 2 创建字段，原‘零版本词’表述过宽。"
-    change_id: 20260805-epic-context-inheritance
-  - skill: /mvt-fix
-    completed_at: 2026-08-05T08:46:23.382Z
-    summary: 已修复 Epic 上下文校验不一致和终态子变更可被重新激活的问题
-    change_id: 20260805-epic-context-inheritance
-  - skill: /mvt-review
-    completed_at: 2026-08-05T08:50:17.516Z
-    summary: 复核三个上下文 prompt 的精简度：发现 3 个 Warning 和 3 个 Suggestion，重点是消除 analyze 双重流程与 decompose 重复预览
-    change_id: 20260805-epic-context-inheritance
-  - skill: /mvt-refactor
-    completed_at: 2026-08-05T08:56:29.767Z
-    summary: 完成三个上下文 prompt 的等价精简：减少约 556 tokens，统一恢复流程并避免重复预览，全量测试 391/391 通过
-    change_id: 20260805-epic-context-inheritance
-  - skill: /mvt-update-plan
-    completed_at: 2026-08-05T08:58:25.234Z
-    summary: 标记 t4 完成（4/4），计划状态 done，变更已正式结束
-    change_id: 20260805-epic-context-inheritance
   - skill: /mvt-quick-dev
-    completed_at: 2026-08-05T09:02:09.534Z
-    summary: 为 mvt-refactor Step 10 增加写 notes 前的 Write/Skip 确认（与 mvt-fix 对齐），并补充对应 Edge Case；已物化 SKILL.md，assembler 71/71 通过
+    completed_at: 2026-09-11T10:01:25.049Z
+    summary: 用 quick-dev 移除 analyze 结构分支的 waiver 选项：结构问题直走标准分析，assembler 71/71
+    change_id: ""
+  - skill: /mvt-review
+    completed_at: 2026-09-11T13:36:20.104Z
+    summary: 复核上轮 review 结论：自查发现 2 项 Critical 均不成立（C1 误指 Rule 2、C2 把有意偏离当分裂），W3/W4/W6 不属实（W4 系混入未更新的生成物文本），实际 0 Critical / 2 Warning，改为 Approve with comments；用户选择不写 review.md
+    change_id: 20260911-quick-dev-flexibility
+  - skill: /mvt-review
+    completed_at: 2026-09-11T13:36:28.394Z
+    summary: 复核上轮 review 结论：0 Critical / 2 Warning —— 上轮 2 项 Critical 均不成立（C1 误指 Turn Boundary Rule 2，C2 把用户有意偏离误判为源/生成物分裂），W3/W4/W6 不属实（W4 系混入未更新的生成物文本），W1/W2/W5 降级为 Suggestion；结论改为 Approve with
+      comments，artifact 待定
+    change_id: 20260911-quick-dev-flexibility
+  - skill: /mvt-fix
+    completed_at: 2026-09-11T14:07:10.346Z
+    summary: 修复源提示词 8 处措辞（boundaries_note 与 Rule 2 解耦并改指 Step 9、删 never a STOP 与 Cheap reversal path、Sweep 声明限定于请求、exemption 具体化、Commit 列具体化、Epic 触发收敛、Single actor 去冗余）；组装 71/71、残留归零；全量 77 项既有失败经 stash
+      对照证实与本次无关；用户选择不写 fix-notes.md
+    change_id: 20260911-quick-dev-flexibility
+  - skill: /mvt-fix
+    completed_at: 2026-09-11T14:12:10.637Z
+    summary: 修复 77 项测试失败：根因为 git pull 更新 sources/scripts 后未重建 dist（缺 3 个新 bundle、旧 bundle 无新特性），执行 npm run build 后全量 391/391 恢复；无源码改动；.claude 生成物与提示词 round 3 物化仍待用户执行
+    change_id: 20260911-quick-dev-flexibility
+  - skill: /mvt-quick-dev
+    completed_at: 2026-09-11T15:05:54.475Z
+    summary: 落地 artifacts.skip 数组配置：defaults 新增 preferences.artifacts.skip，四技能 Write 门命中即跳过确认走 Skip 分支，mvt-config 键表与校验配套；物化 5 个 SKILL.md，全量 391/391
+    change_id: ""
+  - skill: /mvt-quick-dev
+    completed_at: 2026-09-11T15:12:59.528Z
+    summary: 精简 artifacts.skip 新增文本：7 处压缩为括号式短句，物化 5 个 SKILL.md，全量 391/391
+    change_id: ""
+  - skill: /mvt-quick-dev
+    completed_at: 2026-09-11T15:47:54.146Z
+    summary: 移除 mvt-review 的 --aspect 并改为自然语言焦点复核；修复 O1a verdict 合档、O1b 模板口径对齐、O4a Edge 行去重、O4b Decision Rules 去重；更新后全量 391/391；实施中同文件并行编辑曾致一次合并异常，已逐处修复并全文核对
+    change_id: ""
+  - skill: /mvt-update-plan
+    completed_at: 2026-09-12T13:01:38.359Z
+    summary: 完成t4评审并终结变更20260911-quick-dev-flexibility
+    change_id: 20260911-quick-dev-flexibility
+  - skill: /mvt-cleanup
+    completed_at: 2026-09-12T13:41:06.623Z
+    summary: 归档并移除两个已完成变更
     change_id: ""
 active_epic: null
 epics: []
