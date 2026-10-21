@@ -108,7 +108,7 @@ For each target file, check if it already exists:
 
 #### 5.2 Write files
 
-1. Write `.ai-agents/workspace/project-context.yaml` with lean index schema:
+1. Write `.mvtt/workspace/project-context.yaml` with lean index schema:
    ```yaml
    projects:
      - name: "{project_name}"

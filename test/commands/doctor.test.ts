@@ -56,11 +56,11 @@ describe("doctor detection logic", () => {
   it("confirms user data dirs exist after install", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     const userDirs = [
-      ".ai-agents/workspace",
-      ".ai-agents/workspace/artifacts",
-      ".ai-agents/skills/_templates/custom",
-      ".ai-agents/knowledge/principle",
-      ".ai-agents/knowledge/project",
+      ".mvtt/workspace",
+      ".mvtt/workspace/artifacts",
+      ".mvtt/skills/_templates/custom",
+      ".mvtt/knowledge/principle",
+      ".mvtt/knowledge/project",
     ];
     for (const dir of userDirs) {
       expect(existsSync(path.join(tmpDir, dir))).toBe(true);

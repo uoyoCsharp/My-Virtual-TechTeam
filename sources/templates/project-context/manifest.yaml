@@ -1,5 +1,5 @@
 name: project-context
-output: .ai-agents/skills/_templates/project-context.md
+output: .mvtt/skills/_templates/project-context.md
 
 frontmatter:
   id: project-context

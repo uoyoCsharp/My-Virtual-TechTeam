@@ -17,11 +17,11 @@
  *
  * NOTE: This source file uses `import from "yaml"`. During the build pipeline,
  * esbuild bundles it into a zero-dependency single file deployed to
- * .ai-agents/scripts/plan-update.cjs.
+ * .mvtt/scripts/plan-update.cjs.
  *
  * Usage: see the "Script Usage Rule" section in any skill that references
  *   sections/script-usage-rule.md, or read the full reference at
- *   .ai-agents/scripts/plan-update.md.
+ *   .mvtt/scripts/plan-update.md.
  *
  * Output:
  *   Success (exit 0): one-line JSON on stdout, e.g.
@@ -34,25 +34,25 @@ import { dirname, join, resolve } from "node:path";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 
 // ── Project Discovery ──────────────────────────────────────────────────────
-// Resolve project root by walking up from a file path until `.ai-agents/` is
+// Resolve project root by walking up from a file path until `.mvtt/` is
 // found. Returns null if no project root can be determined.
 function findProjectRootFromPath(filePath) {
   let dir = resolve(dirname(filePath));
   while (true) {
-    if (existsSync(join(dir, ".ai-agents"))) return dir;
+    if (existsSync(join(dir, ".mvtt"))) return dir;
     const parent = dirname(dir);
     if (parent === dir) return null;
     dir = parent;
   }
 }
 
-// Read the sole project name from `.ai-agents/workspace/project-context.yaml`.
+// Read the sole project name from `.mvtt/workspace/project-context.yaml`.
 // Returns the project array (length 1) when the file exists AND has exactly
 // one project with a non-empty name; returns null otherwise (so the caller
 // can fall back to its hardcoded default).
 function loadSoleProject(projectRoot) {
   if (!projectRoot) return null;
-  const ctxPath = join(projectRoot, ".ai-agents/workspace/project-context.yaml");
+  const ctxPath = join(projectRoot, ".mvtt/workspace/project-context.yaml");
   if (!existsSync(ctxPath)) return null;
   try {
     const ctx = parseYaml(readFileSync(ctxPath, "utf-8"));

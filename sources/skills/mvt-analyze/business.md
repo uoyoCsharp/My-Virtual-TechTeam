@@ -14,12 +14,12 @@ In this state the user is starting a new sub-change within an existing epic. Rea
 |----------|-------------|----------|
 | A | Empty | Select the `current_change` child. |
 | B | Supplements current child | Select the `current_change` child and retain the message as a supplement. |
-| C | Points to different child | Locate target in `children[]`. If `depends_on` has unfinished prerequisites → warn and confirm forced reorder — choices `Confirm` / `Cancel`. If deps satisfied → confirm switch with the same `Confirm` / `Cancel` choices. On confirmed reorder: call the Epic Update Script in `--switch-active` mode with `node .ai-agents/scripts/epic-update.cjs --epic <epic_path> --switch-active <target_id>`. If target not in `children[]` → offer to treat as independent change (exit epic-child mode) or use `--add-child` mode to append it as a new child. Read `.ai-agents/scripts/epic-update.md` only if a required mode or flag is not rendered here. Do NOT hand-edit `epic.yaml`, advance `current_change`, or read `.cjs`/`.js` source. |
+| C | Points to different child | Locate target in `children[]`. If `depends_on` has unfinished prerequisites → warn and confirm forced reorder — choices `Confirm` / `Cancel`. If deps satisfied → confirm switch with the same `Confirm` / `Cancel` choices. On confirmed reorder: call the Epic Update Script in `--switch-active` mode with `node .mvtt/scripts/epic-update.cjs --epic <epic_path> --switch-active <target_id>`. If target not in `children[]` → offer to treat as independent change (exit epic-child mode) or use `--add-child` mode to append it as a new child. Read `.mvtt/scripts/epic-update.md` only if a required mode or flag is not rendered here. Do NOT hand-edit `epic.yaml`, advance `current_change`, or read `.cjs`/`.js` source. |
 
 After selecting a child, restore its requirement baseline with exactly:
 
 ```bash
-node .ai-agents/scripts/requirement-source.cjs --effective-context <epic_path> --child <change_id>
+node .mvtt/scripts/requirement-source.cjs --effective-context <epic_path> --child <change_id>
 ```
 
 Consume only the returned `child`, `context`, `sources`, and `warnings`; do not traverse requirement references independently.
@@ -132,4 +132,4 @@ Consume only the returned `child`, `context`, `sources`, and `warnings`; do not 
 
 ### Step 7: Update Workspace
 1. Reuse `active_change.id` when Active Change Conflict Preflight selected `Continue current change`; otherwise generate change-id: `{YYYYMMDD}-{slug}` format (e.g., `20260425-user-authentication`). Slug constraints: lowercase ASCII, kebab-case, `[a-z0-9-]+`, 1-4 words.
-2. Write artifact: `.ai-agents/workspace/artifacts/{change-id}/analysis.md`
+2. Write artifact: `.mvtt/workspace/artifacts/{change-id}/analysis.md`

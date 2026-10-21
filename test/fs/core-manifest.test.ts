@@ -28,12 +28,12 @@ describe("core manifest merge (Task A)", () => {
   });
 
   function readUserManifest(): CoreManifest {
-    const p = path.join(tmpDir, ".ai-agents/knowledge/core/manifest.yaml");
+    const p = path.join(tmpDir, ".mvtt/knowledge/core/manifest.yaml");
     return parseYaml(readFileSync(p, "utf-8")) as CoreManifest;
   }
 
   function writeUserManifest(manifest: CoreManifest): void {
-    const dir = path.join(tmpDir, ".ai-agents/knowledge/core");
+    const dir = path.join(tmpDir, ".mvtt/knowledge/core");
     mkdirSync(dir, { recursive: true });
     writeFileSync(
       path.join(dir, "manifest.yaml"),
@@ -108,7 +108,7 @@ describe("core manifest merge (Task A)", () => {
 
   it("creates the user/ directory as a user_data dir on install", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
-    const userDir = path.join(tmpDir, ".ai-agents/knowledge/core/user");
+    const userDir = path.join(tmpDir, ".mvtt/knowledge/core/user");
     expect(existsSync(userDir)).toBe(true);
   });
 
@@ -117,7 +117,7 @@ describe("core manifest merge (Task A)", () => {
 
     const userFile = path.join(
       tmpDir,
-      ".ai-agents/knowledge/core/user/team-conventions.md",
+      ".mvtt/knowledge/core/user/team-conventions.md",
     );
     writeFileSync(userFile, "# Team Conventions\nuser content", "utf-8");
 
@@ -132,7 +132,7 @@ describe("core manifest merge (Task A)", () => {
 
     const manifestFile = path.join(
       tmpDir,
-      ".ai-agents/knowledge/core/manifest.yaml",
+      ".mvtt/knowledge/core/manifest.yaml",
     );
     expect(existsSync(manifestFile)).toBe(true);
 

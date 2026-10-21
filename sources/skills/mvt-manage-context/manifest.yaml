@@ -81,9 +81,9 @@ sections:
       | mvt-implement | 60 | No (below threshold) |
 
       ### Files Modified
-      - `.ai-agents/knowledge/{path}` -- {created | moved | renamed}
-      - `.ai-agents/registry.yaml` -- {entries added/removed}
-      - `.ai-agents/knowledge/core/manifest.yaml` -- {entry added/removed} (if applicable)
+      - `.mvtt/knowledge/{path}` -- {created | moved | renamed}
+      - `.mvtt/registry.yaml` -- {entries added/removed}
+      - `.mvtt/knowledge/core/manifest.yaml` -- {entry added/removed} (if applicable)
       ```
 
       ### remove
@@ -91,7 +91,7 @@ sections:
       ## Knowledge Removed
 
       ### Removed entry: `{id}`
-      - File: `.ai-agents/knowledge/{path}` (deleted)
+      - File: `.mvtt/knowledge/{path}` (deleted)
       - References dropped from:
         - `registry.yaml > knowledge._all` (if applicable)
         - `registry.yaml > knowledge.{projectName}` (if applicable)

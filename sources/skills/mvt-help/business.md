@@ -2,14 +2,14 @@
 
 ### Step 1: Load Inputs
 - **Recommended**:
-  - `.ai-agents/knowledge/project/_generated/project-context.md` -- existence check only, to detect whether semantic context has been generated. This generated semantic context (`.md`) is distinct from the structural project index (`.ai-agents/workspace/project-context.yaml`) loaded during activation.
+  - `.mvtt/knowledge/project/_generated/project-context.md` -- existence check only, to detect whether semantic context has been generated. This generated semantic context (`.md`) is distinct from the structural project index (`.mvtt/workspace/project-context.yaml`) loaded during activation.
 - **Fallback**: any missing optional file is treated as "feature absent" for assessment purposes; do not abort. If `registry.yaml` itself is missing, surface the error and recommend `mvtt install`.
 
 ### Step 2: Assess User Position
 - **What**: pick exactly one recommended next skill based on the current workspace state.
 - **How**: walk the table top-to-bottom; the first row whose condition holds wins.
 - **Evidence conventions**:
-  - Active change artifacts resolve under `.ai-agents/workspace/artifacts/{active_change.id}/`.
+  - Active change artifacts resolve under `.mvtt/workspace/artifacts/{active_change.id}/`.
   - `analysis.md`, `design.md`, `implementation.md`, `review.md`, and `test-design.md` refer to files in the active change artifact directory unless stated otherwise.
   - Completed skill history matches `session.yaml > history[].skill` exactly, using the `/mvt-` prefix and case-sensitive skill name. When `active_change.id` is non-empty, prefer history rows whose `change_id` matches the active change; use unmatched history only as fallback context.
   - `Change Tracking lists > 5 files` means `design.md > ## Change Tracking` names more than five affected files.
@@ -18,7 +18,7 @@
 
   | Condition | Recommendation |
   |-----------|---------------|
-  | `.ai-agents/workspace/session.yaml` missing or `initialized_at` empty | `/mvt-init` -- Initialize the project |
+  | `.mvtt/workspace/session.yaml` missing or `initialized_at` empty | `/mvt-init` -- Initialize the project |
   | Initialized AND `project-context.md` does not exist | `/mvt-analyze-code` -- Analyze existing code |
   | `active_epic.id` non-empty AND `active_change.id` empty (epic-pending) | `/mvt-analyze` -- Start the next sub-change in the epic |
   | No requirements (no `analysis.md` for active change AND no completed `/mvt-analyze` in `history`) | `/mvt-analyze` -- Analyze requirements |

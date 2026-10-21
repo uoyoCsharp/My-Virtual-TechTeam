@@ -33,7 +33,7 @@ describe("registry merge (map-aware)", () => {
   });
 
   const registryPath = (): string =>
-    path.join(tmpDir, ".ai-agents/registry.yaml");
+    path.join(tmpDir, ".mvtt/registry.yaml");
 
   function readRegistry(): RegistryDoc {
     return parseYaml(readFileSync(registryPath(), "utf-8")) as RegistryDoc;
@@ -215,7 +215,7 @@ describe("registry merge (map-aware)", () => {
 
   it("registry is classified create_once (not flagged as modified-generated)", () => {
     const materialized = materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
-    const entry = materialized.find((f) => f.relPath === ".ai-agents/registry.yaml");
+    const entry = materialized.find((f) => f.relPath === ".mvtt/registry.yaml");
     expect(entry).toBeTruthy();
     expect(entry!.category).toBe("create_once");
   });

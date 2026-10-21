@@ -2,6 +2,8 @@ import { existsSync } from "node:fs";
 import path from "node:path";
 import * as p from "@clack/prompts";
 import { readInstallationManifest } from "../fs/install-manifest.js";
+import { hasLegacyLayout } from "../fs/legacy-layout.js";
+import { FRAMEWORK_DIR, LEGACY_FRAMEWORK_DIR, MANIFEST_REL, fw } from "../fs/paths.js";
 import { hashFile } from "../fs/hash.js";
 import { getVersion } from "./shared.js";
 import { bilingual } from "../util/bilingual.js";
@@ -21,14 +23,29 @@ export function doctorCommand(): void {
   if (!manifest) {
     checks.push({
       status: "FAIL",
-      message: bilingual(
-        ".ai-agents/.mvtt-manifest.json not found (MVTT not installed)",
-        ".ai-agents/.mvtt-manifest.json 不存在（MVTT 尚未安装）",
-      ),
+      message: hasLegacyLayout(projectRoot)
+        ? bilingual(
+          `Legacy ${LEGACY_FRAMEWORK_DIR}/ layout detected. Run \`mvtt update\` to migrate it to ${FRAMEWORK_DIR}/.`,
+          `检测到旧目录 ${LEGACY_FRAMEWORK_DIR}/。请运行 \`mvtt update\` 迁移到 ${FRAMEWORK_DIR}/。`,
+        )
+        : bilingual(
+          `${MANIFEST_REL} not found (MVTT not installed)`,
+          `${MANIFEST_REL} 不存在（MVTT 尚未安装）`,
+        ),
     });
     report(checks);
     process.exit(1);
     return;
+  }
+
+  if (hasLegacyLayout(projectRoot)) {
+    checks.push({
+      status: "WARN",
+      message: bilingual(
+        `Legacy ${LEGACY_FRAMEWORK_DIR}/ also exists; keep only ${FRAMEWORK_DIR}/ and remove the old directory manually.`,
+        `旧目录 ${LEGACY_FRAMEWORK_DIR}/ 仍然存在；请只保留 ${FRAMEWORK_DIR}/ 并手动删除旧目录。`,
+      ),
+    });
   }
 
   checks.push({
@@ -70,11 +87,11 @@ export function doctorCommand(): void {
   }
 
   const userDirs = [
-    ".ai-agents/workspace",
-    ".ai-agents/workspace/artifacts",
-    ".ai-agents/skills/_templates/custom",
-    ".ai-agents/knowledge/principle",
-    ".ai-agents/knowledge/project",
+    fw("workspace"),
+    fw("workspace/artifacts"),
+    fw("skills/_templates/custom"),
+    fw("knowledge/principle"),
+    fw("knowledge/project"),
   ];
   let userDirsOk = true;
   for (const dir of userDirs) {

@@ -42,7 +42,7 @@ sections:
     source: sections/activation-protocol.md
     params:
       extended_context:
-        - "Scan `.ai-agents/skills/_templates/custom/` for existing customizations"
+        - "Scan `.mvtt/skills/_templates/custom/` for existing customizations"
 
   - type: shared
     source: sections/language-constraint.md

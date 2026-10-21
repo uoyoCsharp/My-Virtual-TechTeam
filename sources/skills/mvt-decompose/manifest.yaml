@@ -76,13 +76,13 @@ sections:
       ## Artifact Structure
 
       **epic.md** (narrative):
-      Read the document structure template from: `.ai-agents/skills/_templates/decompose-output.md`
-      If a custom version exists at `.ai-agents/skills/_templates/custom/decompose-output.md`, use the custom version instead.
+      Read the document structure template from: `.mvtt/skills/_templates/decompose-output.md`
+      If a custom version exists at `.mvtt/skills/_templates/custom/decompose-output.md`, use the custom version instead.
       The template defines section structure and guidance comments. Generate applicable content based on decomposition results.
-      Write to: `.ai-agents/workspace/artifacts/{epic_id}/epic.md`
+      Write to: `.mvtt/workspace/artifacts/{epic_id}/epic.md`
 
       **epic.yaml** (structured):
-      Write to: `.ai-agents/workspace/artifacts/{epic_id}/epic.yaml`
+      Write to: `.mvtt/workspace/artifacts/{epic_id}/epic.yaml`
       New-epic creation contract (`epic.yaml` is authoritative):
       ```yaml
       version: 2

@@ -22,7 +22,7 @@ sections:
       decision_rules:
         - rule: "User provides skill name -> Validate and proceed with design"
         - rule: "Name conflicts with existing skill -> Warn and ask for alternative"
-        - rule: "Skill needs output template -> Create template in `_templates/` and update manifest"
+        - rule: "Skill needs output template -> Pass --template and --template-body to the scaffolder"
         - rule: "Skill needs state updates -> Include session.yaml update rules"
         - rule: "Skill needs bundled resources -> Plan scripts/references/assets in Step 3"
         - rule: "Usage patterns unclear -> Ask for concrete examples before proceeding"
@@ -48,7 +48,7 @@ sections:
     source: sections/activation-protocol.md
     params:
       extended_context:
-        - "Load one existing SKILL.md as structural reference (e.g., `.claude/skills/mvt-status/SKILL.md`)"
+        - "Load one existing SKILL.md as structural reference from the same skills directory as this skill (prefer the `mvt-status` skill)"
 
   - type: shared
     source: sections/language-constraint.md
@@ -66,19 +66,19 @@ sections:
     content: |
       ## Output Format
 
-      No external template -- output is the generated skill files plus a creation summary:
+      No external template -- output is the generated skill files plus a creation summary. Fill the summary from the scaffolder's JSON output; never hardcode a platform path:
 
       ```markdown
       ## Custom Skill Created
 
       - **Skill**: `/{name}`
       - **Agent**: {agent role}
-      - **Location**: `.claude/skills/{name}/SKILL.md`
-      - **Registry**: `registry.yaml` (custom: true)
-      - **Template**: {created/none}
+      - **Platforms**: {platforms[].id from the script JSON}
+      - **Locations**: {platforms[].files joined with ", "}
+      - **Registry**: `.mvtt/registry.yaml` (custom: true)
+      - **Template**: {template from the script JSON, or "none"}
       - **Resources**: {scripts/references/assets listing, or none}
-      - **Knowledge**: {per-skill entries / shared only}
-      - **Context Budget**: SKILL.md body ~{N} words
+      - **Context Budget**: SKILL.md body ~{wordCount} words (from the script JSON)
 
       Use `/{name}` to invoke the new skill.
 

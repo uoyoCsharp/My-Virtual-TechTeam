@@ -54,7 +54,7 @@ sections:
       activation_reads:
         - session.yaml
       extended_context:
-        - "Scan all files under `.ai-agents/workspace/artifacts/` (all change-id directories)"
+        - "Scan all files under `.mvtt/workspace/artifacts/` (all change-id directories)"
       has_preflight: true
       checks:
         - order: "1"

@@ -14,9 +14,9 @@
  *
  * NOTE: This source file uses `import from "yaml"`. During the build pipeline,
  * esbuild bundles it into a zero-dependency single file deployed to
- * .ai-agents/scripts/requirement-source.cjs.
+ * .mvtt/scripts/requirement-source.cjs.
  *
- * Usage: see the authoritative reference at .ai-agents/scripts/requirement-source.md.
+ * Usage: see the authoritative reference at .mvtt/scripts/requirement-source.md.
  */
 
 import { readFileSync, statSync, existsSync } from "node:fs";
@@ -61,11 +61,11 @@ function toPosix(p) {
   return p.split(sep).join("/");
 }
 
-// Walk upward from `start` until a directory containing `.ai-agents` is found.
+// Walk upward from `start` until a directory containing `.mvtt` is found.
 function findWorkspaceRoot(start) {
   let dir = resolve(start);
   while (true) {
-    if (existsSync(join(dir, ".ai-agents"))) return dir;
+    if (existsSync(join(dir, ".mvtt"))) return dir;
     const parent = dirname(dir);
     if (parent === dir) return null;
     dir = parent;

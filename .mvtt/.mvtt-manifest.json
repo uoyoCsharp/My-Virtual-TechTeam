@@ -1,0 +1,217 @@
+{
+  "mvtt_version": "3.0.0",
+  "installed_at": "2026-06-10T06:40:54.542Z",
+  "last_updated_at": "2026-10-21T06:11:00.220Z",
+  "platforms": [
+    "agents"
+  ],
+  "platformSkillDirs": {
+    "agents": ".agents/skills"
+  },
+  "files": {
+    ".agents/skills/mvt-analyze/SKILL.md": {
+      "hash": "sha256:ec96c78e36a9b7a69a53c45fa47badf7f317fe52cc325bf74cf2fce8551787bb",
+      "category": "generated"
+    },
+    ".agents/skills/mvt-analyze-code/SKILL.md": {
+      "hash": "sha256:49594abb520af0113ff615f478cfb3ea480afc1ca5a261a0562991bda5e6536b",
+      "category": "generated"
+    },
+    ".agents/skills/mvt-bug-detect/SKILL.md": {
+      "hash": "sha256:1b15567a39016f6f2136493d1d35dde51b156d306b7345deaa620b91fa1c5e0d",
+      "category": "generated"
+    },
+    ".agents/skills/mvt-check-context/SKILL.md": {
+      "hash": "sha256:f7cd0907e60a869ef531778fd6ab5f7e67f3a7913d421cc226f6135d4564f5a1",
+      "category": "generated"
+    },
+    ".agents/skills/mvt-cleanup/SKILL.md": {
+      "hash": "sha256:c32e1d98bdad644fa295ad95f86414c99d9ccd640cd86a03fd0799c43dca0e5c",
+      "category": "generated"
+    },
+    ".agents/skills/mvt-config/SKILL.md": {
+      "hash": "sha256:12930f9ef1d9b40fedda9d92b83521c71ec8b22882857fc710d88a714b127404",
+      "category": "generated"
+    },
+    ".agents/skills/mvt-consult/SKILL.md": {
+      "hash": "sha256:ca073d656eb4c23598b14562b8640db002ee79ea1ade50152f1c5125b8ff826e",
+      "category": "generated"
+    },
+    ".agents/skills/mvt-create-skill/SKILL.md": {
+      "hash": "sha256:d2120b910ba7b05e9f925c6540ac8e5822da54c0d31014b1428ff68ef86ec9d7",
+      "category": "generated"
+    },
+    ".agents/skills/mvt-decompose/SKILL.md": {
+      "hash": "sha256:676a0707a592e903b4b1026b3257c92278d1e70d487fa35c60f6aaad6248eb60",
+      "category": "generated"
+    },
+    ".agents/skills/mvt-design/SKILL.md": {
+      "hash": "sha256:83360cd5f679965fcb4933f13a19da4effb16a29fe853f2d59c00fd3cc6020a2",
+      "category": "generated"
+    },
+    ".agents/skills/mvt-fix/SKILL.md": {
+      "hash": "sha256:a30561583c592e51cd0632ea674f736926fad1385a8e799838b1462cc6bc7300",
+      "category": "generated"
+    },
+    ".agents/skills/mvt-help/SKILL.md": {
+      "hash": "sha256:973daed67f03af55c4503538ec4b709717d1797e78cf7432da87b0e31164d192",
+      "category": "generated"
+    },
+    ".agents/skills/mvt-implement/SKILL.md": {
+      "hash": "sha256:08ebf75ba59e71cf87b602c3e1fad71afe2f7093f519697886b6cf4bb9da53f4",
+      "category": "generated"
+    },
+    ".agents/skills/mvt-init/SKILL.md": {
+      "hash": "sha256:30402730ab1d7df9936ed9c1430459c6452f3de7d98126e68513e24f665bc38f",
+      "category": "generated"
+    },
+    ".agents/skills/mvt-manage-context/SKILL.md": {
+      "hash": "sha256:e65daf5d2219691ee28e09a0b4bc8e5c8a27fec1108576f3bb8d7d2a48c3e020",
+      "category": "generated"
+    },
+    ".agents/skills/mvt-plan-dev/SKILL.md": {
+      "hash": "sha256:3044c47cefe47bb275926183bee8d628e5ed83fdb3fc9f6b1deec66eb3eefa0e",
+      "category": "generated"
+    },
+    ".agents/skills/mvt-quick-dev/SKILL.md": {
+      "hash": "sha256:36a1f61e6b453c2e202176b6deb912f0e24b886a83e3a015c889ee3111a4ced6",
+      "category": "generated"
+    },
+    ".agents/skills/mvt-refactor/SKILL.md": {
+      "hash": "sha256:51da76b3f280c0096fe9ee409f4d45a36cd70140b76d72617e0311d9be6e56df",
+      "category": "generated"
+    },
+    ".agents/skills/mvt-resume/SKILL.md": {
+      "hash": "sha256:7ef7be5dfc0609a63cbd45a500d70024a4d00f3fe0807583aa0dff56c32a7cd7",
+      "category": "generated"
+    },
+    ".agents/skills/mvt-review/SKILL.md": {
+      "hash": "sha256:00dfdd2c1f5d2e73b7e06683bba28ac18e6a81ed28744197eeb8718de7423400",
+      "category": "generated"
+    },
+    ".agents/skills/mvt-status/SKILL.md": {
+      "hash": "sha256:7a669fb7b44fe6118cf958348023cc2626481de7da1e9a056fc7f583aeb2b0b5",
+      "category": "generated"
+    },
+    ".agents/skills/mvt-sync-context/SKILL.md": {
+      "hash": "sha256:5d6704c17c3e0176ab376a93be71730537f445586e68c618a9554a850d434ad8",
+      "category": "generated"
+    },
+    ".agents/skills/mvt-template/SKILL.md": {
+      "hash": "sha256:50be6a2b05899866b80ff8c4fff62cb09e115db707e5a585158d1e93e12f0133",
+      "category": "generated"
+    },
+    ".agents/skills/mvt-test/SKILL.md": {
+      "hash": "sha256:0dcbdb044c6a17a88abe7e172f5f75cb42893751322e84cfb9929d250a7e8b5e",
+      "category": "generated"
+    },
+    ".agents/skills/mvt-update-plan/SKILL.md": {
+      "hash": "sha256:41eaf6a75e62ca195290914c0eabb7a4240da59d3b29f1d2f5ce7d2801fed2d1",
+      "category": "generated"
+    },
+    ".mvtt/skills/_templates/analyze-output.md": {
+      "hash": "sha256:204a25ec8d1146d7ed3c94a9c1e77a3e93a397d608d3af40bd52c321fe9d46d7",
+      "category": "generated"
+    },
+    ".mvtt/skills/_templates/decompose-output.md": {
+      "hash": "sha256:f9021411d002171de29ca920e61c8b13f1c4556da6f74d25a311ab078791d767",
+      "category": "generated"
+    },
+    ".mvtt/skills/_templates/design-output.md": {
+      "hash": "sha256:ed034bf8e19fbd8302127d8c162cd40e548f74d008b53317c4c69da98dce7459",
+      "category": "generated"
+    },
+    ".mvtt/skills/_templates/implement-output.md": {
+      "hash": "sha256:7350f4a871e4143785a3c6fab9da982e2589c46f99202fbdcb9430ac8cbb548b",
+      "category": "generated"
+    },
+    ".mvtt/skills/_templates/project-context.md": {
+      "hash": "sha256:758dc54f029f9d81d600a118fbef264b74eca85120ecb1caf7824a5d71c38047",
+      "category": "generated"
+    },
+    ".mvtt/skills/_templates/review-output.md": {
+      "hash": "sha256:530304940e6b565565444c22d3da9e4272ae578d15453e4103404274ba560473",
+      "category": "generated"
+    },
+    ".mvtt/skills/_templates/test-output.md": {
+      "hash": "sha256:371eca26425c8c341b0a2cd896617d8de287ec46cba36478a0a8029ca7ad6aad",
+      "category": "generated"
+    },
+    ".mvtt/knowledge/core/manifest.yaml": {
+      "hash": "sha256:17bb5c898eb7cf91132aca8710b7c807af072dfec645301af241353ffdbe9e6c",
+      "category": "create_once"
+    },
+    ".mvtt/registry.yaml": {
+      "hash": "sha256:31dbf4e1622382c2ed178fb23c123cdf969504bb0be0353545d643978bd0f3fe",
+      "category": "create_once"
+    },
+    ".mvtt/scripts/artifact-scan.cjs": {
+      "hash": "sha256:f3b40dba5ea80fff0eed004a0a545126422eb258a0e481bebd3272a2a430f9e8",
+      "category": "generated"
+    },
+    ".mvtt/scripts/artifact-scan.md": {
+      "hash": "sha256:0502ae40d4ea590a91e1174bdea5a115389f511ea5c186b1529a08d21f6fe2f5",
+      "category": "generated"
+    },
+    ".mvtt/scripts/epic-update.cjs": {
+      "hash": "sha256:921bccaace1deddd5fb6a8613cf6d4de9b8812a0a431e0f93da86c2e62a961b1",
+      "category": "generated"
+    },
+    ".mvtt/scripts/epic-update.md": {
+      "hash": "sha256:09068a827684194c4fa6ac61166e308c3586e444ffe41fa5b46b9e6a425b47d4",
+      "category": "generated"
+    },
+    ".mvtt/scripts/plan-update.cjs": {
+      "hash": "sha256:63ea2a331d55f44c39f985ea035d85292ff105b830a73b8dc28defe1ed332901",
+      "category": "generated"
+    },
+    ".mvtt/scripts/plan-update.md": {
+      "hash": "sha256:514fdbd58e5a0494872d2855dc3b46d0e4891a246e13250ab110a3e7dbb0413a",
+      "category": "generated"
+    },
+    ".mvtt/scripts/requirement-source.cjs": {
+      "hash": "sha256:da6cbcfbae0de80f814f491a934e9254557d61d958e8e56a9b4d3c2f1a247b97",
+      "category": "generated"
+    },
+    ".mvtt/scripts/requirement-source.md": {
+      "hash": "sha256:01135aff3e9dbacf99f081dd9ef8134f9673836bca89d44c3d2bae9e65e116d1",
+      "category": "generated"
+    },
+    ".mvtt/scripts/session-update.cjs": {
+      "hash": "sha256:597e7b00f6b4e5d7be2ee3b92652ac704b99f8329840313769e24f06799e542f",
+      "category": "generated"
+    },
+    ".mvtt/scripts/session-update.md": {
+      "hash": "sha256:5b3a8455222709348210f5d3fc2150ef43ef9b20a7329b904168e54a991976c5",
+      "category": "generated"
+    },
+    ".mvtt/scripts/skill-scaffold.cjs": {
+      "hash": "sha256:a8f464ff4ab99c7b63af1073ac1a8546cca45bab2f3b18c4bf889ff1f0fb4edc",
+      "category": "generated"
+    },
+    ".mvtt/scripts/skill-scaffold.md": {
+      "hash": "sha256:8d5bf5c24e45152ee83ca289ce5d6f99b1fc2431c5a89dce730afdd8c2924cda",
+      "category": "generated"
+    },
+    ".mvtt/scripts/workspace-state-check.cjs": {
+      "hash": "sha256:7c4fd85c91344f914e1ed01dff0defdf7fc1d2ae56210de72dfed17331cdc8ea",
+      "category": "generated"
+    },
+    ".mvtt/scripts/workspace-state-check.md": {
+      "hash": "sha256:62d6a1ef19afab1db53534c377149e403a230d6b5aba95acb8a738a0b76746ec",
+      "category": "generated"
+    },
+    ".mvtt/config.yaml": {
+      "hash": "sha256:dfd32e405849ccc29d2363809fbf97cf04a7179a39bf15ea7a1dc223bbbdeaf2",
+      "category": "create_once"
+    },
+    ".mvtt/workspace/session.yaml": {
+      "hash": "sha256:7d97de8317f677dcfdcbf8c60bb86730214016b75fc2680ab7f8c1648e8924c1",
+      "category": "create_once"
+    },
+    ".mvtt/workspace/project-context.yaml": {
+      "hash": "sha256:3e783370e6af1ce40a0d436ef0edfa47f30c143366654747892118e3fb705f54",
+      "category": "create_once"
+    }
+  }
+}

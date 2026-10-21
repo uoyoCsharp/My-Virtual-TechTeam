@@ -1,7 +1,7 @@
 {{?read_only}}
 ## State Update
 
-This skill is read-only and does NOT modify `.ai-agents/workspace/session.yaml`.
+This skill is read-only and does NOT modify `.mvtt/workspace/session.yaml`.
 {{/read_only}}
 {{^read_only}}
 ## State Update
@@ -9,7 +9,7 @@ This skill is read-only and does NOT modify `.ai-agents/workspace/session.yaml`.
 After the skill's main task, run the session update script **exactly once**:
 
 ```bash
-node .ai-agents/scripts/session-update.cjs --skill {{current_skill}} --summary "<concise one-line summary>"{{#update_active_change}} --new-change "<active_change.title>" --change-id <active_change.id>{{#link_subchange_to_epic}} [--epic-id <active_epic.id>]{{/link_subchange_to_epic}}{{/update_active_change}}{{#set_plan_path}} --set-plan-path ".ai-agents/workspace/artifacts/{active_change.id}/plan.yaml"{{/set_plan_path}}{{#update_change}} --update-change{{/update_change}}{{#close_change}} --close-change{{/close_change}}{{#set_change_status}} --set-change-status <status>{{/set_change_status}}{{#new_epic}} --new-epic "<epic_title>" --epic-id <epic_id>{{/new_epic}}{{#set_epic_path}} --set-epic-path <epic_path>{{/set_epic_path}}{{#set_epic_status}} --set-epic-status <status>{{/set_epic_status}}{{#close_epic}} --close-epic{{/close_epic}}{{#no_change}} --no-change{{/no_change}}{{#set_synced}} --set-synced{{/set_synced}}{{#truncate_history}} --truncate-history <count>{{/truncate_history}}{{#update_initialized_at}} --set-initialized{{/update_initialized_at}}{{#remove_change}} --remove-change <ids>{{/remove_change}}{{#remove_epic}} --remove-epic <ids>{{/remove_epic}}{{#runtime_lifecycle}} <route-selected lifecycle flags>{{/runtime_lifecycle}}{{#runtime_cleanup}} <action-selected cleanup flags>{{/runtime_cleanup}}
+node .mvtt/scripts/session-update.cjs --skill {{current_skill}} --summary "<concise one-line summary>"{{#update_active_change}} --new-change "<active_change.title>" --change-id <active_change.id>{{#link_subchange_to_epic}} [--epic-id <active_epic.id>]{{/link_subchange_to_epic}}{{/update_active_change}}{{#set_plan_path}} --set-plan-path ".mvtt/workspace/artifacts/{active_change.id}/plan.yaml"{{/set_plan_path}}{{#update_change}} --update-change{{/update_change}}{{#close_change}} --close-change{{/close_change}}{{#set_change_status}} --set-change-status <status>{{/set_change_status}}{{#new_epic}} --new-epic "<epic_title>" --epic-id <epic_id>{{/new_epic}}{{#set_epic_path}} --set-epic-path <epic_path>{{/set_epic_path}}{{#set_epic_status}} --set-epic-status <status>{{/set_epic_status}}{{#close_epic}} --close-epic{{/close_epic}}{{#no_change}} --no-change{{/no_change}}{{#set_synced}} --set-synced{{/set_synced}}{{#truncate_history}} --truncate-history <count>{{/truncate_history}}{{#update_initialized_at}} --set-initialized{{/update_initialized_at}}{{#remove_change}} --remove-change <ids>{{/remove_change}}{{#remove_epic}} --remove-epic <ids>{{/remove_epic}}{{#runtime_lifecycle}} <route-selected lifecycle flags>{{/runtime_lifecycle}}{{#runtime_cleanup}} <action-selected cleanup flags>{{/runtime_cleanup}}
 ```
 
 Write `--summary` as one concise line in the configured `interaction_language`.

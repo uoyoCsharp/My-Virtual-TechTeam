@@ -56,7 +56,7 @@ sections:
     source: sections/activation-protocol.md
     params:
       extended_context:
-        - ".ai-agents/config.yaml -- Current configuration (this skill's primary target)"
+        - ".mvtt/config.yaml -- Current configuration (this skill's primary target)"
 
   - type: shared
     source: sections/language-constraint.md

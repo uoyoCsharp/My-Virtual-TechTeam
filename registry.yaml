@@ -27,16 +27,16 @@ skills:
     description: "Clean up workspace artifacts, summarize completed changes, and archive change records."
   mvt-analyze:
     description: "Analyze requirements and extract domain concepts, features, and business rules."
-    template: .ai-agents/skills/_templates/analyze-output.md
+    template: .mvtt/skills/_templates/analyze-output.md
   mvt-analyze-code:
     description: "Reverse-analyze existing code into project-context.md (terms, modules, layers, rules)."
-    template: .ai-agents/skills/_templates/project-context.md
+    template: .mvtt/skills/_templates/project-context.md
   mvt-decompose:
     description: "Decompose epic-scale requirements into right-sized sub-changes with DAG dependencies."
-    template: .ai-agents/skills/_templates/decompose-output.md
+    template: .mvtt/skills/_templates/decompose-output.md
   mvt-design:
     description: "Create architecture design from analyzed requirements."
-    template: .ai-agents/skills/_templates/design-output.md
+    template: .mvtt/skills/_templates/design-output.md
   mvt-plan-dev:
     description: "Generate a tracked development plan (plan.yaml) for a large change."
   mvt-update-plan:
@@ -47,7 +47,7 @@ skills:
     description: "Answer questions about project logic and verify implementation details, grounded in knowledge and source code."
   mvt-implement:
     description: "Implement features from architecture design; write production code."
-    template: .ai-agents/skills/_templates/implement-output.md
+    template: .mvtt/skills/_templates/implement-output.md
   mvt-fix:
     description: "Diagnose and fix bugs or errors in the codebase."
   mvt-refactor:
@@ -56,10 +56,10 @@ skills:
     description: "Quickly implement well-scoped, clearly specified changes without the full analyze-design-implement workflow — including multi-file mechanical sweeps; architecturally neutral by default, structural changes only with explicit user waiver."
   mvt-review:
     description: "Review code for quality, standards compliance, and best practices."
-    template: .ai-agents/skills/_templates/review-output.md
+    template: .mvtt/skills/_templates/review-output.md
   mvt-test:
     description: "Generate and design tests to validate implementations."
-    template: .ai-agents/skills/_templates/test-output.md
+    template: .mvtt/skills/_templates/test-output.md
   mvt-help:
     description: "Show available skills, project status, and workflow guidance."
   mvt-resume:

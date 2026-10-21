@@ -11,7 +11,7 @@ active_epic:
 epics: []
   # - id: "epic-20260608-ecommerce-platform"
   #   title: "ecommerce platform"
-  #   epic_path: ".ai-agents/workspace/artifacts/epic-20260608-ecommerce-platform/epic.yaml"
+  #   epic_path: ".mvtt/workspace/artifacts/epic-20260608-ecommerce-platform/epic.yaml"
   #   status: "active"   # active | done | abandoned
   #   updated_at: "..."
 
@@ -25,7 +25,7 @@ active_change:
 changes: []
   # - id: "chg-001"
   #   title: "User authentication"
-  #   plan_path: ".ai-agents/workspace/artifacts/chg-001/plan.yaml"
+  #   plan_path: ".mvtt/workspace/artifacts/chg-001/plan.yaml"
   #   status: "active"           # active | done | abandoned
   #   updated_at: "2026-05-23T14:30:00"
 

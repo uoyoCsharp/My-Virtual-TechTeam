@@ -2,6 +2,7 @@ import { Command } from "commander";
 import * as p from "@clack/prompts";
 import { installCommand } from "./commands/install.js";
 import { updateCommand } from "./commands/update.js";
+import { platformListCommand, platformUpdateCommand } from "./commands/platform.js";
 import { doctorCommand } from "./commands/doctor.js";
 import { uninstallCommand } from "./commands/uninstall.js";
 import { getVersion } from "./commands/shared.js";
@@ -42,6 +43,37 @@ export async function run(argv: string[]): Promise<void> {
     .action(async (opts) => {
       await updateCommand(opts);
     });
+
+  const platform = program
+    .command("platform")
+    .description(bilingual(
+      "Manage the platforms MVTT writes skills to",
+      "管理 MVTT 写入技能的平台目标",
+    ));
+
+  platform
+    .command("list")
+    .description(bilingual(
+      "List supported and installed targets",
+      "列出支持与已安装的目标",
+    ))
+    .action(() => {
+      platformListCommand();
+    });
+
+  platform
+    .command("update")
+    .description(bilingual(
+      "Interactively add or remove targets",
+      "交互式增删目标",
+    ))
+    .action(async () => {
+      await platformUpdateCommand();
+    });
+
+  platform.action(() => {
+    platform.outputHelp();
+  });
 
   program
     .command("doctor")

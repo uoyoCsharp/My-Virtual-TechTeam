@@ -4,9 +4,9 @@
 
 ### Step 1: Load Inputs
 - **Required**:
-  - `.ai-agents/config.yaml` -- the configuration to inspect and edit.
+  - `.mvtt/config.yaml` -- the configuration to inspect and edit.
 - **Recommended**:
-  - `.ai-agents/knowledge/core/manifest.yaml` -- only when computing token estimates for the shared knowledge view.
+  - `.mvtt/knowledge/core/manifest.yaml` -- only when computing token estimates for the shared knowledge view.
 - **Fallback**: if `config.yaml` is missing, surface the error and recommend `mvtt install` or `/mvt-init`. Do not silently create a fresh config from this skill.
 
 ### Step 2: Interactive Menu (entry point)

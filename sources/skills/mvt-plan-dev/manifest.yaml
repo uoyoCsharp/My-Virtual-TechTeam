@@ -49,8 +49,8 @@ sections:
       activation_reads:
         - session.yaml
       extended_context:
-        - ".ai-agents/workspace/artifacts/{active_change.id}/ -- Existing analysis/design artifacts for this change"
-        - ".ai-agents/workspace/artifacts/{active_change.id}/plan.yaml -- Existing plan, if any (regeneration mode)"
+        - ".mvtt/workspace/artifacts/{active_change.id}/ -- Existing analysis/design artifacts for this change"
+        - ".mvtt/workspace/artifacts/{active_change.id}/plan.yaml -- Existing plan, if any (regeneration mode)"
       has_preflight: true
       checks:
         - order: "1"

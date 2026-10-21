@@ -5,7 +5,7 @@
 ## Command
 
 ```bash
-node .ai-agents/scripts/session-update.cjs \
+node .mvtt/scripts/session-update.cjs \
   --skill <skill-name> \
   --summary "<interaction-language summary>" \
   [lifecycle and maintenance flags]
@@ -36,7 +36,7 @@ Every invocation validates all flags and session-state preconditions before muta
 ## Repair and Cleanup Flags
 
 ```bash
-node .ai-agents/scripts/session-update.cjs \
+node .mvtt/scripts/session-update.cjs \
   --skill mvt-cleanup \
   --summary "Repair stale lifecycle entries" \
   --prune-empty-changes \

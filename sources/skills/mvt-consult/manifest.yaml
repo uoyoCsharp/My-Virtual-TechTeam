@@ -48,7 +48,7 @@ sections:
       activation_reads:
         - session.yaml
       extended_context:
-        - ".ai-agents/knowledge/project/_generated/project-context.md -- semantic project context (terms, modules, layers, business rules), if present"
+        - ".mvtt/knowledge/project/_generated/project-context.md -- semantic project context (terms, modules, layers, business rules), if present"
         - "Source files relevant to the question (load on demand once the question narrows down a module/file/symbol)"
 
   - type: shared

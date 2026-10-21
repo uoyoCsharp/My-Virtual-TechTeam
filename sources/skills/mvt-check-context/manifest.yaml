@@ -35,7 +35,7 @@ sections:
     source: sections/activation-protocol.md
     params:
       extended_context:
-        - ".ai-agents/config.yaml -- Framework configuration (read thresholds and preferences; do not count config itself as context payload)"
+        - ".mvtt/config.yaml -- Framework configuration (read thresholds and preferences; do not count config itself as context payload)"
 
   - type: shared
     source: sections/language-constraint.md

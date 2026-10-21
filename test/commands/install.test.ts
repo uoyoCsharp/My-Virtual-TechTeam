@@ -1,5 +1,5 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
-import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from "node:fs";
 import path from "node:path";
 import os from "node:os";
 import { materializeProject } from "../../src/fs/materialize.js";
@@ -8,6 +8,7 @@ import {
   writeInstallationManifest,
 } from "../../src/fs/install-manifest.js";
 import { installCommand } from "../../src/commands/install.js";
+import { getPlatformById } from "../../src/types/platform.js";
 
 vi.mock("@clack/prompts", () => ({
   select: vi.fn().mockResolvedValue("en-US"),
@@ -51,40 +52,40 @@ describe("install (via materialize + manifest)", () => {
     expect(materialized.length).toBeGreaterThan(25);
     expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-analyze/SKILL.md"))).toBe(true);
     expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-init/SKILL.md"))).toBe(true);
-    expect(existsSync(path.join(tmpDir, ".ai-agents/skills/_templates/analyze-output.md"))).toBe(true);
+    expect(existsSync(path.join(tmpDir, ".mvtt/skills/_templates/analyze-output.md"))).toBe(true);
     expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-plan-dev/SKILL.md"))).toBe(true);
     expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-update-plan/SKILL.md"))).toBe(true);
-    expect(existsSync(path.join(tmpDir, ".ai-agents/skills/_templates/project-context.md"))).toBe(true);
+    expect(existsSync(path.join(tmpDir, ".mvtt/skills/_templates/project-context.md"))).toBe(true);
   });
 
   it("creates CREATE_ONCE files", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
-    expect(existsSync(path.join(tmpDir, ".ai-agents/config.yaml"))).toBe(true);
-    expect(existsSync(path.join(tmpDir, ".ai-agents/workspace/session.yaml"))).toBe(true);
-    expect(existsSync(path.join(tmpDir, ".ai-agents/workspace/project-context.yaml"))).toBe(true);
+    expect(existsSync(path.join(tmpDir, ".mvtt/config.yaml"))).toBe(true);
+    expect(existsSync(path.join(tmpDir, ".mvtt/workspace/session.yaml"))).toBe(true);
+    expect(existsSync(path.join(tmpDir, ".mvtt/workspace/project-context.yaml"))).toBe(true);
   });
 
   it("creates USER DATA directories", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
-    expect(existsSync(path.join(tmpDir, ".ai-agents/workspace/artifacts"))).toBe(true);
-    expect(existsSync(path.join(tmpDir, ".ai-agents/skills/_templates/custom"))).toBe(true);
-    expect(existsSync(path.join(tmpDir, ".ai-agents/knowledge/principle"))).toBe(true);
-    expect(existsSync(path.join(tmpDir, ".ai-agents/knowledge/project"))).toBe(true);
+    expect(existsSync(path.join(tmpDir, ".mvtt/workspace/artifacts"))).toBe(true);
+    expect(existsSync(path.join(tmpDir, ".mvtt/skills/_templates/custom"))).toBe(true);
+    expect(existsSync(path.join(tmpDir, ".mvtt/knowledge/principle"))).toBe(true);
+    expect(existsSync(path.join(tmpDir, ".mvtt/knowledge/project"))).toBe(true);
   });
 
   it("copies knowledge files", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     expect(
-      existsSync(path.join(tmpDir, ".ai-agents/knowledge/core/manifest.yaml")),
+      existsSync(path.join(tmpDir, ".mvtt/knowledge/core/manifest.yaml")),
     ).toBe(true);
     expect(
-      existsSync(path.join(tmpDir, ".ai-agents/knowledge/core/user")),
+      existsSync(path.join(tmpDir, ".mvtt/knowledge/core/user")),
     ).toBe(true);
   });
 
   it("copies registry to runtime", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
-    expect(existsSync(path.join(tmpDir, ".ai-agents/registry.yaml"))).toBe(true);
+    expect(existsSync(path.join(tmpDir, ".mvtt/registry.yaml"))).toBe(true);
   });
 
   it("generated skill files start with frontmatter", () => {
@@ -111,8 +112,8 @@ describe("install (via materialize + manifest)", () => {
 
   it("materializes the new bundled scanner and checker scripts with docs", () => {
     materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
-    for (const name of ["artifact-scan.cjs", "artifact-scan.md", "workspace-state-check.cjs", "workspace-state-check.md"]) {
-      expect(existsSync(path.join(tmpDir, ".ai-agents/scripts", name))).toBe(true);
+    for (const name of ["artifact-scan.cjs", "artifact-scan.md", "workspace-state-check.cjs", "workspace-state-check.md", "skill-scaffold.cjs", "skill-scaffold.md"]) {
+      expect(existsSync(path.join(tmpDir, ".mvtt/scripts", name))).toBe(true);
     }
   });
 
@@ -121,7 +122,7 @@ describe("install (via materialize + manifest)", () => {
     process.chdir(tmpDir);
     try {
       await installCommand();
-      const config = readFileSync(path.join(tmpDir, ".ai-agents/config.yaml"), "utf-8");
+      const config = readFileSync(path.join(tmpDir, ".mvtt/config.yaml"), "utf-8");
       expect(config).toMatch(/interaction_language:\s*en-US/);
       expect(config).toMatch(/document_output_language:\s*en-US/);
     } finally {
@@ -144,8 +145,8 @@ describe("install (via materialize + manifest)", () => {
     expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-analyze/SKILL.md"))).toBe(true);
     expect(existsSync(path.join(tmpDir, ".qoder/skills/mvt-analyze/SKILL.md"))).toBe(true);
 
-    // Templates should still be in .ai-agents (not per-platform)
-    expect(existsSync(path.join(tmpDir, ".ai-agents/skills/_templates/analyze-output.md"))).toBe(true);
+    // Templates should still be in .mvtt (not per-platform)
+    expect(existsSync(path.join(tmpDir, ".mvtt/skills/_templates/analyze-output.md"))).toBe(true);
   });
 
   it("multi-platform: content is identical across platforms", () => {
@@ -205,5 +206,119 @@ describe("install (via materialize + manifest)", () => {
       (f) => f.category === "generated" && f.relPath.includes("/skills/mvt-"),
     );
     expect(skillEntries.every((f) => f.relPath.startsWith(".claude/skills/"))).toBe(true);
+  });
+
+  // -- Shared .agents target --
+
+  it("agents target: writes the shared .agents/skills tree only", () => {
+    const materialized = materializeProject({
+      packageRoot: PACKAGE_ROOT,
+      projectRoot: tmpDir,
+      platforms: ["agents"],
+    });
+
+    const skillEntries = materialized.filter(
+      (f) => f.category === "generated" && f.relPath.includes("/skills/mvt-"),
+    );
+    expect(skillEntries.length).toBeGreaterThan(20);
+    expect(skillEntries.every((f) => f.relPath.startsWith(".agents/skills/"))).toBe(true);
+    expect(existsSync(path.join(tmpDir, ".agents/skills/mvt-init/SKILL.md"))).toBe(true);
+    expect(existsSync(path.join(tmpDir, ".claude"))).toBe(false);
+    expect(existsSync(path.join(tmpDir, ".cursor"))).toBe(false);
+    expect(existsSync(path.join(tmpDir, ".opencode"))).toBe(false);
+  });
+
+  it("agents target: content matches the claude target byte-for-byte", () => {
+    materializeProject({
+      packageRoot: PACKAGE_ROOT,
+      projectRoot: tmpDir,
+      platforms: ["claude", "agents"],
+    });
+
+    for (const skill of ["mvt-init", "mvt-create-skill", "mvt-check-context"]) {
+      const claude = readFileSync(
+        path.join(tmpDir, ".claude/skills", skill, "SKILL.md"),
+        "utf-8",
+      );
+      const agents = readFileSync(
+        path.join(tmpDir, ".agents/skills", skill, "SKILL.md"),
+        "utf-8",
+      );
+      expect(agents).toBe(claude);
+    }
+  });
+
+  it("agents target: records the shared target in the installation manifest", () => {
+    const materialized = materializeProject({
+      packageRoot: PACKAGE_ROOT,
+      projectRoot: tmpDir,
+      platforms: ["agents"],
+    });
+    writeInstallationManifest(tmpDir, "2.3.1", materialized, null, ["agents"]);
+
+    const manifest = readInstallationManifest(tmpDir);
+    expect(manifest!.platforms).toEqual(["agents"]);
+    expect(manifest!.platformSkillDirs).toEqual({ agents: ".agents/skills" });
+  });
+
+  it("records resolved platformSkillDirs in the installation manifest", () => {
+    const materialized = materializeProject({
+      packageRoot: PACKAGE_ROOT,
+      projectRoot: tmpDir,
+      platforms: ["claude", "qoder"],
+    });
+    writeInstallationManifest(tmpDir, "2.3.1", materialized, null, ["claude", "qoder"]);
+
+    const manifest = readInstallationManifest(tmpDir);
+    const expected = Object.fromEntries(
+      ["claude", "qoder"].map((id) => [id, getPlatformById(id)!.skillDir]),
+    );
+    expect(manifest!.platformSkillDirs).toEqual(expected);
+  });
+
+  it("generated skills never reference the legacy .ai-agents directory", () => {
+    materializeProject({
+      packageRoot: PACKAGE_ROOT,
+      projectRoot: tmpDir,
+      platforms: ["claude"],
+    });
+
+    const skillsRoot = path.join(tmpDir, ".claude/skills");
+    const offenders: string[] = [];
+    for (const entry of readdirSync(skillsRoot)) {
+      const skillFile = path.join(skillsRoot, entry, "SKILL.md");
+      if (existsSync(skillFile) && readFileSync(skillFile, "utf-8").includes(".ai-agents")) {
+        offenders.push(entry);
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  // Regression for the custom-skill portability bug: generated skill content must
+  // never hardcode another platform's skills directory, because the same bytes are
+  // copied to every selected platform.
+  it("multi-platform: generated skills never hardcode the claude skills directory", () => {
+    materializeProject({
+      packageRoot: PACKAGE_ROOT,
+      projectRoot: tmpDir,
+      platforms: ["cursor"],
+    });
+
+    const skillsRoot = path.join(tmpDir, ".cursor/skills");
+    const offenders: string[] = [];
+    for (const entry of readdirSync(skillsRoot)) {
+      const skillFile = path.join(skillsRoot, entry, "SKILL.md");
+      if (existsSync(skillFile) && readFileSync(skillFile, "utf-8").includes(".claude/skills")) {
+        offenders.push(entry);
+      }
+    }
+    expect(offenders).toEqual([]);
+
+    const createSkill = readFileSync(
+      path.join(skillsRoot, "mvt-create-skill", "SKILL.md"),
+      "utf-8",
+    );
+    expect(createSkill).toContain("skill-scaffold.cjs");
+    expect(createSkill).not.toContain(".claude/skills");
   });
 });

@@ -1,7 +1,7 @@
 ## Suggested Next Steps
 
 Recommend 2-3 relevant next skills based on the skill just completed (`{{current_skill}}`) and the current project state.
-**Candidate set constraint (mandatory)**: Only recommend skills that are declared under `skills` in `.ai-agents/registry.yaml`.
+**Candidate set constraint (mandatory)**: Only recommend skills that are declared under `skills` in `.mvtt/registry.yaml`.
 {{#conditional_suggestions}}
 
 ### Conditional Recommendations

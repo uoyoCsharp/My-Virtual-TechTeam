@@ -1,5 +1,5 @@
 name: test-output
-output: .ai-agents/skills/_templates/test-output.md
+output: .mvtt/skills/_templates/test-output.md
 
 frontmatter:
   id: test-output

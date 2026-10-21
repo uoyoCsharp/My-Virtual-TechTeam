@@ -14,7 +14,7 @@ describe("workspace-state-check.cjs", () => {
 
   beforeEach(() => {
     tmpDir = mkdtempSync(path.join(os.tmpdir(), "mvtt-state-check-"));
-    workspaceDir = path.join(tmpDir, ".ai-agents", "workspace");
+    workspaceDir = path.join(tmpDir, ".mvtt", "workspace");
     sessionPath = path.join(workspaceDir, "session.yaml");
     mkdirSync(workspaceDir, { recursive: true });
   });
@@ -46,9 +46,9 @@ describe("workspace-state-check.cjs", () => {
     writePlan("invalid-change", "tasks: not-an-array\n");
     writeSession([
       { id: "", status: "active", plan_path: "" },
-      { id: "done-change", status: "active", plan_path: ".ai-agents/workspace/artifacts/done-change/plan.yaml" },
-      { id: "missing-change", status: "active", plan_path: ".ai-agents/workspace/artifacts/missing-change/plan.yaml" },
-      { id: "invalid-change", status: "active", plan_path: ".ai-agents/workspace/artifacts/invalid-change/plan.yaml" },
+      { id: "done-change", status: "active", plan_path: ".mvtt/workspace/artifacts/done-change/plan.yaml" },
+      { id: "missing-change", status: "active", plan_path: ".mvtt/workspace/artifacts/missing-change/plan.yaml" },
+      { id: "invalid-change", status: "active", plan_path: ".mvtt/workspace/artifacts/invalid-change/plan.yaml" },
       { id: "orphan-epic", status: "active", plan_path: "", epic_id: "epic-missing" },
     ]);
 
@@ -69,7 +69,7 @@ describe("workspace-state-check.cjs", () => {
   it("does not flag the active change when its indexed plan is done", () => {
     writePlan("active-change", "status: done\ntasks: []\n");
     writeSession([
-      { id: "active-change", status: "active", plan_path: ".ai-agents/workspace/artifacts/active-change/plan.yaml" },
+      { id: "active-change", status: "active", plan_path: ".mvtt/workspace/artifacts/active-change/plan.yaml" },
     ]);
 
     const result = check();
@@ -79,7 +79,7 @@ describe("workspace-state-check.cjs", () => {
 
   it("never modifies session or plan files", () => {
     writePlan("active-change", "status: done\ntasks: []\n");
-    writeSession([{ id: "active-change", status: "active", plan_path: ".ai-agents/workspace/artifacts/active-change/plan.yaml" }]);
+    writeSession([{ id: "active-change", status: "active", plan_path: ".mvtt/workspace/artifacts/active-change/plan.yaml" }]);
     const planPath = path.join(workspaceDir, "artifacts", "active-change", "plan.yaml");
     const sessionBefore = readFileSync(sessionPath, "utf-8");
     const planBefore = readFileSync(planPath, "utf-8");

@@ -4,6 +4,7 @@ import {
   mkdirSync,
   mkdtempSync,
   readFileSync,
+  renameSync,
   rmSync,
   writeFileSync,
 } from "node:fs";
@@ -33,10 +34,10 @@ describe("update (via re-materialize)", () => {
     const initial = materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     writeInstallationManifest(tmpDir, "2.0.0", initial, null);
 
-    const userFile = path.join(tmpDir, ".ai-agents/workspace/artifacts/user-data.md");
+    const userFile = path.join(tmpDir, ".mvtt/workspace/artifacts/user-data.md");
     writeFileSync(userFile, "user content", "utf-8");
 
-    const configPath = path.join(tmpDir, ".ai-agents/config.yaml");
+    const configPath = path.join(tmpDir, ".mvtt/config.yaml");
     const customConfig = "# user customized\nversion: 2.0";
     writeFileSync(configPath, customConfig, "utf-8");
 
@@ -65,7 +66,7 @@ describe("update (via re-materialize)", () => {
     writeInstallationManifest(tmpDir, "2.0.0", initial, null);
 
     for (const name of ["artifact-scan.cjs", "artifact-scan.md", "workspace-state-check.cjs", "workspace-state-check.md"]) {
-      const target = path.join(tmpDir, ".ai-agents/scripts", name);
+      const target = path.join(tmpDir, ".mvtt/scripts", name);
       expect(existsSync(target)).toBe(true);
       writeFileSync(target, "tampered", "utf-8");
     }
@@ -79,7 +80,7 @@ describe("update (via re-materialize)", () => {
     }
 
     for (const name of ["artifact-scan.cjs", "artifact-scan.md", "workspace-state-check.cjs", "workspace-state-check.md"]) {
-      const target = path.join(tmpDir, ".ai-agents/scripts", name);
+      const target = path.join(tmpDir, ".mvtt/scripts", name);
       const content = readFileSync(target, "utf-8");
       expect(content).not.toBe("tampered");
     }
@@ -89,7 +90,7 @@ describe("update (via re-materialize)", () => {
     const initial = materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
     writeInstallationManifest(tmpDir, "2.2.4", initial, null);
 
-    const scannerPath = path.join(tmpDir, ".ai-agents/scripts/artifact-scan.cjs");
+    const scannerPath = path.join(tmpDir, ".mvtt/scripts/artifact-scan.cjs");
     const skillPath = path.join(tmpDir, ".claude/skills/mvt-update-plan/SKILL.md");
     rmSync(scannerPath);
     rmSync(skillPath);
@@ -222,5 +223,57 @@ describe("update (via re-materialize)", () => {
     expect(existsSync(path.join(tmpDir, ".qoder/skills/mvt-init/SKILL.md"))).toBe(false);
     // .claude files should still exist
     expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-init/SKILL.md"))).toBe(true);
+  });
+
+  it("legacy native target: update still refreshes .cursor for existing installations", () => {
+    // Simulate a project installed before the .agents target existed.
+    const initial = materializeProject({
+      packageRoot: PACKAGE_ROOT,
+      projectRoot: tmpDir,
+      platforms: ["cursor"],
+    });
+    writeInstallationManifest(tmpDir, "1.0.0", initial, null, ["cursor"]);
+    expect(existsSync(path.join(tmpDir, ".cursor/skills/mvt-init/SKILL.md"))).toBe(true);
+
+    writeFileSync(
+      path.join(tmpDir, ".cursor/skills/mvt-init/SKILL.md"),
+      "tampered",
+      "utf-8",
+    );
+
+    const originalCwd = process.cwd();
+    process.chdir(tmpDir);
+    try {
+      updateCommand();
+    } finally {
+      process.chdir(originalCwd);
+    }
+
+    const content = readFileSync(
+      path.join(tmpDir, ".cursor/skills/mvt-init/SKILL.md"),
+      "utf-8",
+    );
+    expect(content.startsWith("---\n")).toBe(true);
+    expect(content).not.toBe("tampered");
+    expect(readInstallationManifest(tmpDir)!.platforms).toEqual(["cursor"]);
+  });
+
+  it("migrates a legacy .ai-agents layout in place", async () => {
+    const initial = materializeProject({ packageRoot: PACKAGE_ROOT, projectRoot: tmpDir });
+    writeInstallationManifest(tmpDir, "2.0.0", initial, null);
+    renameSync(path.join(tmpDir, ".mvtt"), path.join(tmpDir, ".ai-agents"));
+
+    const originalCwd = process.cwd();
+    process.chdir(tmpDir);
+    try {
+      await updateCommand();
+    } finally {
+      process.chdir(originalCwd);
+    }
+
+    expect(existsSync(path.join(tmpDir, ".ai-agents"))).toBe(false);
+    expect(existsSync(path.join(tmpDir, ".mvtt/.mvtt-manifest.json"))).toBe(true);
+    expect(existsSync(path.join(tmpDir, ".mvtt/config.yaml"))).toBe(true);
+    expect(readInstallationManifest(tmpDir)!.platforms).toEqual(["claude"]);
   });
 });

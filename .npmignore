@@ -3,7 +3,7 @@ test/
 tsconfig.json
 tsconfig.build.json
 vitest.config.ts
-.ai-agents/
+.mvtt/
 .claude/
 docs/
 .git/

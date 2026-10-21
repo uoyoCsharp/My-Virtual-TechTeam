@@ -2,23 +2,23 @@
 
 ### Step 1: Load Inputs
 - **Recommended**:
-  - `.ai-agents/knowledge/core/manifest.yaml` -- to filter `core/_framework/` (excluded) from `core/user/` (in-scope).
+  - `.mvtt/knowledge/core/manifest.yaml` -- to filter `core/_framework/` (excluded) from `core/user/` (in-scope).
 - **Fallback**: missing `core/manifest.yaml` -> treat all `core/*` files as user-origin (over-counts; flag in report).
 
 ### Step 2: Determine In-Scope Files
 This skill measures only files the **user** can reduce or relocate. Framework-fixed overhead is excluded.
 
 **In scope (user-actionable):**
-- Index: `.ai-agents/workspace/project-context.yaml`.
-- Semantic context: `.ai-agents/knowledge/project/_generated/project-context.md` (always the flat path, regardless of project count).
+- Index: `.mvtt/workspace/project-context.yaml`.
+- Semantic context: `.mvtt/knowledge/project/_generated/project-context.md` (always the flat path, regardless of project count).
 - Shared knowledge: every entry in `registry.yaml > knowledge._all` and `knowledge.{projectName}` (map-aware -- traverse ALL project keys in the knowledge map). For the `core` entry, scan only files marked as user-origin per `core/manifest.yaml` (or whose path begins with `user/`); skip files under `core/_framework/`.
 - Per-skill knowledge: every entry in `registry.yaml > skills.*.knowledge._all` and `skills.*.knowledge.{projectName}` (map-aware -- traverse ALL project keys for each skill), grouped by skill.
-- Artifacts: run `node .ai-agents/scripts/artifact-scan.cjs --mode files` and use its JSON `entries` as the entire artifact input. Do not recursively scan artifacts or add a fallback path. Scanner output already excludes `_archived/`.
+- Artifacts: run `node .mvtt/scripts/artifact-scan.cjs --mode files` and use its JSON `entries` as the entire artifact input. Do not recursively scan artifacts or add a fallback path. Scanner output already excludes `_archived/`.
 
 **Out of scope (do NOT scan):**
-- `.claude/skills/mvt-*/SKILL.md` -- framework-shipped, not user-editable.
-- `.ai-agents/knowledge/core/_framework/**` -- framework-shipped.
-- `.ai-agents/config.yaml`, `.ai-agents/workspace/session.yaml`, `.ai-agents/registry.yaml` -- small, required, and addressed via `/mvt-config` or `/mvt-manage-context`, not here.
+- The skills shipped by the framework, in any installed platform's skills directory (`<platform>/skills/mvt-*/SKILL.md`) -- framework-shipped, not user-editable.
+- `.mvtt/knowledge/core/_framework/**` -- framework-shipped.
+- `.mvtt/config.yaml`, `.mvtt/workspace/session.yaml`, `.mvtt/registry.yaml` -- small, required, and addressed via `/mvt-config` or `/mvt-manage-context`, not here.
 
 ### Step 3: Estimate Token Consumption
 - **What**: produce a per-file tokens estimate and per-category subtotals, with **per-project breakdown**.
@@ -37,7 +37,7 @@ This skill measures only files the **user** can reduce or relocate. Framework-fi
 
 ### Step 4: Apply Thresholds and Health Status
 - **What**: assign each file/category a status of `healthy | borderline | oversized`.
-- **How**: read thresholds from `.ai-agents/config.yaml > preferences.context_thresholds.*` if present; otherwise use the defaults below.
+- **How**: read thresholds from `.mvtt/config.yaml > preferences.context_thresholds.*` if present; otherwise use the defaults below.
 
   | Subject | healthy | borderline | oversized |
   |---------|---------|------------|-----------|

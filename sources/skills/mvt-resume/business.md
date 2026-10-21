@@ -2,7 +2,7 @@
 
 ### Step 1: Read Session State
 
-Read `.ai-agents/workspace/session.yaml`. If the file is missing or empty, jump to Step 8 with the "no session" branch.
+Read `.mvtt/workspace/session.yaml`. If the file is missing or empty, jump to Step 8 with the "no session" branch.
 
 Extract:
 - `active_change` -- the current change-id (if any), plan_path, epic_id
@@ -23,7 +23,7 @@ After extracting session data in Step 1, check for epic state:
 For either epic path, restore the selected child with exactly:
 
 ```bash
-node .ai-agents/scripts/requirement-source.cjs --effective-context <epic_path> --child <change_id>
+node .mvtt/scripts/requirement-source.cjs --effective-context <epic_path> --child <change_id>
 ```
 
 - Consume only `child`, `context`, `sources`, and `warnings`; never traverse references in the prompt.
@@ -36,7 +36,7 @@ For epic-pending, the simplified report contains: **Epic State** (title, id, sta
 
 Scan for in-progress plans using two sources:
 
-1. Run `node .ai-agents/scripts/artifact-scan.cjs --mode plans`; its JSON `entries` are the only live plan inputs.
+1. Run `node .mvtt/scripts/artifact-scan.cjs --mode plans`; its JSON `entries` are the only live plan inputs.
 2. Enrich scanner-confirmed paths from `changes[]`; do not read indexed paths absent from scanner output and do not perform a fallback glob.
 
 For each found plan.yaml, read and filter:
@@ -71,7 +71,7 @@ After selection, set `selected_change_id` for use in subsequent steps.
 
 ### Step 4: Inspect Recent Artifacts
 
-List files under `.ai-agents/workspace/artifacts/{selected_change_id}/`, sorted by mtime descending:
+List files under `.mvtt/workspace/artifacts/{selected_change_id}/`, sorted by mtime descending:
 - Exclude `plan.yaml` from the artifact list (it gets its own section)
 - Take the top 5
 
@@ -122,7 +122,7 @@ Render inline using the seven sections below. No external template is required.
 - **Deferred epic**: if `active_epic.id` is non-empty, `active_change.id` is empty, and `epic.yaml.current_change` is empty, select the first dependency-ready pending child in array order. Confirm `Activate child` / `Cancel`; on activation call `epic-update.cjs --switch-active <id>`, then register it exactly once with:
 
 	```bash
-	node .ai-agents/scripts/session-update.cjs --skill mvt-resume --summary "<concise one-line activation summary>" --new-change "<child.title>" --change-id <child.change_id> --epic-id <active_epic.id>
+	node .mvtt/scripts/session-update.cjs --skill mvt-resume --summary "<concise one-line activation summary>" --new-change "<child.title>" --change-id <child.change_id> --epic-id <active_epic.id>
 	```
 
 	If the session call fails after activation, report divergence and stop without replaying epic-update. Do not run another State Update after this command.

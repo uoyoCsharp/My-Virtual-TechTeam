@@ -6,7 +6,7 @@
 ## Command
 
 ```bash
-node .ai-agents/scripts/plan-update.cjs \
+node .mvtt/scripts/plan-update.cjs \
   --plan "<active_change.plan_path>" \
   --task <task_id> \
   --projects "<comma,separated,project,names>" \
@@ -20,7 +20,7 @@ node .ai-agents/scripts/plan-update.cjs \
 Read-only validation mode:
 
 ```bash
-node .ai-agents/scripts/plan-update.cjs --validate "<draft-plan-path>" [--projects "<comma,separated,project,names>"]
+node .mvtt/scripts/plan-update.cjs --validate "<draft-plan-path>" [--projects "<comma,separated,project,names>"]
 ```
 
 Include `--artifacts`, `--notes`, `--deliverables-pointer`, and `--mark-deliverable-stale` only when the skill's logic determines they apply; omit each flag otherwise.
@@ -29,7 +29,7 @@ Include `--artifacts`, `--notes`, `--deliverables-pointer`, and `--mark-delivera
 
 | Argument | Value source | Example |
 |----------|-------------|---------|
-| `--plan` | `active_change.plan_path` resolved from session.yaml | `".ai-agents/workspace/artifacts/chg-001/plan.yaml"` |
+| `--plan` | `active_change.plan_path` resolved from session.yaml | `".mvtt/workspace/artifacts/chg-001/plan.yaml"` |
 | `--task` | the `task_id` being updated (resolved by the skill's Step 1) | `t1` |
 | `--status` | optional; the new status: `pending` / `in_progress` / `done` / `blocked` / `skipped` | `done` |
 | `--projects` | comma-separated project names from `project-context.yaml > projects[].name` (single-project: the sole project name) | `"web,api"` |
@@ -37,7 +37,7 @@ Include `--artifacts`, `--notes`, `--deliverables-pointer`, and `--mark-delivera
 | `--notes` | optional; overwrites the task's `notes` | `"blocked on API spec"` |
 | `--deliverables-pointer` | optional; set to `current` to record that this task's deliverables section is written | `current` |
 | `--mark-deliverable-stale` | optional; comma-separated downstream task ids whose deliverables are now stale | `"t3,t4"` |
-| `--validate` | optional read-only validation target; accepts the plan path as its value | `".ai-agents/workspace/artifacts/chg-001/plan.yaml"` |
+| `--validate` | optional read-only validation target; accepts the plan path as its value | `".mvtt/workspace/artifacts/chg-001/plan.yaml"` |
 
 ## Parameter semantics
 

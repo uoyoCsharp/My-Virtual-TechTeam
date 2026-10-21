@@ -91,7 +91,7 @@ describe("session-update.cjs (epic flags)", () => {
 
   beforeEach(() => {
     tmpDir = mkdtempSync(path.join(os.tmpdir(), "mvtt-session-epic-"));
-    workspaceDir = path.join(tmpDir, ".ai-agents", "workspace");
+    workspaceDir = path.join(tmpDir, ".mvtt", "workspace");
     mkdirSync(workspaceDir, { recursive: true });
     sessionPath = path.join(workspaceDir, "session.yaml");
   });
@@ -166,7 +166,7 @@ describe("session-update.cjs (epic flags)", () => {
         id: "epic-old",
         title: "Old Epic",
         created_at: "2026-06-07T10:00:00Z",
-        epic_path: ".ai-agents/workspace/artifacts/epic-old/epic.yaml",
+        epic_path: ".mvtt/workspace/artifacts/epic-old/epic.yaml",
       };
       session.epics = [];
       writeSession(session);
@@ -208,11 +208,11 @@ describe("session-update.cjs (epic flags)", () => {
       writeSession(session);
 
       update([
-        "--set-epic-path", ".ai-agents/workspace/artifacts/epic-20260608-demo/epic.yaml",
+        "--set-epic-path", ".mvtt/workspace/artifacts/epic-20260608-demo/epic.yaml",
       ]);
 
       const s = readSession();
-      expect(s.active_epic.epic_path).toBe(".ai-agents/workspace/artifacts/epic-20260608-demo/epic.yaml");
+      expect(s.active_epic.epic_path).toBe(".mvtt/workspace/artifacts/epic-20260608-demo/epic.yaml");
     });
 
     it("exits 1 when no active epic", () => {
@@ -526,7 +526,7 @@ describe("session-update.cjs (remove-change flag)", () => {
 
   beforeEach(() => {
     tmpDir = mkdtempSync(path.join(os.tmpdir(), "mvtt-session-remove-change-"));
-    workspaceDir = path.join(tmpDir, ".ai-agents", "workspace");
+    workspaceDir = path.join(tmpDir, ".mvtt", "workspace");
     mkdirSync(workspaceDir, { recursive: true });
     sessionPath = path.join(workspaceDir, "session.yaml");
   });
@@ -629,7 +629,7 @@ describe("session-update.cjs (remove-epic flag)", () => {
 
   beforeEach(() => {
     tmpDir = mkdtempSync(path.join(os.tmpdir(), "mvtt-session-remove-epic-"));
-    workspaceDir = path.join(tmpDir, ".ai-agents", "workspace");
+    workspaceDir = path.join(tmpDir, ".mvtt", "workspace");
     mkdirSync(workspaceDir, { recursive: true });
     sessionPath = path.join(workspaceDir, "session.yaml");
   });
@@ -728,7 +728,7 @@ describe("session-update.cjs (remove flags: active_change isolation)", () => {
 
   beforeEach(() => {
     tmpDir = mkdtempSync(path.join(os.tmpdir(), "mvtt-session-remove-iso-"));
-    workspaceDir = path.join(tmpDir, ".ai-agents", "workspace");
+    workspaceDir = path.join(tmpDir, ".mvtt", "workspace");
     mkdirSync(workspaceDir, { recursive: true });
     sessionPath = path.join(workspaceDir, "session.yaml");
   });
@@ -841,7 +841,7 @@ describe("session-update.cjs (flag value validation)", () => {
 
   beforeEach(() => {
     tmpDir = mkdtempSync(path.join(os.tmpdir(), "mvtt-session-flag-val-"));
-    workspaceDir = path.join(tmpDir, ".ai-agents", "workspace");
+    workspaceDir = path.join(tmpDir, ".mvtt", "workspace");
     mkdirSync(workspaceDir, { recursive: true });
     sessionPath = path.join(workspaceDir, "session.yaml");
   });
@@ -952,7 +952,7 @@ describe("session-update.cjs (lifecycle repairs)", () => {
 
   beforeEach(() => {
     tmpDir = mkdtempSync(path.join(os.tmpdir(), "mvtt-session-lifecycle-"));
-    workspaceDir = path.join(tmpDir, ".ai-agents", "workspace");
+    workspaceDir = path.join(tmpDir, ".mvtt", "workspace");
     mkdirSync(workspaceDir, { recursive: true });
     sessionPath = path.join(workspaceDir, "session.yaml");
   });

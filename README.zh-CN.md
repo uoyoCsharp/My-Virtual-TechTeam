@@ -54,7 +54,7 @@ MVTT 适合那些用 Claude Code 做真实、长期项目的开发者 —— 不
 ### 随项目一起成长的持久化上下文
 
 ```
-.ai-agents/
+.mvtt/
 ├── workspace/
 │   ├── session.yaml              # 谁做了什么、当前在做什么
 │   ├── project-context.yaml      # 技术栈、领域模型、约定
@@ -152,7 +152,7 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-    repo["🗂️<br/><b>工作区</b><br/><sub>.ai-agents/</sub>"]
+    repo["🗂️<br/><b>工作区</b><br/><sub>.mvtt/</sub>"]
 
     subgraph projects ["<b>📦 多项目追踪</b>"]
         direction LR
@@ -340,21 +340,24 @@ flowchart LR
 ## CLI 命令
 
 ```bash
-mvtt install              # 首次安装（交互式选择语言）
+mvtt install              # 首次安装（交互式选择语言与目标平台）
 mvtt update [--check]     # 升级到最新版（保留用户数据）
+mvtt platform list        # 查看支持与已安装的目标
+mvtt platform update      # 交互式增删目标（例如添加 .agents 以支持 Codex）
 mvtt doctor               # 检查安装健康度
 mvtt uninstall            # 移除生成的文件（保留用户数据）
 ```
 
 ## 扩展 MVTT
 
-- **添加团队知识** —— 把 markdown 文件放进 `.ai-agents/knowledge/principle/`（团队代码规范）或 `project/`（领域知识），所有技能会自动加载。
+- **添加其它 AI 工具支持** —— 运行 `mvtt platform update` 勾选 `.agents`，即可让 Codex、DeepSeek Harness、GitHub Copilot、Cursor、OpenCode、Gemini、Windsurf 共用一个技能目录。
+- **添加团队知识** —— 把 markdown 文件放进 `.mvtt/knowledge/principle/`（团队代码规范）或 `project/`（领域知识），所有技能会自动加载。
 - **创建自定义技能** —— `/mvt-create-skill` 以交互方式脚手架出项目专用技能（如 `/mvt-test-e2e`）。
-- **自定义模板** —— 在 `.ai-agents/skills/_templates/custom/` 覆盖输出格式。
+- **自定义模板** —— 在 `.mvtt/skills/_templates/custom/` 覆盖输出格式。
 
 ## 配置
 
-编辑 `.ai-agents/config.yaml`，或使用 `/mvt-config`：
+编辑 `.mvtt/config.yaml`，或使用 `/mvt-config`：
 
 ```yaml
 version: "2.0"
@@ -384,7 +387,7 @@ CLAUDE.md 给 Claude **指令**。MVTT 给 Claude **一个团队** —— 25 个
 
 ### 团队能一起用吗？
 
-能。`.ai-agents/` 工作区是版本控制的，跟着仓库走。团队所有人都看得到同一份上下文、同样的计划、同样的历史。唯一要求：把 `.ai-agents/` 提交进仓库（至少提交 `knowledge/` 和 `project-context.yaml`）。
+能。`.mvtt/` 工作区是版本控制的，跟着仓库走。团队所有人都看得到同一份上下文、同样的计划、同样的历史。唯一要求：把 `.mvtt/` 提交进仓库（至少提交 `knowledge/` 和 `project-context.yaml`）。
 
 ### 能用在已有的项目上吗？
 
@@ -392,7 +395,7 @@ CLAUDE.md 给 Claude **指令**。MVTT 给 Claude **一个团队** —— 25 个
 
 ### 卸载后我的数据会怎样？
 
-`mvtt uninstall` 会移除框架生成的文件，但保留你的 `.ai-agents/workspace/` 和 `.ai-agents/knowledge/`。你写的所有东西都不会丢。
+`mvtt uninstall` 会移除框架生成的文件，但保留你的 `.mvtt/workspace/` 和 `.mvtt/knowledge/`。你写的所有东西都不会丢。
 
 ### 为什么是 25 个技能？会不会太多？
 

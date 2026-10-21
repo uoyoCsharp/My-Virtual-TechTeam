@@ -1,5 +1,5 @@
 name: design-output
-output: .ai-agents/skills/_templates/design-output.md
+output: .mvtt/skills/_templates/design-output.md
 
 frontmatter:
   id: design-output

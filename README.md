@@ -54,7 +54,7 @@ MVTT is for developers who use Claude Code on real, ongoing projects — not one
 ### Persistent Context That Grows With Your Project
 
 ```
-.ai-agents/
+.mvtt/
 ├── workspace/
 │   ├── session.yaml              # Who did what, what's in progress
 │   ├── project-context.yaml      # Tech stack, domain model, conventions
@@ -152,7 +152,7 @@ Real-world repos are rarely a single project. MVTT handles both shapes that slow
 
 ```mermaid
 flowchart TB
-    repo["🗂️<br/><b>Workspace</b><br/><sub>.ai-agents/</sub>"]
+    repo["🗂️<br/><b>Workspace</b><br/><sub>.mvtt/</sub>"]
 
     subgraph projects ["<b>📦 Multi-Project Tracking</b>"]
         direction LR
@@ -340,21 +340,24 @@ The context is designed to be a **living document**, not a snapshot.
 ## CLI Commands
 
 ```bash
-mvtt install              # First-time install (interactive language selection)
+mvtt install              # First-time install (interactive language + target selection)
 mvtt update [--check]     # Upgrade to latest (user data preserved)
+mvtt platform list        # Show supported + installed targets
+mvtt platform update      # Interactively add/remove targets (e.g. add .agents for Codex)
 mvtt doctor               # Check installation health
 mvtt uninstall            # Remove generated files (user data preserved)
 ```
 
 ## Extending MVTT
 
-- **Add team knowledge** — Drop markdown files into `.ai-agents/knowledge/principle/` for coding standards, or `project/` for domain knowledge. All skills load them automatically.
+- **Add another AI harness** — run `mvtt platform update` and pick `.agents` to support Codex, DeepSeek Harness, GitHub Copilot, Cursor, OpenCode, Gemini and Windsurf from one folder.
+- **Add team knowledge** — Drop markdown files into `.mvtt/knowledge/principle/` for coding standards, or `project/` for domain knowledge. All skills load them automatically.
 - **Create custom skills** — `/mvt-create-skill` scaffolds project-specific skills (e.g., `/mvt-test-e2e` for your E2E conventions).
-- **Customize templates** — Override output formats in `.ai-agents/skills/_templates/custom/`.
+- **Customize templates** — Override output formats in `.mvtt/skills/_templates/custom/`.
 
 ## Configuration
 
-Edit `.ai-agents/config.yaml` or use `/mvt-config`:
+Edit `.mvtt/config.yaml` or use `/mvt-config`:
 
 ```yaml
 version: "2.0"
@@ -384,7 +387,7 @@ No. Set `preferences.interaction_language: zh-CN` and the framework switches to 
 
 ### Can my team use it together?
 
-Yes. The `.ai-agents/` workspace is version-controlled, so it travels with your repo. Everyone on the team sees the same context, the same plans, the same history. The only requirement: commit `.ai-agents/` (or at least the `knowledge/` and `project-context.yaml` parts).
+Yes. The `.mvtt/` workspace is version-controlled, so it travels with your repo. Everyone on the team sees the same context, the same plans, the same history. The only requirement: commit `.mvtt/` (or at least the `knowledge/` and `project-context.yaml` parts).
 
 ### Does it work with any existing project?
 
@@ -392,7 +395,7 @@ Yes. `npx @uoyo/mvtt install` adds MVTT to any repo. It doesn't change your code
 
 ### What happens to my data when I uninstall?
 
-`mvtt uninstall` removes the generated framework files but preserves your `.ai-agents/workspace/` and `.ai-agents/knowledge/`. Nothing you've written is lost.
+`mvtt uninstall` removes the generated framework files but preserves your `.mvtt/workspace/` and `.mvtt/knowledge/`. Nothing you've written is lost.
 
 ### Why 25 skills? Isn't that overkill?
 

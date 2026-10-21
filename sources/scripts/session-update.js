@@ -8,7 +8,7 @@
  *
  * NOTE: This source file uses `import from "yaml"`. During the build
  * pipeline, esbuild bundles it into a zero-dependency single file that
- * gets deployed to .ai-agents/scripts/session-update.cjs.
+ * gets deployed to .mvtt/scripts/session-update.cjs.
  *
  * Usage: see the "State Update" section in any skill that references
  *   sections/session-update.md (rendered with per-skill flag parameters).
@@ -30,7 +30,7 @@ const ERRORS = {
   MISSING_SKILL:    () => "Missing required argument: --skill",
   MISSING_SUMMARY: () => "Missing required argument: --summary",
   CHANGE_ID_REQUIRED: () => "--new-change requires --change-id",
-  NO_PROJECT_ROOT: () => "Could not find project root (.ai-agents/ directory not found). Make sure you are inside an MVTT project.",
+  NO_PROJECT_ROOT: () => "Could not find project root (.mvtt/ directory not found). Make sure you are inside an MVTT project.",
   NO_SESSION_YAML: () => "session.yaml not found. Run /mvt-init first to initialize the project.",
   SESSION_PARSE_FAILED: (detail) => `Failed to parse session.yaml: ${detail}. Check the file for syntax errors.`,
   SESSION_WRITE_FAILED: (detail) => `Failed to write session.yaml: ${detail}`,
@@ -74,7 +74,7 @@ const VALID_EPIC_STATUSES = new Set(["active", "done", "abandoned"]);
 function findProjectRoot(cwd) {
   let dir = cwd;
   while (true) {
-    if (existsSync(path.join(dir, ".ai-agents"))) return dir;
+    if (existsSync(path.join(dir, ".mvtt"))) return dir;
     const parent = path.dirname(dir);
     if (parent === dir) return null;
     dir = parent;
@@ -309,13 +309,13 @@ function main() {
     process.exit(1);
   }
 
-  const sessionPath = path.join(projectRoot, ".ai-agents/workspace/session.yaml");
+  const sessionPath = path.join(projectRoot, ".mvtt/workspace/session.yaml");
   if (!existsSync(sessionPath)) {
     process.stderr.write(ERRORS.NO_SESSION_YAML() + "\n");
     process.exit(1);
   }
 
-  const configPath = path.join(projectRoot, ".ai-agents/config.yaml");
+  const configPath = path.join(projectRoot, ".mvtt/config.yaml");
   const limits = loadHistoryLimits(configPath);
 
   // Read session

@@ -1,10 +1,24 @@
 import { existsSync, readdirSync, statSync } from "node:fs";
 import { dirname, join, relative, resolve, sep } from "node:path";
 
+const FRAMEWORK_DIR = ".mvtt";
+const LEGACY_FRAMEWORK_DIR = ".ai-agents";
+
+/**
+ * Resolve the framework directory. New installs use `.mvtt`; `.ai-agents` is
+ * still recognized so scripts bundled with a newer CLI can operate on a project
+ * that has not been migrated yet (the CLI migrates it on the next update).
+ */
+export function findFrameworkDir(projectRoot) {
+  if (existsSync(join(projectRoot, FRAMEWORK_DIR))) return FRAMEWORK_DIR;
+  if (existsSync(join(projectRoot, LEGACY_FRAMEWORK_DIR))) return LEGACY_FRAMEWORK_DIR;
+  return null;
+}
+
 export function findProjectRoot(startPath = process.cwd()) {
   let current = resolve(startPath);
   while (true) {
-    if (existsSync(join(current, ".ai-agents"))) return current;
+    if (findFrameworkDir(current)) return current;
     const parent = dirname(current);
     if (parent === current) return null;
     current = parent;
@@ -16,7 +30,9 @@ export function toWorkspaceRelative(projectRoot, filePath) {
 }
 
 export function listLiveChangeDirs(projectRoot) {
-  const artifactsDir = join(projectRoot, ".ai-agents", "workspace", "artifacts");
+  const frameworkDir = findFrameworkDir(projectRoot);
+  if (!frameworkDir) return [];
+  const artifactsDir = join(projectRoot, frameworkDir, "workspace", "artifacts");
   if (!existsSync(artifactsDir)) return [];
 
   return readdirSync(artifactsDir, { withFileTypes: true })

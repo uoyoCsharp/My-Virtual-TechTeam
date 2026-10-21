@@ -87,11 +87,11 @@ function collectFindings(session, projectRoot) {
 function main() {
   const projectRoot = findProjectRoot();
   if (!projectRoot) {
-    process.stderr.write("Could not find project root containing .ai-agents.\n");
+    process.stderr.write("Could not find project root containing .mvtt.\n");
     process.exit(1);
   }
 
-  const sessionPath = join(projectRoot, ".ai-agents", "workspace", "session.yaml");
+  const sessionPath = join(projectRoot, ".mvtt", "workspace", "session.yaml");
   if (!existsSync(sessionPath)) {
     process.stderr.write(`Session file not found at ${sessionPath}.\n`);
     process.exit(1);

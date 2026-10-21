@@ -1,5 +1,5 @@
 name: decompose-output
-output: .ai-agents/skills/_templates/decompose-output.md
+output: .mvtt/skills/_templates/decompose-output.md
 
 frontmatter:
   id: decompose-output

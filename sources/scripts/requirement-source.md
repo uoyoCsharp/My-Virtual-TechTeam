@@ -5,9 +5,9 @@ Authoritative usage reference for `requirement-source.cjs`. Read this before cal
 ## Commands
 
 ```bash
-node .ai-agents/scripts/requirement-source.cjs --fingerprint <source_path>
-node .ai-agents/scripts/requirement-source.cjs --verify-epic <epic_path>
-node .ai-agents/scripts/requirement-source.cjs --effective-context <epic_path> --child <change_id>
+node .mvtt/scripts/requirement-source.cjs --fingerprint <source_path>
+node .mvtt/scripts/requirement-source.cjs --verify-epic <epic_path>
+node .mvtt/scripts/requirement-source.cjs --effective-context <epic_path> --child <change_id>
 ```
 
 ## Modes

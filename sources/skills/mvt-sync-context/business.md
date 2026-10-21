@@ -14,7 +14,7 @@ Before processing any change, determine which project(s) the sync targets. Use t
 ### Step 2: Identify Completed Changes
 - **What**: produce a candidate list of change-ids whose artifacts will be aggregated.
 - **How**:
-   1. Run `node .ai-agents/scripts/artifact-scan.cjs --mode change-dirs`. Its JSON `entries` are the only live artifact directories.
+   1. Run `node .mvtt/scripts/artifact-scan.cjs --mode change-dirs`. Its JSON `entries` are the only live artifact directories.
    2. Collect `changes[]` entries with `status: done` only when their directory is in scanner output and contains `analysis.md` or `implementation.md`. Drop entries with only `plan.yaml` or only `design.md`.
    3. Use scanner-confirmed directories without an index as `unindexed`; do not run a fallback scan.
   4. Exclude irrelevant changes:
@@ -37,7 +37,7 @@ Before processing any change, determine which project(s) the sync targets. Use t
 
 This step establishes the **target structure** that aggregated content must fit into. The structure is NOT assumed -- it is derived from the current document.
 
-1. Read the project-context file: always read `.ai-agents/knowledge/project/_generated/project-context.md` (flat path, regardless of project count).
+1. Read the project-context file: always read `.mvtt/knowledge/project/_generated/project-context.md` (flat path, regardless of project count).
    - **Multi-project**: the file contains `# Project: {name}` sections; use the routing result from Step 1 to identify which project section(s) are relevant for the current sync operation.
    - If the file does not exist, STOP and recommend `/mvt-analyze-code`.
 2. Parse the current `.md` into a section map:
@@ -45,7 +45,7 @@ This step establishes the **target structure** that aggregated content must fit 
    - Record: section title (verbatim), byte range, and a 1-line semantic summary derived from the section's content (e.g., "lists domain terms with definitions" or "describes module dependencies").
    - The summary is what enables matching in Step 6 -- section titles may be in any language and may not match conventional names (Terms / Modules / etc.).
 3. If the document has zero `##` sections (single block) -> STOP. Recommend `/mvt-analyze-code` to establish a sectioned baseline first.
-4. Read `.ai-agents/workspace/project-context.yaml`. Record current `projects[].source_paths`, `modules`, and `tech_stack` for diff comparison in Step 7 (Table 7d).
+4. Read `.mvtt/workspace/project-context.yaml`. Record current `projects[].source_paths`, `modules`, and `tech_stack` for diff comparison in Step 7 (Table 7d).
 
 ### Step 4: Extract Artifact Content
 
@@ -182,7 +182,7 @@ If user skips verification: proceed directly to Step 10 with Step 7 selections.
 ### Step 12: State Update
 Apply the State Update rules defined in the **State Update** section below.
 - The `--set-synced` parameter updates `session.last_synced_at`.
-- When updating a plan that has project attribution, pass `--projects` to `plan-update.cjs`; read `.ai-agents/scripts/plan-update.md` only if the workflow needs flags or value sources not rendered in this skill. Do NOT hand-edit `plan.yaml` or read `.cjs`/`.js` source.
+- When updating a plan that has project attribution, pass `--projects` to `plan-update.cjs`; read `.mvtt/scripts/plan-update.md` only if the workflow needs flags or value sources not rendered in this skill. Do NOT hand-edit `plan.yaml` or read `.cjs`/`.js` source.
 
 ## Edge Cases & Errors
 

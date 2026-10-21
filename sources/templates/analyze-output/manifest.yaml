@@ -1,5 +1,5 @@
 name: analyze-output
-output: .ai-agents/skills/_templates/analyze-output.md
+output: .mvtt/skills/_templates/analyze-output.md
 
 frontmatter:
   id: analyze-output

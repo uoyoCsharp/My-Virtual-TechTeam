@@ -350,15 +350,15 @@ describe("loadSection", () => {
 
     // Plan-update block rendered
     expect(result).toContain("## Script Usage Rule");
-    expect(result).toContain("node .ai-agents/scripts/plan-update.cjs");
+    expect(result).toContain("node .mvtt/scripts/plan-update.cjs");
     expect(result).toContain("--plan");
     expect(result).toContain("--task");
     expect(result).toContain("--status");
     expect(result).toContain("--projects");
     // Pointer to full reference doc
-    expect(result).toContain(".ai-agents/scripts/plan-update.md");
+    expect(result).toContain(".mvtt/scripts/plan-update.md");
     // Epic-update block NOT rendered
-    expect(result).not.toContain("node .ai-agents/scripts/epic-update.cjs");
+    expect(result).not.toContain("node .mvtt/scripts/epic-update.cjs");
     // No leftover Mustache markers
     expect(result).not.toContain("{{#uses_plan_update}}");
     expect(result).not.toContain("{{/uses_plan_update}}");
@@ -375,13 +375,13 @@ describe("loadSection", () => {
 
     // Epic-update block rendered
     expect(result).toContain("## Script Usage Rule");
-    expect(result).toContain("node .ai-agents/scripts/epic-update.cjs");
+    expect(result).toContain("node .mvtt/scripts/epic-update.cjs");
     expect(result).toContain("--complete-child");
     expect(result).toContain("--epic");
     // Pointer to full reference doc
-    expect(result).toContain(".ai-agents/scripts/epic-update.md");
+    expect(result).toContain(".mvtt/scripts/epic-update.md");
     // Plan-update block NOT rendered
-    expect(result).not.toContain("node .ai-agents/scripts/plan-update.cjs");
+    expect(result).not.toContain("node .mvtt/scripts/plan-update.cjs");
     // No leftover Mustache markers
     expect(result).not.toContain("{{#uses_epic_update}}");
     expect(result).not.toContain("{{/uses_epic_update}}");
@@ -396,8 +396,8 @@ describe("loadSection", () => {
       sourcesDir,
     );
 
-    expect(result).toContain("node .ai-agents/scripts/plan-update.cjs");
-    expect(result).toContain("node .ai-agents/scripts/epic-update.cjs");
+    expect(result).toContain("node .mvtt/scripts/plan-update.cjs");
+    expect(result).toContain("node .mvtt/scripts/epic-update.cjs");
     expect(result).toContain("Do NOT read `.cjs`/`.js` source");
   });
 
@@ -410,10 +410,10 @@ describe("loadSection", () => {
     );
 
     expect(result).toContain("## Script Usage Rule");
-    expect(result).not.toContain("node .ai-agents/scripts/plan-update.cjs");
-    expect(result).not.toContain("node .ai-agents/scripts/epic-update.cjs");
-    expect(result).not.toContain(".ai-agents/scripts/plan-update.md");
-    expect(result).not.toContain(".ai-agents/scripts/epic-update.md");
+    expect(result).not.toContain("node .mvtt/scripts/plan-update.cjs");
+    expect(result).not.toContain("node .mvtt/scripts/epic-update.cjs");
+    expect(result).not.toContain(".mvtt/scripts/plan-update.md");
+    expect(result).not.toContain(".mvtt/scripts/epic-update.md");
     // No leftover Mustache markers
     expect(result).not.toContain("{{#uses_");
     expect(result).not.toContain("{{/uses_");
@@ -430,7 +430,7 @@ describe("loadSection", () => {
     expect(result).toContain("exact `plan-update.cjs` command rendered in this skill's workflow");
     expect(result).toContain("Do NOT hand-edit `plan.yaml`");
     expect(result).not.toContain("--status <new_status>");
-    expect(result).not.toContain(".ai-agents/scripts/plan-update.md");
+    expect(result).not.toContain(".mvtt/scripts/plan-update.md");
     expect(result).not.toContain("{{#plan_update_inline_command_only}}");
   });
 
@@ -443,7 +443,7 @@ describe("loadSection", () => {
     );
 
     expect(result).toContain("pass `--projects`");
-    expect(result).toContain(".ai-agents/scripts/plan-update.md");
+    expect(result).toContain(".mvtt/scripts/plan-update.md");
     expect(result).not.toContain("--status <new_status>");
   });
 
@@ -456,7 +456,7 @@ describe("loadSection", () => {
     );
 
     expect(result).toContain("exact `epic-update.cjs` mode commands rendered in this skill's workflow");
-    expect(result).not.toContain(".ai-agents/scripts/epic-update.md");
+    expect(result).not.toContain(".mvtt/scripts/epic-update.md");
     expect(result).not.toContain("--complete-child <active_change.id>");
   });
 
@@ -468,7 +468,7 @@ describe("loadSection", () => {
       sourcesDir,
     );
 
-    expect(result).toContain("For modes or flags not rendered here, read `.ai-agents/scripts/epic-update.md`");
+    expect(result).toContain("For modes or flags not rendered here, read `.mvtt/scripts/epic-update.md`");
     expect(result).not.toContain("--complete-child <active_change.id>");
   });
 
@@ -496,7 +496,7 @@ describe("loadSection", () => {
     expect(result).toContain("Use only the flags rendered in the command above");
     expect(result).not.toContain("Argument values");
     expect(result).not.toContain("Parameter semantics");
-    expect(result).not.toContain(".ai-agents/scripts/session-update.md");
+    expect(result).not.toContain(".mvtt/scripts/session-update.md");
     expect(result).not.toContain("{{current_skill}}");
   });
 });

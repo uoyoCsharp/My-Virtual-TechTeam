@@ -55,8 +55,8 @@ sections:
         - session.yaml
       extended_context:
         - "Scan project source directories for analysis"
-        - ".ai-agents/skills/_templates/project-context.md -- Default template for output structure"
-        - ".ai-agents/skills/_templates/custom/project-context.md -- Custom template (if exists)"
+        - ".mvtt/skills/_templates/project-context.md -- Default template for output structure"
+        - ".mvtt/skills/_templates/custom/project-context.md -- Custom template (if exists)"
       has_preflight: true
       checks:
         - order: "1"
@@ -80,7 +80,7 @@ sections:
 
       This is an independent operation — no workflow prerequisites required.
       - Does NOT create a change-id.
-      - Output is written to `.ai-agents/knowledge/project/_generated/project-context.md`.
+      - Output is written to `.mvtt/knowledge/project/_generated/project-context.md`.
 
   - type: file
     source: ./business.md
@@ -88,10 +88,10 @@ sections:
   - type: inline
     content: |
       ## Artifact Structure
-      Read the document structure template from: `.ai-agents/skills/_templates/project-context.md`
-      If a custom version exists at `.ai-agents/skills/_templates/custom/project-context.md`, use the custom version instead.
+      Read the document structure template from: `.mvtt/skills/_templates/project-context.md`
+      If a custom version exists at `.mvtt/skills/_templates/custom/project-context.md`, use the custom version instead.
       The template defines section structure and guidance comments. Generate applicable content based on code analysis results.
-      Write the artifact to: `.ai-agents/knowledge/project/_generated/project-context.md`
+      Write the artifact to: `.mvtt/knowledge/project/_generated/project-context.md`
 
   - type: shared
     source: sections/session-update.md

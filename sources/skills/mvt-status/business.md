@@ -2,7 +2,7 @@
 
 ### Step 1: Load Inputs
 - **Recommended**:
-  - `.ai-agents/knowledge/project/_generated/project-context.md` -- semantic context. Check **presence only** (e.g. `test -f`); do NOT read its contents. This skill reports whether the file exists, never what is in it.
+  - `.mvtt/knowledge/project/_generated/project-context.md` -- semantic context. Check **presence only** (e.g. `test -f`); do NOT read its contents. This skill reports whether the file exists, never what is in it.
 - **Fallback / robustness**:
   - If a YAML file is missing, mark its section as `(unavailable)` in the report and continue. Do not abort the whole skill.
   - If a YAML file fails to parse, surface a one-line error with the file path and skip the affected section. Do not attempt automatic repair.
@@ -18,7 +18,7 @@
 ### Step 3: Discover All Plans (Multi-Change Dashboard)
 - **What**: produce the canonical plan list across the workspace.
 - **How**:
-  1. Run `node .ai-agents/scripts/artifact-scan.cjs --mode plans`. Its sorted JSON `entries` are the authoritative live plan set. Do not glob or recursively scan artifacts as a fallback.
+  1. Run `node .mvtt/scripts/artifact-scan.cjs --mode plans`. Its sorted JSON `entries` are the authoritative live plan set. Do not glob or recursively scan artifacts as a fallback.
   2. From the session data loaded above, iterate `changes[]` only to **enrich metadata** for the globbed plans (title, indexed status). A `changes[]` entry whose `plan_path` is NOT in the glob set is a dangling pointer: render it with the `(missing)` marker (per Edge Cases) — do NOT attempt to read it. Only read a `changes[].plan_path` that the glob confirmed exists.
   3. A globbed plan with no matching `changes[]` entry is `unindexed`.
   4. For each plan, extract: `change_id`, `title`, `status`, `current_tasks`, task progress (`done/total`), `updated_at`, `skill_hint` (from current task if present).
@@ -55,7 +55,7 @@
 
      - For each child in `epic.yaml.children[]`:
        - `depends_on`: comma-separated list of change_ids, or `--` if empty.
-       - `Internal Progress`: for a child with `status: active`, attempt to read its plan.yaml from `.ai-agents/workspace/artifacts/{change_id}/plan.yaml`. If found, show `{done_count}/{total_count} tasks`. If not found, show `--`. For non-active children, show `--`.
+       - `Internal Progress`: for a child with `status: active`, attempt to read its plan.yaml from `.mvtt/workspace/artifacts/{change_id}/plan.yaml`. If found, show `{done_count}/{total_count} tasks`. If not found, show `--`. For non-active children, show `--`.
      - Below the table, render a context line:
        - If `active_change.id` is non-empty (within-epic active change): "Current: **{active_child_title}**. Run `/mvt-resume` to continue."
        - If `active_change.id` is empty (epic-pending state): "Next sub-change: **{current_change_title}**. Run `/mvt-analyze` to start."

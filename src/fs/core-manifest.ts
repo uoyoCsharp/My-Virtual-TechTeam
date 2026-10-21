@@ -8,10 +8,10 @@ import {
 import path from "node:path";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 import type { CoreManifest, CoreManifestFile } from "../types/core-manifest.js";
+import { BACKUP_DIR_REL, fw } from "./paths.js";
 
 const FRAMEWORK_MANIFEST_REL = "sources/knowledge/core/manifest.yaml";
-const USER_MANIFEST_REL = ".ai-agents/knowledge/core/manifest.yaml";
-const BACKUP_DIR_REL = ".ai-agents/.backup";
+const USER_MANIFEST_REL = fw("knowledge/core/manifest.yaml");
 
 function readManifest(filePath: string): CoreManifest | null {
   if (!existsSync(filePath)) return null;
@@ -43,7 +43,7 @@ function backupUserManifest(projectRoot: string, sourcePath: string): string {
  *
  * The user manifest at projectRoot is rewritten with the merged result. When
  * `backup` is true (the default), a backup of the previous user manifest (if
- * any) is written to .ai-agents/.backup/.
+ * any) is written to .mvtt/.backup/.
  */
 export function updateCoreManifest(
   projectRoot: string,

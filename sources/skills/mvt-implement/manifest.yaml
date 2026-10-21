@@ -71,8 +71,8 @@ sections:
   - type: inline
     content: |
       ## Artifact Structure
-      Template location: `.ai-agents/skills/_templates/implement-output.md`
-      Custom override: `.ai-agents/skills/_templates/custom/implement-output.md` (takes precedence if present)
+      Template location: `.mvtt/skills/_templates/implement-output.md`
+      Custom override: `.mvtt/skills/_templates/custom/implement-output.md` (takes precedence if present)
 
   - type: shared
     source: sections/session-update.md

@@ -1,5 +1,5 @@
 name: review-output
-output: .ai-agents/skills/_templates/review-output.md
+output: .mvtt/skills/_templates/review-output.md
 
 frontmatter:
   id: review-output

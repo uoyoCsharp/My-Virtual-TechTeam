@@ -6,7 +6,7 @@
 ## Command
 
 ```bash
-node .ai-agents/scripts/artifact-scan.cjs --mode <plans|change-dirs|files>
+node .mvtt/scripts/artifact-scan.cjs --mode <plans|change-dirs|files>
 ```
 
 ## Modes
@@ -17,7 +17,7 @@ node .ai-agents/scripts/artifact-scan.cjs --mode <plans|change-dirs|files>
 | `change-dirs` | Live immediate child change directories | Does not recurse. |
 | `files` | All files below live immediate child change directories | Recurses within each live change directory. |
 
-The scanner resolves the project root by locating `.ai-agents`. It excludes the `_archived` directory before enumeration. Entries are sorted and workspace-relative using `/` separators.
+The scanner resolves the project root by locating `.mvtt`. It excludes the `_archived` directory before enumeration. Entries are sorted and workspace-relative using `/` separators.
 
 ## Output Interpretation
 
@@ -27,7 +27,7 @@ The scanner resolves the project root by locating `.ai-agents`. It excludes the 
   {
     "ok": true,
     "mode": "plans",
-    "entries": [".ai-agents/workspace/artifacts/change-id/plan.yaml"]
+    "entries": [".mvtt/workspace/artifacts/change-id/plan.yaml"]
   }
   ```
 

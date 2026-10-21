@@ -4,7 +4,7 @@
 
 Collect everything that should inform the plan:
 
-1. The analysis artifact at `.ai-agents/workspace/artifacts/{active_change.id}/` (if any).
+1. The analysis artifact at `.mvtt/workspace/artifacts/{active_change.id}/` (if any).
 2. The design artifact (if `/mvt-design` was run for this change).
 3. Any extra context the user supplies in the current message.
 
@@ -12,7 +12,7 @@ If no analysis or design artifacts exist and the user provides no description, p
 
 ### Step 2: Detect Regeneration
 
-If `active_change.plan_path is non-empty` AND `.ai-agents/workspace/artifacts/{active_change.id}/plan.yaml` already exists:
+If `active_change.plan_path is non-empty` AND `.mvtt/workspace/artifacts/{active_change.id}/plan.yaml` already exists:
 
 - If `preferences.silent.plan_dev` is `true`, do not prompt and do not overwrite. Abort with a notice to use `/mvt-update-plan` or explicitly request regeneration.
 - Read the existing plan.
@@ -24,7 +24,7 @@ If `active_change.plan_path is non-empty` AND `.ai-agents/workspace/artifacts/{a
 
 Decompose the change with the following constraints. These constraints are AI-friendly decomposition rules.
 
-**Granularity guidance** — read from `preferences.planning.granularity` in `.ai-agents/config.yaml`. Default: `medium`.
+**Granularity guidance** — read from `preferences.planning.granularity` in `.mvtt/config.yaml`. Default: `medium`.
 
 | Level | Decomposition style |
 |-------|---------------------|
@@ -145,7 +145,7 @@ Before writing, validate the assembled YAML:
 
 If validation fails, revise the plan and re-validate (do NOT write a broken plan).
 
-Before writing, write the draft to a temporary path and validate it with `node .ai-agents/scripts/plan-update.cjs --validate <draft-plan-path>`. Only write the final `plan.yaml` when the command exits 0; on failure, surface stderr, revise the draft, and re-run validation.
+Before writing, write the draft to a temporary path and validate it with `node .mvtt/scripts/plan-update.cjs --validate <draft-plan-path>`. Only write the final `plan.yaml` when the command exits 0; on failure, surface stderr, revise the draft, and re-run validation.
 
 ### Step 6: Confirm Validated Draft
 
@@ -165,7 +165,7 @@ Offer choices `Confirm and write` / `Revise` / `Cancel`.
 
 ### Step 7: Write plan.yaml
 
-Write to `.ai-agents/workspace/artifacts/{active_change.id}/plan.yaml`. If the artifacts directory does not exist, create it.
+Write to `.mvtt/workspace/artifacts/{active_change.id}/plan.yaml`. If the artifacts directory does not exist, create it.
 
 If a previous `plan.yaml` exists and the user chose regeneration in Step 2, overwrite it. Otherwise, this is a fresh write.
 

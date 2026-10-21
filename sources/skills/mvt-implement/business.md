@@ -65,7 +65,7 @@
   3. UI/frontend changes: per project rules, ask user to verify in browser; do NOT claim "tested" if you only ran type-check.
 
 ### Step 7: Write Artifact
-- **Path**: `.ai-agents/workspace/artifacts/{change-id}/implementation.md` — always this filename, one file per change. Never per-task suffixed names.
+- **Path**: `.mvtt/workspace/artifacts/{change-id}/implementation.md` — always this filename, one file per change. Never per-task suffixed names.
 - **Template**: load from the **Artifact Structure** section below. Follow the HTML comments for what each section should contain; strip comments from the final artifact.
 - **Multi-task accumulation**: if `plan.yaml` drives implementation across separate invocations, append a `## Task: {id} — {title}` section per task — never overwrite a *different* task's section. If `## Task: {id}` for the *same* task already exists (re-implementation after `blocked` or rescope), replace that section's content in place — preserve any `### Deliverables` subsection within it. Single-task or plan-less: write at top level without a task wrapper.
 - **Required coverage**: cover only content that is applicable to this implementation. Preserve enough information for downstream skills to understand what changed, files touched, design compliance, deviations, validation results, and open TODOs. Do not create empty or artificial sections just because an item is named here; if the template omits or renames a section, place applicable content in the closest relevant section.
@@ -99,7 +99,7 @@
 
 - **After writing deliverables**, call `plan-update.cjs` with both deliverables flags in a single invocation. Use the command below as authoritative:
   ```bash
-  node .ai-agents/scripts/plan-update.cjs \
+  node .mvtt/scripts/plan-update.cjs \
     --plan "<active_change.plan_path>" \
     --task <current_task_id> \
     --deliverables-pointer current \

@@ -8,10 +8,12 @@ import {
   writeInstallationManifest,
 } from "../fs/install-manifest.js";
 import { getPackageRoot, getVersion } from "./shared.js";
+import { hasLegacyLayout } from "../fs/legacy-layout.js";
+import { FRAMEWORK_DIR, LEGACY_FRAMEWORK_DIR, fw } from "../fs/paths.js";
 import { color } from "../util/color.js";
 import { bilingual } from "../util/bilingual.js";
 import type { PlatformId } from "../types/platform.js";
-import { PLATFORMS, DEFAULT_PLATFORMS } from "../types/platform.js";
+import { SELECTABLE_PLATFORMS, DEFAULT_PLATFORMS } from "../types/platform.js";
 import { cancelled } from "../util/cancel.js";
 
 type Language = "en-US" | "zh-CN";
@@ -20,6 +22,14 @@ export async function installCommand(): Promise<void> {
   const projectRoot = process.cwd();
   const packageRoot = getPackageRoot();
   const version = getVersion();
+
+  if (hasLegacyLayout(projectRoot)) {
+    console.error(bilingual(
+      `Legacy ${LEGACY_FRAMEWORK_DIR}/ layout detected. Run \`mvtt update\` to migrate it to ${FRAMEWORK_DIR}/ first.`,
+      `检测到旧目录 ${LEGACY_FRAMEWORK_DIR}/。请先运行 \`mvtt update\` 迁移到 ${FRAMEWORK_DIR}/。`,
+    ));
+    process.exit(1);
+  }
 
   const existing = readInstallationManifest(projectRoot);
   if (existing) {
@@ -39,14 +49,21 @@ export async function installCommand(): Promise<void> {
   const documentLanguage = await selectLanguage("document", interactionLanguage);
   const platforms = await selectPlatforms();
 
-  const configPath = path.resolve(projectRoot, ".ai-agents/config.yaml");
+  if (platforms.includes("agents")) {
+    p.log.info(bilingual(
+      "Selected .agents — Codex, DeepSeek Harness, GitHub Copilot, Cursor, OpenCode, Gemini and Windsurf share this folder.",
+      "已选择 .agents —— Codex、DeepSeek Harness、GitHub Copilot、Cursor、OpenCode、Gemini、Windsurf 共用该目录。",
+    ));
+  }
+
+  const configPath = path.resolve(projectRoot, fw("config.yaml"));
   let materialized!: ReturnType<typeof materializeProject>;
 
   await p.tasks([
     {
       title: bilingual(
-        `Materializing ${platforms.length} platform(s)`,
-        `正在生成 ${platforms.length} 个平台的文件`,
+        `Materializing ${platforms.length} target(s)`,
+        `正在生成 ${platforms.length} 个目标的文件`,
       ),
       task: async () => {
         materialized = materializeProject({
@@ -93,12 +110,16 @@ export async function installCommand(): Promise<void> {
   const createOnceCount = materialized.filter((f) => f.category === "create_once").length;
 
   p.log.info(bilingual(
-    `${generatedCount} generated · ${createOnceCount} user-editable · ${platforms.length} platform(s)`,
-    `${generatedCount} 个生成文件 · ${createOnceCount} 个用户可编辑文件 · ${platforms.length} 个平台`,
+    `${generatedCount} generated · ${createOnceCount} user-editable · ${platforms.length} target(s)`,
+    `${generatedCount} 个生成文件 · ${createOnceCount} 个用户可编辑文件 · ${platforms.length} 个目标`,
   ));
   p.log.info(bilingual(
     `Manifest: ${path.relative(projectRoot, manifestPath(projectRoot))}`,
     `清单路径：${path.relative(projectRoot, manifestPath(projectRoot))}`,
+  ));
+  p.log.info(bilingual(
+    "Change or add platforms later with: mvtt platform update",
+    "后续修改/添加平台目标：mvtt platform update",
   ));
 
   p.outro(color.green(bilingual(
@@ -139,7 +160,7 @@ async function selectLanguage(
 async function selectPlatforms(): Promise<PlatformId[]> {
   const response = await p.multiselect({
     message: bilingual("Target AI platforms", "目标 AI 平台"),
-    options: PLATFORMS.map((pl) => ({
+    options: SELECTABLE_PLATFORMS.map((pl) => ({
       value: pl.id,
       label: `${pl.dir} — ${pl.description}`,
     })),

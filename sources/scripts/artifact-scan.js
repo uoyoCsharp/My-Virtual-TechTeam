@@ -18,7 +18,7 @@ function main() {
 
   const projectRoot = findProjectRoot();
   if (!projectRoot) {
-    process.stderr.write("Could not find project root containing .ai-agents.\n");
+    process.stderr.write("Could not find project root containing .mvtt.\n");
     process.exit(1);
   }
 

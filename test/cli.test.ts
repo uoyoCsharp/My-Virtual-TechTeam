@@ -1,6 +1,7 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
 import {
   existsSync,
+  mkdirSync,
   mkdtempSync,
   readFileSync,
   rmSync,
@@ -124,14 +125,14 @@ describe("CLI commands (in-process)", () => {
     it("installs into empty directory", async () => {
       const r = await captureIO(tmpDir, () => installCommand());
       expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-analyze/SKILL.md"))).toBe(true);
-      expect(existsSync(path.join(tmpDir, ".ai-agents/.mvtt-manifest.json"))).toBe(true);
+      expect(existsSync(path.join(tmpDir, ".mvtt/.mvtt-manifest.json"))).toBe(true);
       expect(clack.intro).toHaveBeenCalled();
       expect(clack.outro).toHaveBeenCalled();
     });
 
     it("non-TTY install defaults language to en-US", async () => {
       await captureIO(tmpDir, () => installCommand());
-      const config = readFileSync(path.join(tmpDir, ".ai-agents/config.yaml"), "utf-8");
+      const config = readFileSync(path.join(tmpDir, ".mvtt/config.yaml"), "utf-8");
       expect(config).toMatch(/interaction_language:\s*en-US/);
       expect(config).toMatch(/document_output_language:\s*en-US/);
     });
@@ -142,6 +143,14 @@ describe("CLI commands (in-process)", () => {
       expect(r.exitCode).toBe(1);
       expect(r.stderr.join("\n")).toContain("already installed");
     });
+
+    it("refuses install when a legacy .ai-agents layout exists", async () => {
+      mkdirSync(path.join(tmpDir, ".ai-agents"), { recursive: true });
+      const r = await captureIO(tmpDir, () => installCommand());
+      expect(r.exitCode).toBe(1);
+      expect(r.stderr.join("\n")).toMatch(/legacy/i);
+      expect(existsSync(path.join(tmpDir, ".mvtt"))).toBe(false);
+    });
   });
 
   describe("doctor", () => {
@@ -150,6 +159,14 @@ describe("CLI commands (in-process)", () => {
       expect(r.exitCode).toBe(1);
       const errorCalls = vi.mocked(clack.log.error).mock.calls.map((c) => String(c[0]));
       expect(errorCalls.join("\n")).toContain("[FAIL]");
+    });
+
+    it("reports a legacy .ai-agents layout instead of a generic not-installed error", async () => {
+      mkdirSync(path.join(tmpDir, ".ai-agents"), { recursive: true });
+      const r = await captureIO(tmpDir, () => doctorCommand());
+      expect(r.exitCode).toBe(1);
+      const errorCalls = vi.mocked(clack.log.error).mock.calls.map((c) => String(c[0]));
+      expect(errorCalls.join("\n")).toMatch(/legacy/i);
     });
 
     it("passes on clean install", async () => {
@@ -175,7 +192,7 @@ describe("CLI commands (in-process)", () => {
 
     it("detects missing user dirs", async () => {
       await captureIO(tmpDir, () => installCommand());
-      rmSync(path.join(tmpDir, ".ai-agents/knowledge/principle"), { recursive: true });
+      rmSync(path.join(tmpDir, ".mvtt/knowledge/principle"), { recursive: true });
       const r = await captureIO(tmpDir, () => doctorCommand());
       const warnCalls = vi.mocked(clack.log.warn).mock.calls.map((c) => String(c[0]));
       expect(warnCalls.join("\n")).toContain("User data dir missing");
@@ -228,31 +245,31 @@ describe("CLI commands (in-process)", () => {
 
     it("removes generated files when user confirms", async () => {
       await captureIO(tmpDir, () => installCommand());
-      const userFile = path.join(tmpDir, ".ai-agents/workspace/artifacts/mine.md");
+      const userFile = path.join(tmpDir, ".mvtt/workspace/artifacts/mine.md");
       writeFileSync(userFile, "my work", "utf-8");
       vi.mocked(clack.confirm)
         .mockResolvedValueOnce(true as never)
         .mockResolvedValueOnce(true as never);
       await captureIO(tmpDir, () => uninstallCommand());
       expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-analyze/SKILL.md"))).toBe(false);
-      expect(existsSync(path.join(tmpDir, ".ai-agents/.mvtt-manifest.json"))).toBe(false);
+      expect(existsSync(path.join(tmpDir, ".mvtt/.mvtt-manifest.json"))).toBe(false);
       expect(readFileSync(userFile, "utf-8")).toBe("my work");
-      expect(existsSync(path.join(tmpDir, ".ai-agents/config.yaml"))).toBe(true);
+      expect(existsSync(path.join(tmpDir, ".mvtt/config.yaml"))).toBe(true);
     });
 
     it("removes user data when user opts out of preservation", async () => {
       await captureIO(tmpDir, () => installCommand());
-      const userFile = path.join(tmpDir, ".ai-agents/workspace/artifacts/mine.md");
+      const userFile = path.join(tmpDir, ".mvtt/workspace/artifacts/mine.md");
       writeFileSync(userFile, "my work", "utf-8");
       vi.mocked(clack.confirm)
         .mockResolvedValueOnce(true as never)
         .mockResolvedValueOnce(false as never);
       await captureIO(tmpDir, () => uninstallCommand());
       expect(existsSync(path.join(tmpDir, ".claude/skills/mvt-analyze/SKILL.md"))).toBe(false);
-      expect(existsSync(path.join(tmpDir, ".ai-agents/.mvtt-manifest.json"))).toBe(false);
+      expect(existsSync(path.join(tmpDir, ".mvtt/.mvtt-manifest.json"))).toBe(false);
       expect(existsSync(userFile)).toBe(false);
-      expect(existsSync(path.join(tmpDir, ".ai-agents/config.yaml"))).toBe(false);
-      expect(existsSync(path.join(tmpDir, ".ai-agents/registry.yaml"))).toBe(false);
+      expect(existsSync(path.join(tmpDir, ".mvtt/config.yaml"))).toBe(false);
+      expect(existsSync(path.join(tmpDir, ".mvtt/registry.yaml"))).toBe(false);
     });
   });
 

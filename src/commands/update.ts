@@ -1,12 +1,16 @@
-import { existsSync, rmSync, readdirSync } from "node:fs";
+import { existsSync } from "node:fs";
 import path from "node:path";
 import * as p from "@clack/prompts";
 import { materializeProject } from "../fs/materialize.js";
+import { removeStaleGeneratedFiles } from "../fs/generated-cleanup.js";
 import {
   readInstallationManifest,
+  readInstallationManifestFrom,
   readInstalledPlatforms,
   writeInstallationManifest,
 } from "../fs/install-manifest.js";
+import { migrateLegacyLayout, rollbackLegacyLayout } from "../fs/legacy-layout.js";
+import { BACKUP_DIR_REL, FRAMEWORK_DIR, LEGACY_FRAMEWORK_DIR } from "../fs/paths.js";
 import { hashFile } from "../fs/hash.js";
 import { getPackageRoot, getVersion } from "./shared.js";
 import { bilingual } from "../util/bilingual.js";
@@ -16,22 +20,26 @@ export interface UpdateOptions {
   check?: boolean;
 }
 
+type UpdateRunResult = "completed" | "cancelled";
+
 export async function updateCommand(options: UpdateOptions = {}): Promise<void> {
   const projectRoot = process.cwd();
   const packageRoot = getPackageRoot();
   const version = getVersion();
   const checkOnly = options.check === true;
 
-  const existing = readInstallationManifest(projectRoot);
-  if (!existing) {
-    console.error(bilingual(
-      "MVTT is not installed in this project. Run `mvtt install` first.",
-      "MVTT 尚未安装到当前项目。请先运行 `mvtt install`。",
-    ));
-    process.exit(1);
-  }
-
+  // --check is read-only: report from the legacy location instead of migrating.
   if (checkOnly) {
+    const existing =
+      readInstallationManifest(projectRoot) ??
+      readInstallationManifestFrom(projectRoot, LEGACY_FRAMEWORK_DIR);
+    if (!existing) {
+      console.error(bilingual(
+        "MVTT is not installed in this project. Run `mvtt install` first.",
+        "MVTT 尚未安装到当前项目。请先运行 `mvtt install`。",
+      ));
+      process.exit(1);
+    }
     console.log(bilingual(`Current: v${existing.mvtt_version}`, `当前版本：v${existing.mvtt_version}`));
     console.log(bilingual(`Latest:  v${version}`, `最新版本：v${version}`));
     if (existing.mvtt_version !== version) {
@@ -42,6 +50,57 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     return;
   }
 
+  // One-time migration: rename .ai-agents/ -> .mvtt/ so every downstream step
+  // (manifest, registry merge, materialize) can use the normal paths unchanged.
+  let migrated = false;
+  try {
+    migrated = migrateLegacyLayout(projectRoot).migrated;
+  } catch (err) {
+    console.error(bilingual(
+      `Cannot migrate legacy layout: ${(err as Error).message}`,
+      `无法迁移旧目录布局：${(err as Error).message}`,
+    ));
+    process.exit(1);
+  }
+  if (migrated) {
+    console.log(bilingual(
+      `Migrated legacy ${LEGACY_FRAMEWORK_DIR}/ to ${FRAMEWORK_DIR}/.`,
+      `已将旧目录 ${LEGACY_FRAMEWORK_DIR}/ 迁移为 ${FRAMEWORK_DIR}/。`,
+    ));
+  }
+
+  const existing = readInstallationManifest(projectRoot);
+  if (!existing) {
+    if (migrated) rollbackLegacyLayout(projectRoot);
+    console.error(bilingual(
+      "MVTT is not installed in this project. Run `mvtt install` first.",
+      "MVTT 尚未安装到当前项目。请先运行 `mvtt install`。",
+    ));
+    process.exit(1);
+  }
+
+  let result: UpdateRunResult;
+  try {
+    result = await runUpdate(projectRoot, packageRoot, version, existing);
+  } catch (err) {
+    if (migrated) rollbackLegacyLayout(projectRoot);
+    throw err;
+  }
+  if (migrated && result === "cancelled") {
+    rollbackLegacyLayout(projectRoot);
+    console.log(bilingual(
+      "Migration rolled back because the update was cancelled.",
+      "更新已取消，目录迁移已回滚。",
+    ));
+  }
+}
+
+async function runUpdate(
+  projectRoot: string,
+  packageRoot: string,
+  version: string,
+  existing: NonNullable<ReturnType<typeof readInstallationManifest>>,
+): Promise<UpdateRunResult> {
   const modified: string[] = [];
   for (const [relPath, record] of Object.entries(existing.files)) {
     if (record.category !== "generated") continue;
@@ -72,14 +131,14 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
   if (process.stdout.isTTY) {
     const response = await p.confirm({
       message: bilingual(
-        "Back up the existing registry and core-manifest to .ai-agents/.backup/ before updating?",
-        "更新前是否将现有的 registry 和 core-manifest 备份到 .ai-agents/.backup/？",
+        `Back up the existing registry and core-manifest to ${BACKUP_DIR_REL}/ before updating?`,
+        `更新前是否将现有的 registry 和 core-manifest 备份到 ${BACKUP_DIR_REL}/？`,
       ),
       initialValue: true,
     });
     if (p.isCancel(response)) {
       console.log(bilingual("Update cancelled.", "已取消更新。"));
-      return;
+      return "cancelled";
     }
     backup = response;
   }
@@ -96,7 +155,7 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
 
   const platforms = readInstalledPlatforms(existing);
   const spinner = startSpinner(
-    bilingual(`Materializing ${platforms.length} platform(s)...`, `正在生成 ${platforms.length} 个平台的文件...`),
+    bilingual(`Materializing ${platforms.length} target(s)...`, `正在生成 ${platforms.length} 个目标...`),
   );
   let materialized: ReturnType<typeof materializeProject>;
   try {
@@ -128,36 +187,9 @@ export async function updateCommand(options: UpdateOptions = {}): Promise<void> 
     `\nUpdate complete: ${materialized.length} files processed.`,
     `\n更新完成:已处理 ${materialized.length} 个文件。`,
   ));
-}
-
-function removeStaleGeneratedFiles(
-  projectRoot: string,
-  previousFiles: Record<string, { category: string; hash: string }>,
-  current: Array<{ relPath: string; category: string }>,
-): string[] {
-  const currentSet = new Set(current.map((m) => m.relPath));
-  const removed: string[] = [];
-
-  for (const [relPath, record] of Object.entries(previousFiles)) {
-    if (record.category !== "generated") continue;
-    if (currentSet.has(relPath)) continue;
-
-    const absPath = path.resolve(projectRoot, relPath);
-    if (!existsSync(absPath)) continue;
-
-    rmSync(absPath, { force: true });
-    removed.push(relPath);
-
-    let parent = path.dirname(absPath);
-    const stopAt = path.resolve(projectRoot);
-    while (parent.startsWith(stopAt) && parent !== stopAt) {
-      if (!existsSync(parent)) break;
-      const entries = readdirSync(parent);
-      if (entries.length > 0) break;
-      rmSync(parent, { recursive: true, force: true });
-      parent = path.dirname(parent);
-    }
-  }
-
-  return removed;
+  console.log(bilingual(
+    "Change platforms later with: mvtt platform update",
+    "后续修改平台目标：mvtt platform update",
+  ));
+  return "completed";
 }

@@ -12,7 +12,7 @@ describe("artifact-scan.cjs", () => {
 
   beforeEach(() => {
     tmpDir = mkdtempSync(path.join(os.tmpdir(), "mvtt-artifact-scan-"));
-    artifactsDir = path.join(tmpDir, ".ai-agents", "workspace", "artifacts");
+    artifactsDir = path.join(tmpDir, ".mvtt", "workspace", "artifacts");
     mkdirSync(artifactsDir, { recursive: true });
   });
 
@@ -36,8 +36,8 @@ describe("artifact-scan.cjs", () => {
     const result = scan("change-dirs");
     expect(result.status).toBe(0);
     expect(JSON.parse(result.stdout).entries).toEqual([
-      ".ai-agents/workspace/artifacts/a-change",
-      ".ai-agents/workspace/artifacts/z-change",
+      ".mvtt/workspace/artifacts/a-change",
+      ".mvtt/workspace/artifacts/z-change",
     ]);
   });
 
@@ -49,7 +49,7 @@ describe("artifact-scan.cjs", () => {
     const result = scan("plans");
     expect(result.status).toBe(0);
     expect(JSON.parse(result.stdout).entries).toEqual([
-      ".ai-agents/workspace/artifacts/b-change/plan.yaml",
+      ".mvtt/workspace/artifacts/b-change/plan.yaml",
     ]);
   });
 
@@ -61,8 +61,8 @@ describe("artifact-scan.cjs", () => {
     const result = scan("files");
     expect(result.status).toBe(0);
     expect(JSON.parse(result.stdout).entries).toEqual([
-      ".ai-agents/workspace/artifacts/a-change/nested/a.md",
-      ".ai-agents/workspace/artifacts/z-change/z.md",
+      ".mvtt/workspace/artifacts/a-change/nested/a.md",
+      ".mvtt/workspace/artifacts/z-change/z.md",
     ]);
   });
 

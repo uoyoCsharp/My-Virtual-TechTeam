@@ -3,7 +3,7 @@
 ### Step 1: Load Requirements
 - If one or more file paths are supplied, fingerprint each file before analysis:
   ```bash
-  node .ai-agents/scripts/requirement-source.cjs --fingerprint <source_path>
+  node .mvtt/scripts/requirement-source.cjs --fingerprint <source_path>
   ```
   Record each normalized `reference` and `fingerprint`, then read the file. If fingerprinting fails, identify the file and stop before preview; never substitute conversation provenance.
 - Treat requirement text supplied directly in the user message as a conversation source with `reference: conversation` and no fingerprint.
@@ -68,21 +68,21 @@
 ### Step 6: Write Artifacts
 Write two artifacts:
 
-Before writing, derive `epic_id` and check whether `.ai-agents/workspace/artifacts/{epic_id}/` already exists. If it exists, do NOT overwrite it; warn the user and ask for a disambiguating slug, then re-run the preview from Step 5 with the new id.
+Before writing, derive `epic_id` and check whether `.mvtt/workspace/artifacts/{epic_id}/` already exists. If it exists, do NOT overwrite it; warn the user and ask for a disambiguating slug, then re-run the preview from Step 5 with the new id.
 
-1. **epic.md** (narrative) -- `.ai-agents/workspace/artifacts/{epic_id}/epic.md`
+1. **epic.md** (narrative) -- `.mvtt/workspace/artifacts/{epic_id}/epic.md`
   - Render applicable content with the `decompose-output` template and strip its HTML comments.
   - This file is a derived human-readable view. `epic.yaml` is authoritative for requirement provenance, context items, and child mappings.
   - Preserve the epic vision, boundaries, cross-cutting concerns, child stories, dependencies, and unresolved questions; do not create empty sections.
 
-2. **epic.yaml** (structured) -- `.ai-agents/workspace/artifacts/{epic_id}/epic.yaml`
+2. **epic.yaml** (structured) -- `.mvtt/workspace/artifacts/{epic_id}/epic.yaml`
   - Follows the new-epic creation contract defined in Artifact Structure, including `requirement_context` and every child's `context_refs`.
   - Set first child `status: active`, all others `status: pending`
   - Set `current_change` to the first child's `change_id`
 
 **Self-validation checklist** (verify before writing):
 - [ ] All `change_id` values are unique
-- [ ] `.ai-agents/workspace/artifacts/{epic_id}/` does not already exist
+- [ ] `.mvtt/workspace/artifacts/{epic_id}/` does not already exist
 - [ ] All `depends_on` references exist in `children[]`
 - [ ] No cycles in the dependency graph
 - [ ] Exactly one child has `status: active`
@@ -92,21 +92,21 @@ Before writing, derive `epic_id` and check whether `.ai-agents/workspace/artifac
 
 After writing both artifacts, validate the authoritative epic before session activation:
 ```bash
-node .ai-agents/scripts/epic-update.cjs --validate .ai-agents/workspace/artifacts/{epic_id}/epic.yaml
+node .mvtt/scripts/epic-update.cjs --validate .mvtt/workspace/artifacts/{epic_id}/epic.yaml
 ```
 
 If validation fails, report the structural errors and stop before Step 7. Do not activate an invalid epic or rewrite captured fingerprints to make validation pass.
 
 If the epic needs children added later (e.g. a missed sub-change discovered during analysis), use `--add-child`:
 ```bash
-node .ai-agents/scripts/epic-update.cjs --epic .ai-agents/workspace/artifacts/{epic_id}/epic.yaml \
+node .mvtt/scripts/epic-update.cjs --epic .mvtt/workspace/artifacts/{epic_id}/epic.yaml \
   --add-child <new_child_id> --child-title "<title>" --child-scope "<scope>" \
   --child-context-refs "<ctx-id-1>,<ctx-id-2>"
 ```
 
 To advance the epic after a child change completes, use `--complete-child`:
 ```bash
-node .ai-agents/scripts/epic-update.cjs --epic .ai-agents/workspace/artifacts/{epic_id}/epic.yaml \
+node .mvtt/scripts/epic-update.cjs --epic .mvtt/workspace/artifacts/{epic_id}/epic.yaml \
   --complete-child <completed_child_id>
 ```
 

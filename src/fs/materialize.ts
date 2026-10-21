@@ -16,6 +16,7 @@ import { assembleFromManifest } from "../build/assembler.js";
 import { hashString, hashFile } from "./hash.js";
 import { updateCoreManifest } from "./core-manifest.js";
 import { updateRegistry } from "./registry-merge.js";
+import { fw } from "./paths.js";
 
 export interface MaterializedFile {
   absPath: string;
@@ -143,7 +144,7 @@ export function materializeProject(options: MaterializeOptions): MaterializedFil
   // CREATE_ONCE and reconciled separately via updateCoreManifest() below so
   // that user-added entries (origin: user) are preserved across `mvtt update`.
   const knowledgeSrc = path.resolve(sourcesDir, "knowledge");
-  const knowledgeDest = path.resolve(projectRoot, ".ai-agents/knowledge");
+  const knowledgeDest = path.resolve(projectRoot, fw("knowledge"));
   copyRecursive(
     knowledgeSrc,
     knowledgeDest,
@@ -154,12 +155,12 @@ export function materializeProject(options: MaterializeOptions): MaterializedFil
 
   const coreManifestDest = path.resolve(
     projectRoot,
-    ".ai-agents/knowledge/core/manifest.yaml",
+    fw("knowledge/core/manifest.yaml"),
   );
   updateCoreManifest(projectRoot, packageRoot, backup);
   materialized.push({
     absPath: coreManifestDest,
-    relPath: ".ai-agents/knowledge/core/manifest.yaml",
+    relPath: fw("knowledge/core/manifest.yaml"),
     hash: hashFile(coreManifestDest),
     category: "create_once",
   });
@@ -168,11 +169,11 @@ export function materializeProject(options: MaterializeOptions): MaterializedFil
   // (custom: true) and knowledge bindings added via /mvt-create-skill and
   // /mvt-manage-context must survive `mvtt update`. Treated as create_once
   // (like core/manifest.yaml) so the modified-files guard does not flag it.
-  const registryDest = path.resolve(projectRoot, ".ai-agents/registry.yaml");
+  const registryDest = path.resolve(projectRoot, fw("registry.yaml"));
   updateRegistry(projectRoot, packageRoot, backup);
   materialized.push({
     absPath: registryDest,
-    relPath: ".ai-agents/registry.yaml",
+    relPath: fw("registry.yaml"),
     hash: hashFile(registryDest),
     category: "create_once",
   });
@@ -181,21 +182,21 @@ export function materializeProject(options: MaterializeOptions): MaterializedFil
   // Copy .cjs scripts and .md usage reference files (copied by build-scripts.js)
   // Skip any other stale build artifacts that might leak into user projects
   const scriptsSrc = path.resolve(packageRoot, "dist/scripts");
-  const scriptsDest = path.resolve(projectRoot, ".ai-agents/scripts");
+  const scriptsDest = path.resolve(projectRoot, fw("scripts"));
   copyRecursive(scriptsSrc, scriptsDest, materialized, projectRoot, (rel) => !rel.endsWith(".cjs") && !rel.endsWith(".md"));
 
   const defaults: Array<[string, string]> = [
     [
       path.resolve(sourcesDir, "defaults/config.yaml"),
-      path.resolve(projectRoot, ".ai-agents/config.yaml"),
+      path.resolve(projectRoot, fw("config.yaml")),
     ],
     [
       path.resolve(sourcesDir, "defaults/session.yaml"),
-      path.resolve(projectRoot, ".ai-agents/workspace/session.yaml"),
+      path.resolve(projectRoot, fw("workspace/session.yaml")),
     ],
     [
       path.resolve(sourcesDir, "defaults/project-context.yaml"),
-      path.resolve(projectRoot, ".ai-agents/workspace/project-context.yaml"),
+      path.resolve(projectRoot, fw("workspace/project-context.yaml")),
     ],
   ];
 
@@ -220,12 +221,12 @@ export function materializeProject(options: MaterializeOptions): MaterializedFil
   }
 
   const userDataDirs = [
-    ".ai-agents/workspace/artifacts",
-    ".ai-agents/skills/_templates/custom",
-    ".ai-agents/knowledge/principle",
-    ".ai-agents/knowledge/project",
-    ".ai-agents/knowledge/project/_generated",
-    ".ai-agents/knowledge/core/user",
+    fw("workspace/artifacts"),
+    fw("skills/_templates/custom"),
+    fw("knowledge/principle"),
+    fw("knowledge/project"),
+    fw("knowledge/project/_generated"),
+    fw("knowledge/core/user"),
   ];
   for (const dir of userDataDirs) {
     mkdirSync(path.resolve(projectRoot, dir), { recursive: true });

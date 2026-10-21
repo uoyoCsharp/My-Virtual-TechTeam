@@ -1,5 +1,5 @@
 name: implement-output
-output: .ai-agents/skills/_templates/implement-output.md
+output: .mvtt/skills/_templates/implement-output.md
 
 frontmatter:
   id: implement-output

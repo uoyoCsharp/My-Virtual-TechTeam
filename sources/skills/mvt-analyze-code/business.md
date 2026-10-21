@@ -16,8 +16,8 @@ Identify which project(s) to analyze using interactive routing:
 
 Determine the output template for project-context.md:
 
-1. Check `.ai-agents/skills/_templates/custom/project-context.md` -- if exists, use it
-2. Otherwise, use `.ai-agents/skills/_templates/project-context.md` (default)
+1. Check `.mvtt/skills/_templates/custom/project-context.md` -- if exists, use it
+2. Otherwise, use `.mvtt/skills/_templates/project-context.md` (default)
 3. Read the template to understand the required section structure
 4. The template defines section headings only -- generate content freely for each section based on code analysis
 
@@ -73,7 +73,7 @@ Identify public interfaces:
    - Fill each template section with analysis results
    - If a section has no relevant content, include the heading with "(No relevant content detected)"
 
-2. Write the output to `.ai-agents/knowledge/project/_generated/project-context.md` (always the flat path, regardless of project count).
+2. Write the output to `.mvtt/knowledge/project/_generated/project-context.md` (always the flat path, regardless of project count).
    - **Single-project**: write the full document.
    - **Multi-project**: use `# Project: {name}` as the top-level heading to separate each project's content sections within the single file.
 

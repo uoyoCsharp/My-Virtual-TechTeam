@@ -7,10 +7,10 @@ import {
 } from "node:fs";
 import path from "node:path";
 import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
+import { BACKUP_DIR_REL, REGISTRY_REL } from "./paths.js";
 
 const FRAMEWORK_REGISTRY_REL = "registry.yaml";
-const USER_REGISTRY_REL = ".ai-agents/registry.yaml";
-const BACKUP_DIR_REL = ".ai-agents/.backup";
+const USER_REGISTRY_REL = REGISTRY_REL;
 
 // The registry schema is open-ended (skills carry optional knowledge bindings,
 // next_suggestions, variants, etc. that the merge must pass through untouched),
@@ -225,7 +225,7 @@ function mergeRegistry(
 }
 
 /**
- * Reconcile the project's `.ai-agents/registry.yaml` with the framework
+ * Reconcile the project's `.mvtt/registry.yaml` with the framework
  * registry shipped in the package, preserving user-authored skills and
  * knowledge bindings across `mvtt update`.
  *
@@ -233,7 +233,7 @@ function mergeRegistry(
  * verbatim so its documentation comments survive. When a user registry already
  * exists it is rewritten with the merged result; when `createBackup` is true
  * (the default) the previous user registry is first backed up to
- * `.ai-agents/.backup/`.
+ * `.mvtt/.backup/`.
  */
 export function updateRegistry(
   projectRoot: string,

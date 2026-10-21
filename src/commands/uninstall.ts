@@ -1,41 +1,65 @@
 import { existsSync, readdirSync, rmSync, statSync, unlinkSync } from "node:fs";
 import path from "node:path";
 import * as p from "@clack/prompts";
-import { manifestPath, readInstallationManifest, readInstalledPlatforms } from "../fs/install-manifest.js";
+import {
+  manifestPath,
+  readInstallationManifest,
+  readInstallationManifestFrom,
+  readInstalledPlatforms,
+} from "../fs/install-manifest.js";
+import {
+  hasLegacyLayout,
+  migrateLegacyLayout,
+  rollbackLegacyLayout,
+} from "../fs/legacy-layout.js";
+import { FRAMEWORK_DIR, LEGACY_FRAMEWORK_DIR, fw } from "../fs/paths.js";
 import { PLATFORMS, getPlatformById } from "../types/platform.js";
 import { bilingual } from "../util/bilingual.js";
-import { cancelled } from "../util/cancel.js";
 import { color } from "../util/color.js";
 
 const USER_DATA_PATHS: string[] = [
-  ".ai-agents/workspace",
-  ".ai-agents/skills/_templates/custom",
-  ".ai-agents/knowledge/principle",
-  ".ai-agents/knowledge/project",
-  ".ai-agents/knowledge/core/user",
-  ".ai-agents/config.yaml",
-  ".ai-agents/registry.yaml",
-  ".ai-agents/knowledge/core/manifest.yaml",
-  ".ai-agents/workspace/session.yaml",
-  ".ai-agents/workspace/project-context.yaml",
+  fw("workspace"),
+  fw("skills/_templates/custom"),
+  fw("knowledge/principle"),
+  fw("knowledge/project"),
+  fw("knowledge/core/user"),
+  fw("config.yaml"),
+  fw("registry.yaml"),
+  fw("knowledge/core/manifest.yaml"),
+  fw("workspace/session.yaml"),
+  fw("workspace/project-context.yaml"),
 ];
 
 export async function uninstallCommand(): Promise<void> {
   const projectRoot = process.cwd();
 
-  const manifest = readInstallationManifest(projectRoot);
-  if (!manifest) {
+  const newManifest = readInstallationManifest(projectRoot);
+  const legacyManifest = newManifest
+    ? null
+    : readInstallationManifestFrom(projectRoot, LEGACY_FRAMEWORK_DIR);
+  const manifestForInfo = newManifest ?? legacyManifest;
+
+  if (!manifestForInfo) {
     console.error(bilingual("MVTT is not installed in this project.", "MVTT 尚未安装到当前项目。"));
     process.exit(1);
   }
 
-  const generated = Object.entries(manifest.files).filter(
-    ([, r]) => r.category === "generated",
-  );
+  if (hasLegacyLayout(projectRoot) && existsSync(path.join(projectRoot, FRAMEWORK_DIR))) {
+    console.error(bilingual(
+      `Both ${LEGACY_FRAMEWORK_DIR}/ and ${FRAMEWORK_DIR}/ exist. Keep only ${FRAMEWORK_DIR}/ and remove the old directory.`,
+      `旧目录 ${LEGACY_FRAMEWORK_DIR}/ 与 ${FRAMEWORK_DIR}/ 同时存在。请只保留 ${FRAMEWORK_DIR}/ 并手动删除旧目录。`,
+    ));
+    process.exit(1);
+  }
+
+  const usingLegacyLayout = !newManifest;
+  const generatedCount = Object.entries(manifestForInfo.files).filter(
+    ([, record]) => record.category === "generated",
+  ).length;
 
   p.intro(color.cyan(bilingual(
-    `MVTT Uninstaller — ${generated.length} file(s) to remove`,
-    `MVTT 卸载器 — 将删除 ${generated.length} 个文件`,
+    `MVTT Uninstaller — ${generatedCount} file(s) to remove`,
+    `MVTT 卸载器 — 将删除 ${generatedCount} 个文件`,
   )));
 
   p.log.info(bilingual(
@@ -46,6 +70,12 @@ export async function uninstallCommand(): Promise<void> {
     "You will be asked whether to also remove user data.",
     "接下来会询问是否一并删除用户数据。",
   ));
+  if (usingLegacyLayout) {
+    p.log.info(bilingual(
+      `Legacy ${LEGACY_FRAMEWORK_DIR}/ layout will be migrated to ${FRAMEWORK_DIR}/ as part of the uninstall.`,
+      `卸载过程中会将旧目录 ${LEGACY_FRAMEWORK_DIR}/ 迁移为 ${FRAMEWORK_DIR}/。`,
+    ));
+  }
 
   const confirmed = await confirmUninstall();
   if (p.isCancel(confirmed) || !confirmed) {
@@ -54,7 +84,34 @@ export async function uninstallCommand(): Promise<void> {
   }
 
   const preserveUserData = await confirmUserDataPreservation();
-  if (p.isCancel(preserveUserData)) cancelled();
+  if (p.isCancel(preserveUserData)) {
+    p.cancel(bilingual("Uninstall cancelled.", "已取消卸载。"));
+    return;
+  }
+
+  let migrated = false;
+  if (usingLegacyLayout) {
+    try {
+      migrated = migrateLegacyLayout(projectRoot).migrated;
+    } catch (err) {
+      console.error(bilingual(
+        `Cannot migrate legacy layout: ${(err as Error).message}`,
+        `无法迁移旧目录布局：${(err as Error).message}`,
+      ));
+      process.exit(1);
+    }
+  }
+
+  const manifest = readInstallationManifest(projectRoot);
+  if (!manifest) {
+    if (migrated) rollbackLegacyLayout(projectRoot);
+    console.error(bilingual("MVTT is not installed in this project.", "MVTT 尚未安装到当前项目。"));
+    process.exit(1);
+  }
+
+  const generated = Object.entries(manifest.files).filter(
+    ([, record]) => record.category === "generated",
+  );
 
   for (const [rel] of generated) {
     const abs = path.resolve(projectRoot, rel);
@@ -65,7 +122,7 @@ export async function uninstallCommand(): Promise<void> {
   const platformIds =
     installedPlatforms.length > 0
       ? installedPlatforms
-      : PLATFORMS.map((p) => p.id);
+      : PLATFORMS.map((platform) => platform.id);
 
   for (const platformId of platformIds) {
     const platform = getPlatformById(platformId);

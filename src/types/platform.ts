@@ -1,10 +1,11 @@
-export type PlatformId = "claude" | "qoder" | "cursor" | "opencode";
+export type PlatformId = "claude" | "agents" | "qoder" | "cursor" | "opencode";
 
 export interface PlatformDef {
   id: PlatformId;
   dir: string;
   skillDir: string;
   description: string;
+  selectable?: boolean;
 }
 
 export const PLATFORMS: PlatformDef[] = [
@@ -12,7 +13,14 @@ export const PLATFORMS: PlatformDef[] = [
     id: "claude",
     dir: ".claude",
     skillDir: ".claude/skills",
-    description: "Claude Code / Claude Desktop / Github Copilot",
+    description: "Claude Code",
+  },
+  {
+    id: "agents",
+    dir: ".agents",
+    skillDir: ".agents/skills",
+    description:
+      "Codex / DeepSeek Harness / GitHub Copilot / Cursor / OpenCode / Gemini / Windsurf (shared .agents folder)",
   },
   {
     id: "qoder",
@@ -24,15 +32,21 @@ export const PLATFORMS: PlatformDef[] = [
     id: "cursor",
     dir: ".cursor",
     skillDir: ".cursor/skills",
-    description: "Cursor IDE",
+    description: "Cursor IDE (native path; the .agents target covers Cursor too)",
+    selectable: false,
   },
   {
     id: "opencode",
     dir: ".opencode",
     skillDir: ".opencode/skills",
-    description: "Opencode CLI",
+    description: "Opencode CLI (native path; the .agents target covers OpenCode too)",
+    selectable: false,
   },
 ];
+
+export const SELECTABLE_PLATFORMS: PlatformDef[] = PLATFORMS.filter(
+  (platform) => platform.selectable !== false,
+);
 
 export const DEFAULT_PLATFORMS: PlatformId[] = ["claude"];
 

@@ -44,16 +44,16 @@ rules, validating the result, and writing back atomically — is performed by a
 deterministic script. Do NOT hand-edit `plan.yaml` or reason through the
 `current_tasks` selection yourself; call the script with the resolved arguments
 from Steps 2-3. See the **Script Usage Rule** section for the command template,
-or read `.ai-agents/scripts/plan-update.md` for argument value sources,
+or read `.mvtt/scripts/plan-update.md` for argument value sources,
 parameter semantics, and output interpretation.
 
 ```bash
-node .ai-agents/scripts/plan-update.cjs --plan "<active_change.plan_path>" --task <task_id> --status <new_status> --projects "<comma,separated,project,names>" [--artifacts "<comma,separated,paths>"] [--notes "<note text>"]
+node .mvtt/scripts/plan-update.cjs --plan "<active_change.plan_path>" --task <task_id> --status <new_status> --projects "<comma,separated,project,names>" [--artifacts "<comma,separated,paths>"] [--notes "<note text>"]
 ```
 
 Include `--artifacts` only if artifacts were provided, and `--notes` only if a note was provided; omit each flag otherwise.
 
-**Interpreting the result:** See `.ai-agents/scripts/plan-update.md` "Output interpretation" for the exit-0 / exit-1 protocol. On exit 0, use the JSON fields directly to render the Output Format block. On exit 1, report stderr and do not fabricate a success summary.
+**Interpreting the result:** See `.mvtt/scripts/plan-update.md` "Output interpretation" for the exit-0 / exit-1 protocol. On exit 0, use the JSON fields directly to render the Output Format block. On exit 1, report stderr and do not fabricate a success summary.
 
 After an exit-0 result, continue to Step 5. Do not invoke `session-update.cjs` yet.
 
@@ -92,9 +92,9 @@ For a plan that just became done, an already-done plan, an intentional plan-less
 For an epic child, call exactly one matching epic command first:
 
 ```bash
-node .ai-agents/scripts/epic-update.cjs --epic "<active_epic.epic_path>" --complete-child <active_change.id>
-node .ai-agents/scripts/epic-update.cjs --epic "<active_epic.epic_path>" --complete-child <active_change.id> --defer-next
-node .ai-agents/scripts/epic-update.cjs --epic "<active_epic.epic_path>" --abandon-child <active_change.id>
+node .mvtt/scripts/epic-update.cjs --epic "<active_epic.epic_path>" --complete-child <active_change.id>
+node .mvtt/scripts/epic-update.cjs --epic "<active_epic.epic_path>" --complete-child <active_change.id> --defer-next
+node .mvtt/scripts/epic-update.cjs --epic "<active_epic.epic_path>" --abandon-child <active_change.id>
 ```
 
 On epic success, select one session lifecycle flag set: close or abandon the change, adding `--close-epic` when `epic_status` is `done` or `--abandon-epic` when it is `abandoned`. If epic-update fails, do not invoke session-update. If session-update fails after epic success, report the exact divergence and stop without retrying either mutation.

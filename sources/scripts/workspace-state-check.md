@@ -6,10 +6,10 @@
 ## Command
 
 ```bash
-node .ai-agents/scripts/workspace-state-check.cjs
+node .mvtt/scripts/workspace-state-check.cjs
 ```
 
-The checker resolves the project root by locating `.ai-agents`, then reads `workspace/session.yaml` and referenced plans. It never writes session, plan, epic, or history files.
+The checker resolves the project root by locating `.mvtt`, then reads `workspace/session.yaml` and referenced plans. It never writes session, plan, epic, or history files.
 
 ## Finding Codes
 

@@ -9,34 +9,34 @@ The script has six modes — use exactly one lifecycle operation per invocation:
 
 ```bash
 # Mode 1 — Complete the current child and advance to the next sub-change
-node .ai-agents/scripts/epic-update.cjs --epic <epic_path> --complete-child <change_id>
+node .mvtt/scripts/epic-update.cjs --epic <epic_path> --complete-child <change_id>
 
 # Mode 2 — Complete the child but defer activation of the next sub-change
-node .ai-agents/scripts/epic-update.cjs --epic <epic_path> --complete-child <change_id> --defer-next
+node .mvtt/scripts/epic-update.cjs --epic <epic_path> --complete-child <change_id> --defer-next
 
 # Mode 3 — Abandon a child and advance to the next eligible sub-change
-node .ai-agents/scripts/epic-update.cjs --epic <epic_path> --abandon-child <change_id>
+node .mvtt/scripts/epic-update.cjs --epic <epic_path> --abandon-child <change_id>
 
 # Mode 4 — Set a child's status without advancing current_change
-node .ai-agents/scripts/epic-update.cjs --epic <epic_path> --set-child-status <change_id> --child-status <active|pending|done|abandoned>
+node .mvtt/scripts/epic-update.cjs --epic <epic_path> --set-child-status <change_id> --child-status <active|pending|done|abandoned>
 
 # Mode 5 — Switch the active child to a different one (reorder)
-node .ai-agents/scripts/epic-update.cjs --epic <epic_path> --switch-active <change_id>
+node .mvtt/scripts/epic-update.cjs --epic <epic_path> --switch-active <change_id>
 
 # Mode 6 — Add one or more children to an existing epic
-node .ai-agents/scripts/epic-update.cjs --epic <epic_path> \
+node .mvtt/scripts/epic-update.cjs --epic <epic_path> \
   --add-child <id> --child-title "<title>" --child-scope "<scope>" [--child-depends-on "dep1,dep2"] [--child-context-refs "ctx-001,ctx-002"] \
   [--add-child <id2> --child-title "<title2>" --child-scope "<scope2>" ...]
 
 # Read-only validation (no write)
-node .ai-agents/scripts/epic-update.cjs --validate <epic_path>
+node .mvtt/scripts/epic-update.cjs --validate <epic_path>
 ```
 
 ## Argument values
 
 | Argument | Value source | Example |
 |----------|-------------|---------|
-| `--epic` | `active_epic.epic_path` resolved from session.yaml | `".ai-agents/workspace/artifacts/epic-20260608-ecommerce-platform/epic.yaml"` |
+| `--epic` | `active_epic.epic_path` resolved from session.yaml | `".mvtt/workspace/artifacts/epic-20260608-ecommerce-platform/epic.yaml"` |
 | `--complete-child` | `active_change.id` of the child whose plan is fully done | `20260608-sub` |
 | `--defer-next` | use only with `--complete-child` when the next ready child should not activate yet | flag only |
 | `--abandon-child` | target child `change_id` that should be abandoned | `20260608-sub` |

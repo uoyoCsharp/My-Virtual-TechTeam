@@ -10,7 +10,7 @@
   | 3 | Direct user input | User provided bug description in conversation | Bug description text |
 
 - **1a. Review artifact (mvt-review output)**
-  - Read `.ai-agents/workspace/artifacts/{active_change.id}/review.md`
+  - Read `.mvtt/workspace/artifacts/{active_change.id}/review.md`
   - Extract Critical + Warning findings as fix targets. For each finding: file, line range, observation, recommendation serve as pre-verified diagnosis.
   - If multiple Critical findings exist, ask user which to address first.
   - Skip Steps 2-4, proceed directly to Step 5.
@@ -98,8 +98,8 @@ This step applies only when the workspace has multiple projects (`projects.lengt
   - A file whose path starts with a project's `path` prefix belongs to that project.
   - A file under a project's `source_paths` entry also belongs to that project.
   - Collect the set of unique project names from all matched files. This is the **active project scope** for this invocation.
-- **On-demand knowledge loading**: for each project P in the active project scope, read `.ai-agents/registry.yaml` and load:
-  1. Every entry under `knowledge.{P}` -- load each entry's referenced files (resolve relative to `.ai-agents/{source}`).
+- **On-demand knowledge loading**: for each project P in the active project scope, read `.mvtt/registry.yaml` and load:
+  1. Every entry under `knowledge.{P}` -- load each entry's referenced files (resolve relative to `.mvtt/{source}`).
   2. Every entry under `skills.mvt-fix.knowledge.{P}` -- load each entry's referenced files.
   3. Skip any key absent from the registry (no project-specific knowledge is valid; do not warn).
 - **Multi-project scenario**: if affected files span multiple projects, load each project's knowledge sequentially. The skill operates with the union of all loaded project-specific knowledge plus the `_all` knowledge already loaded at activation.
@@ -128,7 +128,7 @@ This step applies only when the workspace has multiple projects (`projects.lengt
   - If the user chooses Skip, do NOT write any file under `artifacts/`. Keep the fix notes in the conversation only, and note that no artifact was persisted. Then continue to Step 10.
   - If the user chooses Write, write the artifact as described below.
   - When no `active_change` exists, there is no artifact to write — skip the prompt and keep the notes inline (existing shortcut behavior).
-- **Path**: `.ai-agents/workspace/artifacts/{change-id}/fix-notes.md` if an `active_change` exists; otherwise inline in the conversation only (no artifact -- shortcut operation).
+- **Path**: `.mvtt/workspace/artifacts/{change-id}/fix-notes.md` if an `active_change` exists; otherwise inline in the conversation only (no artifact -- shortcut operation).
 - **Structure** (each section is a single paragraph or list):
   - `Symptom` -- what the user saw / reported.
   - `Input Source` -- "Review artifact" | "Bug detection result" | "Direct user input".

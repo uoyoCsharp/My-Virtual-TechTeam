@@ -1,6 +1,6 @@
 # Development Guide
 
-Welcome to **My Virtual Tech Team (MVTT)** — an AI-guided prompt orchestration framework for Claude Code, distributed as the npm CLI `@uoyo/mvtt`. This guide will get you from zero to your first contribution.
+Welcome to **My Virtual Tech Team (MVTT)** — an AI-guided prompt orchestration framework for AI coding harnesses (Claude Code, Codex, DeepSeek Harness, Cursor, GitHub Copilot, and more), distributed as the npm CLI `@uoyo/mvtt`. This guide will get you from zero to your first contribution.
 
 ---
 
@@ -25,7 +25,7 @@ Welcome to **My Virtual Tech Team (MVTT)** — an AI-guided prompt orchestration
 
 ## 1. What You're Working On
 
-MVTT is a CLI tool that installs a curated **virtual tech team** (18 specialized AI skills) into any Claude Code project. Each skill represents a role — Analyst, Architect, Developer, Reviewer, Tester — and guides the user through a standard software workflow.
+MVTT is a CLI tool that installs a curated **virtual tech team** (25 specialized AI skills) into any supported AI coding project — Claude Code, or any `.agents`-compatible harness (Codex, DeepSeek Harness, GitHub Copilot, Cursor, OpenCode, Gemini/Antigravity, Windsurf/Devin). Each skill represents a role — Analyst, Architect, Developer, Reviewer, Tester — and guides the user through a standard software workflow.
 
 **Two halves of the project:**
 
@@ -34,7 +34,7 @@ MVTT is a CLI tool that installs a curated **virtual tech team** (18 specialized
 | **The CLI** (TypeScript) | `mvtt install`, `mvtt update`, `mvtt doctor`, `mvtt uninstall`, `mvtt build` | `src/` → compiled to `dist/` |
 | **The Skill Content** (Markdown + YAML) | The 18 skills that get materialized into the user's project at install time | `sources/` |
 
-The CLI's job is to **read the source content, assemble it, and write it into the user's project** (typically into `.claude/skills/` and `.ai-agents/`). The skills themselves are not code — they are structured Markdown documents that Claude Code interprets.
+The CLI's job is to **read the source content, assemble it, and write it into the user's project** (typically into `<platform>/skills/`, e.g. `.claude/skills/`, and `.mvtt/`). The skills themselves are not code — they are structured Markdown documents that the AI harness interprets.
 
 ---
 
@@ -42,8 +42,8 @@ The CLI's job is to **read the source content, assemble it, and write it into th
 
 ```
    sources/                              User's project
-   ├── skills/mvt-*/                     ├── .claude/skills/mvt-*/SKILL.md
-   │   ├── manifest.yaml      ───┐      ├── .ai-agents/
+   ├── skills/mvt-*/                     ├── <platform>/skills/mvt-*/SKILL.md
+   │   ├── manifest.yaml      ───┐      ├── .mvtt/
    │   └── business.md           │      │   ├── config.yaml
    ├── sections/  (shared)       │      │   ├── knowledge/
    ├── templates/                ├──►   │   ├── workspace/artifacts/
@@ -73,6 +73,20 @@ The CLI's job is to **read the source content, assemble it, and write it into th
 
 This separation is **the most important invariant in the codebase**. Breaking it can destroy user work. Always classify new files correctly before adding them.
 
+### Targets (where skills are written)
+
+`mvtt install` offers **targets**, not harnesses. Harnesses that share the `.agents` convention collapse into one target, so a single write serves all of them:
+
+| Target | Writes to | Loaded by |
+|---|---|---|
+| `.claude` | `.claude/skills/<name>/SKILL.md` | Claude Code |
+| `.agents` | `.agents/skills/<name>/SKILL.md` | Codex, DeepSeek Harness, GitHub Copilot, Cursor, OpenCode, Gemini/Antigravity, Windsurf/Devin |
+| `.qoder` | `.qoder/skills/<name>/SKILL.md` | Qoder IDE |
+
+`.cursor` and `.opencode` exist only as **legacy targets**: they stay resolvable so existing installations keep working under `mvtt update`/`uninstall`, but they are no longer offered by `mvtt install` because both harnesses read `.agents/skills`. The table is defined in `src/types/platform.ts`; `SELECTABLE_PLATFORMS` is what the installer shows.
+
+Use `mvtt platform list` to print the table above with installation status and managed-skill counts. On an existing installation, `mvtt platform update` opens an interactive picker pre-checked with the current set: it adds or removes targets only after you confirm, copies registered custom skills to any remaining target that lacks them (so removing the only copy's platform does not lose the skill), and cleans up generated files of removed targets while preserving user data. Legacy targets (`cursor`/`opencode`) are kept unless a non-interactive removal is added later. Target changes intentionally do **not** create registry/core-manifest backups in `.mvtt/.backup/`; run `mvtt update` if you want its prompted backup before a merge.
+
 ---
 
 ## 3. Prerequisites & Setup
@@ -80,7 +94,7 @@ This separation is **the most important invariant in the codebase**. Breaking it
 ### Requirements
 - **Node.js ≥ 18** (enforced at runtime in `src/index.ts`)
 - **npm** (comes with Node)
-- A Claude Code installation (for end-to-end manual testing)
+- At least one supported AI harness installed (for end-to-end manual testing)
 
 ### Get Started
 
@@ -135,15 +149,16 @@ node dist/index.js build --out .test-output
 │   └── util/                  Color output, package metadata helpers
 │
 ├── sources/                   The "content" that gets installed into user projects
-│   ├── skills/mvt-*/          18 skill packages (manifest.yaml + business.md)
+│   ├── skills/mvt-*/          25 skill packages (manifest.yaml + business.md)
 │   ├── sections/              Shared markdown fragments reused across skills
+│   ├── scripts/               Deterministic helper scripts (bundled to .mvtt/scripts/)
 │   ├── templates/             Output artifact templates (e.g. analyze-output.md)
 │   ├── knowledge/             Framework knowledge & architecture patterns
 │   │   ├── core/              Framework principles
 │   │   └── patterns/          ddd/, clean-architecture/, frontend-react/
 │   └── defaults/              Seed files for first install (config.yaml, etc.)
 │
-├── test/                      Vitest test suite (66 tests)
+├── test/                      Vitest test suite
 │   ├── *.test.ts              Unit tests mirroring src/ structure
 │   └── commands/              Command-level integration tests
 │
@@ -161,7 +176,7 @@ node dist/index.js build --out .test-output
 
 ### Two Files Worth Reading First
 
-- **`registry.yaml`** — declares every skill, its category, dependencies, and template. It's the index Claude Code uses at runtime.
+- **`registry.yaml`** — declares every skill, its category, dependencies, and template. It's the index the AI harness uses at runtime.
 - **`install-manifest.yaml`** — declares which files MVTT owns vs which belong to the user. The `update` command consults this to know what's safe to overwrite.
 
 ---
@@ -350,6 +365,29 @@ When the CLI runs `install` or `build`, it walks this pipeline:
 - `{{.}}` — current iteration value
 
 If you add a new directive, add tests in `test/section-loader.test.ts`.
+
+### Bundled Scripts
+
+Deterministic operations (state mutation, artifact scanning, custom-skill creation) are Node scripts under `sources/scripts/`, not LLM instructions:
+
+```
+sources/scripts/<name>.js    ESM source (may import npm deps, e.g. yaml)
+sources/scripts/<name>.md    Authoritative usage reference, read by the AI before invoking
+        │
+        ▼  esbuild bundle (build-scripts.js)
+dist/scripts/<name>.cjs      Zero-dependency single file + copied .md
+        │
+        ▼  materialize
+.mvtt/scripts/...       Deployed into every user project, tracked as generated
+```
+
+To add one: write the ESM source plus its `.md` reference, add the source path to `entryPoints` in `build-scripts.js`, add both files to `install-manifest.yaml` > `generated`, run `npm run build`, and add a spawn-based test under `test/` (the suite runs the built `.cjs`, so always build before `npm test`).
+
+Skills must read the `.md`, invoke `node .mvtt/scripts/<name>.cjs ...`, and consume its single-line JSON output. Never add runtime dependencies — the bundle must run without `node_modules`.
+
+Platform knowledge is never duplicated in scripts. `build-scripts.js` injects the compiled `src/types/platform.ts` table as the `mvtt:platforms` virtual module, so `src/types/platform.ts` remains the only place defining platform ids, directories and skills directories; `install-manifest.yaml` is kept in sync by `test/types/platform.test.ts`.
+
+`skill-scaffold.cjs` owns custom-skill creation: it resolves installed platforms from `.mvtt-manifest.json#platformSkillDirs`, writes the skill to every platform's skills directory, and owns the `registry.yaml` entry. Never hardcode a platform skills path in skill content; custom skills bypass the installer's per-platform path rewrite.
 
 ### Manifest Validation
 

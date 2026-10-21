@@ -58,9 +58,9 @@ sections:
       activation_reads:
         - session.yaml
       extended_context:
-        - ".ai-agents/workspace/artifacts/{change-id}/ -- Source artifacts for completed changes"
-        - ".ai-agents/knowledge/project/_generated/project-context.md -- Current semantic context (merge target)"
-        - ".ai-agents/workspace/project-context.yaml -- Current structural index (merge target)"
+        - ".mvtt/workspace/artifacts/{change-id}/ -- Source artifacts for completed changes"
+        - ".mvtt/knowledge/project/_generated/project-context.md -- Current semantic context (merge target)"
+        - ".mvtt/workspace/project-context.yaml -- Current structural index (merge target)"
       has_preflight: true
       checks:
         - order: "1"
@@ -68,7 +68,7 @@ sections:
           level: "BLOCK"
           message: "Session not initialized. Run `/mvt-init` first."
         - order: "2"
-          condition: ".ai-agents/knowledge/project/_generated/project-context.md does NOT exist or is empty"
+          condition: ".mvtt/knowledge/project/_generated/project-context.md does NOT exist or is empty"
           level: "BLOCK"
           message: "project-context.md not found. Run `/mvt-analyze-code` to create the initial document; this skill only handles incremental updates."
 

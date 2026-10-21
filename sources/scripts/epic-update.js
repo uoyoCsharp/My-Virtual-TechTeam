@@ -9,11 +9,11 @@
  *
  * NOTE: This source file uses `import from "yaml"`. During the build pipeline,
  * esbuild bundles it into a zero-dependency single file deployed to
- * .ai-agents/scripts/epic-update.cjs.
+ * .mvtt/scripts/epic-update.cjs.
  *
  * Usage: see the "Script Usage Rule" section in any skill that references
  *   sections/script-usage-rule.md, or read the full reference at
- *   .ai-agents/scripts/epic-update.md.
+ *   .mvtt/scripts/epic-update.md.
  *
  * Output:
  *   Success (exit 0): one-line JSON on stdout
@@ -31,7 +31,7 @@ import { parse as parseYaml, stringify as stringifyYaml } from "yaml";
 function findProjectRootFromPath(filePath) {
   let dir = resolve(dirname(filePath));
   while (true) {
-    if (existsSync(join(dir, ".ai-agents"))) return dir;
+    if (existsSync(join(dir, ".mvtt"))) return dir;
     const parent = dirname(dir);
     if (parent === dir) return null;
     dir = parent;
@@ -40,7 +40,7 @@ function findProjectRootFromPath(filePath) {
 
 function loadSoleProject(projectRoot) {
   if (!projectRoot) return null;
-  const ctxPath = join(projectRoot, ".ai-agents/workspace/project-context.yaml");
+  const ctxPath = join(projectRoot, ".mvtt/workspace/project-context.yaml");
   if (!existsSync(ctxPath)) return null;
   try {
     const ctx = parseYaml(readFileSync(ctxPath, "utf-8"));

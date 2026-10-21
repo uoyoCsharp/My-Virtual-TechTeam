@@ -21,7 +21,7 @@ This check ensures `/mvt-sync-context` has processed a change's knowledge before
 ### Step 3: Inventory Artifacts
 - **What**: produce a per-change-id inventory with size and last-modified data.
 - **How**:
-  1. Group only the paths returned by `artifact-scan.cjs --mode change-dirs` and `--mode files` by their live parent change-id directory. Do not enumerate `.ai-agents/workspace/artifacts/` independently.
+  1. Group only the paths returned by `artifact-scan.cjs --mode change-dirs` and `--mode files` by their live parent change-id directory. Do not enumerate `.mvtt/workspace/artifacts/` independently.
   2. For each file: characters, estimated tokens (`ceil(characters / 4)`), last-modified (mtime).
   3. For each change-id directory, sum tokens and file count.
   4. Mark each change-id as `active | in-recent-changes | unindexed | legacy-pattern`:
@@ -41,7 +41,7 @@ This check ensures `/mvt-sync-context` has processed a change's knowledge before
   | Artifact directory under `artifacts/` whose id starts with `epic-` AND contains `epic.yaml` with `status: done` | **Batch archive candidate**: mark for batch suggestion in Step 7 -- read `epic.yaml.children[]` for child change-ids to offer as batch archive options alongside the epic |
   | Change-id directory marked `unindexed` | List for user review (do NOT auto-archive -- could be in-flight work the user just hasn't registered) |
   | `history` entries beyond the most recent N (from `config.yaml > preferences.history_limits.history`, default 10) | Truncate via `session-update.cjs --truncate-history <N>` |
-  | Directory `knowledge/patterns/` exists | Archive to `.ai-agents/knowledge/_archived/legacy-patterns/` after confirmation (legacy pattern data; no replacement) |
+  | Directory `knowledge/patterns/` exists | Archive to `.mvtt/knowledge/_archived/legacy-patterns/` after confirmation (legacy pattern data; no replacement) |
   | Empty change-id directories (zero files inside) | Propose deletion of the directory itself |
 
 - For each candidate, compute: `current size (tokens)` -> `projected size (tokens)`, expected savings.
@@ -85,7 +85,7 @@ This check ensures `/mvt-sync-context` has processed a change's knowledge before
 
      Per ADR-8: archive = abandon references; no post-archive `epic_id` integrity maintenance. Child changes that are also `status: done` are eligible for batch archiving; in-progress or pending children are excluded with a note.
 
-  3. **Archive legacy-pattern action**: move `knowledge/patterns/` to `.ai-agents/knowledge/_archived/legacy-patterns/`. If that destination exists, preserve existing content and ask for a timestamped suffix. Do not hard-delete this directory.
+  3. **Archive legacy-pattern action**: move `knowledge/patterns/` to `.mvtt/knowledge/_archived/legacy-patterns/`. If that destination exists, preserve existing content and ask for a timestamped suffix. Do not hard-delete this directory.
   4. **Delete action**: remove only the items explicitly marked for deletion in the confirmed plan; never recurse beyond what was listed.
   5. **Stale history truncation**: include `--truncate-history <N>` in the one final `session-update.cjs` call, where N is from `config.yaml > preferences.history_limits.history` (default 10).
   6. All file mutations atomic where possible (write-temp + rename, copy-then-delete for moves).
@@ -117,14 +117,14 @@ Apply all selected repairs, successful archive removals, and history truncation 
 
 ```bash
 # Archived old changes only
-node .ai-agents/scripts/session-update.cjs \
+node .mvtt/scripts/session-update.cjs \
   --skill mvt-cleanup \
   --summary "<concise one-line summary>" \
   --remove-change <archived_change_ids> \
   --truncate-history 10
 
 # Batch archive (epic + its children)
-node .ai-agents/scripts/session-update.cjs \
+node .mvtt/scripts/session-update.cjs \
   --skill mvt-cleanup \
   --summary "<concise one-line summary>" \
   --remove-epic <archived_epic_id> \
@@ -132,7 +132,7 @@ node .ai-agents/scripts/session-update.cjs \
   --truncate-history 10
 
 # Confirmed repairs (combine with archive flags when both occurred)
-node .ai-agents/scripts/session-update.cjs \
+node .mvtt/scripts/session-update.cjs \
   --skill mvt-cleanup \
   --summary "<concise one-line summary>" \
   --repair-change-statuses <id=done,...> \

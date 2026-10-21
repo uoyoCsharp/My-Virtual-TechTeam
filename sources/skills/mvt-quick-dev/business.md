@@ -56,8 +56,8 @@ This step applies only when the workspace has multiple projects (`projects.lengt
   - A file whose path starts with a project's `path` prefix belongs to that project.
   - A file under a project's `source_paths` entry also belongs to that project.
   - Collect the set of unique project names from all matched files. This is the **active project scope** for this invocation.
-- **On-demand knowledge loading**: for each project P in the active project scope, read `.ai-agents/registry.yaml` and load:
-  1. Every entry under `knowledge.{P}` -- load each entry's referenced files (resolve relative to `.ai-agents/{source}`).
+- **On-demand knowledge loading**: for each project P in the active project scope, read `.mvtt/registry.yaml` and load:
+  1. Every entry under `knowledge.{P}` -- load each entry's referenced files (resolve relative to `.mvtt/{source}`).
   2. Every entry under `skills.mvt-quick-dev.knowledge.{P}` -- load each entry's referenced files.
   3. Skip any key absent from the registry (no project-specific knowledge is valid; do not warn).
 - **Multi-project scenario**: if files span multiple projects, load each project's knowledge sequentially. The skill operates with the union of all loaded project-specific knowledge plus the `_all` knowledge already loaded at activation.

@@ -118,7 +118,7 @@ describe("requirement-source.cjs", () => {
 
   beforeEach(() => {
     tmpDir = mkdtempSync(path.join(os.tmpdir(), "mvtt-req-src-"));
-    const workspaceDir = path.join(tmpDir, ".ai-agents", "workspace");
+    const workspaceDir = path.join(tmpDir, ".mvtt", "workspace");
     mkdirSync(workspaceDir, { recursive: true });
     epicPath = path.join(workspaceDir, "epic.yaml");
     sourcePath = path.join(tmpDir, "requirements", "source.md");

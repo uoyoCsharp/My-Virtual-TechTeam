@@ -44,9 +44,9 @@ sections:
       activation_reads:
         - session.yaml
       extended_context:
-        - ".ai-agents/workspace/artifacts/{active_change.id}/analysis.md -- Requirements analysis"
-        - ".ai-agents/workspace/artifacts/{active_change.id}/design.md -- Architecture design"
-        - ".ai-agents/workspace/artifacts/{active_change.id}/implementation.md -- Implementation record"
+        - ".mvtt/workspace/artifacts/{active_change.id}/analysis.md -- Requirements analysis"
+        - ".mvtt/workspace/artifacts/{active_change.id}/design.md -- Architecture design"
+        - ".mvtt/workspace/artifacts/{active_change.id}/implementation.md -- Implementation record"
       has_preflight: true
       checks:
         - order: "1"
@@ -73,10 +73,10 @@ sections:
   - type: inline
     content: |
       ## Artifact Structure
-      Read the document structure template from: `.ai-agents/skills/_templates/review-output.md`
-      If a custom version exists at `.ai-agents/skills/_templates/custom/review-output.md`, use the custom version instead.
+      Read the document structure template from: `.mvtt/skills/_templates/review-output.md`
+      If a custom version exists at `.mvtt/skills/_templates/custom/review-output.md`, use the custom version instead.
       The template defines section structure and guidance comments. Generate applicable content based on review results.
-      Write the artifact to: `.ai-agents/workspace/artifacts/{change-id}/review.md`
+      Write the artifact to: `.mvtt/workspace/artifacts/{change-id}/review.md`
 
   - type: shared
     source: sections/session-update.md

@@ -5,11 +5,11 @@ Two blocks: **Load** (what to read, and when) then **Resolve** (what to decide).
 ### Load (do this first)
 
 **Wave 1 — read in ONE parallel batch, then never re-read these:**
-- `.ai-agents/workspace/project-context.yaml`
-- `.ai-agents/registry.yaml`
-- `.ai-agents/config.yaml`
+- `.mvtt/workspace/project-context.yaml`
+- `.mvtt/registry.yaml`
+- `.mvtt/config.yaml`
 {{#activation_reads}}
-- `.ai-agents/workspace/{{.}}`
+- `.mvtt/workspace/{{.}}`
 {{/activation_reads}}
 
 **Deferred (load after Wave 1; do not re-read Wave 1 files):**
@@ -31,7 +31,7 @@ Extended Context entries:
   - *Mode A (active plan):* PS = the `current_tasks` project values that exist in `projects[]`; otherwise match current paths against `projects[].path` / `source_paths`; if still unresolved, list candidates and ask. Never silently load all.
   - *Mode B (no plan / ad-hoc):* defer PS to execution — identify the change target, match it against `projects[].path` / `source_paths`.
 
-**Knowledge** — always load `knowledge._all` + `skills.<current-skill>.knowledge._all`. In multi-project Mode A/B, additionally load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for each resolved P. For every entry: base dir = `.ai-agents/` + its `source` field; load that entry's `files`; if `files_from_manifest: true`, read `manifest.yaml` in that dir and load entries with `auto_load: true`. Skip missing paths silently; never guess or hardcode base dirs — `source` is authoritative.
+**Knowledge** — always load `knowledge._all` + `skills.<current-skill>.knowledge._all`. In multi-project Mode A/B, additionally load `knowledge[P]` + `skills.<current-skill>.knowledge[P]` for each resolved P. For every entry: base dir = `.mvtt/` + its `source` field; load that entry's `files`; if `files_from_manifest: true`, read `manifest.yaml` in that dir and load entries with `auto_load: true`. Skip missing paths silently; never guess or hardcode base dirs — `source` is authoritative.
 
 **Config** — apply `config.yaml` preferences for the whole session: `preferences.interaction_language` (chat/prompts/tables), `preferences.document_output_language` (files on disk), `preferences.output.no_emojis`, `preferences.output.data_format`, `preferences.context_routing.relevance_threshold`.
 {{?has_preflight}}

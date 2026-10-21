@@ -154,7 +154,7 @@ describe("assembler", () => {
       expect(output).toContain("--skill mvt-implement");
       expect(output).toContain("Critical flag semantics");
       expect(output).not.toContain("Argument values");
-      expect(output).not.toContain(".ai-agents/scripts/session-update.md");
+      expect(output).not.toContain(".mvtt/scripts/session-update.md");
     });
 
     it("documents silent implement mode across confirmation points", () => {
@@ -179,7 +179,7 @@ describe("assembler", () => {
 
     it("does not reference removed plan-dev output template", () => {
       const output = buildSkill("mvt-plan-dev");
-      expect(output).not.toContain(".ai-agents/skills/_templates/plan-dev-output.md");
+      expect(output).not.toContain(".mvtt/skills/_templates/plan-dev-output.md");
     });
 
     it("declares plan-dev specific state updates for active_change and changes", () => {
@@ -344,7 +344,7 @@ describe("assembler", () => {
     it("defines evidence and runtime recommendation reuse", () => {
       const output = buildSkill("mvt-help");
       expect(output).toContain("**Evidence conventions**");
-      expect(output).toContain("`.ai-agents/workspace/artifacts/{active_change.id}/`");
+      expect(output).toContain("`.mvtt/workspace/artifacts/{active_change.id}/`");
       expect(output).toContain("primary runtime recommendation");
       expect(output).toContain("Use that same recommendation in Current Status");
     });
@@ -376,8 +376,8 @@ describe("assembler", () => {
       expect(output).toContain("--task");
       expect(output).toContain("epic-update.cjs");
       expect(output).toContain("--complete-child");
-      expect(output).toContain(".ai-agents/scripts/plan-update.md");
-      expect(output).not.toContain(".ai-agents/scripts/epic-update.md");
+      expect(output).toContain(".mvtt/scripts/plan-update.md");
+      expect(output).not.toContain(".mvtt/scripts/epic-update.md");
       expect(output).toContain("exact `epic-update.cjs` mode commands rendered in this skill's workflow");
       expect(output).not.toContain("--child-title");
       expect(output).not.toContain("--child-scope");
@@ -391,9 +391,9 @@ describe("assembler", () => {
       expect(output).toContain("Use this exact metadata-only command");
       expect(output).toContain("Do NOT add `--status`");
       expect(output).not.toContain("--status <new_status>");
-      expect(output).not.toContain(".ai-agents/scripts/plan-update.md");
+      expect(output).not.toContain(".mvtt/scripts/plan-update.md");
       expect(output).not.toContain("epic-update.cjs");
-      expect(output).not.toContain(".ai-agents/scripts/epic-update.md");
+      expect(output).not.toContain(".mvtt/scripts/epic-update.md");
     });
 
     it("mvt-decompose omits Script Usage Rule while keeping rendered epic commands", () => {
@@ -405,7 +405,7 @@ describe("assembler", () => {
       expect(output).toContain("--complete-child");
       expect(output).toContain("Do NOT hand-edit `epic.yaml`");
       expect(output).not.toContain("plan-update.cjs");
-      expect(output).not.toContain(".ai-agents/scripts/plan-update.md");
+      expect(output).not.toContain(".mvtt/scripts/plan-update.md");
     });
 
     it("mvt-analyze omits Script Usage Rule while keeping epic switch guidance", () => {
@@ -542,7 +542,7 @@ describe("assembler", () => {
       expect(output).toContain("manual review");
       expect(output).toContain("<action-selected cleanup flags>");
       expect(output).toContain("<action-selected cleanup flags>\n```");
-      expect(output).not.toContain("Walk `.ai-agents/workspace/artifacts/`");
+      expect(output).not.toContain("Walk `.mvtt/workspace/artifacts/`");
     });
 
     it("mvt-sync-context and mvt-check-context use scanner-only discovery", () => {

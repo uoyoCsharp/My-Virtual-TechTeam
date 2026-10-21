@@ -2,7 +2,7 @@
 
 ### Step 1: Load Inputs
 - **Recommended**:
-  - `.ai-agents/skills/_templates/` -- default templates (read-only from this skill).
+  - `.mvtt/skills/_templates/` -- default templates (read-only from this skill).
 
 ### Step 2: Build Template Inventory
 - **What**: produce the canonical list of templates with their status.
@@ -10,8 +10,8 @@
   1. From `registry.yaml`, collect every `skills.<name>.template` value that is not null.
   2. For each entry, derive the basename (e.g., `analyze-output.md`).
   3. For each basename:
-     - `default` exists if the file is present under `.ai-agents/skills/_templates/`.
-     - `custom` exists if the file is present under `.ai-agents/skills/_templates/custom/` with the same basename.
+     - `default` exists if the file is present under `.mvtt/skills/_templates/`.
+     - `custom` exists if the file is present under `.mvtt/skills/_templates/custom/` with the same basename.
   4. Status:
      - `Default` if only default exists.
      - `Customized` if both exist.
@@ -57,7 +57,7 @@
       - If the default template had frontmatter, the customized version must keep a parseable frontmatter block and retain the original frontmatter keys. If the default template had no frontmatter, do not require one.
       - If the default template had Mustache placeholders, retain them unless the user explicitly removed them. If the default template had no placeholders, do not require placeholders.
      - Validation failures -> abort write, surface the failed checks, return to step 2 of this subflow.
-  5. **Confirm and write** — choices `Save` / `Cancel`: "Save customized template to .ai-agents/skills/_templates/custom/<name>?" On `Save`, write atomically (temp + rename). Backup any existing custom file as `<name>.bak` first.
+  5. **Confirm and write** — choices `Save` / `Cancel`: "Save customized template to .mvtt/skills/_templates/custom/<name>?" On `Save`, write atomically (temp + rename). Backup any existing custom file as `<name>.bak` first.
 
 #### 4c. Reset
 - **What**: revert to the default template.
@@ -78,7 +78,7 @@
      |------------|-------------|
      | No path given | Print the content as a fenced code block in chat |
      | Relative or absolute file path | Write to that path; if file exists, ask for confirmation before overwriting |
-     | Literal string `custom` | Copy default to `.ai-agents/skills/_templates/custom/<name>` (use as starting point for customization) |
+     | Literal string `custom` | Copy default to `.mvtt/skills/_templates/custom/<name>` (use as starting point for customization) |
 
   3. Never write outside the project root unless an absolute path was explicitly provided by the user.
 
