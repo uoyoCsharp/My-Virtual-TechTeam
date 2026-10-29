@@ -22,7 +22,7 @@ sections:
       decision_rules:
         - rule: "No arguments -> Interactive cleanup (review items before action)"
         - rule: "`--dry-run` flag -> Show what would be cleaned without taking action"
-        - rule: "Completed changes found -> Summarize and archive"
+        - rule: "Completed changes found -> Confirm summary generation, then archive"
         - rule: "Orphaned artifacts found -> List for user review"
         - rule: "Stale session data found -> Summarize into single entry"
       boundaries:

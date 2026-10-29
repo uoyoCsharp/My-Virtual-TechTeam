@@ -1,7 +1,7 @@
 {
   "mvtt_version": "3.0.0",
   "installed_at": "2026-06-10T06:40:54.542Z",
-  "last_updated_at": "2026-10-21T06:11:00.220Z",
+  "last_updated_at": "2026-10-29T09:10:18.014Z",
   "platforms": [
     "agents"
   ],
@@ -26,7 +26,7 @@
       "category": "generated"
     },
     ".agents/skills/mvt-cleanup/SKILL.md": {
-      "hash": "sha256:c32e1d98bdad644fa295ad95f86414c99d9ccd640cd86a03fd0799c43dca0e5c",
+      "hash": "sha256:b4ffd4ca30e401e4dfe53fff6a43a18f3e5f8b2bf7eb98b37f0e6e10460279d4",
       "category": "generated"
     },
     ".agents/skills/mvt-config/SKILL.md": {
@@ -206,7 +206,7 @@
       "category": "create_once"
     },
     ".mvtt/workspace/session.yaml": {
-      "hash": "sha256:7d97de8317f677dcfdcbf8c60bb86730214016b75fc2680ab7f8c1648e8924c1",
+      "hash": "sha256:ec7d61e69513b47ea38078e701e62c6fb977303685a8882abfc6912a6e0d95a2",
       "category": "create_once"
     },
     ".mvtt/workspace/project-context.yaml": {

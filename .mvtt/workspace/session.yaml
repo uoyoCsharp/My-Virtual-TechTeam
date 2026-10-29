@@ -9,20 +9,6 @@ active_change:
   epic_id: ""
 changes: []
 history:
-  - skill: /mvt-review
-    completed_at: 2026-09-11T13:36:20.104Z
-    summary: 复核上轮 review 结论：自查发现 2 项 Critical 均不成立（C1 误指 Rule 2、C2 把有意偏离当分裂），W3/W4/W6 不属实（W4 系混入未更新的生成物文本），实际 0 Critical / 2 Warning，改为 Approve with comments；用户选择不写 review.md
-    change_id: 20260911-quick-dev-flexibility
-  - skill: /mvt-review
-    completed_at: 2026-09-11T13:36:28.394Z
-    summary: 复核上轮 review 结论：0 Critical / 2 Warning —— 上轮 2 项 Critical 均不成立（C1 误指 Turn Boundary Rule 2，C2 把用户有意偏离误判为源/生成物分裂），W3/W4/W6 不属实（W4 系混入未更新的生成物文本），W1/W2/W5 降级为 Suggestion；结论改为 Approve with
-      comments，artifact 待定
-    change_id: 20260911-quick-dev-flexibility
-  - skill: /mvt-fix
-    completed_at: 2026-09-11T14:07:10.346Z
-    summary: 修复源提示词 8 处措辞（boundaries_note 与 Rule 2 解耦并改指 Step 9、删 never a STOP 与 Cheap reversal path、Sweep 声明限定于请求、exemption 具体化、Commit 列具体化、Epic 触发收敛、Single actor 去冗余）；组装 71/71、残留归零；全量 77 项既有失败经 stash
-      对照证实与本次无关；用户选择不写 fix-notes.md
-    change_id: 20260911-quick-dev-flexibility
   - skill: /mvt-fix
     completed_at: 2026-09-11T14:12:10.637Z
     summary: 修复 77 项测试失败：根因为 git pull 更新 sources/scripts 后未重建 dist（缺 3 个新 bundle、旧 bundle 无新特性），执行 npm run build 后全量 391/391 恢复；无源码改动；.claude 生成物与提示词 round 3 物化仍待用户执行
@@ -50,6 +36,18 @@ history:
   - skill: /mvt-review
     completed_at: 2026-10-21T06:15:21.568Z
     summary: 复核 3.0.0 发布资格：0 Critical / 9 Warning / 6 Suggestion，代码层面 Approve with comments；发布前需打 v3.0.0 tag、处理未提交的 .claude 删除与 .agents 未跟踪目录、补 CHANGELOG/升级说明，并完成 B2 TTY 手工验证与 Qoder 路径核实
+    change_id: ""
+  - skill: /mvt-quick-dev
+    completed_at: 2026-10-29T09:01:25.261Z
+    summary: 为 mvt-cleanup 增加 summary 门控：Step 6 计划确认后整批询问一次是否生成摘要，跳过则降级为纯归档；同步决策规则并新增 2 项 assembler 测试，物化 1 个 SKILL.md，全量 447/447
+    change_id: ""
+  - skill: /mvt-review
+    completed_at: 2026-10-29T09:06:35.058Z
+    summary: 复核 summary 门控改动：0 Critical / 2 Warning / 4 Suggestion，结论 Approve with comments；主要问题是 Skip 语义三处重复（无单一权威）与两道确认边界未显式区分，建议精简约 36% 新增文本但保留 once/separate-message 约束，未写 artifact
+    change_id: ""
+  - skill: /mvt-fix
+    completed_at: 2026-10-29T09:11:17.484Z
+    summary: 落地 review 的 2 Warning + 4 Suggestion：Step 6 门控合并为单句并声明计划确认不含摘要同意，Step 7.1 括注压缩，删除冗余 Edge Case 行，aborts 措辞修正；新增顺序与去重断言；新增文本 1210→832 字符（-31%），最长行 504→437；全量 447/447；未写 fix-notes.md
     change_id: ""
 active_epic: null
 epics: []

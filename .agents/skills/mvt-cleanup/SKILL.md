@@ -16,7 +16,7 @@ You are the **Conductor** -- a Workflow Coordinator.
 ### Decision Rules
 - No arguments -> Interactive cleanup (review items before action)
 - `--dry-run` flag -> Show what would be cleaned without taking action
-- Completed changes found -> Summarize and archive
+- Completed changes found -> Confirm summary generation, then archive
 - Orphaned artifacts found -> List for user review
 - Stale session data found -> Summarize into single entry
 
@@ -174,7 +174,7 @@ This check ensures `/mvt-sync-context` has processed a change's knowledge before
 - If `--dry-run` is set, STOP here. Print "(dry run -- no changes applied)" and exit cleanly.
 
 ### Step 6: Confirm Before Destructive Steps
-- **Always require confirmation** if the plan includes any of:
+- **Always require confirmation** if the plan includes any of the following (action set only — summary consent is separate):
   - File deletion (legacy patterns, empty dirs).
   - `summarize` action (collapses multi-file content).
   - `archive` action (moves entire change-id directory into `artifacts/_archived/`).
@@ -184,12 +184,16 @@ This check ensures `/mvt-sync-context` has processed a change's knowledge before
   > Present choices `Archive anyway` / `Cancel` / `Sync first` / `Show details`.
 - If no unsynced warnings, use the standard confirmation — choices `Apply` / `Cancel` / `Show details`: "Apply cleanup plan?". `Show details` prints the per-file actions, then re-asks.
 - User chooses `Sync first` → stop cleanup, print "Run `/mvt-sync-context` first, then re-run `/mvt-cleanup`." and exit.
+- **Summary gate** — only if a `summarize` candidate remains after the plan confirmation above (including any `Archive anyway` / `Sync first` resolution), ask once for the whole run in a separate message — never together with that confirmation (otherwise stay silent) — choices `Generate summaries` / `Skip summaries` / `Cancel`: "Generate `summary.md` for {n} change(s) about to be archived? ({change-id list})".
+  - `Generate summaries` — keep the planned `summarize` actions (default).
+  - `Skip summaries` — every candidate becomes a plain `archive` action (Step 7.2); write no `summary.md`.
+  - `Cancel` — report "no changes applied" and exit.
 - Do NOT silently delete. Do NOT skip confirmation when `--dry-run` is absent.
 
 ### Step 7: Execute the Plan
 - **What**: apply the confirmed actions.
 - **How**:
-  1. **Summarize action**: read the full set of files in the change-id directory; produce a `summary.md` with: title, change-id, status, key decisions (list each ADR/decision title), final outcomes, list of original files. Write `summary.md` into the change-id directory, then move the **entire** `artifacts/{id}/` directory to `artifacts/_archived/{id}/` (summary.md travels with it).
+  1. **Summarize action** (skipped on `Skip summaries` — take item 2 instead): read the full set of files in the change-id directory; produce a `summary.md` with: title, change-id, status, key decisions (list each ADR/decision title), final outcomes, list of original files. Write `summary.md` into the change-id directory, then move the **entire** `artifacts/{id}/` directory to `artifacts/_archived/{id}/` (summary.md travels with it).
   2. **Archive action** (no summarize): move the **entire** `artifacts/{id}/` directory to `artifacts/_archived/{id}/`. No internal path restructuring needed.
   2a. **Batch archive action** (epic with children): when archiving a completed epic (the change-id is an epic directory containing `epic.yaml` with `status: done`), read `epic.yaml.children` and present the user with three options before proceeding:
 
@@ -210,6 +214,7 @@ This check ensures `/mvt-sync-context` has processed a change's knowledge before
 
 ### Step 8: Report Result
 - Print the actually-applied actions (may differ from the plan if Step 7 stopped early).
+- If the summary gate returned `Skip summaries`, state that no `summary.md` was generated and list the change-ids it applies to.
 - Show new totals: files cleaned, tokens saved.
 - Recommend `/mvt-check-context` to validate the post-cleanup state if savings exceed ~5k tokens.
 
@@ -266,7 +271,7 @@ Replace `10` with the actual `config.yaml > preferences.history_limits.history` 
 | Active change has a completed plan | Leave it active and direct the user to `/mvt-update-plan` for explicit finalization. |
 | `--dry-run` set | Stop after Step 5; do not request confirmation; do not modify any file |
 | Plan would archive ALL artifacts (workspace becomes empty) | Require an extra confirmation — choices `Continue` / `Cancel`: "This will archive every artifact." |
-| User aborts at Step 6 confirmation | Report "no changes applied" |
+| User aborts any Step 6 confirmation | Report "no changes applied" |
 | `artifacts/_archived/{id}/` already exists from a prior run | Preserve existing content; merge or skip with a note — do not overwrite |
 | File targeted for action no longer exists (concurrent removal) | Skip with a note; do not error out the whole run |
 | Unindexed change-id directory contains only `plan.yaml` | List as review-only; suggest user runs `/mvt-update-plan` or registers it via `/mvt-plan-dev` instead of cleaning |

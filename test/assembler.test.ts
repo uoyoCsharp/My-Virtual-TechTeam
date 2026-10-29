@@ -466,6 +466,29 @@ describe("assembler", () => {
     });
   });
 
+  describe("mvt-cleanup summary gate (change 20261029)", () => {
+    it("asks once for the whole run after the plan confirmation", () => {
+      const output = buildSkill("mvt-cleanup");
+      expect(output).toContain("**Summary gate**");
+      expect(output).toContain("`Generate summaries` / `Skip summaries` / `Cancel`");
+      expect(output).toContain("ask once for the whole run");
+      expect(output).toContain("never together with that confirmation");
+
+      const planConfirm = output.indexOf('"Apply cleanup plan?"');
+      expect(planConfirm).toBeGreaterThan(-1);
+      expect(output.indexOf("**Summary gate**")).toBeGreaterThan(planConfirm);
+    });
+
+    it("skips summary generation and degrades to a plain archive", () => {
+      const output = buildSkill("mvt-cleanup");
+      expect(output).toContain("every candidate becomes a plain `archive` action (Step 7.2)");
+      expect(output).toContain("write no `summary.md`");
+      expect(output).toContain("(skipped on `Skip summaries` — take item 2 instead)");
+      expect(output).toContain("no `summary.md` was generated");
+      expect(output).not.toContain("User chooses `Skip summaries` at the summary gate");
+    });
+  });
+
   describe("lifecycle routing and scanner discovery (change 20260804)", () => {
     it("mvt-update-plan renders finalize, defer, abandon, and recovery routes", () => {
       const output = buildSkill("mvt-update-plan");
